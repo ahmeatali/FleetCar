@@ -402,6 +402,9 @@
             <h1>Entegre Tedarikçiler Listesi</h1>
             <p style="color: var(--text-muted); font-size: 0.95rem;">Sistemde entegre çalışan yetkili/anlaşmalı servis, lastik, yol yardım ve ikame araç sağlayıcıları.</p>
           </div>
+          <button @click="showAddSupplierModal = true" class="btn btn-primary" style="background: linear-gradient(135deg, #7c3aed, #3b82f6); border: none; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.25);">
+            ➕ Yeni Tedarikçi Ekle
+          </button>
         </header>
 
         <!-- Stats cards for suppliers -->
@@ -786,7 +789,99 @@
       </div>
     </div>
   </div>
+
+  <!-- Add Supplier Modal -->
+  <div v-if="showAddSupplierModal" class="modal-overlay" @click.self="closeAddSupplierModal">
+    <div class="glass-panel modal-content fade-in-up" style="max-width: 620px; padding: 30px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px;">
+        <h2 style="color: #7c3aed; margin: 0; display: flex; align-items: center; gap: 10px;">
+          🏢 Yeni Tedarikçi Ekle
+        </h2>
+        <button @click="closeAddSupplierModal" style="background: transparent; border: none; color: var(--text-muted); font-size: 1.4rem; cursor: pointer; line-height: 1;">✕</button>
+      </div>
+
+      <form @submit.prevent="submitAddSupplier">
+        <!-- Tedarikçi Adı -->
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label class="form-label">Tedarikçi Adı *</label>
+          <input type="text" v-model="newSupplierForm.name" required class="form-input" placeholder="Örn: OtoPratik Bağcılar">
+        </div>
+
+        <!-- Kategori & Servis Tipi -->
+        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px;">
+          <div class="form-group">
+            <label class="form-label">Kategori *</label>
+            <select v-model="newSupplierForm.type" required class="form-select">
+              <option value="">Seçiniz...</option>
+              <option value="servis">🔧 Yetkili / Anlaşmalı Servis</option>
+              <option value="lastik">🛞 Lastik Bayi</option>
+              <option value="yol_yardim">🚨 Yol Yardım</option>
+              <option value="ikame_arac">🚗 İkame Araç</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Sözleşme Tipi *</label>
+            <select v-model="newSupplierForm.contract_type" required class="form-select">
+              <option value="">Seçiniz...</option>
+              <option value="Yetkili">🛡️ Yetkili Servis</option>
+              <option value="Anlaşmalı">🤝 Anlaşmalı Servis</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- İl & İlçe -->
+        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px;">
+          <div class="form-group">
+            <label class="form-label">İl *</label>
+            <input type="text" v-model="newSupplierForm.city" required class="form-input" placeholder="Örn: İstanbul">
+          </div>
+          <div class="form-group">
+            <label class="form-label">İlçe *</label>
+            <input type="text" v-model="newSupplierForm.district" required class="form-input" placeholder="Örn: Bağcılar">
+          </div>
+        </div>
+
+        <!-- Telefon -->
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label class="form-label">Telefon *</label>
+          <input type="text" v-model="newSupplierForm.phone" required class="form-input" placeholder="+90 212 555 0000">
+        </div>
+
+        <!-- Hizmetler (tag input) -->
+        <div class="form-group" style="margin-bottom: 22px;">
+          <label class="form-label">Sunduğu Hizmetler</label>
+          <div class="supplier-tag-input-wrap">
+            <div class="supplier-tags">
+              <span v-for="(svc, i) in newSupplierForm.services" :key="i" class="supplier-tag-chip">
+                {{ svc }}
+                <button type="button" @click="removeService(i)" class="chip-remove">✕</button>
+              </span>
+              <input
+                v-model="serviceInput"
+                @keydown.enter.prevent="addService"
+                @keydown.comma.prevent="addService"
+                class="tag-bare-input"
+                placeholder="Hizmet yazıp Enter'a basın..."
+              >
+            </div>
+          </div>
+          <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">
+            Örn: Periyodik Bakım · Fren Sistemi · Akü Değişimi
+          </p>
+        </div>
+
+        <div style="display: flex; gap: 12px; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 15px;">
+          <button type="button" @click="closeAddSupplierModal" class="btn btn-secondary">İptal</button>
+          <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #7c3aed, #3b82f6); border: none; box-shadow: 0 4px 15px rgba(124,58,237,0.2);">
+            ✅ Tedarikçiyi Kaydet
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
 </template>
+
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
@@ -853,7 +948,60 @@ const showAmountModal = ref(false)
 const pendingQuoteId = ref(null)
 const contractAmountInput = ref(0)
 
+// Add Supplier Modal State
+const showAddSupplierModal = ref(false)
+const serviceInput = ref('')
+const newSupplierForm = reactive({
+  name: '',
+  type: '',
+  phone: '',
+  city: '',
+  district: '',
+  services: [],
+  contract_type: ''
+})
+
+const addService = () => {
+  const val = serviceInput.value.trim().replace(/,$/, '')
+  if (val && !newSupplierForm.services.includes(val)) {
+    newSupplierForm.services.push(val)
+  }
+  serviceInput.value = ''
+}
+
+const removeService = (index) => {
+  newSupplierForm.services.splice(index, 1)
+}
+
+const closeAddSupplierModal = () => {
+  showAddSupplierModal.value = false
+  Object.assign(newSupplierForm, { name: '', type: '', phone: '', city: '', district: '', services: [], contract_type: '' })
+  serviceInput.value = ''
+}
+
+const submitAddSupplier = async () => {
+  // Commit any pending service input
+  if (serviceInput.value.trim()) addService()
+  try {
+    const res = await fetch('/api/suppliers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newSupplierForm)
+    })
+    if (res.ok) {
+      await fetchSuppliers()
+      closeAddSupplierModal()
+    } else {
+      alert('Tedarikçi eklenirken hata oluştu.')
+    }
+  } catch (err) {
+    console.error('Error adding supplier:', err)
+    alert('Bağlantı hatası oluştu.')
+  }
+}
+
 // Bids modal state
+
 const showBidsModal = ref(false)
 const bidsLoading = ref(false)
 const selectedQuoteForBids = ref(null)
@@ -1571,4 +1719,57 @@ onMounted(async () => {
   background: rgba(16,185,129,0.05);
 }
 
+/* Supplier tag input */
+.supplier-tag-input-wrap {
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--glass-bg, rgba(255,255,255,0.04));
+  padding: 8px 10px;
+  transition: border-color 0.2s;
+}
+.supplier-tag-input-wrap:focus-within {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.12);
+}
+.supplier-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.supplier-tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(124,58,237,0.15);
+  color: #c084fc;
+  border: 1px solid rgba(124,58,237,0.25);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+.chip-remove {
+  background: transparent;
+  border: none;
+  color: #c084fc;
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0;
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+.chip-remove:hover { opacity: 1; }
+.tag-bare-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  min-width: 180px;
+  flex: 1;
+}
+.tag-bare-input::placeholder { color: var(--text-muted); }
 </style>
+

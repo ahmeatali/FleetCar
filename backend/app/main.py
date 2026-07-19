@@ -9,7 +9,7 @@ from app.schemas import (
     QuoteCreate, QuoteResponse,
     VehicleCreate, VehicleResponse,
     RequestCreate, RequestResponse,
-    SupplierResponse, StatusUpdate,
+    SupplierCreate, SupplierResponse, StatusUpdate,
     VehicleRemoval, QuoteUpdate,
     CustomerUpdate, BidCreate,
     BidResponse
@@ -290,6 +290,22 @@ def get_suppliers(type: Optional[str] = None):
     if type:
         return [s for s in SUPPLIERS if s["type"] == type]
     return SUPPLIERS
+
+@app.post("/api/suppliers", response_model=SupplierResponse)
+def create_supplier(supplier: SupplierCreate):
+    new_supplier = {
+        "id": max((s["id"] for s in SUPPLIERS), default=0) + 1,
+        "name": supplier.name,
+        "type": supplier.type,
+        "phone": supplier.phone,
+        "location": f"{supplier.district}, {supplier.city}",
+        "city": supplier.city,
+        "district": supplier.district,
+        "services": supplier.services,
+        "contract_type": supplier.contract_type
+    }
+    SUPPLIERS.append(new_supplier)
+    return new_supplier
 
 # ----------------- REQUESTS (TEDARİKÇİ TALEPLERİ) -----------------
 @app.get("/api/requests")

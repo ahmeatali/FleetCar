@@ -97,6 +97,15 @@ class RequestResponse(BaseModel):
     created_at: str
     details: Dict[str, Any]
 
+class SupplierCreate(BaseModel):
+    name: str
+    type: str
+    phone: str
+    city: str
+    district: str
+    services: List[str]
+    contract_type: str
+
 class SupplierResponse(BaseModel):
     id: int
     name: str
