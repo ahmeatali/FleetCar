@@ -238,7 +238,7 @@ CUSTOMERS = [
         "legal_title": "Tekno Holding Anonim Şirketi",
         "email": "info@teknoholding.com",
         "phone": "+90 212 999 8877",
-        "registered_vehicles_count": 5, # matching currently active vehicles
+        "registered_vehicles_count": 15,  # matches signed quote vehicle_count
         "status": "Aktif",
         "address": "Maslak Plazalar No: 18, Kat: 14, Şişli, İstanbul",
         "contract_amount": 425000,
