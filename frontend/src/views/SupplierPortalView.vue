@@ -25,7 +25,7 @@
       <div style="display: flex; gap: 30px; flex-wrap: wrap; align-items: center;">
         <div>
           <span class="profile-meta-label">📍 İl / İlçe</span>
-          <div class="profile-meta-value" style="font-weight: 600; font-size: 1rem; color: #fff; margin-top: 3px;">
+          <div class="profile-meta-value" style="font-weight: 600; font-size: 1rem; color: var(--text-main); margin-top: 3px;">
             {{ supplierCity || '-' }} / {{ supplierDistrict || '-' }}
           </div>
         </div>
@@ -49,11 +49,12 @@
       </div>
       <div>
         <span class="profile-meta-label">📞 İletişim Telefonu</span>
-        <div class="profile-meta-value" style="font-family: monospace; font-weight: 600; color: #fff; margin-top: 3px;">
+        <div class="profile-meta-value" style="font-family: monospace; font-weight: 600; color: var(--text-main); margin-top: 3px;">
           {{ supplierPhone || '-' }}
         </div>
       </div>
     </div>
+
 
     <!-- Navigation Tabs (Only for vehicle rental suppliers) -->
     <div v-if="supplierType === 'ikame_arac'" class="tab-header-container fade-in-up" style="display: flex; gap: 15px; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
@@ -73,35 +74,44 @@
       <div v-if="currentTab === 'requests'">
         <!-- Stats Dashboard -->
         <div class="grid-4" style="gap: 20px; margin-bottom: 30px;">
-          <div class="glass-panel stat-card">
-            <span class="stat-icon">📥</span>
-            <div>
-              <div class="stat-label">Toplam Hizmet Talebi</div>
-              <div class="stat-value">{{ filteredRequests.length }}</div>
+          <div class="glass-panel stat-card-new">
+            <div class="stat-icon-wrapper quote-purple">
+              <span>📥</span>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Toplam Hizmet Talebi</span>
+              <div class="stat-val-new">{{ filteredRequests.length }}</div>
             </div>
           </div>
-          <div class="glass-panel stat-card">
-            <span class="stat-icon" style="color: #ef4444;">⏳</span>
-            <div>
-              <div class="stat-label">Bekleyen Talepler</div>
-              <div class="stat-value" style="color: #ef4444;">{{ pendingRequestsCount }}</div>
+          <div class="glass-panel stat-card-new">
+            <div class="stat-icon-wrapper quote-red">
+              <span>⏳</span>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Bekleyen Talepler</span>
+              <div class="stat-val-new" style="color: #ef4444;">{{ pendingRequestsCount }}</div>
             </div>
           </div>
-          <div class="glass-panel stat-card">
-            <span class="stat-icon" style="color: #3b82f6;">⚙️</span>
-            <div>
-              <div class="stat-label">İşlemdekiler</div>
-              <div class="stat-value" style="color: #3b82f6;">{{ activeRequestsCount }}</div>
+          <div class="glass-panel stat-card-new">
+            <div class="stat-icon-wrapper quote-blue">
+              <span>⚙️</span>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">İşlemdekiler</span>
+              <div class="stat-val-new" style="color: #3b82f6;">{{ activeRequestsCount }}</div>
             </div>
           </div>
-          <div class="glass-panel stat-card">
-            <span class="stat-icon" style="color: #10b981;">✅</span>
-            <div>
-              <div class="stat-label">Tamamlananlar</div>
-              <div class="stat-value" style="color: #10b981;">{{ completedRequestsCount }}</div>
+          <div class="glass-panel stat-card-new">
+            <div class="stat-icon-wrapper quote-green">
+              <span>✅</span>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Tamamlananlar</span>
+              <div class="stat-val-new" style="color: #10b981;">{{ completedRequestsCount }}</div>
             </div>
           </div>
         </div>
+
 
         <!-- Main Request Table -->
         <div class="glass-panel" style="padding: 25px;">
@@ -916,8 +926,71 @@ onMounted(async () => {
 }
 
 .profile-bar {
-  border-left: 4px solid #10b981 !important;
+  border-top: 3px solid #10b981 !important; /* Premium top border accent instead of left */
 }
+
+/* Stat Cards Styling */
+.stat-card-new {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 22px 24px;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.stat-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  flex-shrink: 0;
+}
+
+.quote-purple {
+  background: rgba(124, 58, 237, 0.1);
+  color: #7c3aed;
+}
+
+.quote-blue {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.quote-green {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.quote-red {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.stat-label {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat-val-new {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+
 
 .profile-meta-label {
   font-size: 0.75rem;
