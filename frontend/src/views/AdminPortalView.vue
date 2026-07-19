@@ -30,6 +30,12 @@
           </a>
         </li>
         <li>
+          <a href="#" @click.prevent="activeTab = 'vehicles'" class="sidebar-link" :class="{ 'active-admin': activeTab === 'vehicles' }">
+            <span class="icon">🚗</span>
+            <span>Araçlar</span>
+          </a>
+        </li>
+        <li>
           <a href="#" @click.prevent="activeTab = 'suppliers'" class="sidebar-link" :class="{ 'active-admin': activeTab === 'suppliers' }">
             <span class="icon">🏢</span>
             <span>Tedarikçiler</span>
@@ -467,6 +473,254 @@
                     </span>
                   </td>
                   <td style="font-size: 0.82rem;">{{ s.created_at }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2.5. VEHICLES TAB -->
+      <div v-if="activeTab === 'vehicles' && !showVehicleDetailsModal">
+        <header class="dashboard-header">
+          <div>
+            <h1>Sistemdeki Tüm Araçlar</h1>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">Filodaki araçların güncel konum, kiralama, servis ve kullanım bilgileri.</p>
+          </div>
+        </header>
+
+        <!-- Stats cards for vehicles -->
+        <div class="grid-3" style="margin-top: 25px; gap: 20px;">
+          <div class="glass-panel stat-card-new">
+            <div class="stat-icon-wrapper quote-purple">
+              <span>🚗</span>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Toplam Kayıtlı Araç</span>
+              <div class="stat-val-new">{{ vehicles.length }} Adet</div>
+            </div>
+          </div>
+          <div class="glass-panel stat-card-new">
+            <div class="stat-icon-wrapper quote-green">
+              <span>🛡️</span>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Aktif Kullanımda</span>
+              <div class="stat-val-new" style="color: #10b981;">{{ activeVehiclesCount }} Adet</div>
+            </div>
+          </div>
+          <div class="glass-panel stat-card-new">
+            <div class="stat-icon-wrapper quote-blue">
+              <span>🔧</span>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Serviste / Bakımda</span>
+              <div class="stat-val-new" style="color: #3b82f6;">{{ serviceVehiclesCount }} Adet</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vehicles Filter Bar -->
+        <div class="filter-bar glass-panel" style="margin-top: 20px;">
+          <div class="filter-bar-inner">
+            <div class="filter-group">
+              <span class="filter-label">🔍</span>
+              <input v-model="vehicleFilter.search" class="filter-input" placeholder="Plaka, marka veya model ara...">
+            </div>
+            <div class="filter-group">
+              <span class="filter-label">📊 Durum</span>
+              <div class="filter-pills">
+                <button v-for="st in ['Tümü','Aktif','Serviste','Lastik Değişiminde','Yol Yardımında']" :key="st"
+                  :class="['filter-pill', { 'filter-pill-active': vehicleFilter.status === st }]"
+                  @click="vehicleFilter.status = st">{{ st }}</button>
+              </div>
+            </div>
+            <div class="filter-group">
+              <span class="filter-label">⚡ Yakıt</span>
+              <div class="filter-pills">
+                <button v-for="f in ['Tümü','Elektrik','Hibrit','Dizel','Benzin']" :key="f"
+                  :class="['filter-pill', { 'filter-pill-active': vehicleFilter.fuel === f }]"
+                  @click="vehicleFilter.fuel = f">{{ f }}</button>
+              </div>
+            </div>
+            <div class="filter-group" style="margin-left:auto;">
+              <span class="filter-result-count">{{ filteredVehicles.length }} / {{ vehicles.length }} araç</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vehicles Table -->
+        <div class="glass-panel" style="margin-top: 20px; padding: 15px;">
+          <div v-if="loading" class="text-center" style="padding: 40px 0;">Yükleniyor...</div>
+          <div v-else-if="filteredVehicles.length === 0" class="empty-state">
+            <p>Kriterlere uygun araç bulunamadı.</p>
+          </div>
+          <div v-else class="custom-table-container">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Plaka</th>
+                  <th>Araç Bilgisi</th>
+                  <th>Kiralayan Müşteri</th>
+                  <th>Sağlayıcı Tedarikçi</th>
+                  <th>Kilometre</th>
+                  <th>Segment / Yakıt</th>
+                  <th>Durum</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="v in filteredVehicles" :key="v.id" @click="openVehicleDetails(v)" style="cursor: pointer;">
+                  <td>
+                    <span class="plate-badge" style="font-size: 0.9rem; font-family: monospace; font-weight: bold; background: #0f172a; color: #fff; border: 2px solid #334155; border-radius: 6px; padding: 4px 10px; display: inline-block;">
+                      {{ v.plate }}
+                    </span>
+                  </td>
+                  <td>
+                    <strong>{{ v.brand }} {{ v.model }}</strong>
+                    <div style="font-size: 0.78rem; color: var(--text-muted);">Yıl: {{ v.year }} · Şase: {{ v.chassis_no }}</div>
+                  </td>
+                  <td>
+                    <span v-if="v.customer_name" style="font-weight: 600; color: #7c3aed;">🏢 {{ v.customer_name }}</span>
+                    <span v-else style="color: var(--text-muted); font-size: 0.85rem;">-</span>
+                  </td>
+                  <td>
+                    <span v-if="v.supplier_name" style="font-weight: 500;">🤝 {{ v.supplier_name }}</span>
+                    <span v-else style="color: var(--text-muted); font-size: 0.85rem;">-</span>
+                  </td>
+                  <td>
+                    <strong style="color: var(--text-primary);">{{ v.mileage?.toLocaleString('tr-TR') }} km</strong>
+                  </td>
+                  <td>
+                    <div style="font-size: 0.85rem;">{{ v.vehicle_segment }} Segment</div>
+                    <div style="font-size: 0.78rem; color: var(--text-muted);">{{ v.fuel }}</div>
+                  </td>
+                  <td>
+                    <span class="badge" :class="v.status === 'Aktif' ? 'badge-active' : v.status === 'Serviste' ? 'badge-service' : v.status === 'Lastik Değişiminde' ? 'badge-tire' : 'badge-roadside'" style="font-size: 0.75rem;">
+                      {{ v.status }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- VEHICLE DETAIL MODAL -->
+      <div v-if="showVehicleDetailsModal && selectedVehicleDetails" class="customer-detail-dashboard fade-in-up">
+        <div class="cd-topbar">
+          <button @click="closeVehicleDetails" class="cd-back-btn">
+            ← Araç Listesine Dön
+          </button>
+        </div>
+
+        <div class="cd-hero glass-panel" style="border-top-color: #3b82f6 !important; background: linear-gradient(135deg, rgba(59,130,246,0.05) 0%, rgba(124,58,237,0.05) 100%);">
+          <div class="cd-hero-avatar" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); font-size: 1.5rem; width: 64px; height: 64px;">🚗</div>
+          <div class="cd-hero-info">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
+              <span class="plate-badge" style="font-family: monospace; font-size: 1.15rem; font-weight: 800; background: #0f172a; color: #fff; border: 2px solid #334155; border-radius: 6px; padding: 4px 12px;">
+                {{ selectedVehicleDetails.plate }}
+              </span>
+              <span class="badge" :class="selectedVehicleDetails.status === 'Aktif' ? 'badge-active' : selectedVehicleDetails.status === 'Serviste' ? 'badge-service' : 'badge-roadside'" style="font-size: 0.75rem;">
+                {{ selectedVehicleDetails.status }}
+              </span>
+            </div>
+            <h2 class="cd-company-name" style="font-size: 1.4rem;">{{ selectedVehicleDetails.brand }} {{ selectedVehicleDetails.model }}</h2>
+            <p class="cd-legal-title" style="margin-bottom: 0;">Şase No: <span style="font-family: monospace;">{{ selectedVehicleDetails.chassis_no }}</span> · Yıl: {{ selectedVehicleDetails.year }}</p>
+          </div>
+          <div class="cd-hero-badges">
+            <div class="cd-hero-badge cd-badge-purple">
+              <div class="cd-badge-label">Mevcut Kilometre</div>
+              <div class="cd-badge-value">{{ selectedVehicleDetails.mileage?.toLocaleString('tr-TR') }} km</div>
+            </div>
+            <div class="cd-hero-badge cd-badge-green">
+              <div class="cd-badge-label">Yakıt / Segment</div>
+              <div class="cd-badge-value" style="font-size: 1rem; color: #10b981;">{{ selectedVehicleDetails.fuel }} / {{ selectedVehicleDetails.vehicle_segment }}</div>
+            </div>
+            <div class="cd-hero-badge cd-badge-blue">
+              <div class="cd-badge-label">Muayene Tarihi</div>
+              <div class="cd-badge-value" style="font-size: 0.95rem; color: #3b82f6;">{{ selectedVehicleDetails.inspection_date || 'Belirtilmemiş' }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2" style="gap: 20px; margin-bottom: 25px;">
+          <!-- Kiralama & Tedarik Bilgileri -->
+          <div class="glass-panel" style="padding: 20px;">
+            <h3 style="font-size: 1rem; margin-bottom: 15px; color: #7c3aed; display: flex; align-items: center; gap: 8px;">
+              🏢 Kiralama & Sözleşme Bilgisi
+            </h3>
+            <div v-if="selectedVehicleDetails.customer_name" class="cd-vehicle-details">
+              <div class="cd-vehicle-row">
+                <span class="cd-vd-label">Kiracı Müşteri</span>
+                <span class="cd-vd-val" style="font-weight: 700;">{{ selectedVehicleDetails.customer_name }}</span>
+              </div>
+              <div class="cd-vehicle-row">
+                <span class="cd-vd-label">Kiralama Durumu</span>
+                <span class="cd-vd-val" style="color: #10b981; font-weight: 600;">Aktif Sözleşmeli Kiralama</span>
+              </div>
+            </div>
+            <div v-else class="text-center" style="padding: 20px 0; color: var(--text-muted);">
+              Bu araç şu anda herhangi bir müşteriye kiralanmamış.
+            </div>
+          </div>
+
+          <div class="glass-panel" style="padding: 20px;">
+            <h3 style="font-size: 1rem; margin-bottom: 15px; color: #3b82f6; display: flex; align-items: center; gap: 8px;">
+              🤝 Tedarik & Servis Sağlayıcı
+            </h3>
+            <div v-if="selectedVehicleDetails.supplier_name" class="cd-vehicle-details">
+              <div class="cd-vehicle-row">
+                <span class="cd-vd-label">Tedarikçi Firma</span>
+                <span class="cd-vd-val" style="font-weight: 700;">{{ selectedVehicleDetails.supplier_name }}</span>
+              </div>
+              <div class="cd-vehicle-row">
+                <span class="cd-vd-label">Temin Türü</span>
+                <span class="cd-vd-val">Tedarikçi Ortaklığı</span>
+              </div>
+            </div>
+            <div v-else class="text-center" style="padding: 20px 0; color: var(--text-muted);">
+              Bu araç için atanmış harici bir tedarikçi bulunmuyor.
+            </div>
+          </div>
+        </div>
+
+        <!-- Servis Geçmişi Tablosu -->
+        <div class="glass-panel" style="padding: 20px;">
+          <h3 style="font-size: 1rem; margin-bottom: 15px; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+            🔧 Aracın Servis ve Hizmet Geçmişi
+          </h3>
+          <div v-if="vehicleServices.length === 0" class="text-center" style="padding: 40px 0; color: var(--text-muted);">
+            Araca ait herhangi bir servis arıza veya bakım kaydı bulunamadı.
+          </div>
+          <div v-else class="custom-table-container">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Talep ID</th>
+                  <th>Servis / Tedarikçi</th>
+                  <th>Hizmet Türü</th>
+                  <th>Açıklama</th>
+                  <th>Tarih</th>
+                  <th>Durum</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="s in vehicleServices" :key="s.id">
+                  <td>#{{ s.id }}</td>
+                  <td><strong>{{ s.supplier_name }}</strong></td>
+                  <td>
+                    <span class="badge" :class="getCategoryBadgeClass(s.type)" style="font-size: 0.78rem;">
+                      {{ getTypeName(s.type) }}
+                    </span>
+                  </td>
+                  <td>{{ s.description }}</td>
+                  <td>{{ formatDate(s.created_at) }}</td>
+                  <td>
+                    <span class="badge" :class="s.status === 'Tamamlandı' ? 'badge-active' : s.status === 'Beklemede' ? 'badge-roadside' : 'badge-service'" style="font-size: 0.75rem;">
+                      {{ s.status }}
+                    </span>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -1048,6 +1302,31 @@ const filteredSuppliers = computed(() => {
   })
 })
 
+// ── Vehicles tab state & filters ──────────────────────────────────────────
+const vehicles = ref([])
+const vehicleFilter = reactive({ search: '', status: 'Tümü', fuel: 'Tümü' })
+
+const filteredVehicles = computed(() => {
+  return vehicles.value.filter(v => {
+    const matchSearch = !vehicleFilter.search ||
+      v.plate?.toLowerCase().includes(vehicleFilter.search.toLowerCase()) ||
+      v.brand?.toLowerCase().includes(vehicleFilter.search.toLowerCase()) ||
+      v.model?.toLowerCase().includes(vehicleFilter.search.toLowerCase()) ||
+      v.chassis_no?.toLowerCase().includes(vehicleFilter.search.toLowerCase())
+    const matchStatus = vehicleFilter.status === 'Tümü' || v.status === vehicleFilter.status
+    const matchFuel = vehicleFilter.fuel === 'Tümü' || v.fuel === vehicleFilter.fuel
+    return matchSearch && matchStatus && matchFuel
+  })
+})
+
+const activeVehiclesCount = computed(() => {
+  return vehicles.value.filter(v => v.status === 'Aktif' && v.is_active).length
+})
+
+const serviceVehiclesCount = computed(() => {
+  return vehicles.value.filter(v => ['Serviste', 'Lastik Değişiminde', 'Yol Yardımında'].includes(v.status) && v.is_active).length
+})
+
 const quotes = ref([])
 const customers = ref([])
 const suppliers = ref([])
@@ -1227,6 +1506,18 @@ const fetchSuppliers = async () => {
     console.error('Error fetching suppliers:', error)
   }
 }
+
+const fetchVehicles = async () => {
+  try {
+    const response = await fetch('/api/vehicles')
+    if (response.ok) {
+      vehicles.value = await response.json()
+    }
+  } catch (error) {
+    console.error('Error fetching vehicles:', error)
+  }
+}
+
 
 const addQuote = async () => {
   try {
@@ -1522,6 +1813,34 @@ const formatDate = (dateStr) => {
   }
 }
 
+const showVehicleDetailsModal = ref(false)
+const selectedVehicleDetails = ref(null)
+const vehicleServices = ref([])
+
+const openVehicleDetails = async (vehicle) => {
+  selectedVehicleDetails.value = vehicle
+  vehicleServices.value = []
+  showVehicleDetailsModal.value = true
+  await fetchVehicleServices(vehicle.id)
+}
+
+const closeVehicleDetails = () => {
+  showVehicleDetailsModal.value = false
+  selectedVehicleDetails.value = null
+  vehicleServices.value = []
+}
+
+const fetchVehicleServices = async (vehicleId) => {
+  try {
+    const res = await fetch(`/api/admin/vehicles/${vehicleId}/services`)
+    if (res.ok) {
+      vehicleServices.value = await res.json()
+    }
+  } catch (error) {
+    console.error('Error fetching vehicle services:', error)
+  }
+}
+
 const logout = () => {
   localStorage.removeItem('fleetcar_admin_token')
   localStorage.removeItem('fleetcar_admin_user')
@@ -1539,7 +1858,8 @@ onMounted(async () => {
   await Promise.all([
     fetchQuotes(),
     fetchCustomers(),
-    fetchSuppliers()
+    fetchSuppliers(),
+    fetchVehicles()
   ])
   loading.value = false
 })

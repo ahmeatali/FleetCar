@@ -77,6 +77,8 @@ class VehicleResponse(BaseModel):
     removal_reason: Optional[str] = None
     supplier_id: Optional[int] = None
     customer_id: Optional[int] = None
+    customer_name: Optional[str] = None
+    supplier_name: Optional[str] = None
     removed_at: Optional[str] = None
 
 class VehicleRemoval(BaseModel):

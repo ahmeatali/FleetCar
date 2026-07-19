@@ -57,8 +57,8 @@ def supplier_dict(s: models.Supplier) -> dict:
     }
 
 
-def vehicle_dict(v: models.Vehicle) -> dict:
-    return {
+def vehicle_dict(v: models.Vehicle, db: Session = None) -> dict:
+    d = {
         "id": v.id, "chassis_no": v.chassis_no, "plate": v.plate,
         "brand": v.brand, "model": v.model, "year": v.year, "fuel": v.fuel,
         "status": v.status, "mileage": v.mileage,
@@ -72,6 +72,14 @@ def vehicle_dict(v: models.Vehicle) -> dict:
         "removal_reason": v.removal_reason, "removed_at": v.removed_at,
         "supplier_id": v.supplier_id, "customer_id": v.customer_id
     }
+    if db:
+        if v.customer_id:
+            c = db.query(models.Customer).filter(models.Customer.id == v.customer_id).first()
+            if c: d["customer_name"] = c.company_name
+        if v.supplier_id:
+            s = db.query(models.Supplier).filter(models.Supplier.id == v.supplier_id).first()
+            if s: d["supplier_name"] = s.name
+    return d
 
 
 def quote_dict(q: models.Quote) -> dict:
@@ -252,7 +260,7 @@ def update_bid_status(bid_id: int, status_update: StatusUpdate, db: Session = De
 
 @app.get("/api/vehicles", response_model=List[VehicleResponse])
 def get_vehicles(db: Session = Depends(get_db)):
-    return [vehicle_dict(v) for v in db.query(models.Vehicle).all()]
+    return [vehicle_dict(v, db) for v in db.query(models.Vehicle).all()]
 
 
 @app.post("/api/vehicles", response_model=VehicleResponse)
@@ -270,10 +278,10 @@ def create_vehicle(vehicle: VehicleCreate, db: Session = Depends(get_db)):
         last_service_date=vehicle.last_service_date,
         last_service_mileage=vehicle.last_service_mileage,
         is_active=True, supplier_id=vehicle.supplier_id,
-        customer_id=getattr(vehicle, "customer_id", None)
+        customer_id=vehicle.customer_id
     )
     db.add(v); db.commit(); db.refresh(v)
-    return vehicle_dict(v)
+    return vehicle_dict(v, db)
 
 
 @app.post("/api/vehicles/{vehicle_id}/remove", response_model=VehicleResponse)
@@ -284,7 +292,7 @@ def remove_vehicle(vehicle_id: str, removal: VehicleRemoval, db: Session = Depen
     v.removed_at = now_str(); v.status = "Kaldırıldı"
     db.add(models.VehicleRemoval(registry_no=v.chassis_no, reason=removal.reason, removed_at=v.removed_at))
     db.commit(); db.refresh(v)
-    return vehicle_dict(v)
+    return vehicle_dict(v, db)
 
 
 @app.post("/api/vehicles/{vehicle_id}/reactivate", response_model=VehicleResponse)
@@ -293,13 +301,27 @@ def reactivate_vehicle(vehicle_id: str, db: Session = Depends(get_db)):
     if not v: raise HTTPException(status_code=404, detail="Vehicle not found")
     v.is_active = True; v.removal_reason = None; v.removed_at = None; v.status = "Aktif"
     db.commit(); db.refresh(v)
-    return vehicle_dict(v)
+    return vehicle_dict(v, db)
 
 
 @app.get("/api/vehicles/removals")
 def get_vehicle_removals(db: Session = Depends(get_db)):
     return [{"registry_no": r.registry_no, "reason": r.reason, "removed_at": r.removed_at}
             for r in db.query(models.VehicleRemoval).all()]
+
+
+@app.get("/api/admin/vehicles/{vehicle_id}/services")
+def get_vehicle_services(vehicle_id: str, db: Session = Depends(get_db)):
+    reqs = db.query(models.Request).filter(models.Request.vehicle_id == vehicle_id).all()
+    enriched = []
+    for r in reqs:
+        s = db.query(models.Supplier).filter(models.Supplier.id == r.supplier_id).first()
+        enriched.append({
+            **request_dict(r),
+            "supplier_name": s.name if s else "Bilinmeyen"
+        })
+    return enriched
+
 
 
 # ─────────────────── SUPPLIERS ─────────────────────────────────────────────
