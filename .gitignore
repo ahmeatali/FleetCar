@@ -20,3 +20,4 @@ frontend/*.log
 *.idea
 .vscode/*
 !.vscode/extensions.json
+backend/fleetcar.db

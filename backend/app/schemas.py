@@ -54,6 +54,7 @@ class VehicleCreate(BaseModel):
     last_service_date: str
     last_service_mileage: int
     supplier_id: Optional[int] = None
+    customer_id: Optional[int] = None
 
 class VehicleResponse(BaseModel):
     id: str
@@ -75,6 +76,7 @@ class VehicleResponse(BaseModel):
     is_active: bool
     removal_reason: Optional[str] = None
     supplier_id: Optional[int] = None
+    customer_id: Optional[int] = None
     removed_at: Optional[str] = None
 
 class VehicleRemoval(BaseModel):
