@@ -60,29 +60,36 @@
         </header>
 
         <!-- Stats Summary cards -->
-        <div class="grid-3" style="margin-top: 30px; gap: 20px;">
-          <div class="glass-panel stat-card admin-stat">
-            <div class="stat-header">
-              <span>Toplam Teklif Talebi</span>
-              <span class="stat-icon">📄</span>
+        <div class="grid-3" style="margin-top: 25px; gap: 20px;">
+          <div class="glass-panel stat-card-new">
+            <div class="stat-icon-wrapper quote-purple">
+              <span>📄</span>
             </div>
-            <div class="stat-value">{{ quotes.length }} Adet</div>
+            <div class="stat-info">
+              <span class="stat-label">Toplam Teklif Talebi</span>
+              <div class="stat-val-new">{{ quotes.length }} Adet</div>
+            </div>
           </div>
-          <div class="glass-panel stat-card admin-stat">
-            <div class="stat-header">
-              <span>Öngörülen Toplam Araç</span>
-              <span class="stat-icon">🚗</span>
+          <div class="glass-panel stat-card-new">
+            <div class="stat-icon-wrapper quote-blue">
+              <span>🚗</span>
             </div>
-            <div class="stat-value">{{ totalProposedVehicles }} Adet</div>
+            <div class="stat-info">
+              <span class="stat-label">Öngörülen Toplam Araç</span>
+              <div class="stat-val-new">{{ totalProposedVehicles }} Adet</div>
+            </div>
           </div>
-          <div class="glass-panel stat-card admin-stat">
-            <div class="stat-header">
-              <span>Tahmini Aylık Toplam Ciro</span>
-              <span class="stat-icon">₺</span>
+          <div class="glass-panel stat-card-new">
+            <div class="stat-icon-wrapper quote-green">
+              <span>₺</span>
             </div>
-            <div class="stat-value" style="color: #7c3aed;">₺{{ totalProposedRevenue.toLocaleString('tr-TR') }}</div>
+            <div class="stat-info">
+              <span class="stat-label">Tahmini Aylık Toplam Ciro</span>
+              <div class="stat-val-new" style="color: #10b981;">₺{{ totalProposedRevenue.toLocaleString('tr-TR') }}</div>
+            </div>
           </div>
         </div>
+
 
         <!-- Quotes Filter Bar -->
         <div class="filter-bar glass-panel" style="margin-top: 20px;">
@@ -193,29 +200,36 @@
         </header>
 
         <!-- Stats cards for customers -->
-        <div class="grid-3" style="margin-top: 30px; gap: 20px;">
-          <div class="glass-panel stat-card admin-stat" style="border-left-color: #10b981 !important;">
-            <div class="stat-header">
-              <span>Aktif Sözleşmeli Şirket</span>
-              <span class="stat-icon">🏢</span>
+        <div class="grid-3" style="margin-top: 25px; gap: 20px;">
+          <div class="glass-panel stat-card-new">
+            <div class="stat-icon-wrapper quote-purple">
+              <span>🏢</span>
             </div>
-            <div class="stat-value">{{ customers.length }} Şirket</div>
+            <div class="stat-info">
+              <span class="stat-label">Aktif Sözleşmeli Şirket</span>
+              <div class="stat-val-new">{{ customers.length }} Şirket</div>
+            </div>
           </div>
-          <div class="glass-panel stat-card admin-stat" style="border-left-color: #10b981 !important;">
-            <div class="stat-header">
-              <span>Toplam Filo Aracı</span>
-              <span class="stat-icon">🚗</span>
+          <div class="glass-panel stat-card-new">
+            <div class="stat-icon-wrapper quote-blue">
+              <span>🚗</span>
             </div>
-            <div class="stat-value">{{ totalCustomerVehicles }} Araç</div>
+            <div class="stat-info">
+              <span class="stat-label">Toplam Filo Aracı</span>
+              <div class="stat-val-new">{{ totalCustomerVehicles }} Araç</div>
+            </div>
           </div>
-          <div class="glass-panel stat-card admin-stat" style="border-left-color: #10b981 !important;">
-            <div class="stat-header">
-              <span>Toplam Aktif Ciro</span>
-              <span class="stat-icon">₺</span>
+          <div class="glass-panel stat-card-new">
+            <div class="stat-icon-wrapper quote-green">
+              <span>₺</span>
             </div>
-            <div class="stat-value" style="color: #10b981;">₺{{ totalCustomerRevenue.toLocaleString('tr-TR') }}</div>
+            <div class="stat-info">
+              <span class="stat-label">Toplam Aktif Ciro</span>
+              <div class="stat-val-new" style="color: #10b981;">₺{{ totalCustomerRevenue.toLocaleString('tr-TR') }}</div>
+            </div>
           </div>
         </div>
+
 
         <!-- Customer Filter Bar -->
         <div class="filter-bar glass-panel" style="margin-top: 20px;">
@@ -473,29 +487,36 @@
         </header>
 
         <!-- Stats cards for suppliers -->
-        <div class="grid-3" style="margin-top: 30px; gap: 20px;">
-          <div class="glass-panel stat-card admin-stat">
-            <div class="stat-header">
-              <span>Toplam Entegre Tedarikçi</span>
-              <span class="stat-icon">🏢</span>
+        <div class="grid-3" style="margin-top: 25px; gap: 20px;">
+          <div class="glass-panel stat-card-new">
+            <div class="stat-icon-wrapper quote-purple">
+              <span>🏢</span>
             </div>
-            <div class="stat-value">{{ suppliers.length }} Tedarikçi</div>
+            <div class="stat-info">
+              <span class="stat-label">Toplam Entegre Tedarikçi</span>
+              <div class="stat-val-new">{{ suppliers.length }} Tedarikçi</div>
+            </div>
           </div>
-          <div class="glass-panel stat-card admin-stat">
-            <div class="stat-header">
-              <span>Yetkili Servisler</span>
-              <span class="stat-icon" style="color: #10b981;">🛡️</span>
+          <div class="glass-panel stat-card-new">
+            <div class="stat-icon-wrapper quote-blue">
+              <span>🛡️</span>
             </div>
-            <div class="stat-value" style="color: #10b981;">{{ authorizedSuppliersCount }} Adet</div>
+            <div class="stat-info">
+              <span class="stat-label">Yetkili Servisler</span>
+              <div class="stat-val-new" style="color: #10b981;">{{ authorizedSuppliersCount }} Adet</div>
+            </div>
           </div>
-          <div class="glass-panel stat-card admin-stat">
-            <div class="stat-header">
-              <span>Anlaşmalı Servisler</span>
-              <span class="stat-icon" style="color: #3b82f6;">🤝</span>
+          <div class="glass-panel stat-card-new">
+            <div class="stat-icon-wrapper quote-green">
+              <span>🤝</span>
             </div>
-            <div class="stat-value" style="color: #3b82f6;">{{ contractedSuppliersCount }} Adet</div>
+            <div class="stat-info">
+              <span class="stat-label">Anlaşmalı Servisler</span>
+              <div class="stat-val-new" style="color: #3b82f6;">{{ contractedSuppliersCount }} Adet</div>
+            </div>
           </div>
         </div>
+
 
         <!-- Supplier Filter Bar -->
         <div class="filter-bar glass-panel" style="margin-top: 20px;">
@@ -1526,22 +1547,29 @@ onMounted(async () => {
 
 <style scoped>
 .admin-sidebar {
-  background: #0f172a !important; /* Elegant dark slate sidebar specifically for admin to look distinct */
-  color: #f8fafc !important;
+  background: #ffffff !important; /* Premium light sidebar to match main app theme */
+  color: var(--text-main) !important;
+  border-right: 1px solid var(--border-color);
+}
+
+.admin-sidebar .nav-logo span {
+  color: var(--text-main);
+  font-weight: 800;
 }
 
 .admin-sidebar .sidebar-link {
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 
 .admin-sidebar .sidebar-link:hover {
-  background: rgba(124, 58, 237, 0.1);
-  color: #c084fc;
+  background: rgba(79, 70, 229, 0.04);
+  color: var(--primary);
 }
 
 .active-admin {
-  background: #7c3aed !important;
+  background: linear-gradient(135deg, var(--primary) 0%, #4338ca 100%) !important;
   color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
 }
 
 .admin-profile {
@@ -1549,14 +1577,14 @@ onMounted(async () => {
   align-items: center;
   gap: 12px;
   padding: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(124, 58, 237, 0.04);
+  border: 1px solid rgba(124, 58, 237, 0.1);
   border-radius: 12px;
   margin-bottom: 25px;
 }
 
 .admin-profile .avatar {
-  background: rgba(124, 58, 237, 0.2);
+  background: rgba(124, 58, 237, 0.1);
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -1565,9 +1593,63 @@ onMounted(async () => {
   justify-content: center;
 }
 
-.admin-stat {
-  border-left: 4px solid #7c3aed !important;
+/* New Stat Cards Styling */
+.stat-card-new {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 22px 24px;
+  border-radius: 16px;
+  background: #ffffff;
 }
+
+.stat-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  flex-shrink: 0;
+}
+
+.quote-purple {
+  background: rgba(124, 58, 237, 0.1);
+  color: #7c3aed;
+}
+
+.quote-blue {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.quote-green {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.stat-label {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat-val-new {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+
 
 .status-select {
   padding: 6px 12px;
