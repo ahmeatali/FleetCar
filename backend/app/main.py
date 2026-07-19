@@ -440,7 +440,16 @@ def get_company_profile():
 
 @app.get("/api/admin/customers")
 def get_admin_customers():
-    return CUSTOMERS
+    result = []
+    for c in CUSTOMERS:
+        actual = len([v for v in VEHICLES if v.get("customer_id") == c["id"] and v.get("is_active", True)])
+        deficit = max(0, c["registered_vehicles_count"] - actual)
+        result.append({
+            **c,
+            "actual_vehicle_count": actual,
+            "vehicle_deficit": deficit
+        })
+    return result
 
 @app.put("/api/admin/customers/{customer_id}")
 def update_admin_customer(customer_id: int, updated: CustomerUpdate):
@@ -460,9 +469,8 @@ def update_admin_customer(customer_id: int, updated: CustomerUpdate):
 
 @app.get('/api/admin/customers/{customer_id}/vehicles')
 def get_customer_vehicles(customer_id: int):
-    """Return list of vehicles for a given customer. Placeholder returns all vehicles."""
-    # TODO: Filter vehicles by customer ownership when data model supports it
-    return VEHICLES
+    """Return vehicles belonging to a specific customer."""
+    return [v for v in VEHICLES if v.get("customer_id") == customer_id]
 
 @app.get('/api/admin/customers/{customer_id}/services')
 def get_customer_services(customer_id: int):

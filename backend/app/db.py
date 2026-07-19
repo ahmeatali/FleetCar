@@ -119,7 +119,8 @@ VEHICLES = [
         "is_active": True,
         "removal_reason": None,
         "removed_at": None,
-        "supplier_id": 7
+        "supplier_id": 7,
+        "customer_id": 1
     },
     {
         "id": "ZFAFIATEGEACROSS2",
@@ -141,7 +142,8 @@ VEHICLES = [
         "is_active": True,
         "removal_reason": None,
         "removed_at": None,
-        "supplier_id": None
+        "supplier_id": None,
+        "customer_id": 1
     },
     {
         "id": "WVWZZZPASSATVAR3",
@@ -163,7 +165,8 @@ VEHICLES = [
         "is_active": True,
         "removal_reason": None,
         "removed_at": None,
-        "supplier_id": 7
+        "supplier_id": 7,
+        "customer_id": 1
     },
     {
         "id": "5YJTESLAMODELYYY4",
@@ -185,7 +188,8 @@ VEHICLES = [
         "is_active": True,
         "removal_reason": None,
         "removed_at": None,
-        "supplier_id": 8
+        "supplier_id": 8,
+        "customer_id": 1
     },
     {
         "id": "KMHTUCSONHYUNDAI5",
@@ -207,7 +211,8 @@ VEHICLES = [
         "is_active": True,
         "removal_reason": None,
         "removed_at": None,
-        "supplier_id": 8
+        "supplier_id": 8,
+        "customer_id": 1
     }
 ]
 

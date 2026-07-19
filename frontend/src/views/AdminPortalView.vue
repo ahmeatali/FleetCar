@@ -202,7 +202,7 @@
                   <th>Şirket Adı</th>
                   <th>Ticari Unvan</th>
                   <th>İletişim</th>
-                  <th>Filo Büyüklüğü</th>
+                  <th>Filo Durumu</th>
                   <th>Sözleşme Bedeli (Aylık)</th>
                   <th>İmza Tarihi</th>
                   <th>İşlemler</th>
@@ -230,9 +230,24 @@
                     <div style="font-size: 0.75rem; color: var(--text-dark);">{{ c.phone }}</div>
                   </td>
                   <td>
-                    <span class="plate-badge" style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-weight: bold; border: 1px solid rgba(16, 185, 129, 0.2);">
-                      {{ c.registered_vehicles_count }} Araç
-                    </span>
+                    <div style="display: flex; flex-direction: column; gap: 4px; min-width: 140px;">
+                      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem;">
+                        <span style="color: var(--text-muted);">Sözleşme</span>
+                        <span style="font-weight: 700; color: var(--text-primary);">{{ c.registered_vehicles_count }} araç</span>
+                      </div>
+                      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem;">
+                        <span style="color: var(--text-muted);">Tanımlı</span>
+                        <span style="font-weight: 700; color: #10b981;">{{ c.actual_vehicle_count }} araç</span>
+                      </div>
+                      <div v-if="c.vehicle_deficit > 0" style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; background: rgba(239,68,68,0.08); border-radius: 6px; padding: 2px 6px;">
+                        <span style="color: #f87171;">Eksik</span>
+                        <span style="font-weight: 700; color: #f87171;">{{ c.vehicle_deficit }} araç</span>
+                      </div>
+                      <div v-else style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; background: rgba(16,185,129,0.08); border-radius: 6px; padding: 2px 6px;">
+                        <span style="color: #10b981;">✓ Tam</span>
+                        <span style="font-weight: 700; color: #10b981;">Eksiksiz</span>
+                      </div>
+                    </div>
                   </td>
                   <td>
                     <strong style="color: #10b981;">₺{{ c.contract_amount?.toLocaleString() }}</strong>
