@@ -84,11 +84,40 @@
           </div>
         </div>
 
+        <!-- Quotes Filter Bar -->
+        <div class="filter-bar glass-panel" style="margin-top: 20px;">
+          <div class="filter-bar-inner">
+            <div class="filter-group">
+              <span class="filter-label">🔍</span>
+              <input v-model="quoteFilter.search" class="filter-input" placeholder="Şirket adı veya e-posta ara...">
+            </div>
+            <div class="filter-group">
+              <span class="filter-label">📊 Durum</span>
+              <div class="filter-pills">
+                <button v-for="s in ['Tümü','Teklif Verildi','Değerlendirmede','Sözleşme İmzalandı','Reddedildi']" :key="s"
+                  :class="['filter-pill', { 'filter-pill-active': quoteFilter.status === s }]"
+                  @click="quoteFilter.status = s">{{ s }}</button>
+              </div>
+            </div>
+            <div class="filter-group">
+              <span class="filter-label">🚗 Segment</span>
+              <div class="filter-pills">
+                <button v-for="seg in ['Tümü','A','B','C','D','E']" :key="seg"
+                  :class="['filter-pill', { 'filter-pill-active': quoteFilter.segment === seg }]"
+                  @click="quoteFilter.segment = seg">{{ seg }}</button>
+              </div>
+            </div>
+            <div class="filter-group" style="margin-left:auto;">
+              <span class="filter-result-count">{{ filteredQuotes.length }} / {{ quotes.length }} teklif</span>
+            </div>
+          </div>
+        </div>
+
         <!-- Proposals Table -->
-        <div class="glass-panel" style="margin-top: 30px; padding: 15px;">
+        <div class="glass-panel" style="margin-top: 20px; padding: 15px;">
           <div v-if="loading" class="text-center" style="padding: 40px 0;">Yükleniyor...</div>
-          <div v-else-if="quotes.length === 0" class="empty-state">
-            <p>Henüz gelen teklif talebi bulunmuyor.</p>
+          <div v-else-if="filteredQuotes.length === 0" class="empty-state">
+            <p>Kriterlere uygun teklif bulunamadı.</p>
           </div>
           <div v-else class="custom-table-container">
             <table class="custom-table">
@@ -106,7 +135,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="quote in quotes" :key="quote.id">
+                <tr v-for="quote in filteredQuotes" :key="quote.id">
                   <td>#{{ quote.id }}</td>
                   <td><strong>{{ quote.company_name }}</strong></td>
                   <td>
@@ -188,11 +217,32 @@
           </div>
         </div>
 
+        <!-- Customer Filter Bar -->
+        <div class="filter-bar glass-panel" style="margin-top: 20px;">
+          <div class="filter-bar-inner">
+            <div class="filter-group">
+              <span class="filter-label">🔍</span>
+              <input v-model="customerFilter.search" class="filter-input" placeholder="Şirket adı, e-posta veya telefon...">
+            </div>
+            <div class="filter-group">
+              <span class="filter-label">📦 Filo</span>
+              <div class="filter-pills">
+                <button v-for="f in ['Tümü','Eksikli','Tam']" :key="f"
+                  :class="['filter-pill', { 'filter-pill-active': customerFilter.fleetStatus === f }]"
+                  @click="customerFilter.fleetStatus = f">{{ f }}</button>
+              </div>
+            </div>
+            <div class="filter-group" style="margin-left:auto;">
+              <span class="filter-result-count">{{ filteredCustomers.length }} / {{ customers.length }} müşteri</span>
+            </div>
+          </div>
+        </div>
+
         <!-- Customers Table -->
-        <div class="glass-panel" style="margin-top: 30px; padding: 15px;">
+        <div class="glass-panel" style="margin-top: 20px; padding: 15px;">
           <div v-if="loading" class="text-center" style="padding: 40px 0;">Yükleniyor...</div>
-          <div v-else-if="customers.length === 0" class="empty-state">
-            <p>Henüz sözleşmesi imzalanmış aktif bir müşteri bulunmuyor.</p>
+          <div v-else-if="filteredCustomers.length === 0" class="empty-state">
+            <p>Kriterlere uygun müşteri bulunamadı.</p>
           </div>
           <div v-else class="custom-table-container">
             <table class="custom-table">
@@ -209,7 +259,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="c in customers" :key="c.id" class="customer-row" @click="openCustomerDetails(c)" style="cursor: pointer;">
+                <tr v-for="c in filteredCustomers" :key="c.id" class="customer-row" @click="openCustomerDetails(c)" style="cursor: pointer;">
                   <td>#{{ c.id }}</td>
                   <td>
                     <div style="display: flex; align-items: center; gap: 10px;">
@@ -447,11 +497,40 @@
           </div>
         </div>
 
+        <!-- Supplier Filter Bar -->
+        <div class="filter-bar glass-panel" style="margin-top: 20px;">
+          <div class="filter-bar-inner">
+            <div class="filter-group">
+              <span class="filter-label">🔍</span>
+              <input v-model="supplierFilter.search" class="filter-input" placeholder="Tedarikçi adı, il veya ilçe...">
+            </div>
+            <div class="filter-group">
+              <span class="filter-label">🏷️ Kategori</span>
+              <div class="filter-pills">
+                <button v-for="t in [{k:'Tümü',l:'Tümü'},{k:'servis',l:'🔧 Servis'},{k:'lastik',l:'🛞 Lastik'},{k:'yol_yardim',l:'🚨 Yol Yardım'},{k:'ikame_arac',l:'🚗 İkame Araç'}]" :key="t.k"
+                  :class="['filter-pill', { 'filter-pill-active': supplierFilter.type === t.k }]"
+                  @click="supplierFilter.type = t.k">{{ t.l }}</button>
+              </div>
+            </div>
+            <div class="filter-group">
+              <span class="filter-label">🤝 Sözleşme</span>
+              <div class="filter-pills">
+                <button v-for="ct in ['Tümü','Yetkili','Anlaşmalı']" :key="ct"
+                  :class="['filter-pill', { 'filter-pill-active': supplierFilter.contractType === ct }]"
+                  @click="supplierFilter.contractType = ct">{{ ct }}</button>
+              </div>
+            </div>
+            <div class="filter-group" style="margin-left:auto;">
+              <span class="filter-result-count">{{ filteredSuppliers.length }} / {{ suppliers.length }} tedarikçi</span>
+            </div>
+          </div>
+        </div>
+
         <!-- Suppliers Table -->
-        <div class="glass-panel" style="margin-top: 30px; padding: 15px;">
+        <div class="glass-panel" style="margin-top: 20px; padding: 15px;">
           <div v-if="loading" class="text-center" style="padding: 40px 0;">Yükleniyor...</div>
-          <div v-else-if="suppliers.length === 0" class="empty-state">
-            <p>Sistemde kayıtlı tedarikçi bulunmuyor.</p>
+          <div v-else-if="filteredSuppliers.length === 0" class="empty-state">
+            <p>Kriterlere uygun tedarikçi bulunamadı.</p>
           </div>
           <div v-else class="custom-table-container">
             <table class="custom-table">
@@ -467,7 +546,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="s in suppliers" :key="s.id">
+                <tr v-for="s in filteredSuppliers" :key="s.id">
                   <td>#{{ s.id }}</td>
                   <td><strong>{{ s.name }}</strong></td>
                   <td>
@@ -905,6 +984,49 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 
 const activeTab = ref('quotes') // 'quotes', 'customers', 'suppliers'
+
+// ── Filter state ─────────────────────────────────────────────────────────
+const quoteFilter = reactive({ search: '', status: 'Tümü', segment: 'Tümü' })
+const customerFilter = reactive({ search: '', fleetStatus: 'Tümü' })
+const supplierFilter = reactive({ search: '', type: 'Tümü', contractType: 'Tümü' })
+
+// ── Computed filtered arrays ──────────────────────────────────────────────
+const filteredQuotes = computed(() => {
+  return quotes.value.filter(q => {
+    const matchSearch = !quoteFilter.search ||
+      q.company_name?.toLowerCase().includes(quoteFilter.search.toLowerCase()) ||
+      q.email?.toLowerCase().includes(quoteFilter.search.toLowerCase())
+    const matchStatus = quoteFilter.status === 'Tümü' || q.status === quoteFilter.status
+    const matchSegment = quoteFilter.segment === 'Tümü' || q.vehicle_segment === quoteFilter.segment
+    return matchSearch && matchStatus && matchSegment
+  })
+})
+
+const filteredCustomers = computed(() => {
+  return customers.value.filter(c => {
+    const matchSearch = !customerFilter.search ||
+      c.company_name?.toLowerCase().includes(customerFilter.search.toLowerCase()) ||
+      c.email?.toLowerCase().includes(customerFilter.search.toLowerCase()) ||
+      c.phone?.includes(customerFilter.search)
+    const matchFleet = customerFilter.fleetStatus === 'Tümü' ||
+      (customerFilter.fleetStatus === 'Eksikli' && (c.vehicle_deficit || 0) > 0) ||
+      (customerFilter.fleetStatus === 'Tam' && (c.vehicle_deficit || 0) === 0)
+    return matchSearch && matchFleet
+  })
+})
+
+const filteredSuppliers = computed(() => {
+  return suppliers.value.filter(s => {
+    const matchSearch = !supplierFilter.search ||
+      s.name?.toLowerCase().includes(supplierFilter.search.toLowerCase()) ||
+      s.city?.toLowerCase().includes(supplierFilter.search.toLowerCase()) ||
+      s.district?.toLowerCase().includes(supplierFilter.search.toLowerCase())
+    const matchType = supplierFilter.type === 'Tümü' || s.type === supplierFilter.type
+    const matchContract = supplierFilter.contractType === 'Tümü' || s.contract_type === supplierFilter.contractType
+    return matchSearch && matchType && matchContract
+  })
+})
+
 const quotes = ref([])
 const customers = ref([])
 const suppliers = ref([])
@@ -1786,5 +1908,81 @@ onMounted(async () => {
   flex: 1;
 }
 .tag-bare-input::placeholder { color: var(--text-muted); }
+/* ── Filter Bar ─────────────────────────────────────────── */
+.filter-bar {
+  padding: 14px 18px;
+  border-radius: 14px;
+}
+.filter-bar-inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+}
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.filter-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.filter-pill {
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+.filter-pill:hover {
+  border-color: #7c3aed;
+  color: #c084fc;
+  background: rgba(124,58,237,0.08);
+}
+.filter-pill-active {
+  background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(59,130,246,0.15)) !important;
+  border-color: #7c3aed !important;
+  color: #c084fc !important;
+  font-weight: 700;
+}
+.filter-input {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 5px 12px;
+  color: var(--text-primary);
+  font-size: 0.83rem;
+  width: 230px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.filter-input:focus {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.1);
+}
+.filter-input::placeholder { color: var(--text-muted); }
+.filter-result-count {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 3px 10px;
+  white-space: nowrap;
+}
 </style>
+
 
