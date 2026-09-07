@@ -454,7 +454,7 @@ def get_company_profile(db: Session = Depends(get_db)):
 
 @app.post("/api/admin/login")
 def admin_login(creds: AdminLoginRequest, db: Session = Depends(get_db)):
-    email_clean = creds.email.lower().trim() if hasattr(creds.email, 'trim') else creds.email.lower().strip()
+    email_clean = creds.email.lower().strip()
     admin_user = db.query(models.AdminUser).filter(models.AdminUser.email == email_clean).first()
     
     if not admin_user or not verify_password(creds.password, admin_user.password_hash):
