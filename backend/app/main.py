@@ -6,6 +6,7 @@ from typing import List, Optional
 
 from app.database import get_db
 from app import models
+from app.auth import verify_password
 from app.init_db import create_tables, seed
 from app.schemas import (
     QuoteCreate, QuoteResponse,
@@ -13,7 +14,8 @@ from app.schemas import (
     RequestCreate, RequestResponse,
     SupplierCreate, SupplierResponse, StatusUpdate,
     VehicleRemoval, QuoteUpdate,
-    CustomerCreate, CustomerUpdate, BidCreate, BidResponse
+    CustomerCreate, CustomerUpdate, BidCreate, BidResponse,
+    AdminLoginRequest
 )
 
 app = FastAPI(title="FleetCar API", version="2.0.0")
@@ -446,6 +448,26 @@ def get_company_profile(db: Session = Depends(get_db)):
             "email": c.email, "phone": c.phone, "address": c.address
         }
     return {"company_name": "FleetCar", "registered_vehicles_count": active_count}
+
+
+# ─────────────────── ADMIN — AUTH ───────────────────────────────────────────
+
+@app.post("/api/admin/login")
+def admin_login(creds: AdminLoginRequest, db: Session = Depends(get_db)):
+    email_clean = creds.email.lower().trim() if hasattr(creds.email, 'trim') else creds.email.lower().strip()
+    admin_user = db.query(models.AdminUser).filter(models.AdminUser.email == email_clean).first()
+    
+    if not admin_user or not verify_password(creds.password, admin_user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Hatalı e-posta adresi veya şifre!"
+        )
+    
+    return {
+        "status": "success",
+        "email": admin_user.email,
+        "token": f"admin_token_{admin_user.id}_{datetime.datetime.now().timestamp()}"
+    }
 
 
 # ─────────────────── ADMIN — CUSTOMERS ─────────────────────────────────────

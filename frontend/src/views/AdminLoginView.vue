@@ -14,13 +14,13 @@
 
       <form @submit.prevent="handleLogin">
         <div class="form-group">
-          <label class="form-label">Yönetici Kullanıcı Adı</label>
+          <label class="form-label">Yönetici E-posta Adresi</label>
           <input 
-            type="text" 
-            v-model="username" 
+            type="email" 
+            v-model="email" 
             required 
             class="form-input" 
-            placeholder="kullanici_adi"
+            placeholder="admin@fleetcar.com"
           >
         </div>
 
@@ -35,8 +35,8 @@
           >
         </div>
 
-        <button type="submit" class="btn btn-accent btn-block" style="background: linear-gradient(135deg, #7c3aed, #db2777); border: none; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);">
-          Yönetici Paneline Giriş Yap
+        <button type="submit" class="btn btn-accent btn-block" :disabled="loading" style="background: linear-gradient(135deg, #7c3aed, #db2777); border: none; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);">
+          {{ loading ? 'Giriş Yapılıyor...' : 'Yönetici Paneline Giriş Yap' }}
         </button>
       </form>
 
@@ -54,14 +54,37 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-const username = ref('')
+const email = ref('')
 const password = ref('')
+const loading = ref(false)
 
-const handleLogin = () => {
-  if (username.value && password.value) {
-    localStorage.setItem('fleetcar_admin_token', 'admin_logged_in')
-    localStorage.setItem('fleetcar_admin_user', username.value)
-    router.push('/admin-portal')
+const handleLogin = async () => {
+  if (!email.value || !password.value) return
+  
+  loading.value = true
+  try {
+    const res = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: email.value,
+        password: password.value
+      })
+    })
+
+    if (res.ok) {
+      const data = await res.json()
+      localStorage.setItem('fleetcar_admin_token', data.token)
+      localStorage.setItem('fleetcar_admin_user', data.email)
+      router.push('/admin-portal')
+    } else {
+      alert('Hatalı e-posta adresi veya şifre! Lütfen yönetici bilgilerinizi kontrol edin.')
+    }
+  } catch (err) {
+    console.error('Admin login error:', err)
+    alert('Sunucuya bağlanılamadı. Lütfen internet bağlantınızı ve backend servisini kontrol edin.')
+  } finally {
+    loading.value = false
   }
 }
 </script>

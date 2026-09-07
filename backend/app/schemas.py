@@ -156,3 +156,7 @@ class BidResponse(BaseModel):
     notes: str
     created_at: str
     status: str
+
+class AdminLoginRequest(BaseModel):
+    email: str
+    password: str
