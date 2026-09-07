@@ -34,7 +34,7 @@
           <span>Yapay Zeka Destekli Araç Kiralama Platformu</span>
         </div>
 
-        <h1 class="hero-dark-title">
+        <h1 class="hero-dark-title" style="color: #ffffff;">
           Uzun Dönem Araç
           <span class="cyan-text">Kiralamada Fark</span>
         </h1>
