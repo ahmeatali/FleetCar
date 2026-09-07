@@ -14,10 +14,13 @@
 
       <form @submit.prevent="handleLogin">
         <div class="form-group">
-          <label class="form-label">Yönetici E-posta Adresi</label>
+          <label for="admin-email" class="form-label">Yönetici E-posta Adresi</label>
           <input 
+            id="admin-email"
+            name="email"
             type="email" 
             v-model="email" 
+            autocomplete="username"
             required 
             class="form-input" 
             placeholder="admin@fleetcar.com"
@@ -25,10 +28,13 @@
         </div>
 
         <div class="form-group" style="margin-bottom: 25px;">
-          <label class="form-label">Şifre</label>
+          <label for="admin-password" class="form-label">Şifre</label>
           <input 
+            id="admin-password"
+            name="password"
             type="password" 
             v-model="password" 
+            autocomplete="current-password"
             required 
             class="form-input" 
             placeholder="••••••••"
