@@ -78,7 +78,8 @@ const handleLogin = async () => {
       localStorage.setItem('fleetcar_admin_user', data.email)
       router.push('/admin-portal')
     } else {
-      alert('Hatalı e-posta adresi veya şifre! Lütfen yönetici bilgilerinizi kontrol edin.')
+      const errData = await res.json().catch(() => ({}))
+      alert(errData.detail || `Giriş yapılamadı (Hata Kodu: ${res.status}). Lütfen kullanıcı bilgilerinizi ve sunucu durumunu kontrol edin.`)
     }
   } catch (err) {
     console.error('Admin login error:', err)
