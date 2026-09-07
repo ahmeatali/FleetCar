@@ -109,6 +109,8 @@ class SupplierCreate(BaseModel):
     district: str
     services: List[str]
     contract_type: str
+    email: Optional[str] = None
+    send_invite: Optional[bool] = False
 
 class SupplierResponse(BaseModel):
     id: int
@@ -120,6 +122,12 @@ class SupplierResponse(BaseModel):
     district: str
     services: List[str]
     contract_type: str
+    email: Optional[str] = None
+    invitation_status: Optional[str] = "Davet Edilmedi"
+
+class SetPasswordRequest(BaseModel):
+    token: str
+    password: str
 
 class StatusUpdate(BaseModel):
     status: str

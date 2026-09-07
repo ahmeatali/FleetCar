@@ -87,6 +87,11 @@ const routes = [
     name: 'SupplierPortal',
     component: () => import('../views/SupplierPortalView.vue'),
     meta: { requiresSupplierAuth: true }
+  },
+  {
+    path: '/setup-password',
+    name: 'SupplierSetupPassword',
+    component: () => import('../views/SupplierSetupPasswordView.vue')
   }
 ]
 

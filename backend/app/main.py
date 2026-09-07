@@ -6,7 +6,8 @@ from typing import List, Optional
 
 from app.database import get_db
 from app import models
-from app.auth import verify_password
+from app.auth import verify_password, hash_password
+from app.email_utils import generate_invitation_token, send_supplier_invitation_email, APP_BASE_URL
 from app.init_db import create_tables, seed
 from app.schemas import (
     QuoteCreate, QuoteResponse,
@@ -15,7 +16,7 @@ from app.schemas import (
     SupplierCreate, SupplierResponse, StatusUpdate,
     VehicleRemoval, QuoteUpdate,
     CustomerCreate, CustomerUpdate, BidCreate, BidResponse,
-    AdminLoginRequest
+    AdminLoginRequest, SetPasswordRequest
 )
 
 app = FastAPI(title="FleetCar API", version="2.0.0")
@@ -55,7 +56,10 @@ def supplier_dict(s: models.Supplier) -> dict:
         "id": s.id, "name": s.name, "type": s.type,
         "phone": s.phone, "location": s.location or f"{s.district}, {s.city}",
         "city": s.city, "district": s.district,
-        "services": s.services or [], "contract_type": s.contract_type
+        "services": s.services or [], "contract_type": s.contract_type,
+        "email": getattr(s, 'email', None),
+        "invitation_status": getattr(s, 'invitation_status', 'Davet Edilmedi') or 'Davet Edilmedi',
+        "has_password": bool(getattr(s, 'password_hash', None))
     }
 
 
@@ -337,15 +341,80 @@ def get_suppliers(type: Optional[str] = None, db: Session = Depends(get_db)):
 
 
 @app.post("/api/suppliers", response_model=SupplierResponse)
+@app.post("/api/admin/suppliers", response_model=SupplierResponse)
 def create_supplier(supplier: SupplierCreate, db: Session = Depends(get_db)):
+    email_clean = supplier.email.lower().strip() if supplier.email else None
+    
+    token = None
+    inv_status = "Davet Edilmedi"
+    if supplier.send_invite and email_clean:
+        token = generate_invitation_token()
+        inv_status = "Davet Gönderildi"
+        send_supplier_invitation_email(email_clean, supplier.name, token)
+
     s = models.Supplier(
         name=supplier.name, type=supplier.type, phone=supplier.phone,
         location=f"{supplier.district}, {supplier.city}",
         city=supplier.city, district=supplier.district,
-        services=supplier.services, contract_type=supplier.contract_type
+        services=supplier.services, contract_type=supplier.contract_type,
+        email=email_clean,
+        invitation_token=token,
+        invitation_status=inv_status
     )
     db.add(s); db.commit(); db.refresh(s)
     return supplier_dict(s)
+
+
+@app.post("/api/admin/suppliers/{supplier_id}/invite")
+def send_supplier_invite(supplier_id: int, db: Session = Depends(get_db)):
+    s = db.query(models.Supplier).filter(models.Supplier.id == supplier_id).first()
+    if not s:
+        raise HTTPException(status_code=404, detail="Tedarikçi/Servis bulunamadı.")
+    if not s.email:
+        raise HTTPException(status_code=400, detail="Lütfen önce tedarikçiye bir e-posta adresi ekleyin.")
+    
+    token = generate_invitation_token()
+    s.invitation_token = token
+    s.invitation_status = "Davet Gönderildi"
+    db.commit()
+    
+    send_supplier_invitation_email(s.email, s.name, token)
+    return {
+        "status": "success",
+        "message": f"{s.email} adresine davet e-postası gönderildi.",
+        "invite_url": f"{APP_BASE_URL}/setup-password?token={token}"
+    }
+
+
+@app.get("/api/supplier/verify-token/{token}")
+def verify_supplier_token(token: str, db: Session = Depends(get_db)):
+    s = db.query(models.Supplier).filter(models.Supplier.invitation_token == token).first()
+    if not s:
+        raise HTTPException(status_code=404, detail="Geçersiz veya kullanılmış davet bağlantısı.")
+    return {
+        "status": "valid",
+        "supplier_name": s.name,
+        "email": s.email
+    }
+
+
+@app.post("/api/supplier/set-password")
+def set_supplier_password(req: SetPasswordRequest, db: Session = Depends(get_db)):
+    s = db.query(models.Supplier).filter(models.Supplier.invitation_token == req.token).first()
+    if not s:
+        raise HTTPException(status_code=404, detail="Geçersiz veya süresi dolmuş davet bağlantısı.")
+    if len(req.password) < 6:
+        raise HTTPException(status_code=400, detail="Şifre en az 6 karakter olmalıdır.")
+    
+    s.password_hash = hash_password(req.password)
+    s.invitation_status = "Aktif"
+    s.invitation_token = None
+    db.commit()
+    
+    return {
+        "status": "success",
+        "message": "Şifreniz başarıyla oluşturuldu! Şimdi giriş yapabilirsiniz."
+    }
 
 
 # ─────────────────── REQUESTS ──────────────────────────────────────────────

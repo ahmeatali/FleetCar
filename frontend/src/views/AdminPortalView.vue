@@ -819,8 +819,10 @@
                   <th>Kategori</th>
                   <th>Servis Tipi</th>
                   <th>İl / İlçe</th>
-                  <th>İletişim</th>
-                  <th>Yetenekler / Yapabildiği Hizmetler</th>
+                  <th>İletişim & E-posta</th>
+                  <th>Portal Davet Durumu</th>
+                  <th>Hizmetler</th>
+                  <th style="width: 140px; text-align: right;">Aksiyon</th>
                 </tr>
               </thead>
               <tbody>
@@ -840,15 +842,37 @@
                   <td style="font-size: 0.85rem; font-weight: 500;">
                     {{ s.city }} / {{ s.district }}
                   </td>
-                  <td style="font-family: monospace; font-size: 0.85rem;">
-                    {{ s.phone }}
+                  <td style="font-size: 0.85rem;">
+                    <div style="font-family: monospace;">{{ s.phone }}</div>
+                    <div v-if="s.email" style="color: #7c3aed; font-size: 0.8rem; font-weight: 500;">✉️ {{ s.email }}</div>
+                    <div v-else style="color: var(--text-muted); font-size: 0.78rem;">(E-posta yok)</div>
                   </td>
                   <td>
-                    <div style="display: flex; gap: 4px; flex-wrap: wrap; max-width: 320px;">
+                    <span v-if="s.invitation_status === 'Aktif'" class="badge badge-active" style="font-size: 0.78rem;">
+                      ✓ Aktif (Şifre Koydu)
+                    </span>
+                    <span v-else-if="s.invitation_status === 'Davet Gönderildi'" class="badge badge-roadside" style="font-size: 0.78rem;">
+                      📧 Davet Edildi
+                    </span>
+                    <span v-else class="badge" style="background: rgba(148, 163, 184, 0.1); color: #64748b; font-size: 0.78rem;">
+                      Davet Edilmedi
+                    </span>
+                  </td>
+                  <td>
+                    <div style="display: flex; gap: 4px; flex-wrap: wrap; max-width: 250px;">
                       <span class="service-tag" v-for="serv in s.services" :key="serv">
                         {{ serv }}
                       </span>
                     </div>
+                  </td>
+                  <td style="text-align: right;">
+                    <button 
+                      @click="sendSupplierInvite(s)" 
+                      class="btn btn-secondary" 
+                      style="padding: 6px 12px; font-size: 0.78rem; border-color: rgba(124, 58, 237, 0.3); color: #7c3aed; background: rgba(124, 58, 237, 0.06); font-weight: 600;"
+                    >
+                      {{ s.invitation_status === 'Davet Gönderildi' ? '🔄 Yeniden Davet Et' : '📧 Davetiye Gönder' }}
+                    </button>
                   </td>
                 </tr>
               </tbody>
@@ -1213,10 +1237,24 @@
           </div>
         </div>
 
-        <!-- Telefon -->
-        <div class="form-group" style="margin-bottom: 15px;">
-          <label class="form-label">Telefon *</label>
-          <input type="text" v-model="newSupplierForm.phone" required class="form-input" placeholder="+90 212 555 0000">
+        <!-- Telefon & E-posta -->
+        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px;">
+          <div class="form-group">
+            <label class="form-label">Telefon *</label>
+            <input type="text" v-model="newSupplierForm.phone" required class="form-input" placeholder="+90 212 555 0000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">E-posta Adresi (Portal Girişi İçin)</label>
+            <input type="email" v-model="newSupplierForm.email" class="form-input" placeholder="yetkili@servis.com">
+          </div>
+        </div>
+
+        <!-- Davetiye Gönder Seçeneği -->
+        <div v-if="newSupplierForm.email" class="form-group" style="margin-bottom: 18px; background: rgba(124, 58, 237, 0.05); padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(124, 58, 237, 0.15);">
+          <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 0.88rem; font-weight: 600; color: #7c3aed; margin: 0;">
+            <input type="checkbox" v-model="newSupplierForm.send_invite" style="width: 18px; height: 18px; accent-color: #7c3aed;">
+            <span>📧 Tedarikçiye şifre oluşturma davetiye e-postası gönderilsin</span>
+          </label>
         </div>
 
         <!-- Hizmetler (tag input) -->
@@ -1489,6 +1527,8 @@ const newSupplierForm = reactive({
   name: '',
   type: '',
   phone: '',
+  email: '',
+  send_invite: false,
   city: '',
   district: '',
   services: [],
@@ -1509,7 +1549,7 @@ const removeService = (index) => {
 
 const closeAddSupplierModal = () => {
   showAddSupplierModal.value = false
-  Object.assign(newSupplierForm, { name: '', type: '', phone: '', city: '', district: '', services: [], contract_type: '' })
+  Object.assign(newSupplierForm, { name: '', type: '', phone: '', email: '', send_invite: false, city: '', district: '', services: [], contract_type: '' })
   serviceInput.value = ''
 }
 
@@ -1517,20 +1557,51 @@ const submitAddSupplier = async () => {
   // Commit any pending service input
   if (serviceInput.value.trim()) addService()
   try {
-    const res = await fetch('/api/suppliers', {
+    const res = await fetch('/api/admin/suppliers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newSupplierForm)
     })
     if (res.ok) {
+      const added = await res.json()
       await fetchSuppliers()
       closeAddSupplierModal()
+      if (added.invitation_status === 'Davet Gönderildi') {
+        alert(`✅ ${added.name} başarıyla eklendi ve ${added.email} adresine şifre oluşturma davetiye e-postası gönderildi!`)
+      } else {
+        alert(`✅ ${added.name} başarıyla sisteme kaydedildi.`)
+      }
     } else {
       alert('Tedarikçi eklenirken hata oluştu.')
     }
   } catch (err) {
     console.error('Error adding supplier:', err)
     alert('Bağlantı hatası oluştu.')
+  }
+}
+
+const sendSupplierInvite = async (supplier) => {
+  let targetEmail = supplier.email
+  if (!targetEmail) {
+    const inputEmail = prompt(`"${supplier.name}" için davet gönderilecek e-posta adresini giriniz:`, '')
+    if (!inputEmail || !inputEmail.trim()) return
+    targetEmail = inputEmail.trim()
+  }
+
+  try {
+    const res = await fetch(`/api/admin/suppliers/${supplier.id}/invite`, {
+      method: 'POST'
+    })
+    const data = await res.json()
+    if (res.ok) {
+      alert(`✅ Davet e-postası gönderildi!\n\nDavet Linki: ${data.invite_url}`)
+      await fetchSuppliers()
+    } else {
+      alert(`Hata: ${data.detail || 'Davet gönderilemedi.'}`)
+    }
+  } catch (err) {
+    console.error('Invite error:', err)
+    alert('Sunucuya bağlanılamadı.')
   }
 }
 
