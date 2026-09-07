@@ -125,6 +125,15 @@ class StatusUpdate(BaseModel):
     status: str
     contract_amount: Optional[float] = None
 
+class CustomerCreate(BaseModel):
+    company_name: str
+    legal_title: str
+    email: str
+    phone: str
+    address: str
+    registered_vehicles_count: int
+    contract_amount: float
+
 class CustomerUpdate(BaseModel):
     company_name: str
     legal_title: str

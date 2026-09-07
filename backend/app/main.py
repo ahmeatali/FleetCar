@@ -13,7 +13,7 @@ from app.schemas import (
     RequestCreate, RequestResponse,
     SupplierCreate, SupplierResponse, StatusUpdate,
     VehicleRemoval, QuoteUpdate,
-    CustomerUpdate, BidCreate, BidResponse
+    CustomerCreate, CustomerUpdate, BidCreate, BidResponse
 )
 
 app = FastAPI(title="FleetCar API", version="2.0.0")
@@ -461,6 +461,25 @@ def get_admin_customers(db: Session = Depends(get_db)):
         deficit = max(0, c.registered_vehicles_count - actual)
         result.append(customer_dict(c, actual=actual, deficit=deficit))
     return result
+
+
+@app.post("/api/admin/customers")
+def create_admin_customer(customer: CustomerCreate, db: Session = Depends(get_db)):
+    c = models.Customer(
+        company_name=customer.company_name,
+        legal_title=customer.legal_title,
+        email=customer.email,
+        phone=customer.phone,
+        address=customer.address,
+        registered_vehicles_count=customer.registered_vehicles_count,
+        contract_amount=customer.contract_amount,
+        status="Aktif",
+        signed_at=now_str()
+    )
+    db.add(c)
+    db.commit()
+    db.refresh(c)
+    return customer_dict(c, actual=0, deficit=customer.registered_vehicles_count)
 
 
 @app.put("/api/admin/customers/{customer_id}")

@@ -12,7 +12,7 @@
         <div class="avatar">⚙️</div>
         <div>
           <h4 style="font-size: 0.85rem; font-weight: 600;">Yönetici Paneli</h4>
-          <span style="font-size: 0.7rem; color: #a78bfa;">Django Admin Bağlantılı</span>
+          <span style="font-size: 0.7rem; color: #34d399; font-weight: 600;">✓ Tam Yetkili Yönetici</span>
         </div>
       </div>
 
@@ -203,6 +203,9 @@
             <h1>Aktif Müşteriler (Sözleşmeli Portföy)</h1>
             <p style="color: var(--text-muted); font-size: 0.95rem;">Sadece kiralama sözleşmesi imzalanmış ve onaylanmış aktif kurumsal müşteriler.</p>
           </div>
+          <button @click="showAddCustomerModal = true" class="btn btn-primary" style="background: linear-gradient(135deg, #10b981, #059669); border: none; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25);">
+            ➕ Yeni Müşteri Ekle
+          </button>
         </header>
 
         <!-- Stats cards for customers -->
@@ -1249,6 +1252,65 @@
     </div>
   </div>
 
+  <!-- Add Customer Modal -->
+  <div v-if="showAddCustomerModal" class="modal-overlay" @click.self="showAddCustomerModal = false">
+    <div class="glass-panel modal-content fade-in-up" style="max-width: 620px; padding: 30px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px;">
+        <h2 style="color: #10b981; margin: 0; display: flex; align-items: center; gap: 10px;">
+          🏢 Yeni Müşteri Kaydı Ekle
+        </h2>
+        <button @click="showAddCustomerModal = false" style="background: transparent; border: none; color: var(--text-muted); font-size: 1.4rem; cursor: pointer; line-height: 1;">✕</button>
+      </div>
+
+      <form @submit.prevent="submitNewCustomer">
+        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px;">
+          <div class="form-group">
+            <label class="form-label">Şirket Adı *</label>
+            <input type="text" v-model="newCustomerForm.company_name" required class="form-input" placeholder="Örn: Tekno Holding">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Ticari Unvan *</label>
+            <input type="text" v-model="newCustomerForm.legal_title" required class="form-input" placeholder="Tekno Holding A.Ş.">
+          </div>
+        </div>
+
+        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px;">
+          <div class="form-group">
+            <label class="form-label">E-posta Adresi *</label>
+            <input type="email" v-model="newCustomerForm.email" required class="form-input" placeholder="info@teknoholding.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Telefon Numarası *</label>
+            <input type="tel" v-model="newCustomerForm.phone" required class="form-input" placeholder="+90 212 555 0000">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label class="form-label">Adres *</label>
+          <input type="text" v-model="newCustomerForm.address" required class="form-input" placeholder="Maslak Plazalar No: 18, Şişli, İstanbul">
+        </div>
+
+        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 25px;">
+          <div class="form-group">
+            <label class="form-label">Sözleşmeli Araç Sayısı *</label>
+            <input type="number" v-model.number="newCustomerForm.registered_vehicles_count" required min="1" class="form-input" placeholder="10">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Aylık Sözleşme Bedeli (₺) *</label>
+            <input type="number" v-model.number="newCustomerForm.contract_amount" required min="0" class="form-input" placeholder="250000">
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+          <button type="button" @click="showAddCustomerModal = false" class="btn btn-secondary">İptal</button>
+          <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #10b981, #059669); border: none;">
+            Müşteriyi Kaydet ➔
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
 </template>
 
 
@@ -1375,6 +1437,41 @@ const editCustomerForm = reactive({
 })
 
 // Customer Detail View State
+const showAddCustomerModal = ref(false)
+const newCustomerForm = reactive({
+  company_name: '',
+  legal_title: '',
+  email: '',
+  phone: '',
+  address: '',
+  registered_vehicles_count: 1,
+  contract_amount: 0
+})
+
+const submitNewCustomer = async () => {
+  try {
+    const res = await fetch('/api/admin/customers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newCustomerForm)
+    })
+    if (res.ok) {
+      const added = await res.json()
+      customers.value.unshift(added)
+      showAddCustomerModal.value = false
+      Object.assign(newCustomerForm, {
+        company_name: '', legal_title: '', email: '', phone: '', address: '', registered_vehicles_count: 1, contract_amount: 0
+      })
+      alert('Yeni müşteri başarıyla eklendi!')
+    } else {
+      alert('Müşteri eklenirken bir hata oluştu.')
+    }
+  } catch (err) {
+    console.error('Müşteri ekleme hatası:', err)
+    alert('Sunucuya bağlanılamadı.')
+  }
+}
+
 const showCustomerDetailsModal = ref(false)
 const selectedCustomerDetails = ref(null)
 const customerVehicles = ref([])
