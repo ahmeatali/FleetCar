@@ -113,6 +113,200 @@
         </div>
 
 
+        <!-- 🏢 3-COLUMN OPERATIONAL DASHBOARD (From User Screenshots 1 & 2) -->
+        <div class="grid-3" style="gap: 20px; margin-bottom: 30px; grid-template-columns: 1fr 1fr 1fr; align-items: start;">
+          <!-- COLUMN 1: Kiralamalar & Açık Bakiyeler -->
+          <div class="widget-list-card">
+            <div class="widget-title-row">
+              <h3>Kiralamalar</h3>
+            </div>
+            <div class="widget-list-items">
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon">⬆️</div><span>Çıkış</span></div>
+                <span class="widget-item-value">0</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon">⬇️</div><span>Dönüş</span></div>
+                <span class="widget-item-value">0</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon" style="background: #fef2f2;">🔻</div><span>Uzun Dönem Dönüş <span style="font-size: 0.72rem; color: #94a3b8;">(Önümüzdeki 1 ay)</span></span></div>
+                <span class="widget-item-value" style="color: #dc2626; font-weight: 800;">3</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon">🚗</div><span>Transfer Bekleyen</span></div>
+                <span class="widget-item-value">0</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon">⏳</div><span>Dönüş Bekleyen (Bugün)</span></div>
+                <span class="widget-item-value">0</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon">⏳</div><span>Dönüş Bekleyen (Yarın)</span></div>
+                <span class="widget-item-value">0</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon">⏳</div><span>Bekleyen Provizyon İadeleri</span></div>
+                <span class="widget-item-value">0</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon" style="background: #fef2f2;">⏰</div><span>Zamanaşımı</span></div>
+                <span class="widget-item-value" style="color: #dc2626; font-weight: 800;">4</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon">ℹ️</div><span>Kabis Bildirimi Yapılmayan</span></div>
+                <span class="widget-item-value">0</span>
+              </div>
+            </div>
+
+            <!-- Açık Bakiyeler section inside Column 1 -->
+            <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #f1f5f9;">
+              <h4 style="font-size: 0.95rem; font-weight: 800; color: #0f172a; margin-bottom: 12px;">Açık Bakiyeler</h4>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon" style="background: #eff6ff; color: #2563eb;">₺</div><span>Müşteri</span></div>
+                <span class="widget-item-value" style="color: #0f172a; font-weight: bold;">115.493,07 / 9</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon" style="background: #eff6ff; color: #2563eb;">₺</div><span>Firma</span></div>
+                <span class="widget-item-value" style="color: #0f172a; font-weight: bold;">3.162.494,46 / 23</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- COLUMN 2: Rezervasyonlar, BAF & Onay Bekleyenler -->
+          <div class="widget-list-card">
+            <div class="widget-title-row">
+              <h3>Rezervasyonlar</h3>
+            </div>
+            <div class="widget-list-items">
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon">📅</div><span>Gelecek Rezervasyonlar</span></div>
+                <span class="widget-item-value">0</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon">⬆️</div><span>Çıkış Bekleyen (Bugün)</span></div>
+                <span class="widget-item-value">0</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon">⬆️</div><span>Çıkış Bekleyen (Yarın)</span></div>
+                <span class="widget-item-value">0</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon">📅</div><span>İptal (Bugün)</span></div>
+                <span class="widget-item-value">0</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon">📅</div><span>Sözleşmede (Bugün)</span></div>
+                <span class="widget-item-value">0</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon" style="background: #fefce8;">⚠️</div><span>Plakasız Rezervasyon</span></div>
+                <span class="widget-item-value">0</span>
+              </div>
+            </div>
+
+            <!-- BAF section inside Column 2 -->
+            <div style="margin-top: 18px; padding-top: 15px; border-top: 1px solid #f1f5f9;">
+              <h4 style="font-size: 0.95rem; font-weight: 800; color: #0f172a; margin-bottom: 12px;">BAF</h4>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon">🚗</div><span>BAF'daki Araçlar</span></div>
+                <span class="widget-item-value">0</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon">⏰</div><span>Zamanaşımı</span></div>
+                <span class="widget-item-value">0</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon">🚗</div><span>Bugün Bitecek</span></div>
+                <span class="widget-item-value">0</span>
+              </div>
+            </div>
+
+            <!-- Onay Bekleyenler section inside Column 2 -->
+            <div style="margin-top: 18px; padding-top: 15px; border-top: 1px solid #f1f5f9;">
+              <h4 style="font-size: 0.95rem; font-weight: 800; color: #0f172a; margin-bottom: 12px;">Onay Bekleyenler</h4>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon">⏰</div><span>Bayi Kira</span></div>
+                <span class="widget-item-value">0</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon">⏰</div><span>Kısa/Uzun Dönem Kiralamalar</span></div>
+                <span class="widget-item-value">0</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon">⏰</div><span>Kısa/Uzun Dönem Rezervasyon</span></div>
+                <span class="widget-item-value">0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- COLUMN 3: Servis & Araçlar -->
+          <div class="widget-list-card">
+            <div class="widget-title-row">
+              <h3>Servis</h3>
+            </div>
+            <div class="widget-list-items">
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon">🔧</div><span>Servisteki Araçlar</span></div>
+                <span class="widget-item-value">0</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon">⏳</div><span>Bekleyen Talepler</span></div>
+                <span class="widget-item-value">0</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon">📄</div><span>Açık Servis Dosyası</span></div>
+                <span class="widget-item-value">0</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon">⬆️</div><span>Servise Teslim Et</span></div>
+                <span class="widget-item-value">0</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon">⬇️</div><span>Servisten Al</span></div>
+                <span class="widget-item-value">0</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon">⏰</div><span>Zamanaşımı</span></div>
+                <span class="widget-item-value">0</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon">🚗</div><span>İkame Talep</span></div>
+                <span class="widget-item-value">0</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon" style="background: #dcfce7; color: #16a34a;">⏱️</div><span>Ort. Hasar Onarım Süresi</span></div>
+                <span class="widget-item-value" style="color: #16a34a;">0.00 Gün</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon" style="background: #dcfce7; color: #16a34a;">⏱️</div><span>Ort. Bakım Süresi</span></div>
+                <span class="widget-item-value" style="color: #16a34a;">0.00 Gün</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon" style="background: #dcfce7; color: #16a34a;">⏱️</div><span>Ort. Mekanik Onarım Süresi</span></div>
+                <span class="widget-item-value" style="color: #16a34a;">0.00 Gün</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon" style="background: #dcfce7; color: #16a34a;">⏱️</div><span>Ort. Serviste Kalma Süresi</span></div>
+                <span class="widget-item-value" style="color: #16a34a;">0.00 Gün</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon" style="background: #dcfce7; color: #16a34a;">⏱️</div><span>Ort. Onarım Süresi</span></div>
+                <span class="widget-item-value" style="color: #16a34a;">0.00 Gün</span>
+              </div>
+            </div>
+
+            <!-- Araçlar section inside Column 3 -->
+            <div style="margin-top: 18px; padding-top: 15px; border-top: 1px solid #f1f5f9;">
+              <h4 style="font-size: 0.95rem; font-weight: 800; color: #0f172a; margin-bottom: 12px;">Araçlar</h4>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon">→</div><span>Aktif Transferler</span></div>
+                <span class="widget-item-value">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Main Request Table -->
         <div class="glass-panel" style="padding: 25px;">
           <h3 style="margin-bottom: 20px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">

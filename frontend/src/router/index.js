@@ -44,6 +44,18 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/dashboard/reports',
+    name: 'Reports',
+    component: () => import('../views/ReportsView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/dashboard/settings',
+    name: 'Settings',
+    component: () => import('../views/SettingsView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/profile',
     name: 'Profile',
     component: ProfileView,
@@ -64,6 +76,11 @@ const routes = [
     path: '/supplier-login',
     name: 'SupplierLogin',
     component: () => import('../views/SupplierLoginView.vue')
+  },
+  {
+    path: '/service-login',
+    name: 'ServiceLogin',
+    component: () => import('../views/ServiceLoginView.vue')
   },
   {
     path: '/supplier-portal',

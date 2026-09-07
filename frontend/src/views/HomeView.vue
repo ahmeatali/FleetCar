@@ -1,237 +1,589 @@
 <template>
-  <div class="app-bg-glow"></div>
-  
-  <!-- Navbar -->
-  <nav class="navbar">
-    <router-link to="/" class="nav-logo">
-      <div class="nav-logo-icon">F</div>
-      <span>FleetCar</span>
-    </router-link>
-    <ul class="nav-links">
-      <li><a href="#features" class="nav-link">Özellikler</a></li>
-      <li><a href="#calculator" class="nav-link">Teklif Al</a></li>
-      <li>
-        <router-link to="/supplier-login" class="nav-link" style="margin-right: 15px;">
-          Tedarikçi Girişi
-        </router-link>
-      </li>
-      <li>
-        <router-link to="/login" class="btn btn-secondary" style="padding: 8px 18px;">
-          Müşteri Girişi
-        </router-link>
-      </li>
-    </ul>
-  </nav>
+  <div>
+    <!-- Navbar -->
+    <nav class="navbar" style="padding: 16px 8%; background: #ffffff; border-bottom: 1px solid #e2e8f0;">
+      <router-link to="/" class="nav-logo">
+        <div class="nav-logo-icon" style="background: #2563eb; border-radius: 8px;">⇄</div>
+        <span style="font-weight: 800; font-size: 1.4rem; color: #0f172a;">FleetRent</span>
+      </router-link>
+      
+      <ul class="nav-links">
+        <li><a href="#vehicles" class="nav-link" style="color: #475569;">Araçlar <span style="font-size: 0.75rem;">▼</span></a></li>
+        <li><a href="#compare" class="nav-link" style="color: #475569;">Karşılaştır</a></li>
+        <li><a href="#ai-assistant" class="nav-link" style="color: #475569; font-weight: 600;">✨ AI Asistan</a></li>
+        <li><a href="#partners" class="nav-link" style="color: #475569;">Kurumsal</a></li>
+        <li><a href="#contact" class="nav-link" style="color: #475569;">İletişim</a></li>
+      </ul>
 
-  <!-- Hero Section -->
-  <header class="container hero-section fade-in-up">
-    <div class="hero-content">
-      <span class="hero-badge">YENİ NESİL FİLO YÖNETİMİ</span>
-      <h1 class="hero-title">
-        Şirketinizin Filosunu <br>
-        <span class="gradient-brand">Akıllıca Yönetin</span>
-      </h1>
-      <p class="hero-subtitle">
-        FleetCar ile dakikalar içinde kiralama teklifi alın. Satın alım sonrasında ise tüm araçlarınızı tek bir panelden takip edin, tedarikçilerinizle entegre çalışın.
-      </p>
-      <div class="hero-actions">
-        <a href="#calculator" class="btn btn-accent btn-lg">Hemen Teklif Al</a>
-        <a href="#features" class="btn btn-secondary btn-lg">Keşfet</a>
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <div class="fleetrent-nav-search">
+          <span style="color: #94a3b8;">🔍</span>
+          <input type="text" placeholder="Ara..." v-model="searchQuery" @keyup.enter="handleSearch" />
+        </div>
+        <button @click="showLoginRoleModal = true" class="nav-link" style="background: none; border: none; cursor: pointer; color: #334155; font-weight: 600; font-size: 0.95rem;">
+          Giriş
+        </button>
       </div>
-    </div>
-  </header>
+    </nav>
 
-  <!-- Features Section -->
-  <section id="features" class="container features-section">
-    <h2 class="section-title text-center">
-      Tüm Operasyon <span class="gradient-brand">Tek Ekran</span> Entegrasyonu
-    </h2>
-    <p class="section-subtitle text-center">
-      Filo yönetiminin en karmaşık aşamalarını dijitalleştiriyoruz. İşte entegre tedarikçi ağlarımız:
-    </p>
-
-    <div class="grid-4" style="margin-top: 40px;">
-      <div class="glass-panel feature-card">
-        <div class="feature-icon service-icon">⚙️</div>
-        <h3>Yetkili Servis</h3>
-        <p>Bakım ve onarım randevularını kolayca oluşturun. Araçlarınızın servis sürecini anlık izleyin.</p>
-      </div>
-
-      <div class="glass-panel feature-card">
-        <div class="feature-icon tire-icon">🛞</div>
-        <h3>Lastik Yönetimi</h3>
-        <p>Mevsimsel lastik değişim randevuları ve lastik oteli hizmetlerini tek tıkla koordine edin.</p>
-      </div>
-
-      <div class="glass-panel feature-card">
-        <div class="feature-icon roadside-icon">🚨</div>
-        <h3>7/24 Yol Yardım</h3>
-        <p>Arıza veya kaza anında konum bazlı hızlı çekici ve yol yardım ekiplerini anında yönlendirin.</p>
-      </div>
-
-      <div class="glass-panel feature-card">
-        <div class="feature-icon replacement-icon">🚗</div>
-        <h3>İkame Araç Tedariği</h3>
-        <p>Serviste kalan araçlarınız yerine iş kaybını önleyecek ikame araçları dakikalar içinde organize edin.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Calculator Section -->
-  <section id="calculator" class="container calculator-section">
-    <div class="glass-panel calc-container pulse-card">
-      <div class="grid-2">
-        <div class="calc-form-side">
-          <h2 class="gradient-brand" style="font-size: 2rem; margin-bottom: 10px;">Dinamik Filo Teklif Motoru</h2>
-          <p style="color: var(--text-muted); margin-bottom: 25px; font-size: 0.95rem;">
-            Aşağıdaki parametreleri şirketinize göre ayarlayın. Teklifiniz anlık olarak hesaplanacaktır.
-          </p>
-
-          <form @submit.prevent="submitQuote">
-            <div class="form-group">
-              <label class="form-label">Şirket Adı</label>
-              <input type="text" v-model="form.company_name" required class="form-input" placeholder="Örn: Tekno A.Ş.">
-            </div>
-
-            <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr;">
-              <div class="form-group">
-                <label class="form-label">E-posta</label>
-                <input type="email" v-model="form.email" required class="form-input" placeholder="isim@sirket.com">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Telefon</label>
-                <input type="tel" v-model="form.phone" required class="form-input" placeholder="05XX XXX XX XX">
-              </div>
-            </div>
-
-            <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 20px;">
-              <div class="form-group">
-                <label class="form-label">Araç Segmenti</label>
-                <select v-model="form.vehicle_segment" class="form-select">
-                  <option value="A">A Segmenti</option>
-                  <option value="B">B Segmenti</option>
-                  <option value="C">C Segmenti</option>
-                  <option value="D">D Segmenti</option>
-                  <option value="E">E Segmenti</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Araç Tipi</label>
-                <select v-model="form.vehicle_type" class="form-select">
-                  <option value="Sedan">Sedan</option>
-                  <option value="SUV">SUV</option>
-                  <option value="Hatchback">Hatchback</option>
-                  <option value="Hafif Ticari">Hafif Ticari</option>
-                  <option value="Station Wagon">Station Wagon</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <div class="slider-header">
-                <label class="form-label">Araç Adedi</label>
-                <span class="slider-value">{{ form.vehicle_count }} Adet</span>
-              </div>
-              <input type="range" min="1" max="100" v-model.number="form.vehicle_count" class="range-slider">
-            </div>
-
-            <div class="grid-2" style="gap: 15px;">
-              <div class="form-group">
-                <label class="form-label">Kiralama Süresi</label>
-                <select v-model.number="form.duration_months" class="form-select">
-                  <option :value="12">12 Ay</option>
-                  <option :value="24">24 Ay</option>
-                  <option :value="36">36 Ay</option>
-                  <option :value="48">48 Ay</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Yıllık Tahmini KM</label>
-                <select v-model.number="form.estimated_annual_mileage" class="form-select">
-                  <option :value="10000">10,000 KM</option>
-                  <option :value="20000">20,000 KM</option>
-                  <option :value="30000">30,000 KM</option>
-                  <option :value="40000">40,000 KM</option>
-                  <option :value="50000">50,000 KM</option>
-                </select>
-              </div>
-            </div>
-
-            <button type="submit" class="btn btn-accent btn-block" style="width: 100%; margin-top: 15px;" :disabled="submitting">
-              {{ submitting ? 'Teklif Kaydediliyor...' : 'Teklifi Kaydet ve Portalı Aç' }}
-            </button>
-          </form>
+    <!-- HERO SECTION (Dark Theme Grid Background) -->
+    <section class="hero-dark-bg">
+      <div class="container" style="max-width: 900px; padding: 0;">
+        <div class="hero-pill-badge">
+          <span>✨</span>
+          <span>Yapay Zeka Destekli Araç Kiralama Platformu</span>
         </div>
 
-        <!-- Calculated Output Display -->
-        <div class="calc-result-side">
-          <div class="result-glass">
-            <h3 style="font-size: 1.2rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted);">Aylık Kiralama Bedeli</h3>
-            <div class="price-display">
-              <span class="currency">₺</span>
-              <span class="amount">{{ calculatedPriceFormatted }}</span>
-              <span class="period">/ay</span>
-            </div>
-            <p class="price-info">
-              * Bu teklif tahmini olup, KDV hariç hesaplanmıştır. Kiralama süresince tüm <b>servis, lastik, 7/24 yol yardım</b> ve <b>ikame araç</b> hizmetleri fiyata dahildir.
-            </p>
-            <div class="divider"></div>
-            <div class="spec-list">
-              <div class="spec-item">
-                <span>Araç Adedi:</span>
-                <strong>{{ form.vehicle_count }} Adet</strong>
-              </div>
-              <div class="spec-item">
-                <span>Kiralama Süresi:</span>
-                <strong>{{ form.duration_months }} Ay</strong>
-              </div>
-              <div class="spec-item">
-                <span>Yıllık Kilometre Limiti:</span>
-                <strong>{{ form.estimated_annual_mileage.toLocaleString() }} KM</strong>
-              </div>
-            </div>
+        <h1 class="hero-dark-title">
+          Uzun Dönem Araç
+          <span class="cyan-text">Kiralamada Fark</span>
+        </h1>
+
+        <p class="hero-dark-subtitle">
+          150+ tedarikçiyi anında karşılaştırın. AI asistanımız size en uygun aracı ve en iyi fiyatı bulsun. Ücretsiz, hızlı, güvenilir.
+        </p>
+
+        <div style="display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;">
+          <button @click="openQuoteModal('kurumsal')" class="btn btn-blue" style="padding: 14px 28px; font-size: 1rem;">
+            Kurumsal Teklif Al
+          </button>
+          <button @click="openQuoteModal('bireysel')" class="btn" style="background: #ffffff; color: #0f172a; font-weight: 600; padding: 14px 28px; font-size: 1rem; border-radius: 8px;">
+            Bireysel Teklif Al
+          </button>
+          <button @click="openQuoteModal('r2r')" class="btn btn-dark-outline" style="padding: 14px 28px; font-size: 1rem; border-radius: 8px;">
+            R2R Teklif Al
+          </button>
+        </div>
+
+        <!-- Trust Badges Row -->
+        <div class="trust-badges-row">
+          <div class="trust-badge-item">
+            <span>🛡️</span>
+            <span>SSL Güvenli Ödeme</span>
+          </div>
+          <div class="trust-badge-item">
+            <span>🕒</span>
+            <span>7/24 Müşteri Desteği</span>
+          </div>
+          <div class="trust-badge-item">
+            <span>📉</span>
+            <span>En İyi Fiyat Garantisi</span>
+          </div>
+          <div class="trust-badge-item">
+            <span>👥</span>
+            <span>150+ Tedarikçi</span>
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Success Modal -->
-  <div v-if="showSuccessModal" class="modal-overlay">
-    <div class="glass-panel modal-content fade-in-up" style="max-width: 500px; padding: 40px; text-align: center;">
-      <div class="modal-success-icon">🎉</div>
-      <h2 class="gradient-brand" style="margin: 20px 0 10px;">Teklifiniz Oluşturuldu!</h2>
-      <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.95rem; line-height: 1.6;">
-        Tebrikler! <b>{{ submittedQuoteDetails?.company_name }}</b> adına aylık <b>₺{{ submittedQuoteDetails?.monthly_price_try?.toLocaleString() }}</b> tutarında teklif kaydı başarıyla oluşturuldu.
-      </p>
-      <div class="auth-helper-box">
-        <p style="font-size: 0.85rem; color: var(--text-muted);">
-          🔑 Portala giriş yapabilmeniz için geçici şifreniz tanımlandı:<br>
-          <span style="font-family: monospace; font-size: 1rem; color: var(--primary); background: rgba(79, 70, 229, 0.08); padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 5px; font-weight: bold;">admin123</span>
-        </p>
+    <!-- SECTION 2: İŞ ORTAKLARIMIZ -->
+    <section id="partners" class="container" style="padding: 80px 20px;">
+      <div class="text-center" style="margin-bottom: 48px;">
+        <span style="font-size: 0.8rem; font-weight: 700; color: #2563eb; letter-spacing: 0.12em; text-transform: uppercase;">GÜVENİLİR AĞIMIZ</span>
+        <h2 style="font-size: 2.4rem; font-weight: 800; color: #0f172a; margin: 8px 0 12px;">İş Ortaklarımız</h2>
+        <p style="color: #64748b; font-size: 1.05rem;">Türkiye'nin önde gelen otomotiv ve kiralama markaları ile güçlü iş birliği içindeyiz.</p>
       </div>
-      <div style="display: flex; gap: 15px; margin-top: 25px; justify-content: center;">
-        <button @click="goToLogin" class="btn btn-primary">Yönetim Paneline Git</button>
-        <button @click="showSuccessModal = false" class="btn btn-secondary">Kapat</button>
+
+      <div class="grid-4" style="gap: 20px;">
+        <!-- Partner 1 -->
+        <div class="partner-card">
+          <div class="partner-badge" style="background: #fee2e2; color: #dc2626;">TT</div>
+          <div class="partner-info">
+            <h4>Toyota Türkiye</h4>
+            <p>Otomobil</p>
+          </div>
+        </div>
+
+        <!-- Partner 2 -->
+        <div class="partner-card">
+          <div class="partner-badge" style="background: #dbeafe; color: #2563eb;">VW</div>
+          <div class="partner-info">
+            <h4>Volkswagen</h4>
+            <p>Otomobil</p>
+          </div>
+        </div>
+
+        <!-- Partner 3 -->
+        <div class="partner-card">
+          <div class="partner-badge" style="background: #f3e8ff; color: #7c3aed;">MB</div>
+          <div class="partner-info">
+            <h4>Mercedes-Benz</h4>
+            <p>Premium</p>
+          </div>
+        </div>
+
+        <!-- Partner 4 -->
+        <div class="partner-card">
+          <div class="partner-badge" style="background: #e0e7ff; color: #4338ca;">FD</div>
+          <div class="partner-info">
+            <h4>Ford Türkiye</h4>
+            <p>Ticari & Otomobil</p>
+          </div>
+        </div>
+
+        <!-- Partner 5 -->
+        <div class="partner-card">
+          <div class="partner-badge" style="background: #e0f2fe; color: #0284c7;">HY</div>
+          <div class="partner-info">
+            <h4>Hyundai</h4>
+            <p>Otomobil</p>
+          </div>
+        </div>
+
+        <!-- Partner 6 -->
+        <div class="partner-card">
+          <div class="partner-badge" style="background: #f1f5f9; color: #334155;">BM</div>
+          <div class="partner-info">
+            <h4>BMW Group</h4>
+            <p>Premium</p>
+          </div>
+        </div>
+
+        <!-- Partner 7 -->
+        <div class="partner-card">
+          <div class="partner-badge" style="background: #fef9c3; color: #ca8a04;">RN</div>
+          <div class="partner-info">
+            <h4>Renault Türkiye</h4>
+            <p>Otomobil</p>
+          </div>
+        </div>
+
+        <!-- Partner 8 -->
+        <div class="partner-card">
+          <div class="partner-badge" style="background: #ffedd5; color: #ea580c;">AB</div>
+          <div class="partner-info">
+            <h4>Avis Budget</h4>
+            <p>Kiralama</p>
+          </div>
+        </div>
+
+        <!-- Partner 9 -->
+        <div class="partner-card">
+          <div class="partner-badge" style="background: #fef3c7; color: #d97706;">HZ</div>
+          <div class="partner-info">
+            <h4>Hertz Türkiye</h4>
+            <p>Kiralama</p>
+          </div>
+        </div>
+
+        <!-- Partner 10 -->
+        <div class="partner-card">
+          <div class="partner-badge" style="background: #dcfce7; color: #16a34a;">GR</div>
+          <div class="partner-info">
+            <h4>Garenta</h4>
+            <p>Kiralama</p>
+          </div>
+        </div>
+
+        <!-- Partner 11 -->
+        <div class="partner-card">
+          <div class="partner-badge" style="background: #ccfbf1; color: #0d9488;">OT</div>
+          <div class="partner-info">
+            <h4>Otokoç Otomotiv</h4>
+            <p>Filo</p>
+          </div>
+        </div>
+
+        <!-- Partner 12 -->
+        <div class="partner-card">
+          <div class="partner-badge" style="background: #e0f2fe; color: #0284c7;">VF</div>
+          <div class="partner-info">
+            <h4>Vdf Filo</h4>
+            <p>Filo</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: FARK YARATAN ÖZELLİKLER -->
+    <section class="container" style="padding: 80px 20px;">
+      <div class="text-center" style="margin-bottom: 48px;">
+        <span style="font-size: 0.8rem; font-weight: 700; color: #2563eb; letter-spacing: 0.12em; text-transform: uppercase;">NEDEN FLEETRENT?</span>
+        <h2 style="font-size: 2.4rem; font-weight: 800; color: #0f172a; margin: 8px 0 0;">Fark Yaratan Özellikler</h2>
+      </div>
+
+      <div class="grid-3" style="gap: 24px;">
+        <!-- Feature 1 -->
+        <div class="feature-box">
+          <div class="feature-icon-square">⚡</div>
+          <h3>Hızlı Teklif</h3>
+          <p>Yapay zeka destekli sistemimiz sayesinde dakikalar içinde rekabetçi filo kiralama tekliflerinizi hazırlayın.</p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="feature-box">
+          <div class="feature-icon-square">🛡️</div>
+          <h3>Tam Kapsamlı Sigorta</h3>
+          <p>Kasko ve trafik sigortası dahil paketlerimizle aracınızı her koşulda güvence altına alın.</p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="feature-box">
+          <div class="feature-icon-square">🔧</div>
+          <h3>Bakım & Servis</h3>
+          <p>Periyodik bakım, lastik değişimi ve kaza anlarında dakikalar içerisinde destek hizmeti.</p>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="feature-box">
+          <div class="feature-icon-square">🕒</div>
+          <h3>7/24 Destek</h3>
+          <p>Yapay zeka destekli sistemimiz sayesinde saniyeler içerisinde yol yardım ekibimiz hizmetinizde.</p>
+        </div>
+
+        <!-- Feature 5 -->
+        <div class="feature-box">
+          <div class="feature-icon-square">💍</div>
+          <h3>Esnek Sözleşme</h3>
+          <p>12 ila 48 ay arasında değişen kiralama süreleri ile bütçenize ve ihtiyacınıza göre plan seçin.</p>
+        </div>
+
+        <!-- Feature 6 -->
+        <div class="feature-box">
+          <div class="feature-icon-square">🏷️</div>
+          <h3>Kurumsal İndirimler</h3>
+          <p>Çoklu araç kiralamalarında özel kurumsal fiyatlar ve filo yönetimi avantajlarından yararlanın.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: NASIL ÇALIŞIR? (Dark Section) -->
+    <section class="process-dark-section">
+      <div class="container" style="max-width: 1100px;">
+        <div class="text-center" style="margin-bottom: 54px;">
+          <span style="font-size: 0.8rem; font-weight: 700; color: #38bdf8; letter-spacing: 0.12em; text-transform: uppercase;">SÜREÇ</span>
+          <h2 style="font-size: 2.4rem; font-weight: 800; color: #ffffff; margin: 8px 0 12px;">Nasıl Çalışır?</h2>
+          <p style="color: #94a3b8; font-size: 1.05rem;">Dört basit adımda filo kiralama teklifinizi alın.</p>
+        </div>
+
+        <div class="grid-4" style="gap: 30px;">
+          <!-- Step 1 -->
+          <div class="process-step-item">
+            <div class="step-number-circle">1</div>
+            <h4>Teklif Türünü Seçin</h4>
+            <p>Kurumsal, bireysel veya R2R ihtiyacınıza göre ilgili teklif formunu açın.</p>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="process-step-item">
+            <div class="step-number-circle">2</div>
+            <h4>Formu Doldurun</h4>
+            <p>Araç tercihinizi, km limitinizi, kiralama sürenizi ve belgeleri yükleyin.</p>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="process-step-item">
+            <div class="step-number-circle">3</div>
+            <h4>Teklif Alın</h4>
+            <p>Uzman ekibimiz en kısa sürede size özel fiyat teklifinizi hazırlayıp iletir.</p>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="process-step-item">
+            <div class="step-number-circle">4</div>
+            <h4>Sözleşmeyi İmzalayın</h4>
+            <p>Teklifi onaylayın, sözleşmeyi imzalayın ve aracınızı teslim alın.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: MÜŞTERİLERİMİZ NE DİYOR? -->
+    <section class="container" style="padding: 80px 20px;">
+      <div class="text-center" style="margin-bottom: 48px;">
+        <span style="font-size: 0.8rem; font-weight: 700; color: #2563eb; letter-spacing: 0.12em; text-transform: uppercase;">REFERANSLAR</span>
+        <h2 style="font-size: 2.4rem; font-weight: 800; color: #0f172a; margin: 8px 0 0;">Müşterilerimiz Ne Diyor?</h2>
+      </div>
+
+      <div class="grid-3" style="gap: 24px;">
+        <!-- Testimonial 1 -->
+        <div class="testimonial-card">
+          <div>
+            <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+            <p class="testimonial-text">
+              "FleetRent sayesinde 50 araçlık filomuzun kiralama sürecini çok daha hızlı ve verimli yönetiyoruz. Fiyatlar rekabetçi, destek ekibi çok ilgili."
+            </p>
+          </div>
+          <div class="testimonial-author" style="border-top: 1px solid #f1f5f9; padding-top: 16px;">
+            <h5>Ahmet Kaya</h5>
+            <p>Satın Alma Müdürü, LogiTech A.Ş.</p>
+          </div>
+        </div>
+
+        <!-- Testimonial 2 -->
+        <div class="testimonial-card">
+          <div>
+            <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+            <p class="testimonial-text">
+              "Bireysel uzun dönem kiralama için araştırırken FleetRent'i buldum. Formları doldurmak çok kolay ve kısa sürede dönüş sağlandı. Kesinlikle tavsiye ederim."
+            </p>
+          </div>
+          <div class="testimonial-author" style="border-top: 1px solid #f1f5f9; padding-top: 16px;">
+            <h5>Zeynep Arslan</h5>
+            <p>Bireysel Kullanıcı</p>
+          </div>
+        </div>
+
+        <!-- Testimonial 3 -->
+        <div class="testimonial-card">
+          <div>
+            <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+            <p class="testimonial-text">
+              "R2R portföyümüzü FleetRent üzerinden yönetmek inanılmaz kolaylaştı. Profesyonel bir ekip, her aşamada yanınızda."
+            </p>
+          </div>
+          <div class="testimonial-author" style="border-top: 1px solid #f1f5f9; padding-top: 16px;">
+            <h5>Murat Demir</h5>
+            <p>Filo Direktörü, Ekspres Lojistik</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER (Dark Theme) -->
+    <footer id="contact" class="dark-footer">
+      <div class="container" style="max-width: 1200px;">
+        <div class="grid-4" style="gap: 40px; margin-bottom: 50px;">
+          <!-- Col 1: Logo & About -->
+          <div>
+            <div class="nav-logo" style="margin-bottom: 16px;">
+              <div class="nav-logo-icon" style="background: #2563eb; border-radius: 8px;">⇄</div>
+              <span style="font-weight: 800; font-size: 1.4rem; color: #ffffff;">FleetRent</span>
+            </div>
+            <p style="font-size: 0.88rem; line-height: 1.6; color: #94a3b8; margin-bottom: 20px;">
+              Türkiye'nin lider uzun dönem araç kiralama platformu. Kurumsal, bireysel ve R2R ihtiyaçlarınız için profesyonel çözümler sunuyoruz.
+            </p>
+            <div style="display: flex; gap: 12px;">
+              <a href="#" style="width: 34px; height: 34px; background: rgba(255,255,255,0.06); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ffffff; text-decoration: none;">f</a>
+              <a href="#" style="width: 34px; height: 34px; background: rgba(255,255,255,0.06); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ffffff; text-decoration: none;">in</a>
+              <a href="#" style="width: 34px; height: 34px; background: rgba(255,255,255,0.06); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ffffff; text-decoration: none;">ig</a>
+              <a href="#" style="width: 34px; height: 34px; background: rgba(255,255,255,0.06); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ffffff; text-decoration: none;">yt</a>
+            </div>
+          </div>
+
+          <!-- Col 2: Araçlar -->
+          <div>
+            <h4>ARAÇLAR</h4>
+            <ul>
+              <li><a href="#">Ekonomik</a></li>
+              <li><a href="#">SUV & Crossover</a></li>
+              <li><a href="#">Lüks</a></li>
+              <li><a href="#">Elektrikli</a></li>
+              <li><a href="#">Ticari</a></li>
+            </ul>
+          </div>
+
+          <!-- Col 3: Hizmetler -->
+          <div>
+            <h4>HİZMETLER</h4>
+            <ul>
+              <li><a href="#" @click.prevent="openQuoteModal('bireysel')">Bireysel Kiralama</a></li>
+              <li><a href="#" @click.prevent="openQuoteModal('kurumsal')">Kurumsal Kiralama</a></li>
+              <li><a href="#" @click.prevent="openQuoteModal('r2r')">R2R Kiralama</a></li>
+              <li><a href="#">Filo Yönetimi</a></li>
+              <li><a href="#">AI Araç Önerisi</a></li>
+            </ul>
+          </div>
+
+          <!-- Col 4: İletişim -->
+          <div>
+            <h4>İLETİŞİM</h4>
+            <div class="footer-contact-item">
+              <span>📞</span>
+              <span>0850 532 12 34</span>
+            </div>
+            <div class="footer-contact-item">
+              <span>✉️</span>
+              <span>info@fleetrent.com.tr</span>
+            </div>
+            <div class="footer-contact-item">
+              <span>✉️</span>
+              <span>destek@fleetrent.com.tr</span>
+            </div>
+            <div class="footer-contact-item" style="align-items: flex-start;">
+              <span style="margin-top: 2px;">📍</span>
+              <span style="line-height: 1.4;">Maslak Mah. Büyükdere Cad. No: 255 Sarıyer / İstanbul</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 25px; text-align: center; font-size: 0.82rem; color: #64748b;">
+          © 2026 FleetRent Teknolojileri A.Ş. Tüm Hakları Saklıdır.
+        </div>
+      </div>
+    </footer>
+
+    <!-- Interactive Dynamic Quote Modal -->
+    <div v-if="showQuoteModal" class="modal-overlay" @click.self="showQuoteModal = false">
+      <div class="modal-card fade-in-up" style="max-width: 650px;">
+        <div class="modal-header">
+          <h3 class="modal-title">{{ selectedTypeTitle }} Kiralama Teklifi Al</h3>
+          <button class="close-btn" @click="showQuoteModal = false">✕</button>
+        </div>
+
+        <form @submit.prevent="submitQuote" style="margin-top: 10px;">
+          <div class="form-group">
+            <label class="form-label">Şirket / Ad Soyad</label>
+            <input type="text" v-model="form.company_name" required class="form-input" placeholder="Örn: Tekno A.Ş. veya Ahmet Yılmaz">
+          </div>
+
+          <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr;">
+            <div class="form-group">
+              <label class="form-label">E-posta</label>
+              <input type="email" v-model="form.email" required class="form-input" placeholder="isim@sirket.com">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Telefon</label>
+              <input type="tel" v-model="form.phone" required class="form-input" placeholder="05XX XXX XX XX">
+            </div>
+          </div>
+
+          <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr;">
+            <div class="form-group">
+              <label class="form-label">Araç Segmenti</label>
+              <select v-model="form.vehicle_segment" class="form-select">
+                <option value="A">A Segmenti (Ekonomik)</option>
+                <option value="B">B Segmenti (Hatchback/Sedan)</option>
+                <option value="C">C Segmenti (Konfor Sedan)</option>
+                <option value="D">D Segmenti (Prestij Sedan)</option>
+                <option value="E">E Segmenti (Lüks)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Araç Tipi</label>
+              <select v-model="form.vehicle_type" class="form-select">
+                <option value="Sedan">Sedan</option>
+                <option value="SUV">SUV</option>
+                <option value="Hatchback">Hatchback</option>
+                <option value="Hafif Ticari">Hafif Ticari</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="slider-header" style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <label class="form-label">Araç Adedi</label>
+              <span style="font-weight: 700; color: #2563eb;">{{ form.vehicle_count }} Adet</span>
+            </div>
+            <input type="range" min="1" max="100" v-model.number="form.vehicle_count" class="range-slider">
+          </div>
+
+          <div class="grid-2" style="gap: 15px;">
+            <div class="form-group">
+              <label class="form-label">Kiralama Süresi</label>
+              <select v-model.number="form.duration_months" class="form-select">
+                <option :value="12">12 Ay</option>
+                <option :value="24">24 Ay</option>
+                <option :value="36">36 Ay</option>
+                <option :value="48">48 Ay</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Yıllık Tahmini KM</label>
+              <select v-model.number="form.estimated_annual_mileage" class="form-select">
+                <option :value="10000">10,000 KM</option>
+                <option :value="20000">20,000 KM</option>
+                <option :value="30000">30,000 KM</option>
+                <option :value="40000">40,000 KM</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Instant Price Estimation Box -->
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin: 15px 0; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <span style="font-size: 0.8rem; color: #64748b; font-weight: 600; text-transform: uppercase;">Tahmini Aylık Tutar</span>
+              <div style="font-size: 1.8rem; font-weight: 800; color: #2563eb;">₺{{ calculatedPriceFormatted }}</div>
+            </div>
+            <span style="font-size: 0.8rem; color: #64748b;">*KDV Hariç</span>
+          </div>
+
+          <button type="submit" class="btn btn-blue" style="width: 100%; padding: 14px;" :disabled="submitting">
+            {{ submitting ? 'Teklif Kaydediliyor...' : 'Teklifi Kaydet ve Portalı Aç' }}
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Login Role Selection Modal -->
+    <div v-if="showLoginRoleModal" class="modal-overlay" @click.self="showLoginRoleModal = false">
+      <div class="login-selection-card fade-in-up">
+        <button class="close-btn" style="position: absolute; right: 20px; top: 20px;" @click="showLoginRoleModal = false">✕</button>
+        
+        <div class="nav-logo" style="justify-content: center; margin-bottom: 12px;">
+          <div class="nav-logo-icon" style="background: #2563eb; border-radius: 8px;">⇄</div>
+          <span style="font-weight: 800; font-size: 1.5rem; color: #0f172a;">FleetRent</span>
+        </div>
+        <p style="color: #64748b; font-size: 0.9rem; font-weight: 500;">Giriş tipini seçin</p>
+
+        <div class="login-role-grid">
+          <!-- 1. Müşteri Girişi -->
+          <router-link to="/login?role=customer" class="login-role-tile tile-customer">
+            <span class="tile-icon">🏢</span>
+            <span class="tile-title">Müşteri Girişi</span>
+            <span style="font-size: 0.75rem; color: #64748b; margin-top: 4px; font-weight: 500;">Filo Yönetim Paneli</span>
+          </router-link>
+
+          <!-- 2. Tedarikçi Girişi (Araba Sağlayıcı Kiralama Firmaları) -->
+          <router-link to="/supplier-login" class="login-role-tile tile-supplier">
+            <span class="tile-icon">🏭</span>
+            <span class="tile-title">Tedarikçi Girişi</span>
+            <span style="font-size: 0.75rem; color: #10b981; margin-top: 4px; font-weight: 600;">Araba Sağlayıcı & Kiralama</span>
+          </router-link>
+
+          <!-- 3. Servis Girişi (Bakım, Lastik & Oto Kurtarma) -->
+          <router-link to="/service-login" class="login-role-tile tile-service">
+            <span class="tile-icon">🔧</span>
+            <span class="tile-title">Servis Girişi</span>
+            <span style="font-size: 0.75rem; color: #2563eb; margin-top: 4px; font-weight: 600;">Bakım, Lastik & Oto Kurtarma</span>
+          </router-link>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div v-if="showSuccessModal" class="modal-overlay">
+      <div class="modal-card fade-in-up" style="max-width: 500px; text-align: center; padding: 40px;">
+        <div style="font-size: 3.5rem;">🎉</div>
+        <h2 style="font-size: 1.8rem; font-weight: 800; color: #0f172a; margin: 15px 0 10px;">Teklifiniz Başarıyla Alındı!</h2>
+        <p style="color: #64748b; margin-bottom: 20px; font-size: 0.95rem; line-height: 1.6;">
+          <b>{{ submittedQuoteDetails?.company_name }}</b> adına aylık <b>₺{{ submittedQuoteDetails?.monthly_price_try?.toLocaleString() }}</b> tutarında teklif kaydı oluşturuldu.
+        </p>
+        <div style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 15px; border-radius: 10px; margin-bottom: 25px;">
+          <p style="font-size: 0.85rem; color: #1e40af;">
+            🔑 E-posta adresiniz ile yönetim portalına hemen giriş yapabilirsiniz.
+          </p>
+        </div>
+        <div style="display: flex; gap: 12px; justify-content: center;">
+          <button @click="goToLogin" class="btn btn-blue">Yönetim Paneline Git</button>
+          <button @click="showSuccessModal = false" class="btn btn-secondary">Kapat</button>
+        </div>
       </div>
     </div>
   </div>
-
-  <!-- Footer -->
-  <footer class="footer text-center">
-    <p>© 2026 FleetCar Filo Yönetim ve Kiralama Teknolojileri A.Ş. Tüm Hakları Saklıdır.</p>
-  </footer>
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const submitting = ref(false)
+const showQuoteModal = ref(false)
+const showLoginRoleModal = ref(false)
 const showSuccessModal = ref(false)
 const submittedQuoteDetails = ref(null)
+const quoteType = ref('kurumsal')
+const searchQuery = ref('')
+
+
+const selectedTypeTitle = computed(() => {
+  if (quoteType.value === 'bireysel') return 'Bireysel'
+  if (quoteType.value === 'r2r') return 'R2R'
+  return 'Kurumsal'
+})
 
 const form = reactive({
   company_name: '',
@@ -244,43 +596,29 @@ const form = reactive({
   estimated_annual_mileage: 20000
 })
 
-// Client-side instant pricing formula (matching backend helper)
+const openQuoteModal = (type = 'kurumsal') => {
+  quoteType.value = type
+  showQuoteModal.value = true
+}
+
+const handleSearch = () => {
+  if (searchQuery.value.trim()) {
+    openQuoteModal('kurumsal')
+  }
+}
+
 const calculatedPrice = computed(() => {
   const basePrice = 12000
-  
-  const segmentMultipliers = {
-    "A": 0.70,
-    "B": 0.85,
-    "C": 1.0,
-    "D": 1.30,
-    "E": 1.70
-  }
+  const segmentMultipliers = { "A": 0.70, "B": 0.85, "C": 1.0, "D": 1.30, "E": 1.70 }
   const segMult = segmentMultipliers[form.vehicle_segment] || 1.0
   
-  const typeMultipliers = {
-    "Sedan": 1.0,
-    "SUV": 1.20,
-    "Hatchback": 0.95,
-    "Hafif Ticari": 1.15,
-    "Station Wagon": 1.05
-  }
+  const typeMultipliers = { "Sedan": 1.0, "SUV": 1.20, "Hatchback": 0.95, "Hafif Ticari": 1.15 }
   const typeMult = typeMultipliers[form.vehicle_type] || 1.0
   
-  const durationMultipliers = {
-    12: 1.0,
-    24: 0.90,
-    36: 0.82,
-    48: 0.75
-  }
+  const durationMultipliers = { 12: 1.0, 24: 0.90, 36: 0.82, 48: 0.75 }
   const durMult = durationMultipliers[form.duration_months] || 0.90
   
-  const mileageMultipliers = {
-    10000: 0.95,
-    20000: 1.0,
-    30000: 1.12,
-    40000: 1.25,
-    50000: 1.40
-  }
+  const mileageMultipliers = { 10000: 0.95, 20000: 1.0, 30000: 1.12, 40000: 1.25 }
   const kmMult = mileageMultipliers[form.estimated_annual_mileage] || 1.0
   
   const pricePerVehicle = basePrice * segMult * typeMult * durMult * kmMult
@@ -305,9 +643,10 @@ const submitQuote = async () => {
     if (response.ok) {
       const data = await response.json()
       submittedQuoteDetails.value = data
+      showQuoteModal.value = false
       showSuccessModal.value = true
     } else {
-      alert('Teklif oluşturulurken bir sorun oluştu. Lütfen tekrar deneyin.')
+      alert('Teklif oluşturulurken bir sorun oluştu.')
     }
   } catch (error) {
     console.error('API Error:', error)
@@ -323,263 +662,3 @@ const goToLogin = () => {
 }
 </script>
 
-<style scoped>
-/* Scoped views-specific styling for Home page */
-.hero-section {
-  padding: 120px 20px 80px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.hero-badge {
-  background: rgba(99, 102, 241, 0.1);
-  border: 1px solid rgba(99, 102, 241, 0.3);
-  padding: 6px 14px;
-  border-radius: 999px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  color: var(--secondary);
-  margin-bottom: 25px;
-  text-transform: uppercase;
-}
-
-.hero-title {
-  font-size: 3.5rem;
-  line-height: 1.15;
-  margin-bottom: 25px;
-}
-
-.hero-subtitle {
-  font-size: 1.2rem;
-  color: var(--text-muted);
-  max-width: 650px;
-  margin-bottom: 40px;
-  line-height: 1.6;
-}
-
-.hero-actions {
-  display: flex;
-  gap: 20px;
-}
-
-.hero-actions .btn {
-  padding: 14px 32px;
-  font-size: 1.05rem;
-}
-
-.features-section {
-  padding: 80px 20px;
-}
-
-.section-title {
-  font-size: 2.25rem;
-  margin-bottom: 15px;
-}
-
-.section-subtitle {
-  color: var(--text-muted);
-  font-size: 1.05rem;
-  max-width: 600px;
-  margin: 0 auto 30px;
-}
-
-.feature-card {
-  padding: 30px 24px;
-  text-align: center;
-  height: 100%;
-}
-
-.feature-icon {
-  font-size: 2.5rem;
-  margin-bottom: 20px;
-  display: inline-block;
-  padding: 15px;
-  background: #f1f5f9;
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-}
-
-.feature-card h3 {
-  font-size: 1.25rem;
-  margin-bottom: 12px;
-}
-
-.feature-card p {
-  color: var(--text-muted);
-  font-size: 0.9rem;
-  line-height: 1.6;
-}
-
-.calculator-section {
-  padding: 80px 20px;
-}
-
-.calc-container {
-  padding: 40px;
-}
-
-.calc-form-side {
-  padding-right: 20px;
-}
-
-.slider-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.slider-value {
-  font-weight: 700;
-  color: var(--secondary);
-}
-
-.range-slider {
-  width: 100%;
-  height: 6px;
-  background: #e2e8f0;
-  border-radius: 5px;
-  outline: none;
-  -webkit-appearance: none;
-  margin: 10px 0;
-}
-
-.range-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--secondary);
-  cursor: pointer;
-  box-shadow: 0 0 10px var(--secondary-glow);
-  transition: transform 0.1s ease;
-}
-
-.range-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
-}
-
-.calc-result-side {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-left: 20px;
-}
-
-.result-glass {
-  background: #ffffff;
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 35px;
-  width: 100%;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.04);
-}
-
-.price-display {
-  display: flex;
-  align-items: baseline;
-  margin: 20px 0 15px;
-}
-
-.price-display .currency {
-  font-size: 2.25rem;
-  font-weight: 800;
-  color: var(--secondary);
-  margin-right: 5px;
-}
-
-.price-display .amount {
-  font-size: 3.5rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  color: var(--text-main);
-}
-
-.price-display .period {
-  font-size: 1.1rem;
-  color: var(--text-muted);
-  margin-left: 8px;
-}
-
-.price-info {
-  font-size: 0.8rem;
-  color: var(--text-dark);
-  line-height: 1.5;
-}
-
-.divider {
-  height: 1px;
-  background: var(--border-color);
-  margin: 25px 0;
-}
-
-.spec-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.spec-item {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.9rem;
-}
-
-.spec-item span {
-  color: var(--text-muted);
-}
-
-.spec-item strong {
-  color: var(--text-main);
-}
-
-/* Modal Styling */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 200;
-  padding: 20px;
-}
-
-.modal-success-icon {
-  font-size: 4rem;
-  line-height: 1;
-}
-
-.auth-helper-box {
-  background: rgba(79, 70, 229, 0.05);
-  border: 1px solid rgba(79, 70, 229, 0.15);
-  padding: 15px;
-  border-radius: 8px;
-  margin: 15px 0;
-}
-
-.footer {
-  padding: 40px 20px;
-  border-top: 1px solid var(--border-color);
-  color: var(--text-muted);
-  font-size: 0.85rem;
-  background: #ffffff;
-}
-
-.text-center { text-align: center; }
-.btn-block { width: 100%; }
-
-@media (max-width: 768px) {
-  .hero-title { font-size: 2.25rem; }
-  .calc-form-side, .calc-result-side { padding: 0; }
-  .calc-container { padding: 25px 15px; }
-  .calc-result-side { margin-top: 30px; }
-  .price-display .amount { font-size: 2.5rem; }
-}
-</style>

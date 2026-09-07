@@ -7,34 +7,29 @@
       <!-- Header -->
       <header class="dashboard-header">
         <div>
-          <h1>Araç Takibi</h1>
-          <p style="color: var(--text-muted); font-size: 0.95rem;">Filodaki araçları yönetin, durumlarını, muayene ve servis bilgilerini izleyin.</p>
+          <h1>Araç Yönetimi</h1>
+          <p style="color: var(--text-muted); font-size: 0.95rem;">Filodaki araçları yönetin, canlı GPS haritadan takip edin, durum ve muayene bilgilerini izleyin.</p>
         </div>
         <button @click="showAddModal = true" class="btn btn-primary">
           ➕ Yeni Araç Ekle
         </button>
       </header>
 
-      <!-- Tabs Section -->
-      <div class="tabs-container" style="display: flex; gap: 10px; margin-top: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 1px; margin-bottom: 15px;">
-        <button 
-          @click="activeTab = 'active'" 
-          class="tab-btn" 
-          :class="{ 'active-tab': activeTab === 'active' }"
-        >
-          Aktif Araçlar ({{ activeVehiclesCount }})
+      <!-- Tabs Section (FleetRent Premium Tab Pill Bar) -->
+      <div class="category-tabs-bar">
+        <button @click="activeTab = 'active'" class="tab-pill-btn" :class="{ 'active-tab-pill': activeTab === 'active' }">
+          <span>🚗</span> Aktif Araçlar ({{ activeVehiclesCount }})
         </button>
-        <button 
-          @click="activeTab = 'old'" 
-          class="tab-btn" 
-          :class="{ 'active-tab': activeTab === 'old' }"
-        >
-          Eski Araçlar ({{ oldVehiclesCount }})
+        <button @click="activeTab = 'old'" class="tab-pill-btn" :class="{ 'active-tab-pill': activeTab === 'old' }">
+          <span>📂</span> Eski Araçlar ({{ oldVehiclesCount }})
+        </button>
+        <button @click="activeTab = 'tracking'" class="tab-pill-btn" :class="{ 'active-tab-pill': activeTab === 'tracking' }">
+          <span>📍</span> Araç Takibi (GPS Harita)
         </button>
       </div>
 
-      <!-- Filter Panel -->
-      <div class="glass-panel filters-panel" style="margin-top: 30px; padding: 20px; display: flex; gap: 20px; flex-wrap: wrap; align-items: center;">
+      <!-- Filter Panel (For Active & Old Vehicles) -->
+      <div v-if="activeTab === 'active' || activeTab === 'old'" class="glass-panel filters-panel" style="margin-top: 20px; padding: 20px; display: flex; gap: 20px; flex-wrap: wrap; align-items: center;">
         <div style="flex: 1; min-width: 250px;">
           <input type="text" v-model="filters.search" class="form-input" placeholder="Plaka, marka, model veya şase no ara...">
         </div>
@@ -79,8 +74,8 @@
         </div>
       </div>
 
-      <!-- Vehicles List Table -->
-      <div class="glass-panel" style="margin-top: 20px; padding: 10px;">
+      <!-- Vehicles List Table (For Active & Old Vehicles) -->
+      <div v-if="activeTab === 'active' || activeTab === 'old'" class="glass-panel" style="margin-top: 20px; padding: 10px;">
         <div v-if="loading" class="text-center" style="padding: 50px 0;">Yükleniyor...</div>
         
         <div v-else-if="filteredVehicles.length === 0" class="empty-state">
@@ -119,8 +114,12 @@
                 <td>{{ vehicle.fuel }}</td>
                 <td>{{ vehicle.mileage?.toLocaleString() }} km</td>
                 <td>
-                  <span v-if="activeTab === 'active'" class="badge" :class="getVehicleBadgeClass(vehicle.status)">{{ vehicle.status }}</span>
-                  <span v-else class="badge badge-old-reason">{{ vehicle.removal_reason }}</span>
+                  <template v-if="activeTab === 'active'">
+                    <span class="badge" :class="getVehicleBadgeClass(vehicle.status)">{{ vehicle.status }}</span>
+                  </template>
+                  <template v-else>
+                    <span style="font-size: 0.85rem; color: #dc2626; font-weight: bold;">{{ vehicle.removal_reason || 'Kaldırıldı' }}</span>
+                  </template>
                 </td>
                 <td>
                   <div style="display: flex; gap: 8px;">
@@ -128,10 +127,7 @@
                       Detay
                     </button>
                     <template v-if="activeTab === 'active'">
-                      <router-link to="/dashboard/requests" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">
-                        Hizmet
-                      </router-link>
-                      <button @click="openRemoveModal(vehicle)" class="btn btn-secondary btn-danger-hover" style="padding: 6px 12px; font-size: 0.8rem;">
+                      <button @click="openRemoveModal(vehicle)" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; color: #ef4444;">
                         Kaldır
                       </button>
                     </template>
@@ -140,6 +136,70 @@
               </tr>
             </tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- 📍 HARİTAYLA ARAÇ TAKİP ALANI (Görseldeki 1'e 1 Tasarım)       -->
+      <!-- ============================================================== -->
+      <div v-if="activeTab === 'tracking'" class="fade-in-up" style="margin-top: 20px;">
+        <!-- Breadcrumb -->
+        <div style="font-size: 0.85rem; color: #64748b; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+          <span style="color: #64748b;">← Geri</span>
+          <span>/ Araçlarım / Araç Takip</span>
+        </div>
+
+        <div class="glass-panel" style="padding: 28px; background: #ffffff; margin-bottom: 25px;">
+          <h2 style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-bottom: 20px;">Araç Takip</h2>
+
+          <!-- Interactive OpenStreetMap / Google Maps Embed Container -->
+          <div class="map-tracking-container">
+            <a href="https://maps.google.com" target="_blank" class="map-overlay-badge">
+              <span>Haritalar'da aç</span> ↗
+            </a>
+            <iframe 
+              class="map-iframe" 
+              src="https://www.openstreetmap.org/export/embed.html?bbox=28.8000%2C40.9000%2C29.2500%2C41.1500&amp;layer=mapnik&amp;marker=41.0082%2C28.9784"
+              allowfullscreen
+            ></iframe>
+          </div>
+
+          <!-- Bottom Status Grid Panels matching screenshot -->
+          <div class="grid-2" style="gap: 25px; align-items: start;">
+            <!-- Left Green Panel: Aktif Araçlar -->
+            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 16px; padding: 24px;">
+              <h3 style="font-size: 1.1rem; font-weight: 800; color: #15803d; margin-bottom: 16px;">Aktif Araçlar</h3>
+
+              <div class="map-vehicle-card-active" v-for="v in activeVehiclesList" :key="v.id">
+                <div>
+                  <div style="font-weight: 800; font-size: 1.1rem; color: #0f172a;">{{ v.plate }}</div>
+                  <div style="font-size: 0.85rem; color: #64748b;">{{ v.brand }} {{ v.model }} - {{ v.model_year || 2024 }}</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 0.8rem; font-weight: 700; color: #16a34a; background: #dcfce7; padding: 4px 10px; border-radius: 20px;">
+                    🟢 Seyir Halinde
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Orange Panel: Pasif Araçlar / Servisteki -->
+            <div style="background: #fff7ed; border: 1px solid #ffedd5; border-radius: 16px; padding: 24px;">
+              <h3 style="font-size: 1.1rem; font-weight: 800; color: #c2410c; margin-bottom: 16px;">Pasif Araçlar</h3>
+
+              <div class="map-vehicle-card-active" v-for="v in passiveVehiclesList" :key="v.id" style="border-color: #fed7aa;">
+                <div>
+                  <div style="font-weight: 800; font-size: 1.1rem; color: #0f172a;">{{ v.plate }}</div>
+                  <div style="font-size: 0.85rem; color: #64748b;">{{ v.brand }} {{ v.model }} - {{ v.model_year || 2024 }}</div>
+                </div>
+                <div>
+                  <span style="font-size: 0.8rem; font-weight: 700; color: #ea580c; background: #ffedd5; padding: 4px 10px; border-radius: 20px;">
+                    Serviste
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </main>
@@ -362,6 +422,9 @@ const removalReason = ref('Sözleşme Bitişi')
 
 const activeVehiclesCount = computed(() => vehicles.value.filter(v => v.is_active).length)
 const oldVehiclesCount = computed(() => vehicles.value.filter(v => !v.is_active).length)
+
+const activeVehiclesList = computed(() => vehicles.value.filter(v => v.is_active && v.status === 'Aktif'))
+const passiveVehiclesList = computed(() => vehicles.value.filter(v => !v.is_active || v.status !== 'Aktif'))
 
 const filters = reactive({
   search: '',

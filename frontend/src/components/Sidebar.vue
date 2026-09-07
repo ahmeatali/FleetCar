@@ -25,7 +25,7 @@
       <li>
         <router-link to="/dashboard/vehicles" class="sidebar-link" active-class="active">
           <span class="icon">🚗</span>
-          <span>Araç Takibi</span>
+          <span>Araç Yönetimi</span>
         </router-link>
       </li>
       <li>
@@ -38,6 +38,18 @@
         <router-link to="/dashboard/quotes" class="sidebar-link" active-class="active">
           <span class="icon">📑</span>
           <span>Kiralama Teklifleri</span>
+        </router-link>
+      </li>
+      <li>
+        <router-link to="/dashboard/reports" class="sidebar-link" active-class="active">
+          <span class="icon">📈</span>
+          <span>Raporlar</span>
+        </router-link>
+      </li>
+      <li>
+        <router-link to="/dashboard/settings" class="sidebar-link" active-class="active">
+          <span class="icon">⚙️</span>
+          <span>Ayarlar</span>
         </router-link>
       </li>
     </ul>

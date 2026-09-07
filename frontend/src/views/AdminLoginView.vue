@@ -20,7 +20,7 @@
             v-model="username" 
             required 
             class="form-input" 
-            placeholder="django_admin"
+            placeholder="kullanici_adi"
           >
         </div>
 
@@ -40,14 +40,6 @@
         </button>
       </form>
 
-      <!-- Django Auth Info Helper -->
-      <div class="django-info-box">
-        <p>
-          🔑 <strong>Django Entegrasyonu:</strong><br>
-          Giriş bilgileri Django yönetim panelinden kontrol edilmek üzere tasarlanmıştır. Test için geçici şifre: <code>django123</code> kullanabilirsiniz.
-        </p>
-      </div>
-
       <div style="margin-top: 25px; text-align: center;">
         <router-link to="/login" style="color: var(--text-muted); font-size: 0.85rem; text-decoration: none;" class="hover-underline">
           ← Müşteri Portalı Girişine Dön
@@ -66,13 +58,10 @@ const username = ref('')
 const password = ref('')
 
 const handleLogin = () => {
-  // Simple check for demo/Django instructions
-  if (password.value === 'django123') {
+  if (username.value && password.value) {
     localStorage.setItem('fleetcar_admin_token', 'admin_logged_in')
     localStorage.setItem('fleetcar_admin_user', username.value)
     router.push('/admin-portal')
-  } else {
-    alert('Hatalı şifre! Lütfen Django test şifresini (django123) girin.')
   }
 }
 </script>

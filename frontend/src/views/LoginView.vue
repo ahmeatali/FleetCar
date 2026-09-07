@@ -1,146 +1,107 @@
 <template>
-  <div class="app-bg-glow"></div>
+  <div style="min-height: 100vh; background: #f8fafc; display: flex; flex-direction: column;">
+    <!-- Top Header Bar matching screenshot -->
+    <header class="hero-dark-bg" style="padding: 16px 8%; text-align: left; height: 60px; display: flex; align-items: center;">
+      <router-link to="/" class="nav-logo" style="text-decoration: none;">
+        <div class="nav-logo-icon" style="background: #2563eb; border-radius: 8px;">⇄</div>
+        <span style="font-weight: 800; font-size: 1.4rem; color: #ffffff;">FleetRent</span>
+      </router-link>
+    </header>
 
-  <div class="login-container fade-in-up">
-    <router-link to="/" class="nav-logo" style="justify-content: center; margin-bottom: 30px;">
-      <div class="nav-logo-icon">F</div>
-      <span>FleetCar</span>
-    </router-link>
-
-    <div class="glass-panel login-card">
-      <h2 class="text-center gradient-brand" style="font-size: 1.75rem; margin-bottom: 10px;">Müşteri Portalı Girişi</h2>
-      <p class="text-center" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px;">
-        Filo yönetim panelinize erişmek için bilgilerinizi girin.
-      </p>
-
-      <form @submit.prevent="handleLogin">
-        <div class="form-group">
-          <label class="form-label">E-posta Adresi</label>
-          <input type="email" v-model="email" required class="form-input" placeholder="isim@sirket.com">
+    <!-- Main Container -->
+    <main style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 20px;">
+      <!-- Step 1: Role Selection Screen (matching screenshot with 3 tiles) -->
+      <div v-if="selectedRole === null" class="login-selection-card fade-in-up">
+        <div class="nav-logo" style="justify-content: center; margin-bottom: 12px;">
+          <div class="nav-logo-icon" style="background: #2563eb; border-radius: 8px;">⇄</div>
+          <span style="font-weight: 800; font-size: 1.6rem; color: #0f172a;">FleetRent</span>
         </div>
+        <p style="color: #64748b; font-size: 0.95rem; font-weight: 500;">Giriş tipini seçin</p>
 
-        <div class="form-group" style="margin-bottom: 25px;">
-          <div class="label-row">
-            <label class="form-label">Şifre</label>
-            <a href="#" class="forgot-pass-link">Şifremi Unuttum?</a>
+        <div class="login-role-grid">
+          <!-- 1. Müşteri Girişi -->
+          <div @click="selectedRole = 'customer'" class="login-role-tile tile-customer">
+            <span class="tile-icon">🏢</span>
+            <span class="tile-title">Müşteri Girişi</span>
+            <span style="font-size: 0.75rem; color: #64748b; margin-top: 4px; font-weight: 500;">Filo Yönetim Paneli</span>
           </div>
-          <input type="password" v-model="password" required class="form-input" placeholder="••••••••">
+
+          <!-- 2. Tedarikçi Girişi (Araba Sağlayıcı Kiralama Firmaları) -->
+          <router-link to="/supplier-login" class="login-role-tile tile-supplier">
+            <span class="tile-icon">🏭</span>
+            <span class="tile-title">Tedarikçi Girişi</span>
+            <span style="font-size: 0.75rem; color: #10b981; margin-top: 4px; font-weight: 600;">Araba Sağlayıcı & Kiralama</span>
+          </router-link>
+
+          <!-- 3. Servis Girişi (Bakım, Lastik & Oto Kurtarma) -->
+          <router-link to="/service-login" class="login-role-tile tile-service">
+            <span class="tile-icon">🔧</span>
+            <span class="tile-title">Servis Girişi</span>
+            <span style="font-size: 0.75rem; color: #2563eb; margin-top: 4px; font-weight: 600;">Bakım, Lastik & Oto Kurtarma</span>
+          </router-link>
         </div>
 
-        <button type="submit" class="btn btn-primary btn-block" style="width: 100%;" :disabled="loading">
-          {{ loading ? 'Giriş Yapılıyor...' : 'Giriş Yap' }}
-        </button>
-      </form>
-
-      <div class="demo-account-info">
-        <h4>💡 Demo Hesap Bilgileri</h4>
-        <p>Proje testi için aşağıdaki şifreyi kullanabilirsiniz:</p>
-        <div class="demo-credentials">
-          <span>Şifre:</span> <strong>admin123</strong>
+        <div style="margin-top: 30px;">
+          <router-link to="/" style="color: #64748b; text-decoration: none; font-size: 0.88rem;">
+            ← Anasayfaya Geri Dön
+          </router-link>
         </div>
       </div>
-    </div>
 
-    <div class="text-center" style="margin-top: 25px;">
-      <router-link to="/" style="color: var(--text-muted); text-decoration: none; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 5px;">
-        ← Anasayfaya Geri Dön
-      </router-link>
-    </div>
+      <!-- Step 2: Customer Credentials Form -->
+      <div v-else class="glass-panel login-card fade-in-up" style="max-width: 440px; width: 100%; padding: 36px; border-radius: 20px; background: #ffffff;">
+        <button @click="selectedRole = null" style="background: none; border: none; cursor: pointer; color: #2563eb; font-size: 0.88rem; margin-bottom: 20px; font-weight: 600;">
+          ← Giriş Tipini Değiştir
+        </button>
+
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: #0f172a; margin-bottom: 8px;">Müşteri Girişi</h2>
+        <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 25px;">
+          Filo yönetim panelinize erişmek için bilgilerinizi girin.
+        </p>
+
+        <form @submit.prevent="handleLogin">
+          <div class="form-group">
+            <label class="form-label">E-posta Adresi</label>
+            <input type="email" v-model="email" required class="form-input" placeholder="isim@sirket.com">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 25px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label class="form-label" style="margin-bottom: 0;">Şifre</label>
+              <a href="#" style="font-size: 0.8rem; color: #2563eb; text-decoration: none;">Şifremi Unuttum?</a>
+            </div>
+            <input type="password" v-model="password" required class="form-input" placeholder="••••••••">
+          </div>
+
+          <button type="submit" class="btn btn-blue" style="width: 100%; padding: 14px;" :disabled="loading">
+            {{ loading ? 'Giriş Yapılıyor...' : 'Giriş Yap' }}
+          </button>
+        </form>
+      </div>
+    </main>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
+const route = useRoute()
+
+const selectedRole = ref(route.query.role || null)
 const email = ref('')
 const password = ref('')
 const loading = ref(false)
 
 const handleLogin = () => {
   loading.value = true
-  
-  // Simulate API authentication call
   setTimeout(() => {
     loading.value = false
-    if (password.value === 'admin123') {
-      localStorage.setItem('fleetcar_token', 'logged_in')
-      localStorage.setItem('fleetcar_user_email', email.value || 'demo@sirket.com')
-      router.push('/dashboard')
-    } else {
-      alert('Hatalı şifre! Lütfen demo şifresini (admin123) kullanın.')
-    }
-  }, 800)
+    localStorage.setItem('fleetcar_token', 'logged_in')
+    localStorage.setItem('fleetcar_user_email', email.value || 'musteri@sirket.com')
+    router.push('/dashboard')
+  }, 400)
 }
 </script>
 
-<style scoped>
-.login-container {
-  max-width: 420px;
-  margin: 100px auto 40px;
-  padding: 0 20px;
-}
-
-.login-card {
-  padding: 35px 30px;
-}
-
-.label-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.forgot-pass-link {
-  font-size: 0.8rem;
-  color: var(--secondary);
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.forgot-pass-link:hover {
-  text-decoration: underline;
-}
-
-.demo-account-info {
-  margin-top: 25px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 15px;
-}
-
-.demo-account-info h4 {
-  font-size: 0.85rem;
-  margin-bottom: 5px;
-  color: var(--secondary);
-}
-
-.demo-account-info p {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-
-.demo-credentials {
-  margin-top: 8px;
-  font-size: 0.8rem;
-}
-
-.demo-credentials strong {
-  font-family: monospace;
-  background: rgba(0,0,0,0.3);
-  padding: 2px 6px;
-  border-radius: 4px;
-  color: var(--secondary);
-  font-size: 0.9rem;
-}
-
-.text-center {
-  text-align: center;
-}
-
-.btn-block {
-  width: 100%;
-}
-</style>
