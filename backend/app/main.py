@@ -453,6 +453,7 @@ def get_company_profile(db: Session = Depends(get_db)):
 # ─────────────────── ADMIN — AUTH ───────────────────────────────────────────
 
 @app.post("/api/admin/login")
+@app.post("/admin/login")
 def admin_login(creds: AdminLoginRequest, db: Session = Depends(get_db)):
     email_clean = creds.email.lower().strip()
     admin_user = db.query(models.AdminUser).filter(models.AdminUser.email == email_clean).first()
