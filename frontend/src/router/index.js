@@ -97,9 +97,9 @@ const router = createRouter({
 
 // Simple navigation guard
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = localStorage.getItem('fleetcar_token') === 'logged_in'
-  const isAdminAuthenticated = localStorage.getItem('fleetcar_admin_token') === 'admin_logged_in'
-  const isSupplierAuthenticated = localStorage.getItem('fleetcar_supplier_token') === 'supplier_logged_in'
+  const isAuthenticated = Boolean(localStorage.getItem('fleetcar_token'))
+  const isAdminAuthenticated = Boolean(localStorage.getItem('fleetcar_admin_token'))
+  const isSupplierAuthenticated = Boolean(localStorage.getItem('fleetcar_supplier_token'))
   
   if (to.matched.some(record => record.meta.requiresAuth)) {
     if (!isAuthenticated) {
