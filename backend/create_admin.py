@@ -2,41 +2,47 @@
 """
 FleetCar — Admin Kullanıcısı Oluşturma Scripti
 Kullanımı:
-  1. İnteraktif olarak:
-     python create_admin.py
-
-  2. Parametreler ile:
-     python create_admin.py --email admin@fleetcar.com --password yoursecretpassword
+  python create_admin.py --email admin@fleetcar.com --password secretpassword
 """
 
 import sys
+import io
 import argparse
 import datetime
+
+# Safe terminal encoding configuration
+if hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='backslashreplace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='backslashreplace')
+    except Exception:
+        pass
+
 from app.database import SessionLocal, engine
 from app import models
 from app.auth import hash_password
 
 def main():
-    parser = argparse.ArgumentParser(description="FleetCar Yönetici Hesabı Oluşturucu")
-    parser.add_argument("--email", help="Yönetici E-posta Adresi")
-    parser.add_argument("--password", help="Yönetici Şifresi")
+    parser = argparse.ArgumentParser(description="FleetCar Yonetici Hesabi Olusturucu")
+    parser.add_argument("--email", help="Yonetici E-posta Adresi")
+    parser.add_argument("--password", help="Yonetici Sifresi")
 
     args = parser.parse_args()
 
-    # Tabloları oluştur
+    # Tablolari olustur
     models.Base.metadata.create_all(bind=engine)
 
     email = args.email
     if not email:
-        email = input("🔑 Yönetici E-posta Adresi: ").strip()
+        email = input("Yonetici E-posta Adresi: ").strip()
 
     password = args.password
     if not password:
         import getpass
-        password = getpass.getpass("🔒 Yönetici Şifresi: ").strip()
+        password = getpass.getpass("Yonetici Sifresi: ").strip()
 
     if not email or not password:
-        print("❌ E-posta adresi ve şifre boş bırakılamaz!")
+        print("[HATA] E-posta adresi ve sifre bos birakilamaz!")
         sys.exit(1)
 
     db = SessionLocal()
@@ -49,7 +55,7 @@ def main():
         if existing:
             existing.password_hash = hashed
             db.commit()
-            print(f"✅ [{email_clean}] e-postasına sahip yöneticinin şifresi başarıyla güncellendi!")
+            print(f"[BASARILI] [{email_clean}] yoneticisinin sifresi basariyla guncellendi!")
         else:
             new_admin = models.AdminUser(
                 email=email_clean,
@@ -58,11 +64,12 @@ def main():
             )
             db.add(new_admin)
             db.commit()
-            print(f"🎉 [{email_clean}] yöneticisi başarıyla veritabanına oluşturuldu!")
+            print(f"[BASARILI] [{email_clean}] yoneticisi basariyla veritabanina olusturuldu!")
 
     except Exception as e:
         db.rollback()
-        print(f"❌ Hata oluştu: {e}")
+        err_msg = str(e).encode('ascii', errors='backslashreplace').decode('ascii')
+        print(f"[HATA] Veritabani hatasi: {err_msg}")
         sys.exit(1)
     finally:
         db.close()
