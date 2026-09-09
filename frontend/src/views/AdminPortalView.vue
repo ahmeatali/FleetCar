@@ -1572,7 +1572,8 @@ const submitAddSupplier = async () => {
         alert(`✅ ${added.name} başarıyla sisteme kaydedildi.`)
       }
     } else {
-      alert('Tedarikçi eklenirken hata oluştu.')
+      const errData = await res.json().catch(() => ({}))
+      alert(errData.detail || 'Tedarikçi eklenirken hata oluştu.')
     }
   } catch (err) {
     console.error('Error adding supplier:', err)

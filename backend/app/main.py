@@ -343,8 +343,16 @@ def get_suppliers(type: Optional[str] = None, db: Session = Depends(get_db)):
 @app.post("/api/suppliers", response_model=SupplierResponse)
 @app.post("/api/admin/suppliers", response_model=SupplierResponse)
 def create_supplier(supplier: SupplierCreate, db: Session = Depends(get_db)):
-    email_clean = supplier.email.lower().strip() if supplier.email else None
-    
+    email_clean = supplier.email.lower().strip() if (supplier.email and supplier.email.strip()) else None
+
+    if email_clean:
+        existing = db.query(models.Supplier).filter(models.Supplier.email == email_clean).first()
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"[{email_clean}] e-posta adresi zaten '{existing.name}' adıyla başka bir tedarikçiye kayıtlı."
+            )
+
     token = None
     inv_status = "Davet Edilmedi"
     if supplier.send_invite and email_clean:
@@ -352,17 +360,24 @@ def create_supplier(supplier: SupplierCreate, db: Session = Depends(get_db)):
         inv_status = "Davet Gönderildi"
         send_supplier_invitation_email(email_clean, supplier.name, token)
 
-    s = models.Supplier(
-        name=supplier.name, type=supplier.type, phone=supplier.phone,
-        location=f"{supplier.district}, {supplier.city}",
-        city=supplier.city, district=supplier.district,
-        services=supplier.services, contract_type=supplier.contract_type,
-        email=email_clean,
-        invitation_token=token,
-        invitation_status=inv_status
-    )
-    db.add(s); db.commit(); db.refresh(s)
-    return supplier_dict(s)
+    try:
+        s = models.Supplier(
+            name=supplier.name, type=supplier.type, phone=supplier.phone,
+            location=f"{supplier.district}, {supplier.city}",
+            city=supplier.city, district=supplier.district,
+            services=supplier.services, contract_type=supplier.contract_type,
+            email=email_clean,
+            invitation_token=token,
+            invitation_status=inv_status
+        )
+        db.add(s); db.commit(); db.refresh(s)
+        return supplier_dict(s)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Tedarikçi eklenirken veritabanı hatası oluştu: {str(e)}"
+        )
 
 
 @app.post("/api/admin/suppliers/{supplier_id}/invite")
