@@ -168,14 +168,14 @@
                 <div class="widget-item-icon">🚗</div>
                 <span>Toplam Araç</span>
               </div>
-              <span class="widget-item-value">3</span>
+              <span class="widget-item-value">{{ stats.total_vehicles || 0 }}</span>
             </div>
             <div class="widget-item-row">
               <div class="widget-item-left">
                 <div class="widget-item-icon">🅿️</div>
                 <span>Park Halindeki</span>
               </div>
-              <span class="widget-item-value">3</span>
+              <span class="widget-item-value">{{ stats.active_vehicles || 0 }}</span>
             </div>
             <router-link to="/dashboard/vehicles" class="widget-item-row" style="text-decoration: none;">
               <div class="widget-item-left">
@@ -206,21 +206,21 @@
                 <div class="widget-item-icon">🔧</div>
                 <span>Servisteki Araçlar</span>
               </div>
-              <span class="widget-item-value">0</span>
+              <span class="widget-item-value">{{ stats.in_service || 0 }}</span>
             </div>
             <div class="widget-item-row">
               <div class="widget-item-left">
                 <div class="widget-item-icon">⏳</div>
                 <span>Bekleyen Talepler</span>
               </div>
-              <span class="widget-item-value">0</span>
+              <span class="widget-item-value">{{ stats.pending_requests || 0 }}</span>
             </div>
             <div class="widget-item-row">
               <div class="widget-item-left">
                 <div class="widget-item-icon">📄</div>
                 <span>Açık Servis Dosyası</span>
               </div>
-              <span class="widget-item-value">0</span>
+              <span class="widget-item-value">{{ stats.pending_requests || 0 }}</span>
             </div>
             <router-link to="/dashboard/requests" class="widget-item-row" style="text-decoration: none;">
               <div class="widget-item-left">
@@ -248,7 +248,7 @@
                 <div class="widget-item-icon">🚗</div>
                 <span>İkame Talep</span>
               </div>
-              <span class="widget-item-value">0</span>
+              <span class="widget-item-value">{{ stats.replacement_waiting || 0 }}</span>
             </div>
             <div class="widget-item-row">
               <div class="widget-item-left">
@@ -288,21 +288,21 @@
                 <div class="widget-item-icon">📋</div>
                 <span>Bekleyen Talepler</span>
               </div>
-              <span class="widget-item-value">0</span>
+              <span class="widget-item-value">{{ stats.pending_requests || 0 }}</span>
             </div>
             <div class="widget-item-row">
               <div class="widget-item-left">
                 <div class="widget-item-icon">✅</div>
                 <span>Onaylanan Talepler</span>
               </div>
-              <span class="widget-item-value">0</span>
+              <span class="widget-item-value">{{ stats.completed_requests || 0 }}</span>
             </div>
             <div class="widget-item-row">
               <div class="widget-item-left">
                 <div class="widget-item-icon">🚗</div>
                 <span>İkame Araç Talebi</span>
               </div>
-              <span class="widget-item-value">0</span>
+              <span class="widget-item-value">{{ stats.replacement_waiting || 0 }}</span>
             </div>
           </div>
         </div>
@@ -318,14 +318,14 @@
                 <div class="widget-item-icon">💰</div>
                 <span>Bakiye</span>
               </div>
-              <span class="widget-item-value" style="color: #2563eb;">1.450,00 TL</span>
+              <span class="widget-item-value" style="color: #2563eb;">₺0,00</span>
             </div>
             <div class="widget-item-row">
               <div class="widget-item-left">
                 <div class="widget-item-icon">🚘</div>
                 <span>Geçiş Sayısı</span>
               </div>
-              <span class="widget-item-value">24</span>
+              <span class="widget-item-value">0</span>
             </div>
           </div>
         </div>
@@ -364,7 +364,7 @@
                 <div class="widget-item-icon">🛡️</div>
                 <span>Aktif Poliçe</span>
               </div>
-              <span class="widget-item-value">3</span>
+              <span class="widget-item-value">{{ stats.total_vehicles || 0 }}</span>
             </div>
             <div class="widget-item-row">
               <div class="widget-item-left">
