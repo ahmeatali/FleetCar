@@ -72,69 +72,43 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-const email = ref('')
-const password = ref('')
+const loading = ref(false)
 
 const handleLogin = async () => {
-  if (!email.value) return
-  
-  const searchMail = email.value.toLowerCase().trim()
-  const domainName = searchMail.split('@')[1] ? searchMail.split('@')[1].split('.')[0] : 'Tedarikçi'
-  const companyName = domainName.charAt(0).toUpperCase() + domainName.slice(1) + ' Filo Kiralama'
+  if (!email.value || !password.value) return
+  loading.value = true
   
   try {
-    const res = await fetch('/api/suppliers')
-    let supplier = null
-    if (res.ok) {
-      const list = await res.json()
-      supplier = list.find(s => s.name.toLowerCase() === companyName.toLowerCase())
-    }
-    
-    if (!supplier) {
-      const createRes = await fetch('/api/suppliers', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: companyName,
-          type: 'ikame_arac',
-          phone: '0850 500 0000',
-          city: 'İstanbul',
-          district: 'Merkez',
-          services: ['İkame Araç', 'Filo Kiralama'],
-          contract_type: 'Anlaşmalı'
-        })
+    const res = await fetch('/api/supplier/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: email.value,
+        password: password.value
       })
-      if (createRes.ok) {
-        supplier = await createRes.json()
-      }
+    })
+
+    if (res.ok) {
+      const data = await res.json()
+      const supplier = data.supplier || {}
+      
+      localStorage.setItem('fleetcar_supplier_token', data.token)
+      localStorage.setItem('fleetcar_supplier_id', String(supplier.id || '1'))
+      localStorage.setItem('fleetcar_supplier_name', supplier.name || 'Tedarikçi Firma')
+      localStorage.setItem('fleetcar_supplier_type', supplier.type || 'ikame_arac')
+      localStorage.setItem('fleetcar_supplier_email', supplier.email || email.value)
+      localStorage.setItem('fleet_supplier', JSON.stringify(supplier))
+      
+      router.push('/supplier-portal')
+    } else {
+      const errData = await res.json().catch(() => ({}))
+      alert(errData.detail || 'Giriş yapılamadı! Lütfen e-posta ve şifrenizi kontrol edin.')
     }
-    
-    const supplierId = supplier ? supplier.id : Date.now()
-    const finalName = supplier ? supplier.name : companyName
-    
-    localStorage.setItem('fleetcar_supplier_id', String(supplierId))
-    localStorage.setItem('fleetcar_supplier_name', finalName)
-    localStorage.setItem('fleetcar_supplier_type', 'ikame_arac')
-    localStorage.setItem('fleetcar_supplier_email', searchMail)
-    localStorage.setItem('fleet_supplier', JSON.stringify({
-      id: supplierId,
-      name: finalName,
-      type: 'ikame_arac',
-      city: supplier?.city || 'İstanbul',
-      district: supplier?.district || 'Merkez',
-      contract_type: supplier?.contract_type || 'Anlaşmalı',
-      services: supplier?.services || ['İkame Araç', 'Filo Kiralama'],
-      phone: supplier?.phone || '0850 500 0000'
-    }))
-    
-    router.push('/supplier-portal')
   } catch (err) {
     console.error('Login error:', err)
-    localStorage.setItem('fleetcar_supplier_id', '1')
-    localStorage.setItem('fleetcar_supplier_name', companyName)
-    localStorage.setItem('fleetcar_supplier_type', 'ikame_arac')
-    localStorage.setItem('fleetcar_supplier_email', searchMail)
-    router.push('/supplier-portal')
+    alert('Sunucuya bağlanılamadı. Lütfen backend servisini kontrol edin.')
+  } finally {
+    loading.value = false
   }
 }
 </script>

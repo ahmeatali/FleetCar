@@ -34,11 +34,18 @@
         <div style="font-size: 3.5rem; margin-bottom: 15px;">🎉</div>
         <h2 style="font-size: 1.5rem; color: #0f172a; font-weight: 800; margin-bottom: 10px;">Şifreniz Başarıyla Oluşturuldu!</h2>
         <p style="color: #64748b; font-size: 0.95rem; line-height: 1.5; margin-bottom: 25px;">
-          Tedarikçi portalı hesabınız aktifleştirildi. Belirlediğiniz şifre ile hemen portalınıza giriş yapabilirsiniz.
+          Tedarikçi / servis portalı hesabınız aktifleştirildi. Belirlediğiniz şifre ile hemen portalınıza giriş yapabilirsiniz.
         </p>
-        <router-link to="/supplier-login" class="btn btn-block" style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; padding: 14px; text-decoration: none; border-radius: 10px; font-weight: 700; display: block; text-align: center; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
-          Tedarikçi Portalı'na Giriş Yap ➔
-        </router-link>
+        
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <router-link to="/supplier-login" class="btn btn-block" style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; padding: 14px; text-decoration: none; border-radius: 10px; font-weight: 700; display: block; text-align: center; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
+            🔑 Tedarikçi Girişi Yap ➔
+          </router-link>
+          
+          <router-link to="/service-login" class="btn btn-block" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; padding: 12px; text-decoration: none; border-radius: 10px; font-weight: 700; display: block; text-align: center;">
+            🔧 Servis Girişi Yap (Bakım & Lastik) ➔
+          </router-link>
+        </div>
       </div>
 
       <!-- Form Setup State -->
