@@ -495,7 +495,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import Sidebar from '../components/Sidebar.vue'
 
 const activeTab = ref('servis')
@@ -526,7 +526,7 @@ const formServis = reactive({
   description: '',
   details: {
     service_type: 'Periyodik Bakım',
-    mileage_gps: '45.426 km',
+    mileage_gps: '0 km',
     date1: '',
     date2: '',
     city: 'İstanbul',
@@ -542,13 +542,36 @@ const formLastik = reactive({
     tire_type: 'Kış Lastiği',
     count: '4',
     tire_size: '205/55 R16',
-    mileage_gps: '45.426 km',
+    mileage_gps: '0 km',
     date1: '',
     date2: '',
     city: 'İstanbul',
     district: 'Ümraniye'
   }
 })
+
+const updateVehicleKmDisplay = () => {
+  if (formServis.vehicle_id) {
+    const v = vehicles.value.find(veh => veh.id === formServis.vehicle_id || veh.chassis_no === formServis.vehicle_id)
+    if (v) {
+      const kmVal = v.gps_mileage || v.gps_km || v.mileage || v.current_km || 0
+      const isGps = !!(v.gps_mileage || v.gps_km)
+      formServis.details.mileage_gps = isGps ? `${kmVal.toLocaleString('tr-TR')} km (GPS)` : `${kmVal.toLocaleString('tr-TR')} km`
+    }
+  }
+
+  if (formLastik.vehicle_id) {
+    const v = vehicles.value.find(veh => veh.id === formLastik.vehicle_id || veh.chassis_no === formLastik.vehicle_id)
+    if (v) {
+      const kmVal = v.gps_mileage || v.gps_km || v.mileage || v.current_km || 0
+      const isGps = !!(v.gps_mileage || v.gps_km)
+      formLastik.details.mileage_gps = isGps ? `${kmVal.toLocaleString('tr-TR')} km (GPS)` : `${kmVal.toLocaleString('tr-TR')} km`
+    }
+  }
+}
+
+watch(() => formServis.vehicle_id, updateVehicleKmDisplay)
+watch(() => formLastik.vehicle_id, updateVehicleKmDisplay)
 
 const formIkame = reactive({
   vehicle_id: '',
@@ -596,8 +619,13 @@ const handlePhotoSelected = (e) => {
 
 const fetchData = async () => {
   try {
+    const customerId = localStorage.getItem('fleetcar_customer_id') || localStorage.getItem('customer_id')
+    let vehicleUrl = '/api/vehicles'
+    if (customerId) {
+      vehicleUrl += `?customer_id=${customerId}`
+    }
     const [vRes, sRes, rRes] = await Promise.all([
-      fetch('/api/vehicles'),
+      fetch(vehicleUrl),
       fetch('/api/suppliers'),
       fetch('/api/requests')
     ])
@@ -612,6 +640,7 @@ const fetchData = async () => {
         formLastik.vehicle_id = vehicles.value[0].id
         formIkame.vehicle_id = vehicles.value[0].id
         formYolYardim.vehicle_id = vehicles.value[0].id
+        updateVehicleKmDisplay()
       }
     }
   } catch (err) {
