@@ -449,7 +449,7 @@ const loading = ref(true)
 const currentDate = ref(new Date().toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }))
 
 const fetchDashboardData = async () => {
-  const customerId = localStorage.getItem('fleetcar_customer_id')
+  const customerId = localStorage.getItem('fleetcar_customer_id') || localStorage.getItem('customer_id')
   const statsUrl = customerId ? `/api/dashboard/stats?customer_id=${customerId}` : '/api/dashboard/stats'
   
   try {

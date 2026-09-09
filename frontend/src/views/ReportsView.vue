@@ -497,10 +497,9 @@ const userData = ref([])
 
 onMounted(async () => {
   try {
-    const customerId = localStorage.getItem('customer_id')
-    const userRole = localStorage.getItem('user_role')
+    const customerId = localStorage.getItem('fleetcar_customer_id') || localStorage.getItem('customer_id')
     let url = '/api/vehicles'
-    if (userRole === 'customer' && customerId) {
+    if (customerId) {
       url += `?customer_id=${customerId}`
     }
     const res = await fetch(url)

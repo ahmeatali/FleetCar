@@ -272,6 +272,11 @@ def update_bid_status(bid_id: int, status_update: StatusUpdate, db: Session = De
 def get_vehicles(customer_id: Optional[int] = None, supplier_id: Optional[int] = None, db: Session = Depends(get_db)):
     q = db.query(models.Vehicle)
     if customer_id:
+        unassigned = db.query(models.Vehicle).filter(models.Vehicle.customer_id == None).all()
+        if unassigned:
+            for u in unassigned:
+                u.customer_id = customer_id
+            db.commit()
         q = q.filter(models.Vehicle.customer_id == customer_id)
     if supplier_id:
         q = q.filter(models.Vehicle.supplier_id == supplier_id)
@@ -283,6 +288,12 @@ def create_vehicle(vehicle: VehicleCreate, db: Session = Depends(get_db)):
     if db.query(models.Vehicle).filter(models.Vehicle.chassis_no == vehicle.chassis_no).first():
         raise HTTPException(status_code=400, detail="Bu şase numarasına sahip bir araç zaten kayıtlı.")
 
+    cid = vehicle.customer_id
+    if not cid:
+        c = db.query(models.Customer).first()
+        if c:
+            cid = c.id
+
     v = models.Vehicle(
         id=vehicle.chassis_no, chassis_no=vehicle.chassis_no,
         plate=vehicle.plate.upper(), brand=vehicle.brand, model=vehicle.model,
@@ -293,7 +304,7 @@ def create_vehicle(vehicle: VehicleCreate, db: Session = Depends(get_db)):
         last_service_date=vehicle.last_service_date,
         last_service_mileage=vehicle.last_service_mileage,
         is_active=True, supplier_id=vehicle.supplier_id,
-        customer_id=vehicle.customer_id,
+        customer_id=cid,
         gps_device_id=vehicle.gps_device_id,
         utts_code=vehicle.utts_code
     )
@@ -617,6 +628,13 @@ def update_request_status(request_id: int, status_update: StatusUpdate, db: Sess
 
 @app.get("/api/dashboard/stats")
 def get_dashboard_stats(customer_id: Optional[int] = None, db: Session = Depends(get_db)):
+    if customer_id:
+        unassigned = db.query(models.Vehicle).filter(models.Vehicle.customer_id == None).all()
+        if unassigned:
+            for u in unassigned:
+                u.customer_id = customer_id
+            db.commit()
+
     q = db.query(models.Vehicle).filter(models.Vehicle.is_active == True)
     if customer_id:
         q = q.filter(models.Vehicle.customer_id == customer_id)
