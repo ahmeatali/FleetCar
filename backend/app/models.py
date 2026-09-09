@@ -44,6 +44,10 @@ class Customer(Base):
     address                   = Column(String)
     contract_amount           = Column(Float)
     signed_at                 = Column(String)
+    password_hash             = Column(String, nullable=True)
+    invitation_token          = Column(String, nullable=True)
+    invitation_status         = Column(String, default="Davet Edilmedi") # Davet Edilmedi / Davet Gönderildi / Aktif
+
 
 
 class Vehicle(Base):

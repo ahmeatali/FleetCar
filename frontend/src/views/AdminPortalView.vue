@@ -278,7 +278,8 @@
                   <th>Filo Durumu</th>
                   <th>Sözleşme Bedeli (Aylık)</th>
                   <th>İmza Tarihi</th>
-                  <th>İşlemler</th>
+                  <th>Portal Davet Durumu</th>
+                  <th style="width: 220px; text-align: right;">İşlemler</th>
                 </tr>
               </thead>
               <tbody>
@@ -327,9 +328,36 @@
                   </td>
                   <td>{{ formatDate(c.signed_at) }}</td>
                   <td>
-                    <button @click.stop="openEditCustomerModal(c)" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">
-                      ⚙️ Düzenle
-                    </button>
+                    <span v-if="c.invitation_status === 'Aktif'" class="badge badge-active" style="font-size: 0.78rem;">
+                      ✓ Aktif (Şifre Koydu)
+                    </span>
+                    <span v-else-if="c.invitation_status === 'Davet Gönderildi'" class="badge badge-roadside" style="font-size: 0.78rem;">
+                      📧 Davet Edildi
+                    </span>
+                    <span v-else class="badge" style="background: rgba(148, 163, 184, 0.1); color: #64748b; font-size: 0.78rem;">
+                      Davet Edilmedi
+                    </span>
+                  </td>
+                  <td style="text-align: right;">
+                    <div style="display: flex; gap: 6px; justify-content: flex-end;">
+                      <button 
+                        @click.stop="sendCustomerInvite(c)" 
+                        class="btn btn-secondary" 
+                        style="padding: 6px 10px; font-size: 0.78rem; border-color: rgba(124, 58, 237, 0.3); color: #7c3aed; background: rgba(124, 58, 237, 0.06); font-weight: 600;"
+                      >
+                        {{ c.invitation_status === 'Davet Gönderildi' ? '🔄 Yeniden Davet Et' : '✉️ Davet Et' }}
+                      </button>
+                      <button @click.stop="openEditCustomerModal(c)" class="btn btn-secondary" style="padding: 6px 10px; font-size: 0.78rem;">
+                        ⚙️ Düzenle
+                      </button>
+                      <button 
+                        @click.stop="deleteCustomer(c)" 
+                        class="btn btn-secondary" 
+                        style="padding: 6px 10px; font-size: 0.78rem; border-color: rgba(239, 68, 68, 0.3); color: #ef4444; background: rgba(239, 68, 68, 0.06); font-weight: 600;"
+                      >
+                        🗑️ Sil
+                      </button>
+                    </div>
                   </td>
                 </tr>
               </tbody>
@@ -1338,7 +1366,7 @@
           <input type="text" v-model="newCustomerForm.address" required class="form-input" placeholder="Maslak Plazalar No: 18, Şişli, İstanbul">
         </div>
 
-        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 25px;">
+        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 20px;">
           <div class="form-group">
             <label class="form-label">Sözleşmeli Araç Sayısı *</label>
             <input type="number" v-model.number="newCustomerForm.registered_vehicles_count" required min="1" class="form-input" placeholder="10">
@@ -1347,6 +1375,13 @@
             <label class="form-label">Aylık Sözleşme Bedeli (₺) *</label>
             <input type="number" v-model.number="newCustomerForm.contract_amount" required min="0" class="form-input" placeholder="250000">
           </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 25px; background: rgba(16, 185, 129, 0.05); padding: 14px 16px; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.2);">
+          <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin: 0; color: var(--text-main); font-weight: 600; font-size: 0.88rem;">
+            <input type="checkbox" v-model="newCustomerForm.send_invite" style="width: 18px; height: 18px; accent-color: #10b981; cursor: pointer;">
+            <span>📧 Müşteriye Kurumsal Giriş Daveti Gönder (E-posta ile Şifre Belirleme Bağlantısı)</span>
+          </label>
         </div>
 
         <div style="display: flex; gap: 12px; justify-content: flex-end;">
@@ -1549,10 +1584,12 @@ const newCustomerForm = reactive({
   phone: '',
   address: '',
   registered_vehicles_count: 1,
-  contract_amount: 0
+  contract_amount: 0,
+  send_invite: false
 })
 
 const submitNewCustomer = async () => {
+  const shouldInvite = newCustomerForm.send_invite
   try {
     const res = await fetch('/api/admin/customers', {
       method: 'POST',
@@ -1561,17 +1598,72 @@ const submitNewCustomer = async () => {
     })
     if (res.ok) {
       const added = await res.json()
-      customers.value.unshift(added)
       showAddCustomerModal.value = false
+      await fetchCustomers()
+
+      if (shouldInvite && added.id) {
+        await sendCustomerInvite(added)
+      } else {
+        alert(`${newCustomerForm.company_name} başarıyla müşteri olarak eklendi!`)
+      }
+
       Object.assign(newCustomerForm, {
-        company_name: '', legal_title: '', email: '', phone: '', address: '', registered_vehicles_count: 1, contract_amount: 0
+        company_name: '', legal_title: '', email: '', phone: '', address: '', registered_vehicles_count: 1, contract_amount: 0, send_invite: false
       })
-      alert('Yeni müşteri başarıyla eklendi!')
     } else {
-      alert('Müşteri eklenirken bir hata oluştu.')
+      const err = await res.json().catch(() => ({}))
+      alert('Müşteri eklenirken bir hata oluştu: ' + (err.detail || 'Bilinmeyen hata.'))
     }
   } catch (err) {
     console.error('Müşteri ekleme hatası:', err)
+    alert('Sunucuya bağlanılamadı.')
+  }
+}
+
+const sendCustomerInvite = async (customer) => {
+  try {
+    const res = await fetch(`/api/admin/customers/${customer.id}/invite`, {
+      method: 'POST'
+    })
+    if (res.ok) {
+      const data = await res.json()
+      inviteResult.email = data.email
+      inviteResult.supplier_name = data.customer_name || data.company_name || customer.company_name
+      inviteResult.invite_url = data.invite_url
+      inviteResult.email_sent = data.email_sent
+      inviteResult.smtp_configured = data.smtp_configured
+      inviteResult.message = data.message
+      
+      showInviteModal.value = true
+      await fetchCustomers()
+    } else {
+      const err = await res.json().catch(() => ({}))
+      alert('Davetiye gönderilemedi: ' + (err.detail || 'Bilinmeyen hata.'))
+    }
+  } catch (err) {
+    console.error('Error sending customer invite:', err)
+    alert('Sunucuya bağlanılamadı.')
+  }
+}
+
+const deleteCustomer = async (customer) => {
+  if (!confirm(`'${customer.company_name}' adlı müşteriyi silmek istediğinizden emin misiniz?`)) return
+  try {
+    const res = await fetch(`/api/admin/customers/${customer.id}`, {
+      method: 'DELETE'
+    })
+    if (res.ok) {
+      await fetchCustomers()
+      if (showCustomerDetailsModal.value && selectedCustomerDetails.value?.id === customer.id) {
+        showCustomerDetailsModal.value = false
+      }
+      alert(`'${customer.company_name}' müşterisi başarıyla silindi.`)
+    } else {
+      const err = await res.json().catch(() => ({}))
+      alert('Müşteri silinemedi: ' + (err.detail || 'Bilinmeyen hata.'))
+    }
+  } catch (err) {
+    console.error('Error deleting customer:', err)
     alert('Sunucuya bağlanılamadı.')
   }
 }

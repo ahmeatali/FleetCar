@@ -94,14 +94,41 @@ const email = ref('')
 const password = ref('')
 const loading = ref(false)
 
-const handleLogin = () => {
+const handleLogin = async () => {
+  if (!email.value || !password.value) return
   loading.value = true
-  setTimeout(() => {
+  
+  try {
+    const res = await fetch('/api/customer/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: email.value,
+        password: password.value
+      })
+    })
+
+    if (res.ok) {
+      const data = await res.json()
+      const cust = data.customer || {}
+      
+      localStorage.setItem('fleetcar_token', data.token)
+      localStorage.setItem('fleetcar_customer_id', String(cust.id || '1'))
+      localStorage.setItem('fleetcar_customer_name', cust.company_name || 'Müşteri Firma')
+      localStorage.setItem('fleetcar_user_email', cust.email || email.value)
+      localStorage.setItem('fleet_customer', JSON.stringify(cust))
+      
+      router.push('/dashboard')
+    } else {
+      const errData = await res.json().catch(() => ({}))
+      alert(errData.detail || 'Giriş yapılamadı! Lütfen e-posta ve şifrenizi kontrol edin.')
+    }
+  } catch (err) {
+    console.error('Customer Login error:', err)
+    alert('Sunucuya bağlanılamadı. Lütfen backend servisini kontrol edin.')
+  } finally {
     loading.value = false
-    localStorage.setItem('fleetcar_token', 'logged_in')
-    localStorage.setItem('fleetcar_user_email', email.value || 'musteri@sirket.com')
-    router.push('/dashboard')
-  }, 400)
+  }
 }
 </script>
 

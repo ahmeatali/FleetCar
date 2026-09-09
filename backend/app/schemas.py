@@ -141,6 +141,7 @@ class CustomerCreate(BaseModel):
     address: str
     registered_vehicles_count: int
     contract_amount: float
+    send_invite: Optional[bool] = False
 
 class CustomerUpdate(BaseModel):
     company_name: str

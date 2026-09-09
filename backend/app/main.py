@@ -122,7 +122,9 @@ def customer_dict(c: models.Customer, actual: int = None, deficit: int = None) -
         "email": c.email, "phone": c.phone,
         "registered_vehicles_count": c.registered_vehicles_count,
         "status": c.status, "address": c.address,
-        "contract_amount": c.contract_amount, "signed_at": c.signed_at
+        "contract_amount": c.contract_amount, "signed_at": c.signed_at,
+        "invitation_status": getattr(c, 'invitation_status', 'Davet Edilmedi') or 'Davet Edilmedi',
+        "has_password": bool(getattr(c, 'password_hash', None))
     }
     if actual is not None:
         d["actual_vehicle_count"] = actual
@@ -419,34 +421,56 @@ def get_smtp_status():
 
 
 @app.get("/api/supplier/verify-token/{token}")
+@app.get("/api/customer/verify-token/{token}")
 def verify_supplier_token(token: str, db: Session = Depends(get_db)):
     s = db.query(models.Supplier).filter(models.Supplier.invitation_token == token).first()
-    if not s:
-        raise HTTPException(status_code=404, detail="Geçersiz veya kullanılmış davet bağlantısı.")
-    return {
-        "status": "valid",
-        "supplier_name": s.name,
-        "email": s.email
-    }
+    if s:
+        return {
+            "status": "valid",
+            "supplier_name": s.name,
+            "email": s.email,
+            "account_type": "supplier"
+        }
+    c = db.query(models.Customer).filter(models.Customer.invitation_token == token).first()
+    if c:
+        return {
+            "status": "valid",
+            "supplier_name": c.company_name,
+            "email": c.email,
+            "account_type": "customer"
+        }
+    raise HTTPException(status_code=404, detail="Geçersiz veya kullanılmış davet bağlantısı.")
 
 
 @app.post("/api/supplier/set-password")
+@app.post("/api/customer/set-password")
 def set_supplier_password(req: SetPasswordRequest, db: Session = Depends(get_db)):
-    s = db.query(models.Supplier).filter(models.Supplier.invitation_token == req.token).first()
-    if not s:
-        raise HTTPException(status_code=404, detail="Geçersiz veya süresi dolmuş davet bağlantısı.")
     if len(req.password) < 6:
         raise HTTPException(status_code=400, detail="Şifre en az 6 karakter olmalıdır.")
-    
-    s.password_hash = hash_password(req.password)
-    s.invitation_status = "Aktif"
-    s.invitation_token = None
-    db.commit()
-    
-    return {
-        "status": "success",
-        "message": "Şifreniz başarıyla oluşturuldu! Şimdi giriş yapabilirsiniz."
-    }
+
+    s = db.query(models.Supplier).filter(models.Supplier.invitation_token == req.token).first()
+    if s:
+        s.password_hash = hash_password(req.password)
+        s.invitation_status = "Aktif"
+        s.invitation_token = None
+        db.commit()
+        return {
+            "status": "success",
+            "message": "Şifreniz başarıyla oluşturuldu! Şimdi giriş yapabilirsiniz."
+        }
+
+    c = db.query(models.Customer).filter(models.Customer.invitation_token == req.token).first()
+    if c:
+        c.password_hash = hash_password(req.password)
+        c.invitation_status = "Aktif"
+        c.invitation_token = None
+        db.commit()
+        return {
+            "status": "success",
+            "message": "Şifreniz başarıyla oluşturuldu! Şimdi giriş yapabilirsiniz."
+        }
+
+    raise HTTPException(status_code=404, detail="Geçersiz veya süresi dolmuş davet bağlantısı.")
 
 
 @app.post("/api/supplier/login")
@@ -476,6 +500,36 @@ def supplier_login(creds: AdminLoginRequest, db: Session = Depends(get_db)):
         "status": "success",
         "token": f"supplier_token_{s.id}_{datetime.datetime.now().timestamp()}",
         "supplier": supplier_dict(s)
+    }
+
+
+@app.post("/api/customer/login")
+def customer_login(creds: AdminLoginRequest, db: Session = Depends(get_db)):
+    email_clean = creds.email.lower().strip()
+    c = db.query(models.Customer).filter(models.Customer.email.ilike(email_clean)).first()
+    
+    if not c:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"[{email_clean}] e-posta adresine tanımlı aktif bir müşteri bulunamadı. Lütfen yöneticinizle iletişime geçin."
+        )
+
+    if c.password_hash:
+        if not verify_password(creds.password, c.password_hash):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Hatalı şifre! Lütfen girmiş olduğunuz şifreyi kontrol edin."
+            )
+    else:
+        # First time login setup fallback
+        c.password_hash = hash_password(creds.password)
+        c.invitation_status = "Aktif"
+        db.commit()
+
+    return {
+        "status": "success",
+        "token": f"customer_token_{c.id}_{datetime.datetime.now().timestamp()}",
+        "customer": customer_dict(c)
     }
 
 
@@ -627,23 +681,71 @@ def get_admin_customers(db: Session = Depends(get_db)):
     return result
 
 
+@app.post("/api/customers")
 @app.post("/api/admin/customers")
 def create_admin_customer(customer: CustomerCreate, db: Session = Depends(get_db)):
+    email_clean = customer.email.lower().strip() if (customer.email and customer.email.strip()) else None
+
+    token = None
+    inv_status = "Davet Edilmedi"
+    if customer.send_invite and email_clean:
+        token = generate_invitation_token()
+        inv_status = "Davet Gönderildi"
+        send_supplier_invitation_email(email_clean, customer.company_name, token)
+
     c = models.Customer(
         company_name=customer.company_name,
         legal_title=customer.legal_title,
-        email=customer.email,
+        email=email_clean,
         phone=customer.phone,
         address=customer.address,
         registered_vehicles_count=customer.registered_vehicles_count,
         contract_amount=customer.contract_amount,
         status="Aktif",
+        invitation_token=token,
+        invitation_status=inv_status,
         signed_at=now_str()
     )
     db.add(c)
     db.commit()
     db.refresh(c)
     return customer_dict(c, actual=0, deficit=customer.registered_vehicles_count)
+
+
+@app.post("/api/admin/customers/{customer_id}/invite")
+def send_customer_invite(customer_id: int, db: Session = Depends(get_db)):
+    c = db.query(models.Customer).filter(models.Customer.id == customer_id).first()
+    if not c:
+        raise HTTPException(status_code=404, detail="Müşteri bulunamadı.")
+    if not c.email:
+        raise HTTPException(status_code=400, detail="Lütfen önce müşteriye bir e-posta adresi ekleyin.")
+    
+    token = generate_invitation_token()
+    c.invitation_token = token
+    c.invitation_status = "Davet Gönderildi"
+    db.commit()
+    
+    result = send_supplier_invitation_email(c.email, c.company_name, token)
+    return {
+        "status": "success",
+        "email": c.email,
+        "customer_name": c.company_name,
+        "company_name": c.company_name,
+        "email_sent": result.get("email_sent", False),
+        "smtp_configured": result.get("smtp_configured", False),
+        "message": result.get("message", ""),
+        "invite_url": result.get("invite_url", f"{APP_BASE_URL}/setup-password?token={token}")
+    }
+
+
+@app.delete("/api/admin/customers/{customer_id}")
+def delete_customer(customer_id: int, db: Session = Depends(get_db)):
+    c = db.query(models.Customer).filter(models.Customer.id == customer_id).first()
+    if not c:
+        raise HTTPException(status_code=404, detail="Müşteri bulunamadı.")
+    db.delete(c)
+    db.commit()
+    return {"status": "success", "message": f"'{c.company_name}' başarıyla silindi."}
 
 
 @app.put("/api/admin/customers/{customer_id}")

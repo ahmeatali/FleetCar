@@ -20,6 +20,16 @@ def create_tables():
                     conn.execute(text("ALTER TABLE suppliers ADD COLUMN invitation_token VARCHAR;"))
                 if "invitation_status" not in columns:
                     conn.execute(text("ALTER TABLE suppliers ADD COLUMN invitation_status VARCHAR DEFAULT 'Davet Edilmedi';"))
+
+        if "customers" in inspector.get_table_names():
+            cust_columns = [c["name"] for c in inspector.get_columns("customers")]
+            with engine.begin() as conn:
+                if "password_hash" not in cust_columns:
+                    conn.execute(text("ALTER TABLE customers ADD COLUMN password_hash VARCHAR;"))
+                if "invitation_token" not in cust_columns:
+                    conn.execute(text("ALTER TABLE customers ADD COLUMN invitation_token VARCHAR;"))
+                if "invitation_status" not in cust_columns:
+                    conn.execute(text("ALTER TABLE customers ADD COLUMN invitation_status VARCHAR DEFAULT 'Davet Edilmedi';"))
     except Exception as e:
         print(f"[MIGRATION LOG] Auto-migration check: {e}")
 
