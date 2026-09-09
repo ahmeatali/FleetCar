@@ -41,6 +41,9 @@
         <button @click="activeTab = 'sirket_evraklari'" class="tab-pill-btn" :class="{ 'active-tab-pill': activeTab === 'sirket_evraklari' }">
           <span>🏢</span> Şirket Evraklarım
         </button>
+        <button @click="activeTab = 'entegrasyonlar'" class="tab-pill-btn" :class="{ 'active-tab-pill': activeTab === 'entegrasyonlar' }">
+          <span>📡</span> API & Entegrasyonlar
+        </button>
       </div>
 
       <!-- ============================================================== -->
@@ -232,6 +235,104 @@
           </div>
         </div>
       </div>
+
+      <!-- ============================================================== -->
+      <!-- 5. API & ENTEGRASYONLAR                                       -->
+      <!-- ============================================================== -->
+      <div v-if="activeTab === 'entegrasyonlar'" class="fade-in-up">
+        <div class="glass-panel" style="padding: 28px; background: #ffffff; margin-bottom: 24px;">
+          <h2 style="font-size: 1.3rem; font-weight: 800; color: #0f172a; margin-bottom: 8px;">GPS ve UTTS Canlı Veri Entegrasyon Yapılandırması</h2>
+          <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 24px;">
+            Araçlarınıza tanımladığınız GPS Cihaz ID ve UTTS Taşıt Tanıma kodlarının canlı veri akışını aktifleştirmek için servis sağlayıcı API erişim bilgilerinizi girin.
+          </p>
+
+          <div class="grid-2" style="gap: 24px;">
+            <!-- GPS Provider API Config -->
+            <div style="border: 1px solid #e2e8f0; border-radius: 14px; padding: 24px; background: #fafafa;">
+              <h3 style="font-size: 1.1rem; font-weight: 800; color: #2563eb; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                <span>📡</span> GPS Araç Takip Entegrasyonu
+              </h3>
+
+              <form @submit.prevent="saveGpsSettings">
+                <div class="form-group">
+                  <label class="form-label">GPS Servis Sağlayıcısı</label>
+                  <select v-model="gpsConfig.provider" class="form-select">
+                    <option value="Arvento">Arvento Mobile Systems</option>
+                    <option value="Mobiliz">Mobiliz Takip Sistemleri</option>
+                    <option value="Trio">Trio Mobil</option>
+                    <option value="FiloTurk">FiloTürk GPS</option>
+                    <option value="Infotech">Infotech GPS</option>
+                    <option value="GenericWebhook">Özel REST Webhook API</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">API Kullanıcı Adı / Müşteri Kodu</label>
+                  <input type="text" v-model="gpsConfig.apiKey" class="form-input" placeholder="Örn: FLEET-API-USER-99">
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">API Gizli Anahtarı / Token</label>
+                  <input type="password" v-model="gpsConfig.apiSecret" class="form-input" placeholder="••••••••••••••••">
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Veri Yenileme Sıklığı</label>
+                  <select v-model="gpsConfig.interval" class="form-select">
+                    <option value="15">Her 15 saniyede bir (Canlı Stream)</option>
+                    <option value="60">Her 1 dakikada bir</option>
+                    <option value="300">Her 5 dakikada bir</option>
+                  </select>
+                </div>
+
+                <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-size: 0.82rem; font-weight: 700; color: #16a34a;">🟢 GPS Servisi Bağlı</span>
+                  <button type="submit" class="btn btn-blue" style="padding: 8px 16px; font-size: 0.85rem;">Ayarları Kaydet</button>
+                </div>
+              </form>
+            </div>
+
+            <!-- UTTS & Fuel Config -->
+            <div style="border: 1px solid #e2e8f0; border-radius: 14px; padding: 24px; background: #fafafa;">
+              <h3 style="font-size: 1.1rem; font-weight: 800; color: #059669; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                <span>⛽</span> UTTS Taşıt Tanıma Entegrasyonu
+              </h3>
+
+              <form @submit.prevent="saveUttsSettings">
+                <div class="form-group">
+                  <label class="form-label">UTTS / Akaryakıt Tedarikçisi</label>
+                  <select v-model="uttsConfig.provider" class="form-select">
+                    <option value="DarphaneUTTS">Darphane Ulusal Taşıt Tanıma Sistemi (UTTS API)</option>
+                    <option value="Shell">Shell Taşıt Tanıma</option>
+                    <option value="BP">BP FleetPass</option>
+                    <option value="PetrolOfisi">Petrol Ofisi AutoMatic</option>
+                    <option value="Opet">Opet Otobil</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Kurumsal Müşteri / Cari Kodu</label>
+                  <input type="text" v-model="uttsConfig.clientCode" class="form-input" placeholder="Örn: UTTS-COMPANY-4482">
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Otomatik Harcama Eşitleme</label>
+                  <select v-model="uttsConfig.syncType" class="form-select">
+                    <option value="Daily">Günlük Otomatik Fiş/Harcama Çekme</option>
+                    <option value="Realtime">Anlık Yakıt Alımı Bildirimi</option>
+                    <option value="Monthly">Aylık Fatura İçe Aktarımı</option>
+                  </select>
+                </div>
+
+                <div style="margin-top: 60px; display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-size: 0.82rem; font-weight: 700; color: #16a34a;">🟢 UTTS Servisi Aktif</span>
+                  <button type="submit" class="btn btn-blue" style="padding: 8px 16px; font-size: 0.85rem;">Ayarları Kaydet</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
   </div>
 
@@ -367,12 +468,39 @@ const showAddFormModal = ref(false)
 const showUploadDocModal = ref(false)
 const newDocTitle = ref('')
 
+const gpsConfig = reactive({
+  provider: 'Arvento',
+  apiKey: localStorage.getItem('gps_api_key') || '',
+  apiSecret: localStorage.getItem('gps_api_secret') || '',
+  interval: '15'
+})
+
+const uttsConfig = reactive({
+  provider: 'DarphaneUTTS',
+  clientCode: localStorage.getItem('utts_client_code') || '',
+  syncType: 'Daily'
+})
+
+const saveGpsSettings = () => {
+  localStorage.setItem('gps_provider', gpsConfig.provider)
+  localStorage.setItem('gps_api_key', gpsConfig.apiKey)
+  localStorage.setItem('gps_api_secret', gpsConfig.apiSecret)
+  alert('GPS Servis Sağlayıcısı API ayarları kaydedildi!')
+}
+
+const saveUttsSettings = () => {
+  localStorage.setItem('utts_provider', uttsConfig.provider)
+  localStorage.setItem('utts_client_code', uttsConfig.clientCode)
+  alert('UTTS Taşıt Tanıma entegrasyon ayarları kaydedildi!')
+}
+
 const activeTabTitle = computed(() => {
   switch (activeTab.value) {
     case 'kullanicilar': return 'Kullanıcılar'
     case 'teslim_formlari': return 'Teslim Formları'
     case 'bayi_sozlesmesi': return 'Bayi Sözleşmesi'
     case 'sirket_evraklari': return 'Şirket Evraklarım'
+    case 'entegrasyonlar': return 'API & Entegrasyonlar'
     default: return 'Ayarlar'
   }
 })
