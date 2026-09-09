@@ -74,6 +74,8 @@ class Vehicle(Base):
     removed_at           = Column(String, nullable=True)
     supplier_id          = Column(Integer, ForeignKey("suppliers.id"), nullable=True)
     customer_id          = Column(Integer, ForeignKey("customers.id"), nullable=True)
+    gps_device_id        = Column(String, nullable=True)
+    utts_code            = Column(String, nullable=True)
 
 
 class Quote(Base):

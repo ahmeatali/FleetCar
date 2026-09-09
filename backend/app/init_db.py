@@ -21,6 +21,14 @@ def create_tables():
                 if "invitation_status" not in columns:
                     conn.execute(text("ALTER TABLE suppliers ADD COLUMN invitation_status VARCHAR DEFAULT 'Davet Edilmedi';"))
 
+        if "vehicles" in inspector.get_table_names():
+            veh_columns = [c["name"] for c in inspector.get_columns("vehicles")]
+            with engine.begin() as conn:
+                if "gps_device_id" not in veh_columns:
+                    conn.execute(text("ALTER TABLE vehicles ADD COLUMN gps_device_id VARCHAR;"))
+                if "utts_code" not in veh_columns:
+                    conn.execute(text("ALTER TABLE vehicles ADD COLUMN utts_code VARCHAR;"))
+
         if "customers" in inspector.get_table_names():
             cust_columns = [c["name"] for c in inspector.get_columns("customers")]
             with engine.begin() as conn:

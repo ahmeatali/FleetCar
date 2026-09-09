@@ -76,7 +76,9 @@ def vehicle_dict(v: models.Vehicle, db: Session = None) -> dict:
         "last_service_mileage": v.last_service_mileage,
         "is_active": v.is_active,
         "removal_reason": v.removal_reason, "removed_at": v.removed_at,
-        "supplier_id": v.supplier_id, "customer_id": v.customer_id
+        "supplier_id": v.supplier_id, "customer_id": v.customer_id,
+        "gps_device_id": getattr(v, "gps_device_id", None),
+        "utts_code": getattr(v, "utts_code", None)
     }
     if db:
         if v.customer_id:
@@ -291,7 +293,9 @@ def create_vehicle(vehicle: VehicleCreate, db: Session = Depends(get_db)):
         last_service_date=vehicle.last_service_date,
         last_service_mileage=vehicle.last_service_mileage,
         is_active=True, supplier_id=vehicle.supplier_id,
-        customer_id=vehicle.customer_id
+        customer_id=vehicle.customer_id,
+        gps_device_id=vehicle.gps_device_id,
+        utts_code=vehicle.utts_code
     )
     db.add(v); db.commit(); db.refresh(v)
     return vehicle_dict(v, db)

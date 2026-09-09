@@ -55,6 +55,8 @@ class VehicleCreate(BaseModel):
     last_service_mileage: int
     supplier_id: Optional[int] = None
     customer_id: Optional[int] = None
+    gps_device_id: Optional[str] = None
+    utts_code: Optional[str] = None
 
 class VehicleResponse(BaseModel):
     id: str
@@ -80,6 +82,8 @@ class VehicleResponse(BaseModel):
     customer_name: Optional[str] = None
     supplier_name: Optional[str] = None
     removed_at: Optional[str] = None
+    gps_device_id: Optional[str] = None
+    utts_code: Optional[str] = None
 
 class VehicleRemoval(BaseModel):
     reason: str

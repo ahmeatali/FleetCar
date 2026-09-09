@@ -309,6 +309,19 @@
               <input type="number" min="0" v-model.number="newVehicleForm.last_service_mileage" required class="form-input" placeholder="10000">
             </div>
           </div>
+
+          <!-- Section 4: GPS & UTTS Entegrasyon Bilgileri -->
+          <h3 class="form-section-title">📡 GPS & UTTS Entegrasyon Bilgileri</h3>
+          <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px;">
+            <div class="form-group">
+              <label class="form-label">GPS Cihaz Kodu / IMEI (Harita Takip)</label>
+              <input type="text" v-model="newVehicleForm.gps_device_id" class="form-input" placeholder="Örn: GPS-TR-884920">
+            </div>
+            <div class="form-group">
+              <label class="form-label">UTTS Kodu (Ulusal Taşıt Tanıma Birimi ID)</label>
+              <input type="text" v-model="newVehicleForm.utts_code" class="form-input" placeholder="Örn: UTTS-34-89201">
+            </div>
+          </div>
         </div>
 
         <div style="display: flex; gap: 15px; justify-content: flex-end; margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
@@ -355,6 +368,10 @@
           <p style="margin-bottom: 8px;"><strong>Lastik Değişim:</strong> {{ formatDate(selectedVehicle.tire_change_date) }}</p>
           <p style="margin-bottom: 8px;"><strong>Son Servis Tarihi:</strong> {{ formatDate(selectedVehicle.last_service_date) }}</p>
           <p style="margin-bottom: 8px;"><strong>Son Servis KM:</strong> {{ selectedVehicle.last_service_mileage?.toLocaleString() }} km</p>
+
+          <h4 style="color: var(--secondary); margin-bottom: 10px; margin-top: 15px;">📡 GPS & UTTS Entegrasyonu</h4>
+          <p style="margin-bottom: 8px;"><strong>GPS Cihaz ID:</strong> <span style="font-family: monospace; color: #2563eb; background: #eff6ff; padding: 2px 8px; border-radius: 4px; font-weight: bold;">{{ selectedVehicle.gps_device_id || 'Tanımlanmadı' }}</span></p>
+          <p style="margin-bottom: 8px;"><strong>UTTS Taşıt Tanıma Kodu:</strong> <span style="font-family: monospace; color: #059669; background: #ecfdf5; padding: 2px 8px; border-radius: 4px; font-weight: bold;">{{ selectedVehicle.utts_code || 'Tanımlanmadı' }}</span></p>
         </div>
       </div>
 
@@ -448,12 +465,20 @@ const newVehicleForm = reactive({
   vehicle_type: 'Sedan',
   tire_change_date: '',
   last_service_date: '',
-  last_service_mileage: 0
+  last_service_mileage: 0,
+  gps_device_id: '',
+  utts_code: ''
 })
 
 const fetchVehicles = async () => {
   try {
-    const response = await fetch('/api/vehicles')
+    const customerId = localStorage.getItem('customer_id')
+    const userRole = localStorage.getItem('user_role')
+    let url = '/api/vehicles'
+    if (userRole === 'customer' && customerId) {
+      url += `?customer_id=${customerId}`
+    }
+    const response = await fetch(url)
     if (response.ok) {
       vehicles.value = await response.json()
     }
@@ -467,12 +492,19 @@ const fetchVehicles = async () => {
 const addVehicle = async () => {
   saving.value = true
   try {
+    const customerId = localStorage.getItem('customer_id')
+    const userRole = localStorage.getItem('user_role')
+    const payload = { ...newVehicleForm }
+    if (userRole === 'customer' && customerId) {
+      payload.customer_id = parseInt(customerId)
+    }
+
     const response = await fetch('/api/vehicles', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(newVehicleForm)
+      body: JSON.stringify(payload)
     })
     
     if (response.ok) {
@@ -507,6 +539,8 @@ const resetForm = () => {
   newVehicleForm.tire_change_date = ''
   newVehicleForm.last_service_date = ''
   newVehicleForm.last_service_mileage = 0
+  newVehicleForm.gps_device_id = ''
+  newVehicleForm.utts_code = ''
 }
 
 const openDetailsModal = (vehicle) => {
