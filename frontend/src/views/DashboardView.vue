@@ -132,7 +132,7 @@
                 <div class="widget-item-icon" style="background: #fdf4ff;">⏱️</div>
                 <span>Araç Kullanım Süresi</span>
               </div>
-              <span class="widget-item-value">{{ stats.total_vehicles ? (stats.total_vehicles * 450)?.toLocaleString() + ' dk' : '0 dk' }}</span>
+              <span class="widget-item-value">{{ (stats.total_usage_minutes || 0)?.toLocaleString() }} dk</span>
             </div>
 
             <div class="widget-item-row">

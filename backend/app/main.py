@@ -663,6 +663,7 @@ def get_dashboard_stats(customer_id: Optional[int] = None, db: Session = Depends
         "completed_requests":   sum(1 for r in reqs if r.status == "Tamamlandı"),
         "avg_mileage":          int(total_km / total) if total else 0,
         "total_km":             total_km,
+        "total_usage_minutes":  sum(getattr(v, 'usage_minutes', 0) or 0 for v in active),
         "fuel_stats":           fuel_stats
     }
 
