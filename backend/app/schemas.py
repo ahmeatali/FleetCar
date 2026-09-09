@@ -88,6 +88,24 @@ class VehicleResponse(BaseModel):
 class VehicleRemoval(BaseModel):
     reason: str
 
+class VehicleUpdate(BaseModel):
+    plate: Optional[str] = None
+    brand: Optional[str] = None
+    model: Optional[str] = None
+    year: Optional[int] = None
+    fuel: Optional[str] = None
+    mileage: Optional[int] = None
+    chassis_no: Optional[str] = None
+    license_serial_no: Optional[str] = None
+    inspection_date: Optional[str] = None
+    vehicle_segment: Optional[str] = None
+    vehicle_type: Optional[str] = None
+    tire_change_date: Optional[str] = None
+    last_service_date: Optional[str] = None
+    last_service_mileage: Optional[int] = None
+    gps_device_id: Optional[str] = None
+    utts_code: Optional[str] = None
+
 class RequestCreate(BaseModel):
     vehicle_id: str
     supplier_id: int

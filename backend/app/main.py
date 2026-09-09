@@ -11,7 +11,7 @@ from app.email_utils import generate_invitation_token, send_supplier_invitation_
 from app.init_db import create_tables, seed
 from app.schemas import (
     QuoteCreate, QuoteResponse,
-    VehicleCreate, VehicleResponse,
+    VehicleCreate, VehicleResponse, VehicleUpdate,
     RequestCreate, RequestResponse,
     SupplierCreate, SupplierResponse, StatusUpdate,
     VehicleRemoval, QuoteUpdate,
@@ -309,6 +309,22 @@ def create_vehicle(vehicle: VehicleCreate, db: Session = Depends(get_db)):
         utts_code=vehicle.utts_code
     )
     db.add(v); db.commit(); db.refresh(v)
+    return vehicle_dict(v, db)
+
+
+@app.put("/api/vehicles/{vehicle_id}", response_model=VehicleResponse)
+def update_vehicle(vehicle_id: str, vehicle_update: VehicleUpdate, db: Session = Depends(get_db)):
+    v = db.query(models.Vehicle).filter(models.Vehicle.id == vehicle_id).first()
+    if not v:
+        raise HTTPException(status_code=404, detail="Vehicle not found")
+
+    update_data = vehicle_update.dict(exclude_unset=True)
+    for field, val in update_data.items():
+        if hasattr(v, field):
+            setattr(v, field, val)
+
+    db.commit()
+    db.refresh(v)
     return vehicle_dict(v, db)
 
 

@@ -334,58 +334,154 @@
     </div>
   </div>
 
-  <!-- Details Modal -->
+  <!-- Details / Edit Modal -->
   <div v-if="showDetailsModal" class="modal-overlay" @click.self="showDetailsModal = false">
-    <div class="glass-panel modal-content fade-in-up" style="max-width: 600px; padding: 30px;">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px;">
-        <div>
-          <span class="plate-badge">{{ selectedVehicle.plate }}</span>
-          <h2 style="margin-top: 10px; color: #fff;">{{ selectedVehicle.brand }} {{ selectedVehicle.model }}</h2>
-        </div>
-        <span class="badge" :class="getVehicleBadgeClass(selectedVehicle.status)" style="font-size: 0.85rem; padding: 6px 12px;">{{ selectedVehicle.status }}</span>
-      </div>
-
-      <div class="grid-2" style="gap: 20px; font-size: 0.95rem;">
-        <div>
-          <h4 style="color: var(--secondary); margin-bottom: 10px;">📋 Kimlik & Tescil</h4>
-          <p style="margin-bottom: 8px;"><strong>Şase / Sicil No:</strong> <span style="font-family: monospace; color: var(--primary); background: rgba(79, 70, 229, 0.08); padding: 2px 6px; border-radius: 4px; font-weight: bold;">{{ selectedVehicle.chassis_no }}</span></p>
-          <p style="margin-bottom: 8px;"><strong>Ruhsat Seri No:</strong> <span style="font-family: monospace;">{{ selectedVehicle.license_serial_no }}</span></p>
-          <p style="margin-bottom: 8px;"><strong>Araç Segmenti:</strong> {{ selectedVehicle.vehicle_segment }} Segmenti</p>
-          <p style="margin-bottom: 8px;"><strong>Araç Tipi:</strong> {{ selectedVehicle.vehicle_type }}</p>
-          
-          <div v-if="!selectedVehicle.is_active" style="margin-top: 15px; background: #fef2f2; border: 1px solid #fca5a5; padding: 12px; border-radius: 8px;">
-            <h5 style="color: #dc2626; margin-bottom: 5px; font-weight: bold; font-size: 0.85rem;">🚫 FİLO DIŞI BIRAKILDI</h5>
-            <p style="margin-bottom: 4px; font-size: 0.8rem; color: #7f1d1d; line-height: 1.4;"><strong>Nedeni:</strong> {{ selectedVehicle.removal_reason }}</p>
-            <p style="margin-bottom: 0; font-size: 0.8rem; color: #7f1d1d;"><strong>Tarih:</strong> {{ formatDate(selectedVehicle.removed_at) }}</p>
+    <div class="glass-panel modal-content fade-in-up" style="max-width: 650px; padding: 30px; background: #ffffff;">
+      
+      <!-- VIEW MODE -->
+      <template v-if="!isEditingVehicle">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px;">
+          <div>
+            <span class="plate-badge">{{ selectedVehicle.plate }}</span>
+            <h2 style="margin-top: 10px; color: #0f172a;">{{ selectedVehicle.brand }} {{ selectedVehicle.model }}</h2>
           </div>
-          <p style="margin-bottom: 8px;"><strong>Üretim Yılı:</strong> {{ selectedVehicle.year }}</p>
-          <p style="margin-bottom: 8px;"><strong>Yakıt Türü:</strong> {{ selectedVehicle.fuel }}</p>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <button @click="startEditingVehicle" class="btn btn-secondary" style="padding: 6px 14px; font-size: 0.85rem; font-weight: 700; color: #2563eb; border: 1px solid #bfdbfe; background: #eff6ff;">
+              ✏️ Düzenle
+            </button>
+            <span class="badge" :class="getVehicleBadgeClass(selectedVehicle.status)" style="font-size: 0.85rem; padding: 6px 12px;">{{ selectedVehicle.status }}</span>
+          </div>
         </div>
-        <div>
-          <h4 style="color: var(--secondary); margin-bottom: 10px;">⚙️ Durum & Operasyon</h4>
-          <p style="margin-bottom: 8px;"><strong>Güncel Kilometre:</strong> {{ selectedVehicle.mileage?.toLocaleString() }} km</p>
-          <p style="margin-bottom: 8px;"><strong>Muayene Tarihi:</strong> {{ formatDate(selectedVehicle.inspection_date) }}</p>
-          <p style="margin-bottom: 8px;"><strong>Lastik Değişim:</strong> {{ formatDate(selectedVehicle.tire_change_date) }}</p>
-          <p style="margin-bottom: 8px;"><strong>Son Servis Tarihi:</strong> {{ formatDate(selectedVehicle.last_service_date) }}</p>
-          <p style="margin-bottom: 8px;"><strong>Son Servis KM:</strong> {{ selectedVehicle.last_service_mileage?.toLocaleString() }} km</p>
 
-          <h4 style="color: var(--secondary); margin-bottom: 10px; margin-top: 15px;">📡 GPS & UTTS Entegrasyonu</h4>
-          <p style="margin-bottom: 8px;"><strong>GPS Cihaz ID:</strong> <span style="font-family: monospace; color: #2563eb; background: #eff6ff; padding: 2px 8px; border-radius: 4px; font-weight: bold;">{{ selectedVehicle.gps_device_id || 'Tanımlanmadı' }}</span></p>
-          <p style="margin-bottom: 8px;"><strong>UTTS Taşıt Tanıma Kodu:</strong> <span style="font-family: monospace; color: #059669; background: #ecfdf5; padding: 2px 8px; border-radius: 4px; font-weight: bold;">{{ selectedVehicle.utts_code || 'Tanımlanmadı' }}</span></p>
+        <div class="grid-2" style="gap: 20px; font-size: 0.95rem;">
+          <div>
+            <h4 style="color: var(--secondary); margin-bottom: 10px;">📋 Kimlik & Tescil</h4>
+            <p style="margin-bottom: 8px;"><strong>Şase / Sicil No:</strong> <span style="font-family: monospace; color: var(--primary); background: rgba(79, 70, 229, 0.08); padding: 2px 6px; border-radius: 4px; font-weight: bold;">{{ selectedVehicle.chassis_no }}</span></p>
+            <p style="margin-bottom: 8px;"><strong>Ruhsat Seri No:</strong> <span style="font-family: monospace;">{{ selectedVehicle.license_serial_no }}</span></p>
+            <p style="margin-bottom: 8px;"><strong>Araç Segmenti:</strong> {{ selectedVehicle.vehicle_segment }} Segmenti</p>
+            <p style="margin-bottom: 8px;"><strong>Araç Tipi:</strong> {{ selectedVehicle.vehicle_type }}</p>
+            
+            <div v-if="!selectedVehicle.is_active" style="margin-top: 15px; background: #fef2f2; border: 1px solid #fca5a5; padding: 12px; border-radius: 8px;">
+              <h5 style="color: #dc2626; margin-bottom: 5px; font-weight: bold; font-size: 0.85rem;">🚫 FİLO DIŞI BIRAKILDI</h5>
+              <p style="margin-bottom: 4px; font-size: 0.8rem; color: #7f1d1d; line-height: 1.4;"><strong>Nedeni:</strong> {{ selectedVehicle.removal_reason }}</p>
+              <p style="margin-bottom: 0; font-size: 0.8rem; color: #7f1d1d;"><strong>Tarih:</strong> {{ formatDate(selectedVehicle.removed_at) }}</p>
+            </div>
+            <p style="margin-bottom: 8px;"><strong>Üretim Yılı:</strong> {{ selectedVehicle.year }}</p>
+            <p style="margin-bottom: 8px;"><strong>Yakıt Türü:</strong> {{ selectedVehicle.fuel }}</p>
+          </div>
+          <div>
+            <h4 style="color: var(--secondary); margin-bottom: 10px;">⚙️ Durum & Operasyon</h4>
+            <p style="margin-bottom: 8px;"><strong>Güncel Kilometre:</strong> {{ selectedVehicle.mileage?.toLocaleString() }} km</p>
+            <p style="margin-bottom: 8px;"><strong>Muayene Tarihi:</strong> {{ formatDate(selectedVehicle.inspection_date) }}</p>
+            <p style="margin-bottom: 8px;"><strong>Lastik Değişim:</strong> {{ formatDate(selectedVehicle.tire_change_date) }}</p>
+            <p style="margin-bottom: 8px;"><strong>Son Servis Tarihi:</strong> {{ formatDate(selectedVehicle.last_service_date) }}</p>
+            <p style="margin-bottom: 8px;"><strong>Son Servis KM:</strong> {{ selectedVehicle.last_service_mileage?.toLocaleString() }} km</p>
+
+            <h4 style="color: var(--secondary); margin-bottom: 10px; margin-top: 15px;">📡 GPS & UTTS Entegrasyonu</h4>
+            <p style="margin-bottom: 8px;"><strong>GPS Cihaz ID:</strong> <span style="font-family: monospace; color: #2563eb; background: #eff6ff; padding: 2px 8px; border-radius: 4px; font-weight: bold;">{{ selectedVehicle.gps_device_id || 'Tanımlanmadı' }}</span></p>
+            <p style="margin-bottom: 8px;"><strong>UTTS Taşıt Tanıma Kodu:</strong> <span style="font-family: monospace; color: #059669; background: #ecfdf5; padding: 2px 8px; border-radius: 4px; font-weight: bold;">{{ selectedVehicle.utts_code || 'Tanımlanmadı' }}</span></p>
+          </div>
         </div>
-      </div>
 
-      <div style="display: flex; gap: 15px; justify-content: flex-end; margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 15px;">
-        <template v-if="selectedVehicle.is_active">
-          <router-link to="/dashboard/requests" class="btn btn-primary" style="font-size: 0.9rem;">Hizmet Talebi Oluştur</router-link>
-        </template>
-        <template v-else>
-          <button @click="reactivateVehicle(selectedVehicle)" class="btn btn-primary" style="font-size: 0.9rem; background: #059669; border: none; box-shadow: 0 4px 15px rgba(5, 150, 105, 0.2);">
-            Aracı Tekrar Filoya Ekle
+        <div style="display: flex; gap: 15px; justify-content: flex-end; margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+          <button @click="startEditingVehicle" class="btn btn-secondary" style="font-size: 0.9rem; color: #2563eb; font-weight: 700;">
+            ✏️ Araç Bilgilerini & GPS/UTTS Düzenle
           </button>
-        </template>
-        <button @click="showDetailsModal = false" class="btn btn-secondary">Kapat</button>
-      </div>
+          <template v-if="selectedVehicle.is_active">
+            <router-link to="/dashboard/requests" class="btn btn-primary" style="font-size: 0.9rem;">Hizmet Talebi Oluştur</router-link>
+          </template>
+          <template v-else>
+            <button @click="reactivateVehicle(selectedVehicle)" class="btn btn-primary" style="font-size: 0.9rem; background: #059669; border: none; box-shadow: 0 4px 15px rgba(5, 150, 105, 0.2);">
+              Aracı Tekrar Filoya Ekle
+            </button>
+          </template>
+          <button @click="showDetailsModal = false" class="btn btn-secondary">Kapat</button>
+        </div>
+      </template>
+
+      <!-- EDIT MODE -->
+      <template v-else>
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px;">
+          <h2 style="color: #0f172a; font-size: 1.3rem; font-weight: 800;">Araç Bilgilerini & Entegrasyonu Düzenle</h2>
+          <span class="plate-badge">{{ editVehicleForm.plate }}</span>
+        </div>
+
+        <form @submit.prevent="saveVehicleEdit">
+          <div style="max-height: 60vh; overflow-y: auto; padding-right: 10px;">
+            <!-- GPS & UTTS Section -->
+            <h3 class="form-section-title" style="color: #2563eb;">📡 GPS & UTTS Entegrasyon Bilgileri</h3>
+            <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px;">
+              <div class="form-group">
+                <label class="form-label">GPS Cihaz Kodu / IMEI</label>
+                <input type="text" v-model="editVehicleForm.gps_device_id" class="form-input" placeholder="Örn: GPS-TR-884920">
+              </div>
+              <div class="form-group">
+                <label class="form-label">UTTS Taşıt Tanıma Kodu</label>
+                <input type="text" v-model="editVehicleForm.utts_code" class="form-input" placeholder="Örn: UTTS-34-89201">
+              </div>
+            </div>
+
+            <!-- Genel Bilgiler -->
+            <h3 class="form-section-title">🚗 Genel Bilgiler</h3>
+            <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr;">
+              <div class="form-group">
+                <label class="form-label">Plaka</label>
+                <input type="text" v-model="editVehicleForm.plate" required class="form-input" style="text-transform: uppercase;">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Güncel KM</label>
+                <input type="number" min="0" v-model.number="editVehicleForm.mileage" required class="form-input">
+              </div>
+            </div>
+
+            <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr;">
+              <div class="form-group">
+                <label class="form-label">Marka</label>
+                <input type="text" v-model="editVehicleForm.brand" required class="form-input">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Model</label>
+                <input type="text" v-model="editVehicleForm.model" required class="form-input">
+              </div>
+            </div>
+
+            <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr;">
+              <div class="form-group">
+                <label class="form-label">Üretim Yılı</label>
+                <input type="number" min="2010" max="2027" v-model.number="editVehicleForm.year" required class="form-input">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Yakıt Tipi</label>
+                <select v-model="editVehicleForm.fuel" class="form-select">
+                  <option value="Benzin">Benzin</option>
+                  <option value="Dizel">Dizel</option>
+                  <option value="Hibrit">Hibrit</option>
+                  <option value="Elektrik">Elektrik</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px;">
+              <div class="form-group">
+                <label class="form-label">Ruhsat Seri No</label>
+                <input type="text" v-model="editVehicleForm.license_serial_no" class="form-input">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Muayene Tarihi</label>
+                <input type="date" v-model="editVehicleForm.inspection_date" class="form-input">
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 15px; justify-content: flex-end; margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+            <button type="button" @click="isEditingVehicle = false" class="btn btn-secondary">Vazgeç</button>
+            <button type="submit" class="btn btn-primary" :disabled="saving">
+              {{ saving ? 'Kaydediliyor...' : '💾 Değişiklikleri Kaydet' }}
+            </button>
+          </div>
+        </form>
+      </template>
+
     </div>
   </div>
 
@@ -431,11 +527,31 @@ const saving = ref(false)
 const showAddModal = ref(false)
 const showDetailsModal = ref(false)
 const selectedVehicle = ref({})
+const isEditingVehicle = ref(false)
 
 const activeTab = ref('active')
 const showRemoveModal = ref(false)
 const vehicleToRemove = ref(null)
 const removalReason = ref('Sözleşme Bitişi')
+
+const editVehicleForm = reactive({
+  plate: '',
+  brand: '',
+  model: '',
+  year: 2024,
+  fuel: 'Benzin',
+  mileage: 0,
+  chassis_no: '',
+  license_serial_no: '',
+  inspection_date: '',
+  vehicle_segment: 'C',
+  vehicle_type: 'Sedan',
+  tire_change_date: '',
+  last_service_date: '',
+  last_service_mileage: 0,
+  gps_device_id: '',
+  utts_code: ''
+})
 
 const activeVehiclesCount = computed(() => vehicles.value.filter(v => v.is_active).length)
 const oldVehiclesCount = computed(() => vehicles.value.filter(v => !v.is_active).length)
@@ -543,7 +659,62 @@ const resetForm = () => {
 
 const openDetailsModal = (vehicle) => {
   selectedVehicle.value = vehicle
+  isEditingVehicle.value = false
   showDetailsModal.value = true
+}
+
+const startEditingVehicle = () => {
+  if (!selectedVehicle.value) return
+  const v = selectedVehicle.value
+  editVehicleForm.plate = v.plate || ''
+  editVehicleForm.brand = v.brand || ''
+  editVehicleForm.model = v.model || ''
+  editVehicleForm.year = v.year || 2024
+  editVehicleForm.fuel = v.fuel || 'Benzin'
+  editVehicleForm.mileage = v.mileage || 0
+  editVehicleForm.chassis_no = v.chassis_no || ''
+  editVehicleForm.license_serial_no = v.license_serial_no || ''
+  editVehicleForm.inspection_date = v.inspection_date || ''
+  editVehicleForm.vehicle_segment = v.vehicle_segment || 'C'
+  editVehicleForm.vehicle_type = v.vehicle_type || 'Sedan'
+  editVehicleForm.tire_change_date = v.tire_change_date || ''
+  editVehicleForm.last_service_date = v.last_service_date || ''
+  editVehicleForm.last_service_mileage = v.last_service_mileage || 0
+  editVehicleForm.gps_device_id = v.gps_device_id || ''
+  editVehicleForm.utts_code = v.utts_code || ''
+  isEditingVehicle.value = true
+}
+
+const saveVehicleEdit = async () => {
+  if (!selectedVehicle.value || !selectedVehicle.value.id) return
+  saving.value = true
+  try {
+    const response = await fetch(`/api/vehicles/${selectedVehicle.value.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(editVehicleForm)
+    })
+    
+    if (response.ok) {
+      const updatedVehicle = await response.json()
+      const idx = vehicles.value.findIndex(v => v.id === updatedVehicle.id)
+      if (idx !== -1) {
+        vehicles.value[idx] = updatedVehicle
+      }
+      selectedVehicle.value = updatedVehicle
+      isEditingVehicle.value = false
+    } else {
+      const err = await response.json()
+      alert(err.detail || 'Araç bilgileri güncellenirken bir hata oluştu.')
+    }
+  } catch (error) {
+    console.error('Error updating vehicle:', error)
+    alert('Sistem bağlantı hatası.')
+  } finally {
+    saving.value = false
+  }
 }
 
 const openRemoveModal = (vehicle) => {
