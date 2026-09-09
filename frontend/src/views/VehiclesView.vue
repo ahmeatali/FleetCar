@@ -384,9 +384,6 @@
         </div>
 
         <div style="display: flex; gap: 15px; justify-content: flex-end; margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 15px;">
-          <button @click="startEditingVehicle" class="btn btn-secondary" style="font-size: 0.9rem; color: #2563eb; font-weight: 700;">
-            ✏️ Araç Bilgilerini & GPS/UTTS Düzenle
-          </button>
           <template v-if="selectedVehicle.is_active">
             <router-link to="/dashboard/requests" class="btn btn-primary" style="font-size: 0.9rem;">Hizmet Talebi Oluştur</router-link>
           </template>
