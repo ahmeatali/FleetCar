@@ -458,7 +458,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import Sidebar from '../components/Sidebar.vue'
 
 const activeTab = ref('kullanicilar')
