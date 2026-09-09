@@ -1636,6 +1636,7 @@ const whatsappShareUrl = computed(() => {
 const submitAddSupplier = async () => {
   // Commit any pending service input
   if (serviceInput.value.trim()) addService()
+  const shouldInvite = Boolean(newSupplierForm.send_invite && newSupplierForm.email)
   try {
     const res = await fetch('/api/admin/suppliers', {
       method: 'POST',
@@ -1647,7 +1648,7 @@ const submitAddSupplier = async () => {
       await fetchSuppliers()
       closeAddSupplierModal()
       
-      if (newSupplierForm.send_invite && added.email) {
+      if (shouldInvite && added.email) {
         // Trigger explicit invite modal feedback
         await sendSupplierInvite(added)
       } else {
