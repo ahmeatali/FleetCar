@@ -17,12 +17,20 @@ def generate_invitation_token() -> str:
     return secrets.token_urlsafe(32)
 
 
-def send_supplier_invitation_email(recipient_email: str, supplier_name: str, token: str) -> bool:
+def send_supplier_invitation_email(recipient_email: str, supplier_name: str, token: str) -> dict:
     """
     Sends an invitation email to a supplier with a password setup link.
-    If SMTP credentials are not configured, prints the invitation link to stdout/logs.
+    Returns a dictionary with delivery status, SMTP configuration flag, and invite_url.
     """
     invite_url = f"{APP_BASE_URL}/setup-password?token={token}"
+
+    smtp_host = os.environ.get("SMTP_HOST", "").strip()
+    smtp_user = os.environ.get("SMTP_USER", "").strip()
+    smtp_pass = os.environ.get("SMTP_PASS", "").strip()
+    smtp_port = int(os.environ.get("SMTP_PORT", "587"))
+    smtp_from = os.environ.get("SMTP_FROM", "noreply@fleetrent.com.tr").strip()
+
+    is_smtp_configured = bool(smtp_host and smtp_user and smtp_pass)
 
     subject = f"FleetCar — {supplier_name} Portal Davetiyeniz"
     html_body = f"""
@@ -65,24 +73,41 @@ def send_supplier_invitation_email(recipient_email: str, supplier_name: str, tok
     </html>
     """
 
-    print(f"\n[EMAIL INVITE SENT] To: {recipient_email} | Supplier: {supplier_name} | Link: {invite_url}\n")
+    print(f"\n[EMAIL INVITE] To: {recipient_email} | Supplier: {supplier_name} | Link: {invite_url}\n")
 
-    if not SMTP_HOST or not SMTP_USER:
-        print("[SMTP INFO] SMTP configuration missing. Email simulated and logged to stdout.")
-        return True
+    if not is_smtp_configured:
+        print("[SMTP INFO] SMTP credentials missing in environment. Email simulated.")
+        return {
+            "email_sent": False,
+            "smtp_configured": False,
+            "invite_url": invite_url,
+            "message": "SMTP e-posta sunucusu henüz yapılandırılmadı. Davet bağlantısı aşağıdan kopyalanabilir."
+        }
 
     try:
         msg = MIMEMultipart('alternative')
         msg['Subject'] = subject
-        msg['From'] = SMTP_FROM
+        msg['From'] = smtp_from
         msg['To'] = recipient_email
         msg.attach(MIMEText(html_body, 'html', 'utf-8'))
 
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as server:
+        with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as server:
             server.starttls()
-            server.login(SMTP_USER, SMTP_PASS)
-            server.sendmail(SMTP_FROM, [recipient_email], msg.as_string())
-        return True
+            server.login(smtp_user, smtp_pass)
+            server.sendmail(smtp_from, [recipient_email], msg.as_string())
+        
+        return {
+            "email_sent": True,
+            "smtp_configured": True,
+            "invite_url": invite_url,
+            "message": f"Davet e-postası [{recipient_email}] adresine başarıyla gönderildi."
+        }
     except Exception as e:
-        print(f"[SMTP ERROR] Failed to send email to {recipient_email}: {e}")
-        return False
+        err_msg = str(e)
+        print(f"[SMTP ERROR] Failed to send email to {recipient_email}: {err_msg}")
+        return {
+            "email_sent": False,
+            "smtp_configured": True,
+            "invite_url": invite_url,
+            "message": f"SMTP hatası: {err_msg}"
+        }

@@ -393,11 +393,28 @@ def send_supplier_invite(supplier_id: int, db: Session = Depends(get_db)):
     s.invitation_status = "Davet Gönderildi"
     db.commit()
     
-    send_supplier_invitation_email(s.email, s.name, token)
+    result = send_supplier_invitation_email(s.email, s.name, token)
     return {
         "status": "success",
-        "message": f"{s.email} adresine davet e-postası gönderildi.",
-        "invite_url": f"{APP_BASE_URL}/setup-password?token={token}"
+        "email": s.email,
+        "supplier_name": s.name,
+        "email_sent": result.get("email_sent", False),
+        "smtp_configured": result.get("smtp_configured", False),
+        "message": result.get("message", ""),
+        "invite_url": result.get("invite_url", f"{APP_BASE_URL}/setup-password?token={token}")
+    }
+
+
+@app.get("/api/admin/smtp-status")
+def get_smtp_status():
+    import os
+    smtp_host = os.environ.get("SMTP_HOST", "").strip()
+    smtp_user = os.environ.get("SMTP_USER", "").strip()
+    is_configured = bool(smtp_host and smtp_user)
+    return {
+        "configured": is_configured,
+        "smtp_host": smtp_host or "Tanımlanmamış",
+        "smtp_user": smtp_user or "Tanımlanmamış"
     }
 
 

@@ -1349,6 +1349,62 @@
     </div>
   </div>
 
+  <!-- Supplier Invite Link Result Modal -->
+  <div v-if="showInviteModal" class="modal-overlay" @click.self="showInviteModal = false">
+    <div class="glass-panel modal-content fade-in-up" style="max-width: 560px; padding: 30px; border-radius: 20px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+        <h2 style="color: #7c3aed; margin: 0; display: flex; align-items: center; gap: 10px; font-size: 1.3rem;">
+          <span>📧</span> Tedarikçi Davet Bağlantısı
+        </h2>
+        <button @click="showInviteModal = false" style="background: transparent; border: none; color: var(--text-muted); font-size: 1.4rem; cursor: pointer; line-height: 1;">✕</button>
+      </div>
+
+      <!-- E-posta Gönderim Durum Bildirimi -->
+      <div v-if="inviteResult.email_sent" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 1.6rem;">✅</span>
+        <div>
+          <strong style="color: #10b981; font-size: 0.92rem;">E-Posta Adresine Başarıyla Gönderildi!</strong>
+          <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Davetiye e-postası {{ inviteResult.email }} adresine iletildi.</div>
+        </div>
+      </div>
+
+      <div v-else style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; display: flex; align-items: flex-start; gap: 12px;">
+        <span style="font-size: 1.6rem; line-height: 1;">💡</span>
+        <div>
+          <strong style="color: #d97706; font-size: 0.92rem;">Davet Bağlantısı Hazırlandı (Manuel İletilebilir)</strong>
+          <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; line-height: 1.4;">
+            SMTP e-posta ayarları yapılmadığı için e-posta doğrudan ulaştırılamadı. Aşağıdaki davet bağlantısını kopyalayarak WhatsApp veya e-posta ile doğrudan iletebilirsiniz.
+          </div>
+        </div>
+      </div>
+
+      <!-- Tedarikçi Detay Kartı -->
+      <div style="background: rgba(124, 58, 237, 0.04); border: 1px solid rgba(124, 58, 237, 0.12); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px;">
+        <div style="font-size: 0.88rem; margin-bottom: 4px; color: var(--text-main);"><strong>Tedarikçi / Servis:</strong> {{ inviteResult.supplier_name }}</div>
+        <div style="font-size: 0.85rem; color: var(--text-muted);"><strong>E-posta:</strong> {{ inviteResult.email }}</div>
+      </div>
+
+      <!-- Davet Linki Input Kutusu -->
+      <div class="form-group" style="margin-bottom: 22px;">
+        <label class="form-label" style="font-weight: 600; color: #334155;">Şifre Oluşturma Davet Bağlantısı</label>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" readonly :value="inviteResult.invite_url" class="form-input" style="font-family: monospace; font-size: 0.82rem; background: #f8fafc; color: #0f172a;">
+          <button @click="copyInviteUrl" class="btn" style="white-space: nowrap; border-color: #7c3aed; color: #ffffff; background: linear-gradient(135deg, #7c3aed, #db2777); font-weight: 600; padding: 0 16px;">
+            {{ copied ? '✓ Kopyalandı!' : '📋 Linki Kopyala' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- WhatsApp / Manuel Paylaşım -->
+      <div style="display: flex; gap: 12px; justify-content: space-between; border-top: 1px solid var(--border-color); padding-top: 18px;">
+        <a :href="whatsappShareUrl" target="_blank" class="btn" style="background: #25D366; color: #ffffff; text-decoration: none; display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.88rem; border-radius: 10px; padding: 10px 18px; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.25);">
+          💬 WhatsApp İle Gönder
+        </a>
+        <button @click="showInviteModal = false" class="btn btn-secondary">Tamam / Kapat</button>
+      </div>
+    </div>
+  </div>
+
 </template>
 
 
@@ -1553,6 +1609,30 @@ const closeAddSupplierModal = () => {
   serviceInput.value = ''
 }
 
+// Invite Result Modal State
+const showInviteModal = ref(false)
+const copied = ref(false)
+const inviteResult = reactive({
+  supplier_name: '',
+  email: '',
+  invite_url: '',
+  email_sent: false,
+  smtp_configured: false,
+  message: ''
+})
+
+const copyInviteUrl = () => {
+  if (!inviteResult.invite_url) return
+  navigator.clipboard.writeText(inviteResult.invite_url)
+  copied.value = true
+  setTimeout(() => { copied.value = false }, 2500)
+}
+
+const whatsappShareUrl = computed(() => {
+  const text = `Merhaba ${inviteResult.supplier_name},\n\nFleetCar Filo Yönetim Portalı davetiyeniz hazırlandı. Aşağıdaki bağlantıya tıklayarak şifrenizi belirleyebilirsiniz:\n\n${inviteResult.invite_url}`
+  return `https://wa.me/?text=${encodeURIComponent(text)}`
+})
+
 const submitAddSupplier = async () => {
   // Commit any pending service input
   if (serviceInput.value.trim()) addService()
@@ -1566,8 +1646,10 @@ const submitAddSupplier = async () => {
       const added = await res.json()
       await fetchSuppliers()
       closeAddSupplierModal()
-      if (added.invitation_status === 'Davet Gönderildi') {
-        alert(`✅ ${added.name} başarıyla eklendi ve ${added.email} adresine şifre oluşturma davetiye e-postası gönderildi!`)
+      
+      if (newSupplierForm.send_invite && added.email) {
+        // Trigger explicit invite modal feedback
+        await sendSupplierInvite(added)
       } else {
         alert(`✅ ${added.name} başarıyla sisteme kaydedildi.`)
       }
@@ -1595,7 +1677,15 @@ const sendSupplierInvite = async (supplier) => {
     })
     const data = await res.json()
     if (res.ok) {
-      alert(`✅ Davet e-postası gönderildi!\n\nDavet Linki: ${data.invite_url}`)
+      Object.assign(inviteResult, {
+        supplier_name: data.supplier_name || supplier.name,
+        email: data.email || targetEmail,
+        invite_url: data.invite_url,
+        email_sent: data.email_sent,
+        smtp_configured: data.smtp_configured,
+        message: data.message
+      })
+      showInviteModal.value = true
       await fetchSuppliers()
     } else {
       alert(`Hata: ${data.detail || 'Davet gönderilemedi.'}`)
