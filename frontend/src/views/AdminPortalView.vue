@@ -866,13 +866,23 @@
                     </div>
                   </td>
                   <td style="text-align: right;">
-                    <button 
-                      @click="sendSupplierInvite(s)" 
-                      class="btn btn-secondary" 
-                      style="padding: 6px 12px; font-size: 0.78rem; border-color: rgba(124, 58, 237, 0.3); color: #7c3aed; background: rgba(124, 58, 237, 0.06); font-weight: 600;"
-                    >
-                      {{ s.invitation_status === 'Davet Gönderildi' ? '🔄 Yeniden Davet Et' : '📧 Davetiye Gönder' }}
-                    </button>
+                    <div style="display: flex; gap: 6px; justify-content: flex-end;">
+                      <button 
+                        @click="sendSupplierInvite(s)" 
+                        class="btn btn-secondary" 
+                        style="padding: 6px 10px; font-size: 0.78rem; border-color: rgba(124, 58, 237, 0.3); color: #7c3aed; background: rgba(124, 58, 237, 0.06); font-weight: 600;"
+                      >
+                        {{ s.invitation_status === 'Davet Gönderildi' ? '🔄 Yeniden Davet Et' : '📧 Davetiye Gönder' }}
+                      </button>
+                      <button 
+                        @click="deleteSupplier(s)" 
+                        class="btn btn-secondary" 
+                        style="padding: 6px 10px; font-size: 0.78rem; border-color: rgba(239, 68, 68, 0.3); color: #ef4444; background: rgba(239, 68, 68, 0.06); font-weight: 600;"
+                        title="Tedarikçiyi Sil"
+                      >
+                        🗑️ Sil
+                      </button>
+                    </div>
                   </td>
                 </tr>
               </tbody>
@@ -1693,6 +1703,23 @@ const sendSupplierInvite = async (supplier) => {
     }
   } catch (err) {
     console.error('Invite error:', err)
+    alert('Sunucuya bağlanılamadı.')
+  }
+}
+
+const deleteSupplier = async (supplier) => {
+  if (!confirm(`"${supplier.name}" tedarikçisini/servisini silmek istediğinizden emin misiniz?`)) return
+  try {
+    const res = await fetch(`/api/admin/suppliers/${supplier.id}`, { method: 'DELETE' })
+    if (res.ok) {
+      await fetchSuppliers()
+      alert(`✅ ${supplier.name} başarıyla silindi.`)
+    } else {
+      const errData = await res.json().catch(() => ({}))
+      alert(errData.detail || 'Silme işlemi sırasında hata oluştu.')
+    }
+  } catch (err) {
+    console.error('Delete supplier error:', err)
     alert('Sunucuya bağlanılamadı.')
   }
 }

@@ -454,51 +454,39 @@ def supplier_login(creds: AdminLoginRequest, db: Session = Depends(get_db)):
     email_clean = creds.email.lower().strip()
     s = db.query(models.Supplier).filter(models.Supplier.email == email_clean).first()
     
-    if s:
-        if s.password_hash:
-            if not verify_password(creds.password, s.password_hash):
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Hatalı şifre! Lütfen girmiş olduğunuz şifreyi kontrol edin."
-                )
-        else:
-            # If admin added email but supplier hasn't set password yet via invite, set it now
-            s.password_hash = hash_password(creds.password)
-            s.invitation_status = "Aktif"
-            db.commit()
+    if not s:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"[{email_clean}] e-posta adresine tanımlı bir tedarikçi veya servis bulunamadı. Lütfen yöneticinizle iletişime geçin."
+        )
 
-        return {
-            "status": "success",
-            "token": f"supplier_token_{s.id}_{datetime.datetime.now().timestamp()}",
-            "supplier": supplier_dict(s)
-        }
-    
-    # If supplier with this email not registered by admin yet, auto-create
-    domain_name = email_clean.split('@')[1].split('.')[0].capitalize() if '@' in email_clean else 'Tedarikçi'
-    company_name = f"{domain_name} Filo Kiralama & Servis"
-    
-    s = models.Supplier(
-        name=company_name,
-        type="servis",
-        email=email_clean,
-        phone="0850 500 0000",
-        location="Merkez, İstanbul",
-        city="İstanbul",
-        district="Merkez",
-        services=["Periyodik Bakım", "İkame Araç"],
-        contract_type="Anlaşmalı",
-        password_hash=hash_password(creds.password),
-        invitation_status="Aktif"
-    )
-    db.add(s)
-    db.commit()
-    db.refresh(s)
-    
+    if s.password_hash:
+        if not verify_password(creds.password, s.password_hash):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Hatalı şifre! Lütfen girmiş olduğunuz şifreyi kontrol edin."
+            )
+    else:
+        # If admin added email but supplier hasn't set password yet via invite, set it now
+        s.password_hash = hash_password(creds.password)
+        s.invitation_status = "Aktif"
+        db.commit()
+
     return {
         "status": "success",
         "token": f"supplier_token_{s.id}_{datetime.datetime.now().timestamp()}",
         "supplier": supplier_dict(s)
     }
+
+
+@app.delete("/api/admin/suppliers/{supplier_id}")
+def delete_supplier(supplier_id: int, db: Session = Depends(get_db)):
+    s = db.query(models.Supplier).filter(models.Supplier.id == supplier_id).first()
+    if not s:
+        raise HTTPException(status_code=404, detail="Tedarikçi/Servis bulunamadı.")
+    db.delete(s)
+    db.commit()
+    return {"status": "success", "message": f"'{s.name}' başarıyla silindi."}
 
 
 # ─────────────────── REQUESTS ──────────────────────────────────────────────
