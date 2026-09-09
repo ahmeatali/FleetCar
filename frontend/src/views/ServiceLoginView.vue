@@ -101,7 +101,7 @@ const handleLogin = async () => {
       localStorage.setItem('fleetcar_supplier_email', supplier.email || email.value)
       localStorage.setItem('fleet_supplier', JSON.stringify(supplier))
       
-      router.push('/supplier-portal')
+      router.push('/service-portal')
     } else {
       const errData = await res.json().catch(() => ({}))
       alert(errData.detail || 'Giriş yapılamadı! Lütfen e-posta ve şifrenizi kontrol edin.')

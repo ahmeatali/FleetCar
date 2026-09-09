@@ -5,9 +5,11 @@
     <!-- Navbar Header -->
     <header class="supplier-header glass-panel">
       <div class="logo-area">
-        <div class="nav-logo-icon" style="background: linear-gradient(135deg, #10b981, #059669);">F</div>
+        <div class="nav-logo-icon" :style="{ background: isServiceAccount ? 'linear-gradient(135deg, #2563eb, #1d4ed8)' : 'linear-gradient(135deg, #10b981, #059669)' }">
+          {{ isServiceAccount ? '🔧' : 'F' }}
+        </div>
         <div>
-          <span class="portal-title">FleetCar <span class="tag-supplier">Tedarikçi Portalı</span></span>
+          <span class="portal-title">FleetCar <span :class="isServiceAccount ? 'tag-service' : 'tag-supplier'">{{ isServiceAccount ? 'Servis Portalı' : 'Tedarikçi Portalı' }}</span></span>
           <h2 class="supplier-name-display">{{ supplierName }}</h2>
         </div>
       </div>
@@ -708,14 +710,20 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
+const route = useRoute()
 
 const currentTab = ref('requests') // 'requests', 'tenders', 'my_vehicles'
 const supplierId = ref(parseInt(localStorage.getItem('fleetcar_supplier_id') || '0'))
-const supplierName = ref(localStorage.getItem('fleetcar_supplier_name') || 'Tedarikçi')
+const supplierName = ref(localStorage.getItem('fleetcar_supplier_name') || 'Tedarikçi / Servis')
 const supplierType = ref(localStorage.getItem('fleetcar_supplier_type') || 'servis')
+
+const isServiceAccount = computed(() => {
+  const t = supplierType.value?.toLowerCase() || ''
+  return route.path.includes('service') || t === 'servis' || t === 'lastik' || t === 'yol_yardim'
+})
 
 const supplierCity = ref('')
 const supplierDistrict = ref('')
@@ -1099,9 +1107,22 @@ onMounted(async () => {
 .tag-supplier {
   background: rgba(16, 185, 129, 0.1);
   color: #10b981;
-  padding: 2px 6px;
+  font-size: 0.75rem;
+  padding: 3px 8px;
   border-radius: 4px;
-  font-size: 0.7rem;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+.tag-service {
+  background: rgba(37, 99, 235, 0.12);
+  color: #2563eb;
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  vertical-align: middle;
 }
 
 .supplier-name-display {
