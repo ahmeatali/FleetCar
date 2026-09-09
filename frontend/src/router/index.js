@@ -92,6 +92,11 @@ const routes = [
     path: '/setup-password',
     name: 'SupplierSetupPassword',
     component: () => import('../views/SupplierSetupPasswordView.vue')
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('../views/NotFoundView.vue')
   }
 ]
 
