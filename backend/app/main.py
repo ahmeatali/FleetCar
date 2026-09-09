@@ -16,7 +16,8 @@ from app.schemas import (
     SupplierCreate, SupplierResponse, StatusUpdate,
     VehicleRemoval, QuoteUpdate,
     CustomerCreate, CustomerUpdate, BidCreate, BidResponse,
-    AdminLoginRequest, SetPasswordRequest
+    AdminLoginRequest, SetPasswordRequest,
+    ServiceCheckIn, ServiceWorkOrder, ServiceInvoice
 )
 
 app = FastAPI(title="FleetCar API", version="2.0.0")
@@ -638,6 +639,71 @@ def update_request_status(request_id: int, status_update: StatusUpdate, db: Sess
 
     db.commit()
     return request_dict(r)
+
+
+@app.post("/api/requests/{request_id}/checkin")
+def service_checkin(request_id: int, data: ServiceCheckIn, db: Session = Depends(get_db)):
+    r = db.query(models.Request).filter(models.Request.id == request_id).first()
+    if not r: raise HTTPException(status_code=404, detail="Request not found")
+    
+    details = dict(r.details or {})
+    details["entry_date"] = now_str()
+    details["entry_mileage"] = data.entry_mileage
+    details["fuel_level"] = data.fuel_level
+    details["driver_name"] = data.driver_name
+    details["driver_phone"] = data.driver_phone
+    details["entry_notes"] = data.entry_notes
+    if not details.get("work_order_no"):
+        details["work_order_no"] = f"SERV-2026-{r.id:04d}"
+    
+    r.details = details
+    r.status = "Servise Girdi"
+    
+    v = db.query(models.Vehicle).filter(models.Vehicle.id == r.vehicle_id).first()
+    if v and data.entry_mileage > (v.mileage or 0):
+        v.mileage = data.entry_mileage
+
+    db.commit()
+    return _enrich_request(r, db)
+
+
+@app.put("/api/requests/{request_id}/work-order")
+def service_work_order(request_id: int, data: ServiceWorkOrder, db: Session = Depends(get_db)):
+    r = db.query(models.Request).filter(models.Request.id == request_id).first()
+    if not r: raise HTTPException(status_code=404, detail="Request not found")
+    
+    details = dict(r.details or {})
+    if data.diagnosis_notes is not None:
+        details["diagnosis_notes"] = data.diagnosis_notes
+    if data.parts_list is not None:
+        details["parts_list"] = data.parts_list
+    if data.labor_cost is not None:
+        details["labor_cost"] = data.labor_cost
+    if data.total_estimated_cost is not None:
+        details["total_estimated_cost"] = data.total_estimated_cost
+    
+    r.details = details
+    db.commit()
+    return _enrich_request(r, db)
+
+
+@app.post("/api/requests/{request_id}/invoice")
+def service_invoice(request_id: int, data: ServiceInvoice, db: Session = Depends(get_db)):
+    r = db.query(models.Request).filter(models.Request.id == request_id).first()
+    if not r: raise HTTPException(status_code=404, detail="Request not found")
+    
+    details = dict(r.details or {})
+    details["invoice_no"] = data.invoice_no
+    details["invoice_date"] = data.invoice_date
+    details["invoice_amount"] = data.invoice_amount
+    details["invoice_notes"] = data.invoice_notes
+    details["invoice_status"] = "Yüklendi / Onay Bekliyor"
+    if data.file_name:
+        details["invoice_file_name"] = data.file_name
+
+    r.details = details
+    db.commit()
+    return _enrich_request(r, db)
 
 
 # ─────────────────── DASHBOARD ─────────────────────────────────────────────

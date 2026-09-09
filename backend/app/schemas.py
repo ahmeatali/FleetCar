@@ -191,3 +191,24 @@ class BidResponse(BaseModel):
 class AdminLoginRequest(BaseModel):
     email: str
     password: str
+
+class ServiceCheckIn(BaseModel):
+    entry_mileage: int
+    fuel_level: str
+    driver_name: str
+    driver_phone: Optional[str] = None
+    entry_notes: Optional[str] = None
+
+class ServiceWorkOrder(BaseModel):
+    diagnosis_notes: Optional[str] = None
+    parts_list: Optional[List[Dict[str, Any]]] = None
+    labor_cost: Optional[float] = None
+    total_estimated_cost: Optional[float] = None
+
+class ServiceInvoice(BaseModel):
+    invoice_no: str
+    invoice_date: str
+    invoice_amount: float
+    invoice_notes: Optional[str] = None
+    file_name: Optional[str] = None
+

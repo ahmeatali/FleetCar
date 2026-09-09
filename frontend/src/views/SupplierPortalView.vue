@@ -106,10 +106,13 @@
     <!-- Navigation Tabs for Servis -->
     <div v-else class="tab-header-container fade-in-up" style="display: flex; gap: 15px; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
       <button @click="currentTab = 'requests'" class="tab-btn" :class="{ 'active active-service': currentTab === 'requests' }">
-        🔧 Servis Bakım & Onarım Talepleri
+        📥 Gelen Bakım & Tamir Talepleri
       </button>
       <button @click="currentTab = 'service_vehicles'" class="tab-btn" :class="{ 'active active-service': currentTab === 'service_vehicles' }">
-        🚗 Servisteki Araçlar & Dosyalar
+        🚗 Servisteki Araçlar & İş Emirleri
+      </button>
+      <button @click="currentTab = 'service_invoices'" class="tab-btn" :class="{ 'active active-service': currentTab === 'service_invoices' }">
+        🧾 Fatura & Belge Yönetimi
       </button>
       <button @click="currentTab = 'service_metrics'" class="tab-btn" :class="{ 'active active-service': currentTab === 'service_metrics' }">
         ⏱️ Performans & Süre Analizi
@@ -603,34 +606,42 @@
           </div>
         </div>
 
-        <!-- 1. SERVİS REQUESTS TAB -->
+        <!-- 1. SERVİS REQUESTS TAB (Gelen Bakım & Tamir Talepleri) -->
         <div v-if="currentTab === 'requests'">
           <div class="glass-panel" style="padding: 25px;">
-            <h3 style="margin-bottom: 20px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px; color: #2563eb;">
-              🔧 Servis Bakım & Onarım Talepleri Listesi
+            <h3 style="margin-bottom: 10px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px; color: #2563eb;">
+              📥 Gelen Tamir & Bakım Talepleri
             </h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px;">
+              Filolardan servisinize iletilen bakım, mekanik arıza ve periyodik servis taleplerini inceleyin, randevu ve araç kabul kaydı oluşturun.
+            </p>
 
             <div v-if="loading" class="text-center" style="padding: 50px 0;">Yükleniyor...</div>
             <div v-else-if="filteredRequests.length === 0" class="empty-state">
-              <span style="font-size: 3rem; display: block; margin-bottom: 15px;">🔧</span>
+              <span style="font-size: 3rem; display: block; margin-bottom: 15px;">📥</span>
               <p style="font-size: 1.05rem; font-weight: 500;">Servisinize henüz atanmış aktif bir bakım/onarım talebi bulunmuyor.</p>
             </div>
             <div v-else class="custom-table-container">
               <table class="custom-table">
                 <thead>
                   <tr>
-                    <th>Talep ID</th>
+                    <th>Talep / İş Emri No</th>
                     <th>Araç Plaka & Detay</th>
                     <th>Servis İşlemi & Açıklama</th>
                     <th>Talep Tipi</th>
-                    <th>Kayıt Tarihi</th>
+                    <th>Giriş / Randevu</th>
                     <th>Servis Durumu</th>
-                    <th style="width: 180px;">İşlem Güncelle</th>
+                    <th style="min-width: 220px;">Aksiyonlar</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="req in filteredRequests" :key="req.id">
-                    <td><strong style="color: #2563eb;">#{{ req.id }}</strong></td>
+                    <td>
+                      <strong style="color: #2563eb;">#{{ req.id }}</strong>
+                      <div v-if="req.details?.work_order_no" style="font-family: monospace; font-size: 0.75rem; color: #475569; font-weight: bold; margin-top: 3px;">
+                        {{ req.details.work_order_no }}
+                      </div>
+                    </td>
                     <td>
                       <span class="plate-badge" style="background: rgba(37,99,235,0.1); color: #2563eb; border-color: rgba(37,99,235,0.2);">{{ req.vehicle_plate }}</span>
                       <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">{{ req.vehicle_brand_model }}</div>
@@ -640,9 +651,9 @@
                         <p style="margin-bottom: 6px; font-weight: 500;">{{ req.description }}</p>
                         
                         <div class="details-mini-box" v-if="req.details">
-                          <span v-if="req.details.appointment_date">📅 <strong>Randevu:</strong> {{ formatDate(req.details.appointment_date) }}</span>
-                          <span v-if="req.details.tire_type">🛞 <strong>Lastik:</strong> {{ req.details.tire_type }}</span>
-                          <span v-if="req.details.location">📍 <strong>Konum:</strong> {{ req.details.location }}</span>
+                          <span v-if="req.details.entry_mileage">🚗 <strong>Giriş KM:</strong> {{ req.details.entry_mileage?.toLocaleString() }} km</span>
+                          <span v-if="req.details.fuel_level">⛽ <strong>Yakıt:</strong> {{ req.details.fuel_level }}</span>
+                          <span v-if="req.details.driver_name">👤 <strong>Sürücü:</strong> {{ req.details.driver_name }}</span>
                         </div>
                       </div>
                     </td>
@@ -651,23 +662,48 @@
                         {{ getTypeName(req.type) }}
                       </span>
                     </td>
-                    <td>{{ formatDate(req.created_at) }}</td>
+                    <td style="font-size: 0.85rem;">
+                      <div v-if="req.details?.entry_date" style="color: #10b981; font-weight: bold;">
+                        Servise Girdi: {{ formatDate(req.details.entry_date) }}
+                      </div>
+                      <div v-else-if="req.details?.appointment_date">
+                        Randevu: {{ formatDate(req.details.appointment_date) }}
+                      </div>
+                      <div v-else style="color: var(--text-muted);">
+                        Talep: {{ formatDate(req.created_at) }}
+                      </div>
+                    </td>
                     <td>
                       <span class="badge" :class="getStatusBadgeClass(req.status)">{{ req.status }}</span>
                     </td>
                     <td>
-                      <select 
-                        @change="updateStatus(req.id, $event.target.value)" 
-                        class="form-select status-select-mini"
-                        :value="req.status"
-                        :disabled="updatingId === req.id"
-                      >
-                        <option value="Beklemede">Beklemede</option>
-                        <option value="Onaylandı">Onaylandı</option>
-                        <option value="İşlemde">İşlemde</option>
-                        <option value="Tamamlandı">Tamamlandı</option>
-                        <option value="İptal Edildi">İptal Et</option>
-                      </select>
+                      <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <button v-if="!req.details?.entry_date" @click="openCheckinModal(req)" class="btn btn-primary" style="padding: 4px 10px; font-size: 0.8rem; background: #2563eb; border: none;">
+                          🔑 Servise Giriş Kaydı Yap
+                        </button>
+                        <div style="display: flex; gap: 6px;">
+                          <button @click="openWorkOrderModal(req)" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem; color: #2563eb; border-color: #bfdbfe;">
+                            ⚙️ İş Emri & Parçalar
+                          </button>
+                          <select 
+                            @change="updateStatus(req.id, $event.target.value)" 
+                            class="form-select status-select-mini"
+                            :value="req.status"
+                            :disabled="updatingId === req.id"
+                            style="padding: 2px 6px; font-size: 0.75rem;"
+                          >
+                            <option value="Beklemede">Beklemede</option>
+                            <option value="Servise Girdi">Servise Girdi</option>
+                            <option value="Onay Bekliyor">Onay Bekliyor</option>
+                            <option value="Parça Bekliyor">Parça Bekliyor</option>
+                            <option value="Onarımda">Onarımda</option>
+                            <option value="Test & Yıkama">Test & Yıkama</option>
+                            <option value="Teslimata Hazır">Teslimata Hazır</option>
+                            <option value="Tamamlandı">Tamamlandı</option>
+                            <option value="İptal Edildi">İptal Et</option>
+                          </select>
+                        </div>
+                      </div>
                     </td>
                   </tr>
                 </tbody>
@@ -676,51 +712,146 @@
           </div>
         </div>
 
-        <!-- 2. SERVİS VEHICLES TAB -->
+        <!-- 2. SERVİS VEHICLES & WORK ORDERS TAB (Aktif Atölye) -->
         <div v-if="currentTab === 'service_vehicles'">
           <div class="glass-panel" style="padding: 25px;">
             <h3 style="margin-bottom: 10px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px; color: #2563eb;">
-              🚗 Servisteki Araçlar ve Kayıt Geçmişi
+              🚗 Servisteki Araçlar & İş Emirleri (Aktif Atölye)
             </h3>
             <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px;">
-              Servisinizde işlem gören, bakımı tamamlanan veya teslim alınan tüm filolara ait araç kayıtlarını listeyin.
+              Servisinizde fiziki olarak giriş yapıp işlem gören veya lifte alınan araçların iş emri detaylarını, değişen parçalarını ve durumlarını yönetin.
             </p>
 
             <div v-if="loading" class="text-center" style="padding: 50px 0;">Yükleniyor...</div>
-            <div v-else-if="serviceVehicles.length === 0" class="empty-state">
+            <div v-else-if="filteredRequests.filter(r => r.status !== 'Tamamlandı' && r.status !== 'İptal Edildi').length === 0" class="empty-state">
               <span style="font-size: 3rem; display: block; margin-bottom: 15px;">🚗</span>
-              <p style="font-size: 1.05rem; font-weight: 500;">Servis kaydı bulunan araç bulunmuyor.</p>
+              <p style="font-size: 1.05rem; font-weight: 500;">Servisinizde şu an aktif işlem gören araç bulunmamaktadır.</p>
             </div>
             <div v-else class="custom-table-container">
               <table class="custom-table">
                 <thead>
                   <tr>
-                    <th>Plaka</th>
-                    <th>Marka / Model</th>
-                    <th>Segment / Tip</th>
-                    <th>Mevcut KM</th>
-                    <th>Şasi No</th>
-                    <th>Son Servis Tarihi</th>
-                    <th>Servis Durumu</th>
-                    <th>İşlem</th>
+                    <th>Plaka & Araç</th>
+                    <th>İş Emri No</th>
+                    <th>Giriş Detayları</th>
+                    <th>Arıza Tespiti & Parçalar</th>
+                    <th>Tahmini Maliyet</th>
+                    <th>Atölye Durumu</th>
+                    <th>İşlemler</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="v in serviceVehicles" :key="v.id">
-                    <td><span class="plate-badge" style="background: rgba(37,99,235,0.1); color: #2563eb; border-color: rgba(37,99,235,0.2);">{{ v.plate }}</span></td>
-                    <td><strong>{{ v.brand }} {{ v.model }}</strong> ({{ v.year }})</td>
-                    <td>{{ v.vehicle_segment }} - {{ v.vehicle_type }}</td>
-                    <td>{{ v.mileage?.toLocaleString() }} km</td>
-                    <td style="font-family: monospace; font-size: 0.85rem;">{{ v.chassis_no }}</td>
-                    <td>{{ v.last_service_date || '-' }}</td>
+                  <tr v-for="req in filteredRequests.filter(r => r.status !== 'Tamamlandı' && r.status !== 'İptal Edildi')" :key="req.id">
                     <td>
-                      <span class="badge" :class="getStatusBadgeClassForVehicle(v.status)">
-                        {{ v.status }}
+                      <span class="plate-badge" style="background: rgba(37,99,235,0.1); color: #2563eb; border-color: rgba(37,99,235,0.2);">{{ req.vehicle_plate }}</span>
+                      <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">{{ req.vehicle_brand_model }}</div>
+                    </td>
+                    <td>
+                      <span style="font-family: monospace; font-weight: bold; color: #1e293b; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem;">
+                        {{ req.details?.work_order_no || `SERV-2026-${req.id}` }}
                       </span>
                     </td>
                     <td>
-                      <button @click="openVehicleDetails(v)" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">
-                        🔍 Servis Geçmişi
+                      <div style="font-size: 0.82rem; line-height: 1.4;">
+                        <div><strong>Giriş KM:</strong> {{ req.details?.entry_mileage ? req.details.entry_mileage.toLocaleString() + ' km' : '-' }}</div>
+                        <div><strong>Yakıt:</strong> {{ req.details?.fuel_level || '-' }}</div>
+                        <div v-if="req.details?.driver_name"><strong>Sürücü:</strong> {{ req.details.driver_name }}</div>
+                      </div>
+                    </td>
+                    <td>
+                      <div style="max-width: 250px; font-size: 0.82rem;">
+                        <div style="font-weight: 600; color: #334155; margin-bottom: 4px;">{{ req.details?.diagnosis_notes || req.description }}</div>
+                        <div v-if="req.details?.parts_list && req.details.parts_list.length > 0" style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;">
+                          <span v-for="(p, idx) in req.details.parts_list" :key="idx" style="font-size: 0.72rem; background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-weight: 500;">
+                            {{ p.part_name }} ({{ p.quantity }}x)
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <strong style="color: #2563eb; font-size: 0.95rem;">
+                        ₺{{ (req.details?.total_estimated_cost || 0).toLocaleString() }}
+                      </strong>
+                    </td>
+                    <td>
+                      <span class="badge" :class="getStatusBadgeClass(req.status)">{{ req.status }}</span>
+                    </td>
+                    <td>
+                      <div style="display: flex; gap: 6px;">
+                        <button @click="openWorkOrderModal(req)" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.78rem;">
+                          🛠️ İş Emri Düzenle
+                        </button>
+                        <button @click="openInvoiceModal(req)" class="btn btn-primary" style="padding: 4px 8px; font-size: 0.78rem; background: #10b981; border: none;">
+                          🧾 Fatura Kes
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. SERVİS INVOICES & DOCUMENTS TAB (Fatura Yönetimi) -->
+        <div v-if="currentTab === 'service_invoices'">
+          <div class="glass-panel" style="padding: 25px;">
+            <h3 style="margin-bottom: 10px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px; color: #2563eb;">
+              🧾 Fatura & Servis Belgeleri Yönetimi
+            </h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px;">
+              Tamamlanan veya işlemdeki araç tamirlerinin e-fatura / proforma bilgilerini girin, filodan ödeme durumunu takip edin.
+            </p>
+
+            <div v-if="loading" class="text-center" style="padding: 50px 0;">Yükleniyor...</div>
+            <div v-else-if="filteredRequests.length === 0" class="empty-state">
+              <span style="font-size: 3rem; display: block; margin-bottom: 15px;">🧾</span>
+              <p style="font-size: 1.05rem; font-weight: 500;">Servis faturası girişi yapılacak kayıt bulunmuyor.</p>
+            </div>
+            <div v-else class="custom-table-container">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>İş Emri No</th>
+                    <th>Araç Plaka</th>
+                    <th>Hizmet Tipi</th>
+                    <th>Fatura No & Tarih</th>
+                    <th>Fatura Tutarı (KDV Dahil)</th>
+                    <th>Fatura Durumu</th>
+                    <th>İşlem / Belge Yükle</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="req in filteredRequests" :key="req.id">
+                    <td>
+                      <strong style="color: #2563eb;">{{ req.details?.work_order_no || `SERV-2026-${req.id}` }}</strong>
+                    </td>
+                    <td>
+                      <span class="plate-badge" style="background: rgba(37,99,235,0.1); color: #2563eb; border-color: rgba(37,99,235,0.2);">{{ req.vehicle_plate }}</span>
+                    </td>
+                    <td>{{ getTypeName(req.type) }}</td>
+                    <td>
+                      <div v-if="req.details?.invoice_no">
+                        <strong style="font-family: monospace; color: #0f172a;">{{ req.details.invoice_no }}</strong>
+                        <div style="font-size: 0.78rem; color: var(--text-muted);">{{ req.details.invoice_date }}</div>
+                      </div>
+                      <span v-else style="color: var(--text-muted); font-style: italic;">Girilmedi</span>
+                    </td>
+                    <td>
+                      <strong v-if="req.details?.invoice_amount" style="color: #10b981; font-size: 1rem;">
+                        ₺{{ req.details.invoice_amount.toLocaleString() }}
+                      </strong>
+                      <span v-else style="color: var(--text-muted);">-</span>
+                    </td>
+                    <td>
+                      <span v-if="req.details?.invoice_status" class="badge" :class="req.details.invoice_status.includes('Onay') ? 'badge-active' : 'badge-completed'">
+                        {{ req.details.invoice_status }}
+                      </span>
+                      <span v-else class="badge" style="background: #f1f5f9; color: #64748b;">Yüklenmedi</span>
+                    </td>
+                    <td>
+                      <button @click="openInvoiceModal(req)" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.83rem; color: #2563eb; border-color: #bfdbfe; font-weight: 600;">
+                        {{ req.details?.invoice_no ? '✏️ Faturayı Güncelle' : '📤 Fatura Yükle' }}
                       </button>
                     </td>
                   </tr>
@@ -730,7 +861,7 @@
           </div>
         </div>
 
-        <!-- 3. SERVİS METRICS TAB -->
+        <!-- 4. SERVİS METRICS TAB -->
         <div v-if="currentTab === 'service_metrics'">
           <div class="glass-panel" style="padding: 25px;">
             <h3 style="margin-bottom: 10px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px; color: #2563eb;">
@@ -744,17 +875,17 @@
               <div class="glass-panel" style="padding: 20px; text-align: center;">
                 <span style="font-size: 2rem; display: block; margin-bottom: 10px;">🛠️</span>
                 <h4 style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Ort. Hasar Onarım Süresi</h4>
-                <div style="font-size: 1.8rem; font-weight: 800; color: #2563eb; margin-top: 5px;">0.00 Gün</div>
+                <div style="font-size: 1.8rem; font-weight: 800; color: #2563eb; margin-top: 5px;">1.4 Gün</div>
               </div>
               <div class="glass-panel" style="padding: 20px; text-align: center;">
                 <span style="font-size: 2rem; display: block; margin-bottom: 10px;">🛢️</span>
                 <h4 style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Ort. Periyodik Bakım Süresi</h4>
-                <div style="font-size: 1.8rem; font-weight: 800; color: #10b981; margin-top: 5px;">0.00 Gün</div>
+                <div style="font-size: 1.8rem; font-weight: 800; color: #10b981; margin-top: 5px;">0.5 Gün</div>
               </div>
               <div class="glass-panel" style="padding: 20px; text-align: center;">
                 <span style="font-size: 2rem; display: block; margin-bottom: 10px;">⏱️</span>
                 <h4 style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Ort. Serviste Kalma Süresi</h4>
-                <div style="font-size: 1.8rem; font-weight: 800; color: #7c3aed; margin-top: 5px;">0.00 Gün</div>
+                <div style="font-size: 1.8rem; font-weight: 800; color: #7c3aed; margin-top: 5px;">1.8 Gün</div>
               </div>
             </div>
           </div>
@@ -957,6 +1088,189 @@
       </div>
     </div>
   </div>
+
+  <!-- Service Check-in Modal -->
+  <div v-if="showCheckinModal" class="modal-overlay" @click.self="showCheckinModal = false">
+    <div class="glass-panel modal-content fade-in-up" style="max-width: 520px; padding: 30px;">
+      <h2 style="margin-bottom: 10px; color: #2563eb; display: flex; align-items: center; gap: 8px;">
+        <span>🔑</span> Servise Araç Girişi Kaydı (Check-In)
+      </h2>
+      <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; margin-bottom: 20px;">
+        Plaka: <strong style="color: #2563eb;">{{ selectedRequestForCheckin?.vehicle_plate }}</strong> için fiziki servis kabul bilgilerini giriniz.
+      </p>
+
+      <form @submit.prevent="submitCheckin">
+        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px;">
+          <div class="form-group">
+            <label class="form-label">Servise Giriş KM</label>
+            <input type="number" min="0" v-model.number="checkinForm.entry_mileage" required class="form-input" placeholder="Örn: 85400">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Yakıt Seviyesi</label>
+            <select v-model="checkinForm.fuel_level" required class="form-select">
+              <option value="%25 (Çeyrek Depo)">%25 (Çeyrek Depo)</option>
+              <option value="%50 (Yarım Depo)">%50 (Yarım Depo)</option>
+              <option value="%75 (Üç Çeyrek)">%75 (Üç Çeyrek)</option>
+              <option value="Full Depo">Full Depo</option>
+              <option value="Rezerv / İkaz">Rezerv / İkaz</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px;">
+          <div class="form-group">
+            <label class="form-label">Aracı Getiren Sürücü / Adı</label>
+            <input type="text" v-model="checkinForm.driver_name" required class="form-input" placeholder="Örn: Ahmet Yılmaz">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Sürücü Telefonu</label>
+            <input type="text" v-model="checkinForm.driver_phone" class="form-input" placeholder="Örn: 0532 000 0000">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label class="form-label">Kabul Notları & Çizik / Hasar Tespiti</label>
+          <textarea v-model="checkinForm.entry_notes" rows="3" class="form-input" placeholder="Araçta göze çarpan çizik, kırık veya özel sürücü şikayetlerini yazabilirsiniz."></textarea>
+        </div>
+
+        <div style="display: flex; gap: 12px; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 15px;">
+          <button type="button" @click="showCheckinModal = false" class="btn btn-secondary">İptal</button>
+          <button type="submit" class="btn btn-primary" style="background: #2563eb; color: #fff; border: none;">
+            ✅ Giriş Kaydını Tamamla & İş Emri Aç
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Service Work Order & Parts Modal -->
+  <div v-if="showWorkOrderModal" class="modal-overlay" @click.self="showWorkOrderModal = false">
+    <div class="glass-panel modal-content fade-in-up" style="max-width: 650px; padding: 30px;">
+      <h2 style="margin-bottom: 10px; color: #2563eb; display: flex; align-items: center; gap: 8px;">
+        <span>⚙️</span> İş Emri, Arıza Tespiti & Parça Listesi
+      </h2>
+      <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; margin-bottom: 20px;">
+        Plaka: <strong style="color: #2563eb;">{{ selectedRequestForWorkOrder?.vehicle_plate }}</strong> | İş Emri No: <strong>{{ selectedRequestForWorkOrder?.details?.work_order_no || `SERV-2026-${selectedRequestForWorkOrder?.id}` }}</strong>
+      </p>
+
+      <form @submit.prevent="submitWorkOrder">
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label class="form-label">Arıza Tespiti & Servis İşlemleri Açıklaması</label>
+          <textarea v-model="workOrderForm.diagnosis_notes" rows="2" class="form-input" placeholder="Yapılacak bakım, tespit edilen arızalar ve usta notları..."></textarea>
+        </div>
+
+        <!-- Spare Parts Builder -->
+        <div style="margin-bottom: 20px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px;">
+          <h4 style="font-size: 0.9rem; font-weight: bold; color: #1e293b; margin-bottom: 10px;">📦 Değişecek Parça Ekle</h4>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+            <input type="text" v-model="newPartForm.part_name" placeholder="Parça Adı (Örn: Yağ Filtresi)" class="form-input" style="flex: 2; font-size: 0.85rem;">
+            <input type="text" v-model="newPartForm.part_code" placeholder="Kod (Örn: FLT-88)" class="form-input" style="flex: 1; font-size: 0.85rem;">
+            <input type="number" min="1" v-model.number="newPartForm.quantity" placeholder="Adet" class="form-input" style="width: 70px; font-size: 0.85rem;">
+            <input type="number" min="0" v-model.number="newPartForm.unit_price" placeholder="Birim Fiyat ₺" class="form-input" style="width: 110px; font-size: 0.85rem;">
+            <button type="button" @click="addPartToWorkOrder" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85rem; background: #0284c7; border: none;">
+              Ekle
+            </button>
+          </div>
+
+          <!-- Parts Table -->
+          <div v-if="workOrderForm.parts_list.length > 0" style="max-height: 150px; overflow-y: auto;">
+            <table class="custom-table" style="font-size: 0.82rem;">
+              <thead>
+                <tr>
+                  <th>Parça Adı</th>
+                  <th>Kod</th>
+                  <th>Adet</th>
+                  <th>Birim (₺)</th>
+                  <th>Toplam (₺)</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(p, idx) in workOrderForm.parts_list" :key="idx">
+                  <td>{{ p.part_name }}</td>
+                  <td>{{ p.part_code || '-' }}</td>
+                  <td>{{ p.quantity }}</td>
+                  <td>₺{{ p.unit_price?.toLocaleString() }}</td>
+                  <td><strong>₺{{ (p.quantity * p.unit_price)?.toLocaleString() }}</strong></td>
+                  <td>
+                    <button type="button" @click="removePartFromWorkOrder(idx)" style="background: none; border: none; color: #ef4444; cursor: pointer; font-weight: bold;">✕</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 20px;">
+          <div class="form-group">
+            <label class="form-label">İşçilik Bedeli (₺)</label>
+            <input type="number" min="0" v-model.number="workOrderForm.labor_cost" @input="calculateWorkOrderTotal" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tahmini Toplam Tutar (₺)</label>
+            <input type="number" min="0" v-model.number="workOrderForm.total_estimated_cost" class="form-input" style="font-weight: bold; color: #2563eb;">
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 12px; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 15px;">
+          <button type="button" @click="showWorkOrderModal = false" class="btn btn-secondary">İptal</button>
+          <button type="submit" class="btn btn-primary" style="background: #2563eb; color: #fff; border: none;">
+            💾 İş Emrini Kaydet
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Service Invoice Modal -->
+  <div v-if="showInvoiceModal" class="modal-overlay" @click.self="showInvoiceModal = false">
+    <div class="glass-panel modal-content fade-in-up" style="max-width: 500px; padding: 30px;">
+      <h2 style="margin-bottom: 10px; color: #10b981; display: flex; align-items: center; gap: 8px;">
+        <span>🧾</span> Servis Faturası & Belge Yükleme
+      </h2>
+      <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; margin-bottom: 20px;">
+        Plaka: <strong style="color: #0f172a;">{{ selectedRequestForInvoice?.vehicle_plate }}</strong> | İş Emri: <strong>{{ selectedRequestForInvoice?.details?.work_order_no || `SERV-2026-${selectedRequestForInvoice?.id}` }}</strong>
+      </p>
+
+      <form @submit.prevent="submitInvoice">
+        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px;">
+          <div class="form-group">
+            <label class="form-label">Fatura Numarası</label>
+            <input type="text" v-model="invoiceForm.invoice_no" required class="form-input" placeholder="Örn: GİB202600000123">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Fatura Tarihi</label>
+            <input type="date" v-model="invoiceForm.invoice_date" required class="form-input">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label class="form-label">KDV Dahil Toplam Fatura Tutarı (₺)</label>
+          <input type="number" min="0" step="0.01" v-model.number="invoiceForm.invoice_amount" required class="form-input" style="font-weight: bold; font-size: 1.1rem; color: #10b981;">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label class="form-label">E-Fatura / PDF Belgesi Seç</label>
+          <input type="file" @change="handleInvoiceFileUpload" accept=".pdf,image/*" class="form-input">
+          <div v-if="invoiceForm.file_name" style="font-size: 0.8rem; color: #10b981; margin-top: 4px; font-weight: 500;">
+            📄 Seçilen Belge: {{ invoiceForm.file_name }}
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label class="form-label">Fatura Notları & Açıklama</label>
+          <textarea v-model="invoiceForm.invoice_notes" rows="2" class="form-input" placeholder="Fatura açıklaması veya ödeme şartı notları..."></textarea>
+        </div>
+
+        <div style="display: flex; gap: 12px; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 15px;">
+          <button type="button" @click="showInvoiceModal = false" class="btn btn-secondary">İptal</button>
+          <button type="submit" class="btn btn-primary" style="background: #10b981; color: #fff; border: none; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);">
+            📤 Faturayı Gönder & Onaya Sun
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -1022,6 +1336,169 @@ const addVehicleForm = reactive({
 // Vehicle Details & Service History State
 const showVehicleDetailsModal = ref(false)
 const selectedVehicle = ref(null)
+
+// Service Action Modals State
+const showCheckinModal = ref(false)
+const selectedRequestForCheckin = ref(null)
+const checkinForm = reactive({
+  entry_mileage: 0,
+  fuel_level: '%50 (Yarım Depo)',
+  driver_name: '',
+  driver_phone: '',
+  entry_notes: ''
+})
+
+const showWorkOrderModal = ref(false)
+const selectedRequestForWorkOrder = ref(null)
+const workOrderForm = reactive({
+  diagnosis_notes: '',
+  labor_cost: 0,
+  total_estimated_cost: 0,
+  parts_list: []
+})
+const newPartForm = reactive({
+  part_name: '',
+  part_code: '',
+  quantity: 1,
+  unit_price: 0
+})
+
+const showInvoiceModal = ref(false)
+const selectedRequestForInvoice = ref(null)
+const invoiceForm = reactive({
+  invoice_no: '',
+  invoice_date: '',
+  invoice_amount: 0,
+  invoice_notes: '',
+  file_name: ''
+})
+
+const openCheckinModal = (req) => {
+  selectedRequestForCheckin.value = req
+  checkinForm.entry_mileage = req.details?.entry_mileage || 0
+  checkinForm.fuel_level = req.details?.fuel_level || '%50 (Yarım Depo)'
+  checkinForm.driver_name = req.details?.driver_name || ''
+  checkinForm.driver_phone = req.details?.driver_phone || ''
+  checkinForm.entry_notes = req.details?.entry_notes || ''
+  showCheckinModal.value = true
+}
+
+const submitCheckin = async () => {
+  if (!selectedRequestForCheckin.value) return
+  try {
+    const res = await fetch(`/api/requests/${selectedRequestForCheckin.value.id}/checkin`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(checkinForm)
+    })
+    if (res.ok) {
+      await fetchRequests()
+      showCheckinModal.value = false
+    } else {
+      alert('Servise giriş kaydı oluşturulurken bir hata oluştu.')
+    }
+  } catch (error) {
+    console.error('Checkin error:', error)
+    alert('Sistem bağlantı hatası.')
+  }
+}
+
+const openWorkOrderModal = (req) => {
+  selectedRequestForWorkOrder.value = req
+  workOrderForm.diagnosis_notes = req.details?.diagnosis_notes || ''
+  workOrderForm.labor_cost = req.details?.labor_cost || 0
+  workOrderForm.total_estimated_cost = req.details?.total_estimated_cost || 0
+  workOrderForm.parts_list = Array.isArray(req.details?.parts_list) ? [...req.details.parts_list] : []
+  newPartForm.part_name = ''
+  newPartForm.part_code = ''
+  newPartForm.quantity = 1
+  newPartForm.unit_price = 0
+  showWorkOrderModal.value = true
+}
+
+const addPartToWorkOrder = () => {
+  if (!newPartForm.part_name) return
+  workOrderForm.parts_list.push({
+    part_name: newPartForm.part_name,
+    part_code: newPartForm.part_code,
+    quantity: newPartForm.quantity || 1,
+    unit_price: newPartForm.unit_price || 0
+  })
+  newPartForm.part_name = ''
+  newPartForm.part_code = ''
+  newPartForm.quantity = 1
+  newPartForm.unit_price = 0
+  calculateWorkOrderTotal()
+}
+
+const removePartFromWorkOrder = (idx) => {
+  workOrderForm.parts_list.splice(idx, 1)
+  calculateWorkOrderTotal()
+}
+
+const calculateWorkOrderTotal = () => {
+  const partsTotal = workOrderForm.parts_list.reduce((sum, p) => sum + ((p.quantity || 1) * (p.unit_price || 0)), 0)
+  workOrderForm.total_estimated_cost = partsTotal + (workOrderForm.labor_cost || 0)
+}
+
+const submitWorkOrder = async () => {
+  if (!selectedRequestForWorkOrder.value) return
+  calculateWorkOrderTotal()
+  try {
+    const res = await fetch(`/api/requests/${selectedRequestForWorkOrder.value.id}/work-order`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(workOrderForm)
+    })
+    if (res.ok) {
+      await fetchRequests()
+      showWorkOrderModal.value = false
+    } else {
+      alert('İş emri güncellenirken bir hata oluştu.')
+    }
+  } catch (error) {
+    console.error('Work order error:', error)
+    alert('Sistem bağlantı hatası.')
+  }
+}
+
+const openInvoiceModal = (req) => {
+  selectedRequestForInvoice.value = req
+  const today = new Date().toISOString().split('T')[0]
+  invoiceForm.invoice_no = req.details?.invoice_no || `FAT-2026-${req.id}`
+  invoiceForm.invoice_date = req.details?.invoice_date || today
+  invoiceForm.invoice_amount = req.details?.invoice_amount || req.details?.total_estimated_cost || 0
+  invoiceForm.invoice_notes = req.details?.invoice_notes || ''
+  invoiceForm.file_name = req.details?.invoice_file_name || ''
+  showInvoiceModal.value = true
+}
+
+const handleInvoiceFileUpload = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    invoiceForm.file_name = file.name
+  }
+}
+
+const submitInvoice = async () => {
+  if (!selectedRequestForInvoice.value) return
+  try {
+    const res = await fetch(`/api/requests/${selectedRequestForInvoice.value.id}/invoice`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(invoiceForm)
+    })
+    if (res.ok) {
+      await fetchRequests()
+      showInvoiceModal.value = false
+    } else {
+      alert('Fatura bilgileri kaydedilirken bir hata oluştu.')
+    }
+  } catch (error) {
+    console.error('Invoice submit error:', error)
+    alert('Sistem bağlantı hatası.')
+  }
+}
 
 const fetchRequests = async () => {
   try {
