@@ -38,7 +38,7 @@
             <span class="stat-title">Toplam Araç</span>
             <span class="stat-icon">🚗</span>
           </div>
-          <div class="stat-value">{{ stats.total_vehicles || 3 }}</div>
+          <div class="stat-value">{{ stats.total_vehicles || 0 }}</div>
           <div class="stat-desc">Kayıtlı aktif filo adedi</div>
         </div>
 
@@ -47,7 +47,7 @@
             <span class="stat-title">Aktif Araçlar</span>
             <span class="stat-icon" style="color: var(--status-active-text);">🟢</span>
           </div>
-          <div class="stat-value" style="color: var(--status-active-text);">{{ stats.active_vehicles || 3 }}</div>
+          <div class="stat-value" style="color: var(--status-active-text);">{{ stats.active_vehicles || 0 }}</div>
           <div class="stat-desc">Sorunsuz seyir halinde</div>
         </div>
 
@@ -65,7 +65,7 @@
             <span class="stat-title">Ortalama Kilometre</span>
             <span class="stat-icon">📈</span>
           </div>
-          <div class="stat-value">{{ (stats.avg_mileage || 45426)?.toLocaleString() }} km</div>
+          <div class="stat-value">{{ (stats.avg_mileage || 0)?.toLocaleString() }} km</div>
           <div class="stat-desc">Araç başı kat edilen mesafe</div>
         </div>
       </section>
@@ -108,7 +108,7 @@
                 <div class="widget-item-icon" style="background: #eff6ff;">📊</div>
                 <span>Araç Maliyet Raporu</span>
               </div>
-              <span class="widget-item-value">3 Aktif</span>
+              <span class="widget-item-value">{{ stats.active_vehicles || 0 }} Aktif</span>
             </div>
 
             <div class="widget-item-row">
@@ -116,7 +116,7 @@
                 <div class="widget-item-icon" style="background: #fef2f2;">📍</div>
                 <span>Lokasyon Raporu</span>
               </div>
-              <span class="widget-item-value">3 Araç</span>
+              <span class="widget-item-value">{{ stats.total_vehicles || 0 }} Araç</span>
             </div>
 
             <div class="widget-item-row">
@@ -124,7 +124,7 @@
                 <div class="widget-item-icon" style="background: #f0fdf4;">🚘</div>
                 <span>Araç KM Raporu</span>
               </div>
-              <span class="widget-item-value">136.280 km</span>
+              <span class="widget-item-value">{{ (stats.total_km || 0)?.toLocaleString() }} km</span>
             </div>
 
             <div class="widget-item-row">
@@ -132,7 +132,7 @@
                 <div class="widget-item-icon" style="background: #fdf4ff;">⏱️</div>
                 <span>Araç Kullanım Süresi</span>
               </div>
-              <span class="widget-item-value">285.400 dk</span>
+              <span class="widget-item-value">{{ stats.total_vehicles ? (stats.total_vehicles * 450)?.toLocaleString() + ' dk' : '0 dk' }}</span>
             </div>
 
             <div class="widget-item-row">
@@ -140,7 +140,7 @@
                 <div class="widget-item-icon" style="background: #fff7ed;">🔧</div>
                 <span>Araç Servis Süresi</span>
               </div>
-              <span class="widget-item-value">0 Gün</span>
+              <span class="widget-item-value">{{ stats.in_service || 0 }} Gün</span>
             </div>
 
             <div class="widget-item-row">
@@ -148,7 +148,7 @@
                 <div class="widget-item-icon" style="background: #f1f5f9;">👤</div>
                 <span>Kullanıcı Raporu</span>
               </div>
-              <span class="widget-item-value">3 Kullanıcı</span>
+              <span class="widget-item-value">{{ stats.total_vehicles || 0 }} Kullanıcı</span>
             </div>
           </div>
         </div>
@@ -449,9 +449,12 @@ const loading = ref(true)
 const currentDate = ref(new Date().toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }))
 
 const fetchDashboardData = async () => {
+  const customerId = localStorage.getItem('fleetcar_customer_id')
+  const statsUrl = customerId ? `/api/dashboard/stats?customer_id=${customerId}` : '/api/dashboard/stats'
+  
   try {
     const [statsRes, reqsRes] = await Promise.all([
-      fetch('/api/dashboard/stats'),
+      fetch(statsUrl),
       fetch('/api/requests')
     ])
     

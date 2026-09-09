@@ -267,8 +267,13 @@ def update_bid_status(bid_id: int, status_update: StatusUpdate, db: Session = De
 # ─────────────────── VEHICLES ──────────────────────────────────────────────
 
 @app.get("/api/vehicles", response_model=List[VehicleResponse])
-def get_vehicles(db: Session = Depends(get_db)):
-    return [vehicle_dict(v, db) for v in db.query(models.Vehicle).all()]
+def get_vehicles(customer_id: Optional[int] = None, supplier_id: Optional[int] = None, db: Session = Depends(get_db)):
+    q = db.query(models.Vehicle)
+    if customer_id:
+        q = q.filter(models.Vehicle.customer_id == customer_id)
+    if supplier_id:
+        q = q.filter(models.Vehicle.supplier_id == supplier_id)
+    return [vehicle_dict(v, db) for v in q.all()]
 
 
 @app.post("/api/vehicles", response_model=VehicleResponse)
@@ -607,25 +612,35 @@ def update_request_status(request_id: int, status_update: StatusUpdate, db: Sess
 # ─────────────────── DASHBOARD ─────────────────────────────────────────────
 
 @app.get("/api/dashboard/stats")
-def get_dashboard_stats(db: Session = Depends(get_db)):
-    active = db.query(models.Vehicle).filter(models.Vehicle.is_active == True).all()
+def get_dashboard_stats(customer_id: Optional[int] = None, db: Session = Depends(get_db)):
+    q = db.query(models.Vehicle).filter(models.Vehicle.is_active == True)
+    if customer_id:
+        q = q.filter(models.Vehicle.customer_id == customer_id)
+    active = q.all()
     total = len(active)
     fuel_stats = {}
     for v in active:
         fuel_stats[v.fuel] = fuel_stats.get(v.fuel, 0) + 1
 
-    reqs = db.query(models.Request).all()
+    vehicle_ids = [v.id for v in active]
+    req_q = db.query(models.Request)
+    if customer_id:
+        req_q = req_q.filter(models.Request.vehicle_id.in_(vehicle_ids))
+    reqs = req_q.all()
+
+    total_km = sum(v.mileage for v in active if v.mileage)
     return {
         "total_vehicles":       total,
         "active_vehicles":      sum(1 for v in active if v.status == "Aktif"),
-        "in_service":           sum(1 for v in active if v.status == "Serviste"),
-        "tire_change":          sum(1 for v in active if v.status == "Lastik Değişiminde"),
-        "roadside_assistance":  sum(1 for v in active if v.status == "Yol Yardımında"),
-        "replacement_waiting":  sum(1 for v in active if v.status == "İkame Araç Bekliyor"),
+        "in_service":           sum(1 for v in active if v.status in ["Serviste", "Servis"]),
+        "tire_change":          sum(1 for v in active if v.status in ["Lastik Değişiminde", "Lastik"]),
+        "roadside_assistance":  sum(1 for v in active if v.status in ["Yol Yardımında", "Yol Yardım"]),
+        "replacement_waiting":  sum(1 for v in active if v.status in ["İkame Araç Bekliyor", "İkame Araç"]),
         "total_requests":       len(reqs),
-        "pending_requests":     sum(1 for r in reqs if r.status in ["Beklemede", "Onaylandı"]),
+        "pending_requests":     sum(1 for r in reqs if r.status in ["Beklemede", "Onaylandı", "İşlemde"]),
         "completed_requests":   sum(1 for r in reqs if r.status == "Tamamlandı"),
-        "avg_mileage":          int(sum(v.mileage for v in active) / total) if total else 0,
+        "avg_mileage":          int(total_km / total) if total else 0,
+        "total_km":             total_km,
         "fuel_stats":           fuel_stats
     }
 
@@ -633,16 +648,35 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
 # ─────────────────── COMPANY PROFILE ───────────────────────────────────────
 
 @app.get("/api/company/profile")
-def get_company_profile(db: Session = Depends(get_db)):
-    c = db.query(models.Customer).first()
-    active_count = db.query(models.Vehicle).filter(models.Vehicle.is_active == True).count()
+def get_company_profile(customer_id: Optional[int] = None, db: Session = Depends(get_db)):
+    c = None
+    if customer_id:
+        c = db.query(models.Customer).filter(models.Customer.id == customer_id).first()
+    if not c:
+        c = db.query(models.Customer).first()
+
     if c:
+        active_count = db.query(models.Vehicle).filter(models.Vehicle.customer_id == c.id, models.Vehicle.is_active == True).count()
         return {
-            "company_name": c.company_name, "legal_title": c.legal_title,
-            "registered_vehicles_count": active_count,
-            "email": c.email, "phone": c.phone, "address": c.address
+            "id": c.id,
+            "company_name": c.company_name,
+            "legal_title": c.legal_title or c.company_name,
+            "registered_vehicles_count": c.registered_vehicles_count or 0,
+            "actual_vehicles_count": active_count,
+            "email": c.email or "-",
+            "phone": c.phone or "-",
+            "address": c.address or "-"
         }
-    return {"company_name": "FleetCar", "registered_vehicles_count": active_count}
+    return {
+        "id": 0,
+        "company_name": "Müşteri Portalı",
+        "legal_title": "Müşteri Portalı A.Ş.",
+        "registered_vehicles_count": 0,
+        "actual_vehicles_count": 0,
+        "email": "-",
+        "phone": "-",
+        "address": "-"
+    }
 
 
 # ─────────────────── ADMIN — AUTH ───────────────────────────────────────────

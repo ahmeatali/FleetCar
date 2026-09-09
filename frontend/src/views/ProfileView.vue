@@ -78,11 +78,11 @@
           <div class="grid-3" style="gap: 20px;">
             <div class="user-info-box">
               <span class="info-label">Filo Yöneticisi</span>
-              <strong class="info-val">Ahmet Yılmaz</strong>
+              <strong class="info-val">{{ profile.company_name || 'Filo Yöneticisi' }}</strong>
             </div>
             <div class="user-info-box">
               <span class="info-label">Kullanıcı Rolü</span>
-              <strong class="info-val" style="color: var(--secondary);">Yönetici / Admin</strong>
+              <strong class="info-val" style="color: var(--secondary);">Filo Yöneticisi</strong>
             </div>
             <div class="user-info-box">
               <span class="info-label">Sözleşme Durumu</span>
@@ -110,8 +110,10 @@ const profile = ref({
 const loading = ref(true)
 
 const fetchProfile = async () => {
+  const customerId = localStorage.getItem('fleetcar_customer_id')
+  const url = customerId ? `/api/company/profile?customer_id=${customerId}` : '/api/company/profile'
   try {
-    const response = await fetch('/api/company/profile')
+    const response = await fetch(url)
     if (response.ok) {
       profile.value = await response.json()
     }

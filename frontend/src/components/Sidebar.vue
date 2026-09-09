@@ -9,7 +9,7 @@
     <div class="user-profile-summary">
       <div class="avatar">👨‍💼</div>
       <div class="profile-details">
-        <h4 class="company-name">Ahmet Yılmaz</h4>
+        <h4 class="company-name" :title="customerName">{{ customerName }}</h4>
         <span class="role-badge">Filo Yöneticisi</span>
       </div>
     </div>
@@ -72,14 +72,22 @@
 </template>
 
 <script setup>
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
+const customerName = computed(() => {
+  return localStorage.getItem('fleetcar_customer_name') || localStorage.getItem('fleetcar_user_email') || 'Filo Müşterisi'
+})
+
 const logout = () => {
   localStorage.removeItem('fleetcar_token')
+  localStorage.removeItem('fleetcar_customer_id')
+  localStorage.removeItem('fleetcar_customer_name')
   localStorage.removeItem('fleetcar_user_email')
-  router.push('/')
+  localStorage.removeItem('fleet_customer')
+  router.push('/login?role=customer')
 }
 </script>
 

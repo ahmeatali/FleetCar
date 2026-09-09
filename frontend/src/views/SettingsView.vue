@@ -276,9 +276,9 @@
             <label class="form-label">Tahsis Edilecek Araç</label>
             <select v-model="userForm.assigned_plate" class="form-select">
               <option value="">Yok / Serbest</option>
-              <option value="34 FR 001">34 FR 001 (Toyota Corolla)</option>
-              <option value="34 FR 002">34 FR 002 (Renault Megane)</option>
-              <option value="06 FR 003">06 FR 003 (Mercedes C200)</option>
+              <option v-for="v in vehicles" :key="v.id" :value="v.plate">
+                {{ v.plate }} ({{ v.brand }} {{ v.model }})
+              </option>
             </select>
           </div>
         </div>
@@ -305,9 +305,10 @@
         <div class="form-group">
           <label class="form-label">Teslim Edilecek Araç Plakası</label>
           <select v-model="formHandover.plate" required class="form-select">
-            <option value="34 FR 001">34 FR 001</option>
-            <option value="34 FR 002">34 FR 002</option>
-            <option value="06 FR 003">06 FR 003</option>
+            <option value="" disabled>Araç seçiniz...</option>
+            <option v-for="v in vehicles" :key="v.id" :value="v.plate">
+              {{ v.plate }} ({{ v.brand }} {{ v.model }})
+            </option>
           </select>
         </div>
         <div class="form-group">
@@ -376,13 +377,40 @@ const activeTabTitle = computed(() => {
   }
 })
 
+// Vehicles state for plate selects
+const vehicles = ref([])
+
+const fetchVehicles = async () => {
+  const customerId = localStorage.getItem('fleetcar_customer_id')
+  const url = customerId ? `/api/vehicles?customer_id=${customerId}` : '/api/vehicles'
+  try {
+    const res = await fetch(url)
+    if (res.ok) {
+      vehicles.value = await res.json()
+    }
+  } catch (err) {
+    console.error('Error fetching vehicles for settings:', err)
+  }
+}
+
 // Users List Data
-const users = ref([
-  { id: 1, name: 'Ahmet Türkoğlu', email: 'ahmet.turkoglu@sirket.com', phone: '0532 111 2233', role: 'Filo Yöneticisi', assigned_plate: '34 FR 001', created_at: '12.01.2025', is_active: true },
-  { id: 2, name: 'Mehmet Yılmaz', email: 'mehmet.yilmaz@sirket.com', phone: '0533 222 3344', role: 'Sürücü', assigned_plate: '34 FR 002', created_at: '15.02.2025', is_active: true },
-  { id: 3, name: 'Ali Demir', email: 'ali.demir@sirket.com', phone: '0535 333 4455', role: 'Sürücü', assigned_plate: '06 FR 003', created_at: '01.03.2025', is_active: true },
-  { id: 4, name: 'Zeynep Kaya', email: 'zeynep.kaya@sirket.com', phone: '0536 444 5566', role: 'Finans Sorumlusu', assigned_plate: '', created_at: '10.04.2025', is_active: true }
-])
+const storedUsersStr = localStorage.getItem('fleet_customer_users')
+const defaultUser = {
+  id: 1,
+  name: localStorage.getItem('fleetcar_customer_name') || 'Filo Yöneticisi',
+  email: localStorage.getItem('fleetcar_user_email') || 'yonetici@sirket.com',
+  phone: '-',
+  role: 'Filo Yöneticisi',
+  assigned_plate: '',
+  created_at: new Date().toLocaleDateString('tr-TR'),
+  is_active: true
+}
+
+const users = ref(storedUsersStr ? JSON.parse(storedUsersStr) : [defaultUser])
+
+const saveUsers = () => {
+  localStorage.setItem('fleet_customer_users', JSON.stringify(users.value))
+}
 
 const filteredUsers = computed(() => {
   if (!userSearch.value) return users.value
@@ -408,7 +436,7 @@ const userForm = reactive({
 
 const addUser = () => {
   users.value.unshift({
-    id: users.value.length + 1,
+    id: Date.now(),
     name: userForm.name,
     email: userForm.email,
     phone: userForm.phone,
@@ -417,6 +445,7 @@ const addUser = () => {
     created_at: new Date().toLocaleDateString('tr-TR'),
     is_active: true
   })
+  saveUsers()
   alert(`Yeni kullanıcı "${userForm.name}" başarıyla eklendi!`)
   showAddUserModal.value = false
   userForm.name = ''
@@ -427,6 +456,7 @@ const addUser = () => {
 
 const toggleUserStatus = (user) => {
   user.is_active = !user.is_active
+  saveUsers()
 }
 
 const editUser = (user) => {
@@ -434,32 +464,39 @@ const editUser = (user) => {
 }
 
 // Delivery / Handover Forms
-const deliveryForms = ref([
-  { id: 101, plate: '34 FR 001', receiver: 'Ahmet Türkoğlu', issuer: 'Hakan Can (Operasyon)', date: '12.01.2025', km: 45230, notes: 'Temiz teslim edildi, 2 adet anahtar.' },
-  { id: 102, plate: '34 FR 002', receiver: 'Mehmet Yılmaz', issuer: 'Hakan Can (Operasyon)', date: '15.02.2025', km: 38900, notes: 'Sol çamurluk hafif çizik kayıtlı.' },
-  { id: 103, plate: '06 FR 003', receiver: 'Ali Demir', issuer: 'Hakan Can (Operasyon)', date: '01.03.2025', km: 52150, notes: 'Yedek lastik ve ilk yardım seti tam.' }
-])
+const storedFormsStr = localStorage.getItem('fleet_customer_delivery_forms')
+const deliveryForms = ref(storedFormsStr ? JSON.parse(storedFormsStr) : [])
+
+const saveForms = () => {
+  localStorage.setItem('fleet_customer_delivery_forms', JSON.stringify(deliveryForms.value))
+}
 
 const formHandover = reactive({
-  plate: '34 FR 001',
+  plate: '',
   receiver: '',
   date: new Date().toISOString().slice(0, 10),
-  km: 45000
+  km: 0
 })
 
 const addHandoverForm = () => {
   deliveryForms.value.unshift({
-    id: 100 + deliveryForms.value.length + 1,
+    id: Date.now(),
     plate: formHandover.plate,
     receiver: formHandover.receiver,
-    issuer: 'Ahmet Yılmaz (Yönetici)',
+    issuer: localStorage.getItem('fleetcar_customer_name') || 'Filo Yönetimi',
     date: formHandover.date,
     km: formHandover.km,
-    notes: 'Sistem üzerinden dijital teslim onaylandı.'
+    notes: 'Yeni teslim alma formu kaydı.'
   })
+  saveForms()
   showAddFormModal.value = false
-  alert('Teslim formu başarıyla oluşturuldu!')
+  alert(`${formHandover.plate} plaka için araç teslim formu kaydedildi!`)
 }
+
+onMounted(() => {
+  fetchVehicles()
+})
+
 
 const downloadForm = (form) => {
   alert(`#TF-${form.id} numaralı Teslim Formu PDF olarak indiriliyor...`)
