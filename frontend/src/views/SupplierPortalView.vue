@@ -1,5 +1,5 @@
 <template>
-  <div class="app-bg-glow" style="--glow-color: rgba(16, 185, 129, 0.08);"></div>
+  <div class="app-bg-glow" :style="{ '--glow-color': isServiceAccount ? 'rgba(37, 99, 235, 0.08)' : 'rgba(16, 185, 129, 0.08)' }"></div>
   
   <div class="supplier-layout">
     <!-- Navbar Header -->
@@ -15,7 +15,9 @@
       </div>
 
       <div style="display: flex; gap: 15px; align-items: center;">
-        <span class="type-badge">{{ getTypeName(supplierType) }}</span>
+        <span class="type-badge" :style="{ background: isServiceAccount ? 'rgba(37,99,235,0.1)' : 'rgba(16,185,129,0.1)', color: isServiceAccount ? '#2563eb' : '#10b981', border: isServiceAccount ? '1px solid rgba(37,99,235,0.2)' : '1px solid rgba(16,185,129,0.2)' }">
+          {{ getTypeName(supplierType) }}
+        </span>
         <button @click="handleLogout" class="btn btn-secondary btn-danger-hover">
           Çıkış Yap ➔
         </button>
@@ -31,234 +33,501 @@
             {{ supplierCity || '-' }} / {{ supplierDistrict || '-' }}
           </div>
         </div>
-        <div style="border-left: 1px solid var(--border-color); padding-left: 30px;">
-          <span class="profile-meta-label">📄 Servis Tipi</span>
-          <div style="margin-top: 5px;">
-            <span class="contract-badge" :class="supplierContractType === 'Yetkili' ? 'badge-auth' : 'badge-contracted'">
-              {{ supplierContractType || '-' }} Servis
-            </span>
+
+        <!-- Servis Specific Profile Meta -->
+        <template v-if="isServiceAccount">
+          <div style="border-left: 1px solid var(--border-color); padding-left: 30px;">
+            <span class="profile-meta-label">📄 Servis Tipi</span>
+            <div style="margin-top: 5px;">
+              <span class="contract-badge" :class="supplierContractType === 'Yetkili' ? 'badge-auth' : 'badge-contracted'">
+                {{ supplierContractType || '-' }} Servis
+              </span>
+            </div>
           </div>
-        </div>
-        <div style="border-left: 1px solid var(--border-color); padding-left: 30px;">
-          <span class="profile-meta-label">🛠️ Yapabildiği Hizmetler</span>
-          <div style="display: flex; gap: 6px; margin-top: 5px; flex-wrap: wrap;">
-            <span class="service-tag" v-for="service in supplierServices" :key="service">
-              {{ service }}
-            </span>
-            <span v-if="!supplierServices || supplierServices.length === 0" style="color: var(--text-muted); font-size: 0.85rem;">-</span>
+          <div style="border-left: 1px solid var(--border-color); padding-left: 30px;">
+            <span class="profile-meta-label">🛠️ Yapabildiği Hizmetler</span>
+            <div style="display: flex; gap: 6px; margin-top: 5px; flex-wrap: wrap;">
+              <span class="service-tag" v-for="service in supplierServices" :key="service">
+                {{ service }}
+              </span>
+              <span v-if="!supplierServices || supplierServices.length === 0" style="color: var(--text-muted); font-size: 0.85rem;">-</span>
+            </div>
           </div>
-        </div>
+        </template>
+
+        <!-- Tedarikçi Specific Profile Meta -->
+        <template v-else>
+          <div style="border-left: 1px solid var(--border-color); padding-left: 30px;">
+            <span class="profile-meta-label">🏢 Firma Türü</span>
+            <div class="profile-meta-value" style="font-weight: 600; font-size: 0.95rem; color: #10b981; margin-top: 3px;">
+              Filo Kiralama Tedarikçisi
+            </div>
+          </div>
+          <div style="border-left: 1px solid var(--border-color); padding-left: 30px;">
+            <span class="profile-meta-label">🚗 Hizmet Kapsamı</span>
+            <div style="display: flex; gap: 6px; margin-top: 5px; flex-wrap: wrap;">
+              <span class="service-tag" style="background: rgba(16,185,129,0.1); color: #10b981; border-color: rgba(16,185,129,0.2);">İkame Araç</span>
+              <span class="service-tag" style="background: rgba(16,185,129,0.1); color: #10b981; border-color: rgba(16,185,129,0.2);">Uzun Dönem Kiralama</span>
+              <span class="service-tag" style="background: rgba(16,185,129,0.1); color: #10b981; border-color: rgba(16,185,129,0.2);">Kısa Dönem Kiralama</span>
+            </div>
+          </div>
+        </template>
       </div>
-      <div>
-        <span class="profile-meta-label">📞 İletişim Telefonu</span>
-        <div class="profile-meta-value" style="font-family: monospace; font-weight: 600; color: var(--text-main); margin-top: 3px;">
-          {{ supplierPhone || '-' }}
+
+      <div style="display: flex; gap: 20px; align-items: center;">
+        <div>
+          <span class="profile-meta-label">📞 İletişim Telefonu</span>
+          <div class="profile-meta-value" style="font-family: monospace; font-weight: 600; color: var(--text-main); margin-top: 3px;">
+            {{ supplierPhone || '-' }}
+          </div>
+        </div>
+        <div v-if="supplierEmail" style="border-left: 1px solid var(--border-color); padding-left: 20px;">
+          <span class="profile-meta-label">✉️ Kurumsal E-Posta</span>
+          <div class="profile-meta-value" style="font-weight: 600; color: var(--text-main); margin-top: 3px;">
+            {{ supplierEmail }}
+          </div>
         </div>
       </div>
     </div>
 
-
-    <!-- Navigation Tabs (Only for vehicle rental suppliers) -->
-    <div v-if="supplierType === 'ikame_arac'" class="tab-header-container fade-in-up" style="display: flex; gap: 15px; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
-      <button @click="currentTab = 'requests'" class="tab-btn" :class="{ 'active': currentTab === 'requests' }">
-        📋 Atanan Talepler
-      </button>
+    <!-- Navigation Tabs for Tedarikçi -->
+    <div v-if="!isServiceAccount" class="tab-header-container fade-in-up" style="display: flex; gap: 15px; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
       <button @click="currentTab = 'tenders'" class="tab-btn" :class="{ 'active': currentTab === 'tenders' }">
         🏢 Karşı Teklif & Kiralama İhaleleri
+      </button>
+      <button @click="currentTab = 'requests'" class="tab-btn" :class="{ 'active': currentTab === 'requests' }">
+        📋 Atanan Kiralama Talepleri
       </button>
       <button @click="currentTab = 'my_vehicles'" class="tab-btn" :class="{ 'active': currentTab === 'my_vehicles' }">
         🚗 Teslim Edilen Araçlar
       </button>
     </div>
 
+    <!-- Navigation Tabs for Servis -->
+    <div v-else class="tab-header-container fade-in-up" style="display: flex; gap: 15px; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+      <button @click="currentTab = 'requests'" class="tab-btn" :class="{ 'active active-service': currentTab === 'requests' }">
+        🔧 Servis Bakım & Onarım Talepleri
+      </button>
+      <button @click="currentTab = 'service_vehicles'" class="tab-btn" :class="{ 'active active-service': currentTab === 'service_vehicles' }">
+        🚗 Servisteki Araçlar & Dosyalar
+      </button>
+      <button @click="currentTab = 'service_metrics'" class="tab-btn" :class="{ 'active active-service': currentTab === 'service_metrics' }">
+        ⏱️ Performans & Süre Analizi
+      </button>
+    </div>
+
     <main class="supplier-main fade-in-up">
-      <!-- 1. REQUESTS TAB -->
-      <div v-if="currentTab === 'requests'">
-        <!-- Stats Dashboard -->
+
+      <!-- ==================== A. TEDARİKÇİ VIEW (Kiralama Yapacak Firma) ==================== -->
+      <template v-if="!isServiceAccount">
+        <!-- 1. TEDARİKÇİ TENDERS TAB -->
+        <div v-if="currentTab === 'tenders'">
+          <!-- Tedarikçi Stats Dashboard -->
+          <div class="grid-4" style="gap: 20px; margin-bottom: 30px;">
+            <div class="glass-panel stat-card-new">
+              <div class="stat-icon-wrapper quote-purple"><span>📥</span></div>
+              <div class="stat-info">
+                <span class="stat-label">Toplam Kiralama İhalesi</span>
+                <div class="stat-val-new">{{ openQuotes.length }}</div>
+              </div>
+            </div>
+            <div class="glass-panel stat-card-new">
+              <div class="stat-icon-wrapper quote-red"><span>⏳</span></div>
+              <div class="stat-info">
+                <span class="stat-label">Bekleyen Karşı Teklifler</span>
+                <div class="stat-val-new" style="color: #ef4444;">{{ pendingBidsCount }}</div>
+              </div>
+            </div>
+            <div class="glass-panel stat-card-new">
+              <div class="stat-icon-wrapper quote-blue"><span>⚙️</span></div>
+              <div class="stat-info">
+                <span class="stat-label">Teslim Edilen Araçlar</span>
+                <div class="stat-val-new" style="color: #3b82f6;">{{ myDeliveredVehicles.length }}</div>
+              </div>
+            </div>
+            <div class="glass-panel stat-card-new">
+              <div class="stat-icon-wrapper quote-green"><span>✅</span></div>
+              <div class="stat-info">
+                <span class="stat-label">Kabul Edilen Teklifler</span>
+                <div class="stat-val-new" style="color: #10b981;">{{ acceptedBidsCount }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 🏢 TEDARİKÇİ OPERASYONAL WIDGETS (Kiralamalar & Rezervasyonlar) -->
+          <div class="grid-2" style="gap: 20px; margin-bottom: 30px; grid-template-columns: 1fr 1fr; align-items: start;">
+            <!-- COLUMN 1: Kiralamalar & Açık Bakiyeler -->
+            <div class="widget-list-card">
+              <div class="widget-title-row">
+                <h3>Kiralamalar</h3>
+              </div>
+              <div class="widget-list-items">
+                <div class="widget-item-row">
+                  <div class="widget-item-left"><div class="widget-item-icon">⬆️</div><span>Çıkış</span></div>
+                  <span class="widget-item-value">0</span>
+                </div>
+                <div class="widget-item-row">
+                  <div class="widget-item-left"><div class="widget-item-icon">⬇️</div><span>Dönüş</span></div>
+                  <span class="widget-item-value">0</span>
+                </div>
+                <div class="widget-item-row">
+                  <div class="widget-item-left"><div class="widget-item-icon" style="background: #fef2f2;">🔻</div><span>Uzun Dönem Dönüş <span style="font-size: 0.72rem; color: #94a3b8;">(Önümüzdeki 1 ay)</span></span></div>
+                  <span class="widget-item-value" style="color: #dc2626; font-weight: 800;">3</span>
+                </div>
+                <div class="widget-item-row">
+                  <div class="widget-item-left"><div class="widget-item-icon">🚗</div><span>Transfer Bekleyen</span></div>
+                  <span class="widget-item-value">0</span>
+                </div>
+                <div class="widget-item-row">
+                  <div class="widget-item-left"><div class="widget-item-icon">⏳</div><span>Dönüş Bekleyen (Bugün)</span></div>
+                  <span class="widget-item-value">0</span>
+                </div>
+                <div class="widget-item-row">
+                  <div class="widget-item-left"><div class="widget-item-icon">⏳</div><span>Dönüş Bekleyen (Yarın)</span></div>
+                  <span class="widget-item-value">0</span>
+                </div>
+                <div class="widget-item-row">
+                  <div class="widget-item-left"><div class="widget-item-icon">⏳</div><span>Bekleyen Provizyon İadeleri</span></div>
+                  <span class="widget-item-value">0</span>
+                </div>
+                <div class="widget-item-row">
+                  <div class="widget-item-left"><div class="widget-item-icon" style="background: #fef2f2;">⏰</div><span>Zamanaşımı</span></div>
+                  <span class="widget-item-value" style="color: #dc2626; font-weight: 800;">4</span>
+                </div>
+                <div class="widget-item-row">
+                  <div class="widget-item-left"><div class="widget-item-icon">ℹ️</div><span>Kabis Bildirimi Yapılmayan</span></div>
+                  <span class="widget-item-value">0</span>
+                </div>
+              </div>
+
+              <!-- Açık Bakiyeler section -->
+              <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #f1f5f9;">
+                <h4 style="font-size: 0.95rem; font-weight: 800; color: #0f172a; margin-bottom: 12px;">Açık Bakiyeler</h4>
+                <div class="widget-item-row">
+                  <div class="widget-item-left"><div class="widget-item-icon" style="background: #eff6ff; color: #2563eb;">₺</div><span>Müşteri</span></div>
+                  <span class="widget-item-value" style="color: #0f172a; font-weight: bold;">115.493,07 / 9</span>
+                </div>
+                <div class="widget-item-row">
+                  <div class="widget-item-left"><div class="widget-item-icon" style="background: #eff6ff; color: #2563eb;">₺</div><span>Firma</span></div>
+                  <span class="widget-item-value" style="color: #0f172a; font-weight: bold;">3.162.494,46 / 23</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- COLUMN 2: Rezervasyonlar & BAF & Onay Bekleyenler -->
+            <div class="widget-list-card">
+              <div class="widget-title-row">
+                <h3>Rezervasyonlar</h3>
+              </div>
+              <div class="widget-list-items">
+                <div class="widget-item-row">
+                  <div class="widget-item-left"><div class="widget-item-icon">📅</div><span>Gelecek Rezervasyonlar</span></div>
+                  <span class="widget-item-value">0</span>
+                </div>
+                <div class="widget-item-row">
+                  <div class="widget-item-left"><div class="widget-item-icon">⬆️</div><span>Çıkış Bekleyen (Bugün)</span></div>
+                  <span class="widget-item-value">0</span>
+                </div>
+                <div class="widget-item-row">
+                  <div class="widget-item-left"><div class="widget-item-icon">⬆️</div><span>Çıkış Bekleyen (Yarın)</span></div>
+                  <span class="widget-item-value">0</span>
+                </div>
+                <div class="widget-item-row">
+                  <div class="widget-item-left"><div class="widget-item-icon">📅</div><span>İptal (Bugün)</span></div>
+                  <span class="widget-item-value">0</span>
+                </div>
+                <div class="widget-item-row">
+                  <div class="widget-item-left"><div class="widget-item-icon">📅</div><span>Sözleşmede (Bugün)</span></div>
+                  <span class="widget-item-value">0</span>
+                </div>
+                <div class="widget-item-row">
+                  <div class="widget-item-left"><div class="widget-item-icon" style="background: #fefce8;">⚠️</div><span>Plakasız Rezervasyon</span></div>
+                  <span class="widget-item-value">0</span>
+                </div>
+              </div>
+
+              <!-- BAF section inside Column 2 -->
+              <div style="margin-top: 18px; padding-top: 15px; border-top: 1px solid #f1f5f9;">
+                <h4 style="font-size: 0.95rem; font-weight: 800; color: #0f172a; margin-bottom: 12px;">BAF</h4>
+                <div class="widget-item-row">
+                  <div class="widget-item-left"><div class="widget-item-icon">🚗</div><span>BAF'daki Araçlar</span></div>
+                  <span class="widget-item-value">0</span>
+                </div>
+                <div class="widget-item-row">
+                  <div class="widget-item-left"><div class="widget-item-icon">⏰</div><span>Zamanaşımı</span></div>
+                  <span class="widget-item-value">0</span>
+                </div>
+                <div class="widget-item-row">
+                  <div class="widget-item-left"><div class="widget-item-icon">🚗</div><span>Bugün Bitecek</span></div>
+                  <span class="widget-item-value">0</span>
+                </div>
+              </div>
+
+              <!-- Onay Bekleyenler section -->
+              <div style="margin-top: 18px; padding-top: 15px; border-top: 1px solid #f1f5f9;">
+                <h4 style="font-size: 0.95rem; font-weight: 800; color: #0f172a; margin-bottom: 12px;">Onay Bekleyenler</h4>
+                <div class="widget-item-row">
+                  <div class="widget-item-left"><div class="widget-item-icon">⏰</div><span>Bayi Kira</span></div>
+                  <span class="widget-item-value">0</span>
+                </div>
+                <div class="widget-item-row">
+                  <div class="widget-item-left"><div class="widget-item-icon">⏰</div><span>Kısa/Uzun Dönem Kiralamalar</span></div>
+                  <span class="widget-item-value">0</span>
+                </div>
+                <div class="widget-item-row">
+                  <div class="widget-item-left"><div class="widget-item-icon">⏰</div><span>Kısa/Uzun Dönem Rezervasyon</span></div>
+                  <span class="widget-item-value">0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tenders List Table -->
+          <div class="glass-panel" style="padding: 25px;">
+            <h3 style="margin-bottom: 10px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
+              🏢 Karşı Teklif ve Kiralama İhaleleri
+            </h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px;">
+              Müşteriler tarafından açılan aktif araç kiralama taleplerini inceleyin ve şirketinize ait karşı fiyat tekliflerini gönderin.
+            </p>
+
+            <div v-if="loading" class="text-center" style="padding: 50px 0;">Yükleniyor...</div>
+            <div v-else-if="openQuotes.length === 0" class="empty-state">
+              <span style="font-size: 3rem; display: block; margin-bottom: 15px;">🏢</span>
+              <p style="font-size: 1.05rem; font-weight: 500;">Şu an teklif toplayan aktif bir kiralama talebi bulunmuyor.</p>
+            </div>
+            <div v-else class="custom-table-container">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Talep ID</th>
+                    <th>Segment & Tip</th>
+                    <th>Araç Adedi</th>
+                    <th>Süre & Yıllık KM Sınırı</th>
+                    <th>Müşteri Öngörülen Fiyatı</th>
+                    <th>Karşı Teklif Durumunuz</th>
+                    <th>İşlem / Teslimat</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="q in openQuotes" :key="q.id">
+                    <td><strong style="color: #10b981;">#{{ q.id }}</strong></td>
+                    <td>
+                      <strong>{{ q.vehicle_segment }} Segment</strong> - {{ q.vehicle_type }}
+                    </td>
+                    <td>
+                      <span class="plate-badge" style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-weight: bold; border: 1px solid rgba(16, 185, 129, 0.2);">
+                        {{ q.vehicle_count }} Araç
+                      </span>
+                    </td>
+                    <td>
+                      <div>{{ q.duration_months }} Ay</div>
+                      <div style="font-size: 0.75rem; color: var(--text-muted);">{{ q.estimated_annual_mileage?.toLocaleString() }} km/yıl</div>
+                    </td>
+                    <td>
+                      <strong style="color: var(--text-muted);">₺{{ q.monthly_price_try?.toLocaleString() }}</strong>
+                    </td>
+                    <td>
+                      <div v-if="hasSupplierBid(q.id)">
+                        <span class="badge badge-active" style="display: block; margin-bottom: 4px; font-size: 0.8rem; padding: 4px 8px;">
+                          Karşı Teklifiniz: ₺{{ getSupplierBidAmount(q.id)?.toLocaleString() }}
+                        </span>
+                        <span class="badge" :class="getBidBadgeClassForSupplier(getSupplierBidStatus(q.id))" style="font-size: 0.7rem;">
+                          {{ getSupplierBidStatus(q.id) }}
+                        </span>
+                      </div>
+                      <span v-else class="badge badge-roadside">Karşı Teklif İletilmedi</span>
+                    </td>
+                    <td>
+                      <div style="display: flex; gap: 8px;">
+                        <button @click="openPlaceBidModal(q)" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem; background: rgba(16, 185, 129, 0.05); color: #10b981; border-color: rgba(16, 185, 129, 0.2);">
+                          {{ hasSupplierBid(q.id) ? '✍ Karşı Teklifi Güncelle' : '➕ Karşı Teklif Ver' }}
+                        </button>
+                        <button v-if="q.status === 'Sözleşme İmzalandı' || getSupplierBidStatus(q.id) === 'Kabul Edildi'" @click="openDeliveryModal(q)" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85rem; background: #7c3aed; color: #fff; border: none;">
+                          🚚 Araç Teslim Et
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. TEDARİKÇİ REQUESTS TAB -->
+        <div v-if="currentTab === 'requests'">
+          <div class="glass-panel" style="padding: 25px;">
+            <h3 style="margin-bottom: 20px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
+              📋 Atanan Kiralama & İkame Talepleri Listesi
+            </h3>
+
+            <div v-if="loading" class="text-center" style="padding: 50px 0;">Yükleniyor...</div>
+            <div v-else-if="filteredRequests.length === 0" class="empty-state">
+              <span style="font-size: 3rem; display: block; margin-bottom: 15px;">📥</span>
+              <p style="font-size: 1.05rem; font-weight: 500;">Henüz adınıza atanmış aktif bir kiralama talebi bulunmuyor.</p>
+            </div>
+            <div v-else class="custom-table-container">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Talep ID</th>
+                    <th>Araç Plaka & Detay</th>
+                    <th>İşlem Detayları & Açıklama</th>
+                    <th>Tedarikçi Firma</th>
+                    <th>Tarih</th>
+                    <th>Durum</th>
+                    <th style="width: 180px;">Durum Güncelle</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="req in filteredRequests" :key="req.id">
+                    <td><strong style="color: #10b981;">#{{ req.id }}</strong></td>
+                    <td>
+                      <span class="plate-badge">{{ req.vehicle_plate }}</span>
+                      <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">{{ req.vehicle_brand_model }}</div>
+                    </td>
+                    <td>
+                      <p style="margin-bottom: 6px; font-weight: 500;">{{ req.description }}</p>
+                      <div class="details-mini-box" v-if="req.details">
+                        <span v-if="req.details.vehicle_class">🚗 <strong>Sınıf:</strong> {{ req.details.vehicle_class }}</span>
+                        <span v-if="req.details.location">📍 <strong>Konum:</strong> {{ req.details.location }}</span>
+                      </div>
+                    </td>
+                    <td>{{ getSupplierName(req.supplier_id) }}</td>
+                    <td>{{ formatDate(req.created_at) }}</td>
+                    <td>
+                      <span class="badge" :class="getStatusBadgeClass(req.status)">{{ req.status }}</span>
+                    </td>
+                    <td>
+                      <select 
+                        @change="updateStatus(req.id, $event.target.value)" 
+                        class="form-select status-select-mini"
+                        :value="req.status"
+                        :disabled="updatingId === req.id"
+                      >
+                        <option value="Beklemede">Beklemede</option>
+                        <option value="Onaylandı">Onaylandı</option>
+                        <option value="İşlemde">İşlemde</option>
+                        <option value="Tamamlandı">Tamamlandı</option>
+                        <option value="İptal Edildi">İptal Et</option>
+                      </select>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. TEDARİKÇİ MY VEHICLES TAB -->
+        <div v-if="currentTab === 'my_vehicles'">
+          <div class="glass-panel" style="padding: 25px;">
+            <h3 style="margin-bottom: 10px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
+              🚗 Teslim Edilen Araçlar ve Filo Takibi
+            </h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px;">
+              Müşterilere teslim ettiğiniz kiralık araçları takip edin. Araçlara açılmış olan servis, muayene ve diğer talep kayıtlarını inceleyin.
+            </p>
+
+            <div v-if="loading" class="text-center" style="padding: 50px 0;">Yükleniyor...</div>
+            <div v-else-if="myDeliveredVehicles.length === 0" class="empty-state">
+              <span style="font-size: 3rem; display: block; margin-bottom: 15px;">🚗</span>
+              <p style="font-size: 1.05rem; font-weight: 500;">Henüz sisteme kayıtlı kiraladığınız bir araç bulunmuyor.</p>
+            </div>
+            <div v-else class="custom-table-container">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Plaka</th>
+                    <th>Marka / Model</th>
+                    <th>Segment / Tip</th>
+                    <th>Kilometre</th>
+                    <th>Şasi No</th>
+                    <th>Muayene Tarihi</th>
+                    <th>Mevcut Durum</th>
+                    <th>Aksiyon</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="v in myDeliveredVehicles" :key="v.id">
+                    <td><span class="plate-badge">{{ v.plate }}</span></td>
+                    <td><strong>{{ v.brand }} {{ v.model }}</strong> ({{ v.year }})</td>
+                    <td>{{ v.vehicle_segment }} - {{ v.vehicle_type }}</td>
+                    <td>{{ v.mileage?.toLocaleString() }} km</td>
+                    <td style="font-family: monospace; font-size: 0.85rem;">{{ v.chassis_no }}</td>
+                    <td>{{ v.inspection_date }}</td>
+                    <td>
+                      <span class="badge" :class="getStatusBadgeClassForVehicle(v.status)">
+                        {{ v.status }}
+                      </span>
+                    </td>
+                    <td>
+                      <button @click="openVehicleDetails(v)" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">
+                        🔍 Detay & Servis Kayıtları
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- ==================== B. SERVİS VIEW (İlgili Servise Dair Bilgiler) ==================== -->
+      <template v-else>
+        <!-- Servis Top Stats Dashboard -->
         <div class="grid-4" style="gap: 20px; margin-bottom: 30px;">
           <div class="glass-panel stat-card-new">
-            <div class="stat-icon-wrapper quote-purple">
-              <span>📥</span>
-            </div>
+            <div class="stat-icon-wrapper quote-blue"><span>🔧</span></div>
             <div class="stat-info">
-              <span class="stat-label">Toplam Hizmet Talebi</span>
-              <div class="stat-val-new">{{ filteredRequests.length }}</div>
+              <span class="stat-label">Servisteki Araçlar</span>
+              <div class="stat-val-new" style="color: #2563eb;">{{ serviceVehiclesCount }}</div>
             </div>
           </div>
           <div class="glass-panel stat-card-new">
-            <div class="stat-icon-wrapper quote-red">
-              <span>⏳</span>
-            </div>
+            <div class="stat-icon-wrapper quote-red"><span>⏳</span></div>
             <div class="stat-info">
-              <span class="stat-label">Bekleyen Talepler</span>
+              <span class="stat-label">Bekleyen Servis Talepleri</span>
               <div class="stat-val-new" style="color: #ef4444;">{{ pendingRequestsCount }}</div>
             </div>
           </div>
           <div class="glass-panel stat-card-new">
-            <div class="stat-icon-wrapper quote-blue">
-              <span>⚙️</span>
-            </div>
+            <div class="stat-icon-wrapper quote-purple"><span>⚙️</span></div>
             <div class="stat-info">
-              <span class="stat-label">İşlemdekiler</span>
-              <div class="stat-val-new" style="color: #3b82f6;">{{ activeRequestsCount }}</div>
+              <span class="stat-label">Açık Servis Dosyası</span>
+              <div class="stat-val-new" style="color: #7c3aed;">{{ activeRequestsCount }}</div>
             </div>
           </div>
           <div class="glass-panel stat-card-new">
-            <div class="stat-icon-wrapper quote-green">
-              <span>✅</span>
-            </div>
+            <div class="stat-icon-wrapper quote-green"><span>✅</span></div>
             <div class="stat-info">
-              <span class="stat-label">Tamamlananlar</span>
+              <span class="stat-label">Tamamlanan Bakım / Onarımlar</span>
               <div class="stat-val-new" style="color: #10b981;">{{ completedRequestsCount }}</div>
             </div>
           </div>
         </div>
 
-
-        <!-- 🏢 3-COLUMN OPERATIONAL DASHBOARD (From User Screenshots 1 & 2) -->
+        <!-- 🛠️ SERVİS OPERASYONAL WIDGETS (3 Column Service Dashboard) -->
         <div class="grid-3" style="gap: 20px; margin-bottom: 30px; grid-template-columns: 1fr 1fr 1fr; align-items: start;">
-          <!-- COLUMN 1: Kiralamalar & Açık Bakiyeler -->
+          <!-- COLUMN 1: Servis Durumu -->
           <div class="widget-list-card">
-            <div class="widget-title-row">
-              <h3>Kiralamalar</h3>
+            <div class="widget-title-row" style="border-bottom: 2px solid #2563eb;">
+              <h3 style="color: #1e40af;">Servis Operasyon Durumu</h3>
             </div>
             <div class="widget-list-items">
               <div class="widget-item-row">
-                <div class="widget-item-left"><div class="widget-item-icon">⬆️</div><span>Çıkış</span></div>
-                <span class="widget-item-value">0</span>
+                <div class="widget-item-left"><div class="widget-item-icon" style="background: #eff6ff; color: #2563eb;">🔧</div><span>Servisteki Araçlar</span></div>
+                <span class="widget-item-value" style="color: #2563eb; font-weight: bold;">{{ serviceVehiclesCount }}</span>
               </div>
               <div class="widget-item-row">
-                <div class="widget-item-left"><div class="widget-item-icon">⬇️</div><span>Dönüş</span></div>
-                <span class="widget-item-value">0</span>
+                <div class="widget-item-left"><div class="widget-item-icon" style="background: #fef2f2; color: #ef4444;">⏳</div><span>Bekleyen Talepler</span></div>
+                <span class="widget-item-value" style="color: #ef4444; font-weight: bold;">{{ pendingRequestsCount }}</span>
               </div>
               <div class="widget-item-row">
-                <div class="widget-item-left"><div class="widget-item-icon" style="background: #fef2f2;">🔻</div><span>Uzun Dönem Dönüş <span style="font-size: 0.72rem; color: #94a3b8;">(Önümüzdeki 1 ay)</span></span></div>
-                <span class="widget-item-value" style="color: #dc2626; font-weight: 800;">3</span>
-              </div>
-              <div class="widget-item-row">
-                <div class="widget-item-left"><div class="widget-item-icon">🚗</div><span>Transfer Bekleyen</span></div>
-                <span class="widget-item-value">0</span>
-              </div>
-              <div class="widget-item-row">
-                <div class="widget-item-left"><div class="widget-item-icon">⏳</div><span>Dönüş Bekleyen (Bugün)</span></div>
-                <span class="widget-item-value">0</span>
-              </div>
-              <div class="widget-item-row">
-                <div class="widget-item-left"><div class="widget-item-icon">⏳</div><span>Dönüş Bekleyen (Yarın)</span></div>
-                <span class="widget-item-value">0</span>
-              </div>
-              <div class="widget-item-row">
-                <div class="widget-item-left"><div class="widget-item-icon">⏳</div><span>Bekleyen Provizyon İadeleri</span></div>
-                <span class="widget-item-value">0</span>
-              </div>
-              <div class="widget-item-row">
-                <div class="widget-item-left"><div class="widget-item-icon" style="background: #fef2f2;">⏰</div><span>Zamanaşımı</span></div>
-                <span class="widget-item-value" style="color: #dc2626; font-weight: 800;">4</span>
-              </div>
-              <div class="widget-item-row">
-                <div class="widget-item-left"><div class="widget-item-icon">ℹ️</div><span>Kabis Bildirimi Yapılmayan</span></div>
-                <span class="widget-item-value">0</span>
-              </div>
-            </div>
-
-            <!-- Açık Bakiyeler section inside Column 1 -->
-            <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #f1f5f9;">
-              <h4 style="font-size: 0.95rem; font-weight: 800; color: #0f172a; margin-bottom: 12px;">Açık Bakiyeler</h4>
-              <div class="widget-item-row">
-                <div class="widget-item-left"><div class="widget-item-icon" style="background: #eff6ff; color: #2563eb;">₺</div><span>Müşteri</span></div>
-                <span class="widget-item-value" style="color: #0f172a; font-weight: bold;">115.493,07 / 9</span>
-              </div>
-              <div class="widget-item-row">
-                <div class="widget-item-left"><div class="widget-item-icon" style="background: #eff6ff; color: #2563eb;">₺</div><span>Firma</span></div>
-                <span class="widget-item-value" style="color: #0f172a; font-weight: bold;">3.162.494,46 / 23</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- COLUMN 2: Rezervasyonlar, BAF & Onay Bekleyenler -->
-          <div class="widget-list-card">
-            <div class="widget-title-row">
-              <h3>Rezervasyonlar</h3>
-            </div>
-            <div class="widget-list-items">
-              <div class="widget-item-row">
-                <div class="widget-item-left"><div class="widget-item-icon">📅</div><span>Gelecek Rezervasyonlar</span></div>
-                <span class="widget-item-value">0</span>
-              </div>
-              <div class="widget-item-row">
-                <div class="widget-item-left"><div class="widget-item-icon">⬆️</div><span>Çıkış Bekleyen (Bugün)</span></div>
-                <span class="widget-item-value">0</span>
-              </div>
-              <div class="widget-item-row">
-                <div class="widget-item-left"><div class="widget-item-icon">⬆️</div><span>Çıkış Bekleyen (Yarın)</span></div>
-                <span class="widget-item-value">0</span>
-              </div>
-              <div class="widget-item-row">
-                <div class="widget-item-left"><div class="widget-item-icon">📅</div><span>İptal (Bugün)</span></div>
-                <span class="widget-item-value">0</span>
-              </div>
-              <div class="widget-item-row">
-                <div class="widget-item-left"><div class="widget-item-icon">📅</div><span>Sözleşmede (Bugün)</span></div>
-                <span class="widget-item-value">0</span>
-              </div>
-              <div class="widget-item-row">
-                <div class="widget-item-left"><div class="widget-item-icon" style="background: #fefce8;">⚠️</div><span>Plakasız Rezervasyon</span></div>
-                <span class="widget-item-value">0</span>
-              </div>
-            </div>
-
-            <!-- BAF section inside Column 2 -->
-            <div style="margin-top: 18px; padding-top: 15px; border-top: 1px solid #f1f5f9;">
-              <h4 style="font-size: 0.95rem; font-weight: 800; color: #0f172a; margin-bottom: 12px;">BAF</h4>
-              <div class="widget-item-row">
-                <div class="widget-item-left"><div class="widget-item-icon">🚗</div><span>BAF'daki Araçlar</span></div>
-                <span class="widget-item-value">0</span>
-              </div>
-              <div class="widget-item-row">
-                <div class="widget-item-left"><div class="widget-item-icon">⏰</div><span>Zamanaşımı</span></div>
-                <span class="widget-item-value">0</span>
-              </div>
-              <div class="widget-item-row">
-                <div class="widget-item-left"><div class="widget-item-icon">🚗</div><span>Bugün Bitecek</span></div>
-                <span class="widget-item-value">0</span>
-              </div>
-            </div>
-
-            <!-- Onay Bekleyenler section inside Column 2 -->
-            <div style="margin-top: 18px; padding-top: 15px; border-top: 1px solid #f1f5f9;">
-              <h4 style="font-size: 0.95rem; font-weight: 800; color: #0f172a; margin-bottom: 12px;">Onay Bekleyenler</h4>
-              <div class="widget-item-row">
-                <div class="widget-item-left"><div class="widget-item-icon">⏰</div><span>Bayi Kira</span></div>
-                <span class="widget-item-value">0</span>
-              </div>
-              <div class="widget-item-row">
-                <div class="widget-item-left"><div class="widget-item-icon">⏰</div><span>Kısa/Uzun Dönem Kiralamalar</span></div>
-                <span class="widget-item-value">0</span>
-              </div>
-              <div class="widget-item-row">
-                <div class="widget-item-left"><div class="widget-item-icon">⏰</div><span>Kısa/Uzun Dönem Rezervasyon</span></div>
-                <span class="widget-item-value">0</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- COLUMN 3: Servis & Araçlar -->
-          <div class="widget-list-card">
-            <div class="widget-title-row">
-              <h3>Servis</h3>
-            </div>
-            <div class="widget-list-items">
-              <div class="widget-item-row">
-                <div class="widget-item-left"><div class="widget-item-icon">🔧</div><span>Servisteki Araçlar</span></div>
-                <span class="widget-item-value">0</span>
-              </div>
-              <div class="widget-item-row">
-                <div class="widget-item-left"><div class="widget-item-icon">⏳</div><span>Bekleyen Talepler</span></div>
-                <span class="widget-item-value">0</span>
-              </div>
-              <div class="widget-item-row">
-                <div class="widget-item-left"><div class="widget-item-icon">📄</div><span>Açık Servis Dosyası</span></div>
-                <span class="widget-item-value">0</span>
+                <div class="widget-item-left"><div class="widget-item-icon" style="background: #f3e8ff; color: #7c3aed;">📄</div><span>Açık Servis Dosyası</span></div>
+                <span class="widget-item-value" style="color: #7c3aed; font-weight: bold;">{{ activeRequestsCount }}</span>
               </div>
               <div class="widget-item-row">
                 <div class="widget-item-left"><div class="widget-item-icon">⬆️</div><span>Servise Teslim Et</span></div>
@@ -273,93 +542,120 @@
                 <span class="widget-item-value">0</span>
               </div>
               <div class="widget-item-row">
-                <div class="widget-item-left"><div class="widget-item-icon">🚗</div><span>İkame Talep</span></div>
+                <div class="widget-item-left"><div class="widget-item-icon">🚗</div><span>İkame Araç Talebi</span></div>
                 <span class="widget-item-value">0</span>
               </div>
+            </div>
+          </div>
+
+          <!-- COLUMN 2: Servis Süre & Performans Metrikleri -->
+          <div class="widget-list-card">
+            <div class="widget-title-row" style="border-bottom: 2px solid #2563eb;">
+              <h3 style="color: #1e40af;">Süre & Performans Metrikleri</h3>
+            </div>
+            <div class="widget-list-items">
               <div class="widget-item-row">
                 <div class="widget-item-left"><div class="widget-item-icon" style="background: #dcfce7; color: #16a34a;">⏱️</div><span>Ort. Hasar Onarım Süresi</span></div>
-                <span class="widget-item-value" style="color: #16a34a;">0.00 Gün</span>
+                <span class="widget-item-value" style="color: #16a34a; font-weight: bold;">0.00 Gün</span>
               </div>
               <div class="widget-item-row">
                 <div class="widget-item-left"><div class="widget-item-icon" style="background: #dcfce7; color: #16a34a;">⏱️</div><span>Ort. Bakım Süresi</span></div>
-                <span class="widget-item-value" style="color: #16a34a;">0.00 Gün</span>
+                <span class="widget-item-value" style="color: #16a34a; font-weight: bold;">0.00 Gün</span>
               </div>
               <div class="widget-item-row">
                 <div class="widget-item-left"><div class="widget-item-icon" style="background: #dcfce7; color: #16a34a;">⏱️</div><span>Ort. Mekanik Onarım Süresi</span></div>
-                <span class="widget-item-value" style="color: #16a34a;">0.00 Gün</span>
+                <span class="widget-item-value" style="color: #16a34a; font-weight: bold;">0.00 Gün</span>
               </div>
               <div class="widget-item-row">
                 <div class="widget-item-left"><div class="widget-item-icon" style="background: #dcfce7; color: #16a34a;">⏱️</div><span>Ort. Serviste Kalma Süresi</span></div>
-                <span class="widget-item-value" style="color: #16a34a;">0.00 Gün</span>
+                <span class="widget-item-value" style="color: #16a34a; font-weight: bold;">0.00 Gün</span>
               </div>
               <div class="widget-item-row">
                 <div class="widget-item-left"><div class="widget-item-icon" style="background: #dcfce7; color: #16a34a;">⏱️</div><span>Ort. Onarım Süresi</span></div>
-                <span class="widget-item-value" style="color: #16a34a;">0.00 Gün</span>
+                <span class="widget-item-value" style="color: #16a34a; font-weight: bold;">0.00 Gün</span>
               </div>
             </div>
+          </div>
 
-            <!-- Araçlar section inside Column 3 -->
-            <div style="margin-top: 18px; padding-top: 15px; border-top: 1px solid #f1f5f9;">
-              <h4 style="font-size: 0.95rem; font-weight: 800; color: #0f172a; margin-bottom: 12px;">Araçlar</h4>
+          <!-- COLUMN 3: Servis Hizmet Dağılımı -->
+          <div class="widget-list-card">
+            <div class="widget-title-row" style="border-bottom: 2px solid #2563eb;">
+              <h3 style="color: #1e40af;">Hizmet Dağılımı</h3>
+            </div>
+            <div class="widget-list-items">
               <div class="widget-item-row">
-                <div class="widget-item-left"><div class="widget-item-icon">→</div><span>Aktif Transferler</span></div>
+                <div class="widget-item-left"><div class="widget-item-icon">🛢️</div><span>Periyodik Bakım Kayıtları</span></div>
+                <span class="widget-item-value" style="font-weight: bold;">{{ maintenanceRequestsCount }}</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon">🛠️</div><span>Arıza & Mekanik Onarımlar</span></div>
+                <span class="widget-item-value" style="font-weight: bold;">{{ mechanicalRequestsCount }}</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon">🛞</div><span>Lastik & Yol Yardım</span></div>
+                <span class="widget-item-value" style="font-weight: bold;">{{ tireRoadsideRequestsCount }}</span>
+              </div>
+              <div class="widget-item-row">
+                <div class="widget-item-left"><div class="widget-item-icon">🚗</div><span>Aktif Transferler</span></div>
                 <span class="widget-item-value">0</span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Main Request Table -->
-        <div class="glass-panel" style="padding: 25px;">
-          <h3 style="margin-bottom: 20px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
-            📋 Atanan Hizmet Talepleri Listesi
-          </h3>
+        <!-- 1. SERVİS REQUESTS TAB -->
+        <div v-if="currentTab === 'requests'">
+          <div class="glass-panel" style="padding: 25px;">
+            <h3 style="margin-bottom: 20px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px; color: #2563eb;">
+              🔧 Servis Bakım & Onarım Talepleri Listesi
+            </h3>
 
-          <div v-if="loading" class="text-center" style="padding: 50px 0;">Yükleniyor...</div>
-          <div v-else-if="filteredRequests.length === 0" class="empty-state">
-            <span style="font-size: 3rem; display: block; margin-bottom: 15px;">📥</span>
-            <p style="font-size: 1.05rem; font-weight: 500;">Henüz adınıza atanmış aktif bir hizmet talebi bulunmuyor.</p>
-          </div>
-          <div v-else class="custom-table-container">
-            <table class="custom-table">
-              <thead>
-                <tr>
-                  <th>Talep ID</th>
-                  <th>Araç Plaka & Detay</th>
-                  <th>İşlem Detayları & Açıklama</th>
-                  <th>Servis Sağlayıcı</th>
-                  <th>Oluşturulma</th>
-                  <th>Güncel Durum</th>
-                  <th style="width: 180px;">Durum Güncelle</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="req in filteredRequests" :key="req.id">
-                  <td><strong style="color: var(--primary);">#{{ req.id }}</strong></td>
-                  <td>
-                    <span class="plate-badge">{{ req.vehicle_plate }}</span>
-                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">{{ req.vehicle_brand_model }}</div>
-                  </td>
-                  <td>
-                    <div class="req-description-cell">
-                      <p style="margin-bottom: 6px; font-weight: 500;">{{ req.description }}</p>
-                      
-                      <!-- Dynamic Details display -->
-                      <div class="details-mini-box" v-if="req.details">
-                        <span v-if="req.details.appointment_date">📅 <strong>Randevu:</strong> {{ formatDate(req.details.appointment_date) }}</span>
-                        <span v-if="req.details.tire_type">🛞 <strong>Lastik:</strong> {{ req.details.tire_type }}</span>
-                        <span v-if="req.details.location">📍 <strong>Konum:</strong> {{ req.details.location }}</span>
-                        <span v-if="req.details.vehicle_class">🚗 <strong>Sınıf:</strong> {{ req.details.vehicle_class }}</span>
+            <div v-if="loading" class="text-center" style="padding: 50px 0;">Yükleniyor...</div>
+            <div v-else-if="filteredRequests.length === 0" class="empty-state">
+              <span style="font-size: 3rem; display: block; margin-bottom: 15px;">🔧</span>
+              <p style="font-size: 1.05rem; font-weight: 500;">Servisinize henüz atanmış aktif bir bakım/onarım talebi bulunmuyor.</p>
+            </div>
+            <div v-else class="custom-table-container">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Talep ID</th>
+                    <th>Araç Plaka & Detay</th>
+                    <th>Servis İşlemi & Açıklama</th>
+                    <th>Talep Tipi</th>
+                    <th>Kayıt Tarihi</th>
+                    <th>Servis Durumu</th>
+                    <th style="width: 180px;">İşlem Güncelle</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="req in filteredRequests" :key="req.id">
+                    <td><strong style="color: #2563eb;">#{{ req.id }}</strong></td>
+                    <td>
+                      <span class="plate-badge" style="background: rgba(37,99,235,0.1); color: #2563eb; border-color: rgba(37,99,235,0.2);">{{ req.vehicle_plate }}</span>
+                      <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">{{ req.vehicle_brand_model }}</div>
+                    </td>
+                    <td>
+                      <div class="req-description-cell">
+                        <p style="margin-bottom: 6px; font-weight: 500;">{{ req.description }}</p>
+                        
+                        <div class="details-mini-box" v-if="req.details">
+                          <span v-if="req.details.appointment_date">📅 <strong>Randevu:</strong> {{ formatDate(req.details.appointment_date) }}</span>
+                          <span v-if="req.details.tire_type">🛞 <strong>Lastik:</strong> {{ req.details.tire_type }}</span>
+                          <span v-if="req.details.location">📍 <strong>Konum:</strong> {{ req.details.location }}</span>
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td>{{ getSupplierName(req.supplier_id) }}</td>
-                  <td>{{ formatDate(req.created_at) }}</td>
-                  <td>
-                    <span class="badge" :class="getStatusBadgeClass(req.status)">{{ req.status }}</span>
-                  </td>
-                  <td>
-                    <div class="action-dropdown-container">
+                    </td>
+                    <td>
+                      <span class="badge" style="background: rgba(37,99,235,0.1); color: #2563eb; font-size: 0.75rem;">
+                        {{ getTypeName(req.type) }}
+                      </span>
+                    </td>
+                    <td>{{ formatDate(req.created_at) }}</td>
+                    <td>
+                      <span class="badge" :class="getStatusBadgeClass(req.status)">{{ req.status }}</span>
+                    </td>
+                    <td>
                       <select 
                         @change="updateStatus(req.id, $event.target.value)" 
                         class="form-select status-select-mini"
@@ -372,146 +668,103 @@
                         <option value="Tamamlandı">Tamamlandı</option>
                         <option value="İptal Edildi">İptal Et</option>
                       </select>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- 2. TENDERS TAB -->
-      <div v-if="currentTab === 'tenders'">
-        <div class="glass-panel" style="padding: 25px;">
-          <h3 style="margin-bottom: 10px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
-            🏢 Karşı Teklif ve Kiralama İhaleleri
-          </h3>
-          <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px;">
-            Müşteriler tarafından açılan aktif araç kiralama taleplerini inceleyin ve şirketinize ait karşı fiyat tekliflerini gönderin.
-          </p>
+        <!-- 2. SERVİS VEHICLES TAB -->
+        <div v-if="currentTab === 'service_vehicles'">
+          <div class="glass-panel" style="padding: 25px;">
+            <h3 style="margin-bottom: 10px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px; color: #2563eb;">
+              🚗 Servisteki Araçlar ve Kayıt Geçmişi
+            </h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px;">
+              Servisinizde işlem gören, bakımı tamamlanan veya teslim alınan tüm filolara ait araç kayıtlarını listeyin.
+            </p>
 
-          <div v-if="loading" class="text-center" style="padding: 50px 0;">Yükleniyor...</div>
-          <div v-else-if="openQuotes.length === 0" class="empty-state">
-            <span style="font-size: 3rem; display: block; margin-bottom: 15px;">🏢</span>
-            <p style="font-size: 1.05rem; font-weight: 500;">Şu an teklif toplayan aktif bir kiralama talebi bulunmuyor.</p>
-          </div>
-          <div v-else class="custom-table-container">
-            <table class="custom-table">
-              <thead>
-                <tr>
-                  <th>Talep ID</th>
-                  <th>Segment & Tip</th>
-                  <th>Araç Adedi</th>
-                  <th>Süre & Yıllık KM Sınırı</th>
-                  <th>Müşteri Öngörülen Fiyatı</th>
-                  <th>Karşı Teklif Durumunuz</th>
-                  <th>İşlem / Teslimat</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="q in openQuotes" :key="q.id">
-                  <td><strong style="color: #10b981;">#{{ q.id }}</strong></td>
-                  <td>
-                    <strong>{{ q.vehicle_segment }} Segment</strong> - {{ q.vehicle_type }}
-                  </td>
-                  <td>
-                    <span class="plate-badge" style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-weight: bold; border: 1px solid rgba(16, 185, 129, 0.2);">
-                      {{ q.vehicle_count }} Araç
-                    </span>
-                  </td>
-                  <td>
-                    <div>{{ q.duration_months }} Ay</div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted);">{{ q.estimated_annual_mileage?.toLocaleString() }} km/yıl</div>
-                  </td>
-                  <td>
-                    <strong style="color: var(--text-muted);">₺{{ q.monthly_price_try?.toLocaleString() }}</strong>
-                  </td>
-                  <td>
-                    <div v-if="hasSupplierBid(q.id)">
-                      <span class="badge badge-active" style="display: block; margin-bottom: 4px; font-size: 0.8rem; padding: 4px 8px;">
-                        Karşı Teklifiniz: ₺{{ getSupplierBidAmount(q.id)?.toLocaleString() }}
+            <div v-if="loading" class="text-center" style="padding: 50px 0;">Yükleniyor...</div>
+            <div v-else-if="serviceVehicles.length === 0" class="empty-state">
+              <span style="font-size: 3rem; display: block; margin-bottom: 15px;">🚗</span>
+              <p style="font-size: 1.05rem; font-weight: 500;">Servis kaydı bulunan araç bulunmuyor.</p>
+            </div>
+            <div v-else class="custom-table-container">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Plaka</th>
+                    <th>Marka / Model</th>
+                    <th>Segment / Tip</th>
+                    <th>Mevcut KM</th>
+                    <th>Şasi No</th>
+                    <th>Son Servis Tarihi</th>
+                    <th>Servis Durumu</th>
+                    <th>İşlem</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="v in serviceVehicles" :key="v.id">
+                    <td><span class="plate-badge" style="background: rgba(37,99,235,0.1); color: #2563eb; border-color: rgba(37,99,235,0.2);">{{ v.plate }}</span></td>
+                    <td><strong>{{ v.brand }} {{ v.model }}</strong> ({{ v.year }})</td>
+                    <td>{{ v.vehicle_segment }} - {{ v.vehicle_type }}</td>
+                    <td>{{ v.mileage?.toLocaleString() }} km</td>
+                    <td style="font-family: monospace; font-size: 0.85rem;">{{ v.chassis_no }}</td>
+                    <td>{{ v.last_service_date || '-' }}</td>
+                    <td>
+                      <span class="badge" :class="getStatusBadgeClassForVehicle(v.status)">
+                        {{ v.status }}
                       </span>
-                      <span class="badge" :class="getBidBadgeClassForSupplier(getSupplierBidStatus(q.id))" style="font-size: 0.7rem;">
-                        {{ getSupplierBidStatus(q.id) }}
-                      </span>
-                    </div>
-                    <span v-else class="badge badge-roadside">Karşı Teklif İletilmedi</span>
-                  </td>
-                  <td>
-                    <div style="display: flex; gap: 8px;">
-                      <button @click="openPlaceBidModal(q)" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem; background: rgba(16, 185, 129, 0.05); color: #10b981; border-color: rgba(16, 185, 129, 0.2);">
-                        {{ hasSupplierBid(q.id) ? '✍ Karşı Teklifi Güncelle' : '➕ Karşı Teklif Ver' }}
+                    </td>
+                    <td>
+                      <button @click="openVehicleDetails(v)" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">
+                        🔍 Servis Geçmişi
                       </button>
-                      <button v-if="q.status === 'Sözleşme İmzalandı' || getSupplierBidStatus(q.id) === 'Kabul Edildi'" @click="openDeliveryModal(q)" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85rem; background: #7c3aed; color: #fff; border: none;">
-                        🚚 Araç Teslim Et
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- 3. MY VEHICLES TAB -->
-      <div v-if="currentTab === 'my_vehicles'">
-        <div class="glass-panel" style="padding: 25px;">
-          <h3 style="margin-bottom: 10px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
-            🚗 Teslim Edilen Araçlar ve Filo Takibi
-          </h3>
-          <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px;">
-            Müşterilere teslim ettiğiniz kiralık araçları takip edin. Araçlara açılmış olan servis, muayene ve diğer talep kayıtlarını inceleyin.
-          </p>
+        <!-- 3. SERVİS METRICS TAB -->
+        <div v-if="currentTab === 'service_metrics'">
+          <div class="glass-panel" style="padding: 25px;">
+            <h3 style="margin-bottom: 10px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px; color: #2563eb;">
+              ⏱️ Servis Performans & Süre Analizi Detayları
+            </h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px;">
+              Servisinizin ortalama araç kabul, tamir onarım ve teslimat sürelerinin detaylı dökümü.
+            </p>
 
-          <div v-if="loading" class="text-center" style="padding: 50px 0;">Yükleniyor...</div>
-          <div v-else-if="myDeliveredVehicles.length === 0" class="empty-state">
-            <span style="font-size: 3rem; display: block; margin-bottom: 15px;">🚗</span>
-            <p style="font-size: 1.05rem; font-weight: 500;">Henüz sisteme kayıtlı kiraladığınız bir araç bulunmuyor.</p>
-          </div>
-          <div v-else class="custom-table-container">
-            <table class="custom-table">
-              <thead>
-                <tr>
-                  <th>Plaka</th>
-                  <th>Marka / Model</th>
-                  <th>Segment / Tip</th>
-                  <th>Kilometre</th>
-                  <th>Şasi No</th>
-                  <th>Muayene Tarihi</th>
-                  <th>Mevcut Durum</th>
-                  <th>Aksiyon</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="v in myDeliveredVehicles" :key="v.id">
-                  <td><span class="plate-badge">{{ v.plate }}</span></td>
-                  <td><strong>{{ v.brand }} {{ v.model }}</strong> ({{ v.year }})</td>
-                  <td>{{ v.vehicle_segment }} - {{ v.vehicle_type }}</td>
-                  <td>{{ v.mileage?.toLocaleString() }} km</td>
-                  <td style="font-family: monospace; font-size: 0.85rem;">{{ v.chassis_no }}</td>
-                  <td>{{ v.inspection_date }}</td>
-                  <td>
-                    <span class="badge" :class="getStatusBadgeClassForVehicle(v.status)">
-                      {{ v.status }}
-                    </span>
-                  </td>
-                  <td>
-                    <button @click="openVehicleDetails(v)" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">
-                      🔍 Detay & Servis Kayıtları
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <div class="grid-3" style="gap: 20px;">
+              <div class="glass-panel" style="padding: 20px; text-align: center;">
+                <span style="font-size: 2rem; display: block; margin-bottom: 10px;">🛠️</span>
+                <h4 style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Ort. Hasar Onarım Süresi</h4>
+                <div style="font-size: 1.8rem; font-weight: 800; color: #2563eb; margin-top: 5px;">0.00 Gün</div>
+              </div>
+              <div class="glass-panel" style="padding: 20px; text-align: center;">
+                <span style="font-size: 2rem; display: block; margin-bottom: 10px;">🛢️</span>
+                <h4 style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Ort. Periyodik Bakım Süresi</h4>
+                <div style="font-size: 1.8rem; font-weight: 800; color: #10b981; margin-top: 5px;">0.00 Gün</div>
+              </div>
+              <div class="glass-panel" style="padding: 20px; text-align: center;">
+                <span style="font-size: 2rem; display: block; margin-bottom: 10px;">⏱️</span>
+                <h4 style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Ort. Serviste Kalma Süresi</h4>
+                <div style="font-size: 1.8rem; font-weight: 800; color: #7c3aed; margin-top: 5px;">0.00 Gün</div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </template>
+
     </main>
   </div>
 
-  <!-- Bid Placement Modal -->
+  <!-- Bid Placement Modal (Tedarikçi) -->
   <div v-if="showBidModal" class="modal-overlay" @click.self="showBidModal = false">
     <div class="glass-panel modal-content fade-in-up" style="max-width: 480px; padding: 30px;">
       <h2 style="margin-bottom: 10px; color: #10b981; display: flex; align-items: center; gap: 10px;">
@@ -542,7 +795,7 @@
     </div>
   </div>
 
-  <!-- Vehicle Delivery / Registration Modal -->
+  <!-- Vehicle Delivery / Registration Modal (Tedarikçi) -->
   <div v-if="showAddVehicleModal" class="modal-overlay" @click.self="showAddVehicleModal = false">
     <div class="glass-panel modal-content fade-in-up" style="max-width: 550px; padding: 30px;">
       <h2 style="margin-bottom: 10px; color: #7c3aed; display: flex; align-items: center; gap: 8px;">
@@ -628,7 +881,7 @@
   <div v-if="showVehicleDetailsModal" class="modal-overlay" @click.self="showVehicleDetailsModal = false">
     <div class="glass-panel modal-content fade-in-up" style="max-width: 750px; padding: 30px;">
       <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px;">
-        <h2 style="color: #10b981; display: flex; align-items: center; gap: 8px;">
+        <h2 :style="{ color: isServiceAccount ? '#2563eb' : '#10b981' }" style="display: flex; align-items: center; gap: 8px;">
           <span>🔍</span> Araç Detayı & Servis Kartı
         </h2>
         <div style="margin-top: 5px; display: flex; gap: 12px; align-items: center;">
@@ -669,33 +922,31 @@
           <table class="custom-table">
             <thead>
               <tr>
-                  <th>Talep ID</th>
-                  <th>Hizmet Tipi</th>
-                  <th>İşlem Açıklaması</th>
-                  <th>Servis Sağlayıcı</th>
-                  <th>Tarih</th>
-                  <th>Durum</th>
+                <th>Talep ID</th>
+                <th>Hizmet Tipi</th>
+                <th>İşlem Açıklaması</th>
+                <th>Servis Sağlayıcı</th>
+                <th>Tarih</th>
+                <th>Durum</th>
               </tr>
             </thead>
             <tbody>
-                  <tr v-for="rec in getVehicleServiceHistory(selectedVehicle?.id)" :key="rec.id">
-      <td>#{{ rec.id }}</td>
-      <td>
-        <span class="badge" :class="getStatusBadgeClass(rec.status)" style="font-size: 0.75rem;">
-          {{ getTypeName(rec.type) }}
-        </span>
-      </td>
-      <td style="font-size: 0.8rem; max-width: 250px; white-space: normal;">{{ rec.description }}</td>
-      <td>{{ getSupplierName(rec.supplier_id) }}</td>
-      <td style="font-size: 0.8rem;">{{ formatDate(rec.created_at) }}</td>
-      <td>
-        <span class="badge" :class="getStatusBadgeClass(rec.status)" style="font-size: 0.75rem;">
-          {{ rec.status }}
-        </span>
-      </td>
-    </tr>
-
-
+              <tr v-for="rec in getVehicleServiceHistory(selectedVehicle?.id)" :key="rec.id">
+                <td>#{{ rec.id }}</td>
+                <td>
+                  <span class="badge" :class="getStatusBadgeClass(rec.status)" style="font-size: 0.75rem;">
+                    {{ getTypeName(rec.type) }}
+                  </span>
+                </td>
+                <td style="font-size: 0.8rem; max-width: 250px; white-space: normal;">{{ rec.description }}</td>
+                <td>{{ getSupplierName(rec.supplier_id) }}</td>
+                <td style="font-size: 0.8rem;">{{ formatDate(rec.created_at) }}</td>
+                <td>
+                  <span class="badge" :class="getStatusBadgeClass(rec.status)" style="font-size: 0.75rem;">
+                    {{ rec.status }}
+                  </span>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -715,14 +966,15 @@ import { useRouter, useRoute } from 'vue-router'
 const router = useRouter()
 const route = useRoute()
 
-const currentTab = ref('requests') // 'requests', 'tenders', 'my_vehicles'
+const currentTab = ref('requests') // Default will be updated in onMounted
 const supplierId = ref(parseInt(localStorage.getItem('fleetcar_supplier_id') || '0'))
 const supplierName = ref(localStorage.getItem('fleetcar_supplier_name') || 'Tedarikçi / Servis')
 const supplierType = ref(localStorage.getItem('fleetcar_supplier_type') || 'servis')
+const supplierEmail = ref(localStorage.getItem('fleetcar_supplier_email') || '')
 
 const isServiceAccount = computed(() => {
   const t = supplierType.value?.toLowerCase() || ''
-  return route.path.includes('service') || t === 'servis' || t === 'lastik' || t === 'yol_yardim'
+  return route.path.includes('service') || t === 'servis' || t === 'oto_servis' || t === 'lastik' || t === 'yol_yardim'
 })
 
 const supplierCity = ref('')
@@ -820,9 +1072,8 @@ const filteredRequests = computed(() => {
 })
 
 const openQuotes = computed(() => {
-  // Open quote requests or signed quotes where this supplier's bid is accepted
   return quotes.value.filter(q => {
-    if (['Teklif Verildi', 'Değerlendirmede'].includes(q.status)) return true
+    if (['Teklif Verildi', 'Beklemede', 'Değerlendirmede'].includes(q.status)) return true
     if (q.status === 'Sözleşme İmzalandı') {
       const bid = supplierBids.value.find(b => b.quote_id === q.id)
       return bid && bid.status === 'Kabul Edildi'
@@ -833,6 +1084,22 @@ const openQuotes = computed(() => {
 
 const myDeliveredVehicles = computed(() => {
   return vehicles.value.filter(v => v.supplier_id === supplierId.value)
+})
+
+const serviceVehicles = computed(() => {
+  return vehicles.value.filter(v => v.supplier_id === supplierId.value || v.status === 'Serviste')
+})
+
+const serviceVehiclesCount = computed(() => {
+  return serviceVehicles.value.length
+})
+
+const pendingBidsCount = computed(() => {
+  return supplierBids.value.filter(b => b.status === 'Beklemede').length
+})
+
+const acceptedBidsCount = computed(() => {
+  return supplierBids.value.filter(b => b.status === 'Kabul Edildi').length
 })
 
 const pendingRequestsCount = computed(() => {
@@ -847,9 +1114,22 @@ const completedRequestsCount = computed(() => {
   return filteredRequests.value.filter(r => r.status === 'Tamamlandı').length
 })
 
+const maintenanceRequestsCount = computed(() => {
+  return filteredRequests.value.filter(r => r.type === 'servis' || r.description?.toLowerCase().includes('bakım')).length
+})
+
+const mechanicalRequestsCount = computed(() => {
+  return filteredRequests.value.filter(r => r.type === 'arıza' || r.description?.toLowerCase().includes('arıza') || r.description?.toLowerCase().includes('mekanik')).length
+})
+
+const tireRoadsideRequestsCount = computed(() => {
+  return filteredRequests.value.filter(r => r.type === 'lastik' || r.type === 'yol_yardim').length
+})
+
 const getTypeName = (type) => {
   const map = {
     'servis': 'Yetkili Servis Tedarikçisi',
+    'oto_servis': 'Oto Servis Sağlayıcısı',
     'lastik': 'Lastik Tedarikçisi',
     'yol_yardim': 'Yol Yardım & Çekici Hizmeti',
     'ikame_arac': 'Araç Kiralama & İkame Tedarikçisi'
@@ -938,11 +1218,10 @@ const openDeliveryModal = (quote) => {
   addVehicleForm.fuel = 'Hibrit'
   addVehicleForm.mileage = 0
   addVehicleForm.license_serial_no = ''
-  addVehicleForm.inspection_date = new Date(Date.now() + 2 * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // default 2 years in future
+  addVehicleForm.inspection_date = new Date(Date.now() + 2 * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   addVehicleForm.vehicle_segment = quote.vehicle_segment
   addVehicleForm.vehicle_type = quote.vehicle_type
   
-  // Set defaults for service metadata
   addVehicleForm.tire_change_date = new Date().toISOString().split('T')[0]
   addVehicleForm.last_service_date = new Date().toISOString().split('T')[0]
   addVehicleForm.last_service_mileage = 0
@@ -1031,16 +1310,25 @@ const handleLogout = () => {
   localStorage.removeItem('fleetcar_supplier_id')
   localStorage.removeItem('fleetcar_supplier_name')
   localStorage.removeItem('fleetcar_supplier_type')
-  router.push('/supplier-login')
+  localStorage.removeItem('fleetcar_supplier_email')
+  router.push(isServiceAccount.value ? '/service-login' : '/supplier-login')
 }
 
 onMounted(async () => {
   if (!supplierId.value) {
-    router.push('/supplier-login')
+    router.push(isServiceAccount.value ? '/service-login' : '/supplier-login')
     return
   }
   
   loading.value = true
+  
+  // Set default tab based on portal type
+  if (isServiceAccount.value) {
+    currentTab.value = 'requests'
+  } else {
+    currentTab.value = 'tenders'
+  }
+  
   // Load supplier details
   try {
     const res = await fetch('/api/suppliers')
@@ -1052,6 +1340,8 @@ onMounted(async () => {
         supplierDistrict.value = current.district
         supplierContractType.value = current.contract_type
         supplierServices.value = current.services
+        supplierPhone.value = current.phone
+        supplierEmail.value = current.email || supplierEmail.value
         suppliers.value = suppliersList
         supplierName.value = current.name
         supplierType.value = current.type
@@ -1084,7 +1374,7 @@ onMounted(async () => {
   justify-content: space-between;
   align-items: center;
   padding: 20px 30px;
-  margin-bottom: 30px;
+  margin-bottom: 25px;
 }
 
 .logo-area {
@@ -1093,12 +1383,26 @@ onMounted(async () => {
   gap: 15px;
 }
 
+.nav-logo-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
 .portal-title {
   font-size: 0.85rem;
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--text-muted);
+
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1107,44 +1411,35 @@ onMounted(async () => {
 .tag-supplier {
   background: rgba(16, 185, 129, 0.1);
   color: #10b981;
+  padding: 2px 8px;
+  border-radius: 6px;
   font-size: 0.75rem;
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-weight: 600;
-  vertical-align: middle;
+  border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 .tag-service {
-  background: rgba(37, 99, 235, 0.12);
+  background: rgba(37, 99, 235, 0.1);
   color: #2563eb;
-  border: 1px solid rgba(37, 99, 235, 0.25);
+  padding: 2px 8px;
+  border-radius: 6px;
   font-size: 0.75rem;
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-weight: 600;
-  vertical-align: middle;
+  border: 1px solid rgba(37, 99, 235, 0.2);
 }
 
 .supplier-name-display {
-  font-size: 1.35rem;
-  font-weight: 700;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--text-main);
   margin-top: 2px;
 }
 
 .type-badge {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-color);
-  padding: 6px 12px;
-  border-radius: 8px;
   font-size: 0.85rem;
+  padding: 6px 14px;
+  border-radius: 20px;
   font-weight: 600;
 }
 
-.profile-bar {
-  border-top: 3px solid #10b981 !important; /* Premium top border accent instead of left */
-}
-
-/* Stat Cards Styling */
 .stat-card-new {
   display: flex;
   align-items: center;
@@ -1171,8 +1466,8 @@ onMounted(async () => {
 }
 
 .quote-blue {
-  background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
+  background: rgba(37, 99, 235, 0.1);
+  color: #2563eb;
 }
 
 .quote-green {
@@ -1206,7 +1501,6 @@ onMounted(async () => {
   line-height: 1.2;
 }
 
-
 .profile-meta-label {
   font-size: 0.75rem;
   text-transform: uppercase;
@@ -1223,19 +1517,19 @@ onMounted(async () => {
 }
 
 .badge-auth {
+  background: rgba(37, 99, 235, 0.1);
+  color: #2563eb;
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+.badge-contracted {
   background: rgba(16, 185, 129, 0.1);
   color: #10b981;
   border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
-.badge-contracted {
-  background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
-  border: 1px solid rgba(59, 130, 246, 0.2);
-}
-
 .service-tag {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(0, 0, 0, 0.03);
   border: 1px solid var(--border-color);
   color: var(--text-muted);
   font-size: 0.75rem;
@@ -1277,9 +1571,81 @@ onMounted(async () => {
   background: #10b981;
 }
 
+.tab-btn.active-service {
+  color: #2563eb !important;
+}
+
+.tab-btn.active-service::after {
+  background: #2563eb !important;
+}
+
+.widget-list-card {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+}
+
+.widget-title-row {
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #10b981;
+}
+
+.widget-title-row h3 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.widget-list-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.widget-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  transition: background 0.15s ease;
+}
+
+.widget-item-row:hover {
+  background: #f8fafc;
+}
+
+.widget-item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #334155;
+  font-weight: 500;
+}
+
+.widget-item-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+}
+
+.widget-item-value {
+  font-weight: 700;
+  color: #475569;
+}
+
 /* Spec labels inside details */
 .details-spec {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(0, 0, 0, 0.02);
   border: 1px solid var(--border-color);
   padding: 12px;
   border-radius: 8px;
