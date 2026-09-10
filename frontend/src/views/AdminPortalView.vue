@@ -66,36 +66,53 @@
         </header>
 
         <!-- Stats Summary cards -->
-        <div class="grid-3" style="margin-top: 25px; gap: 20px;">
+        <div class="grid-4" style="margin-top: 25px; gap: 15px; grid-template-columns: repeat(5, 1fr);">
           <div class="glass-panel stat-card-new">
             <div class="stat-icon-wrapper quote-purple">
               <span>📄</span>
             </div>
             <div class="stat-info">
-              <span class="stat-label">Toplam Teklif Talebi</span>
+              <span class="stat-label">Toplam Talep</span>
               <div class="stat-val-new">{{ quotes.length }} Adet</div>
             </div>
           </div>
           <div class="glass-panel stat-card-new">
             <div class="stat-icon-wrapper quote-blue">
-              <span>🚗</span>
+              <span>🏢</span>
             </div>
             <div class="stat-info">
-              <span class="stat-label">Öngörülen Toplam Araç</span>
-              <div class="stat-val-new">{{ totalProposedVehicles }} Adet</div>
+              <span class="stat-label">Gelen Tedarikçi Teklifi</span>
+              <div class="stat-val-new" style="color: #2563eb;">{{ totalSupplierBidsCount }} Adet</div>
             </div>
           </div>
           <div class="glass-panel stat-card-new">
             <div class="stat-icon-wrapper quote-green">
-              <span>₺</span>
+              <span>✅</span>
             </div>
             <div class="stat-info">
-              <span class="stat-label">Tahmini Aylık Toplam Ciro</span>
-              <div class="stat-val-new" style="color: #10b981;">₺{{ totalProposedRevenue.toLocaleString('tr-TR') }}</div>
+              <span class="stat-label">Kabul / İmzalandı</span>
+              <div class="stat-val-new" style="color: #10b981;">{{ acceptedQuotesCount }} Adet</div>
+            </div>
+          </div>
+          <div class="glass-panel stat-card-new">
+            <div class="stat-icon-wrapper" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+              <span>❌</span>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Reddedilen Teklif</span>
+              <div class="stat-val-new" style="color: #ef4444;">{{ rejectedQuotesCount }} Adet</div>
+            </div>
+          </div>
+          <div class="glass-panel stat-card-new">
+            <div class="stat-icon-wrapper" style="background: rgba(100, 116, 139, 0.1); color: #64748b;">
+              <span>🗑️</span>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Silinen Talepler</span>
+              <div class="stat-val-new" style="color: #64748b;">{{ deletedQuotesCount }} Adet</div>
             </div>
           </div>
         </div>
-
 
         <!-- Quotes Filter Bar -->
         <div class="filter-bar glass-panel" style="margin-top: 20px;">
@@ -106,8 +123,8 @@
             </div>
             <div class="filter-group">
               <span class="filter-label">📊 Durum</span>
-              <div class="filter-pills">
-                <button v-for="s in ['Tümü','Teklif Verildi','Değerlendirmede','Sözleşme İmzalandı','Reddedildi']" :key="s"
+              <div class="filter-pills" style="flex-wrap: wrap; gap: 4px;">
+                <button v-for="s in ['Tümü', 'Teklif Bekleniyor', 'Teklif Geldi', 'Sözleşme Yapıldı', 'Silinen']" :key="s"
                   :class="['filter-pill', { 'filter-pill-active': quoteFilter.status === s }]"
                   @click="quoteFilter.status = s">{{ s }}</button>
               </div>
@@ -142,14 +159,19 @@
                   <th>Araç Adedi</th>
                   <th>Segment & Tip</th>
                   <th>Süre & Yıllık KM</th>
-                  <th>Aylık Bedel</th>
+                  <th>Aylık Bedel & Tedarikçi Teklifleri</th>
                   <th>Durum</th>
                   <th>İşlemler</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="quote in filteredQuotes" :key="quote.id">
-                  <td>#{{ quote.id }}</td>
+                <tr v-for="quote in filteredQuotes" :key="quote.id" :style="{ opacity: (quote.status === 'İstek Silindi' || quote.status === 'Silindi') ? 0.7 : 1 }">
+                  <td>
+                    <strong>#{{ quote.id }}</strong>
+                    <div v-if="quote.status === 'İstek Silindi' || quote.status === 'Silindi'" style="font-size: 0.7rem; color: #ef4444; font-weight: 700; margin-top: 2px;">
+                      🗑️ Silindi
+                    </div>
+                  </td>
                   <td><strong>{{ quote.company_name }}</strong></td>
                   <td>
                     <div style="font-size: 0.85rem; font-weight: 500;">{{ quote.email }}</div>
@@ -165,6 +187,14 @@
                   </td>
                   <td>
                     <strong style="color: #7c3aed;">₺{{ quote.monthly_price_try?.toLocaleString() }}</strong>
+                    <div v-if="quote.bids && quote.bids.length > 0" style="margin-top: 4px;">
+                      <span style="background: rgba(16, 185, 129, 0.1); color: #059669; border: 1px solid rgba(16, 185, 129, 0.25); font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 12px; display: inline-flex; align-items: center; gap: 4px;">
+                        🏢 {{ quote.bids.length }} Tedarikçi Teklifi Verildi
+                      </span>
+                    </div>
+                    <div v-else style="font-size: 0.72rem; color: #94a3b8; margin-top: 4px;">
+                      ⏳ Tedarikçi Teklifi Yok
+                    </div>
                   </td>
                   <td>
                     <select 
@@ -173,10 +203,13 @@
                       class="form-select status-select"
                       :class="getStatusClass(quote.status)"
                     >
-                      <option value="Teklif Verildi">Teklif Verildi</option>
-                      <option value="Değerlendirmede">Değerlendirmede</option>
-                      <option value="Sözleşme İmzalandı">Sözleşme İmzalandı</option>
-                      <option value="Reddedildi">Reddedildi</option>
+                      <option value="Teklif Bekleniyor">⏳ Teklif Bekleniyor</option>
+                      <option value="Teklif Verildi">📩 Teklif Verildi</option>
+                      <option value="Değerlendirmede">🔍 Değerlendirmede</option>
+                      <option value="Kabul Edildi">✅ Kabul Edildi</option>
+                      <option value="Sözleşme İmzalandı">📝 Sözleşme İmzalandı</option>
+                      <option value="Reddedildi">❌ Reddedildi</option>
+                      <option value="İstek Silindi">🗑️ İstek Silindi</option>
                     </select>
                   </td>
                   <td>
@@ -184,8 +217,8 @@
                       <button @click="openEditQuoteModal(quote)" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">
                         ⚙️ Düzenle
                       </button>
-                      <button @click="openQuoteBidsModal(quote)" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; background: rgba(124, 58, 237, 0.05); color: #7c3aed; border-color: rgba(124, 58, 237, 0.2);">
-                        🏢 Tedarikçi Teklifleri
+                      <button @click="openQuoteBidsModal(quote)" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; background: rgba(124, 58, 237, 0.08); color: #6d28d9; border-color: rgba(124, 58, 237, 0.25); font-weight: 700;">
+                        🏢 Tedarikçi Teklifleri ({{ quote.bids ? quote.bids.length : 0 }})
                       </button>
                     </div>
                   </td>
@@ -1466,15 +1499,40 @@ const quoteFilter = reactive({ search: '', status: 'Tümü', segment: 'Tümü' }
 const customerFilter = reactive({ search: '', fleetStatus: 'Tümü' })
 const supplierFilter = reactive({ search: '', type: 'Tümü', contractType: 'Tümü' })
 
-// ── Computed filtered arrays ──────────────────────────────────────────────
+const getQuoteTierPriority = (status) => {
+  if (['Teklif Bekleniyor', 'Teklif Geldi', 'Teklif Verildi', 'Değerlendirmede'].includes(status)) return 1
+  if (['Kabul Edildi', 'Sözleşme İmzalandı', 'Sözleşme Yapıldı'].includes(status)) return 2
+  if (['İstek Silindi', 'Silindi', 'Reddedildi'].includes(status)) return 3
+  return 1
+}
+
 const filteredQuotes = computed(() => {
-  return quotes.value.filter(q => {
+  const list = quotes.value.filter(q => {
     const matchSearch = !quoteFilter.search ||
       q.company_name?.toLowerCase().includes(quoteFilter.search.toLowerCase()) ||
       q.email?.toLowerCase().includes(quoteFilter.search.toLowerCase())
-    const matchStatus = quoteFilter.status === 'Tümü' || q.status === quoteFilter.status
+    
+    let matchStatus = false
+    if (quoteFilter.status === 'Tümü') matchStatus = true
+    else if (quoteFilter.status === 'Teklif Bekleniyor') matchStatus = (q.status === 'Teklif Bekleniyor')
+    else if (quoteFilter.status === 'Teklif Geldi') matchStatus = (q.status === 'Teklif Geldi' || q.status === 'Teklif Verildi' || (q.bids && q.bids.length > 0 && !['Kabul Edildi', 'Sözleşme İmzalandı', 'Sözleşme Yapıldı', 'İstek Silindi', 'Silindi', 'Reddedildi'].includes(q.status)))
+    else if (quoteFilter.status === 'Sözleşme Yapıldı') matchStatus = ['Sözleşme Yapıldı', 'Kabul Edildi', 'Sözleşme İmzalandı'].includes(q.status)
+    else if (quoteFilter.status === 'Silinen') matchStatus = ['İstek Silindi', 'Silindi', 'Reddedildi'].includes(q.status)
+    else matchStatus = (q.status === quoteFilter.status)
+
     const matchSegment = quoteFilter.segment === 'Tümü' || q.vehicle_segment === quoteFilter.segment
     return matchSearch && matchStatus && matchSegment
+  })
+
+  return [...list].sort((a, b) => {
+    const priorityA = getQuoteTierPriority(a.status)
+    const priorityB = getQuoteTierPriority(b.status)
+    if (priorityA !== priorityB) {
+      return priorityA - priorityB
+    }
+    const timeA = a.created_at ? new Date(a.created_at).getTime() : (a.id || 0)
+    const timeB = b.created_at ? new Date(b.created_at).getTime() : (b.id || 0)
+    return timeB - timeA
   })
 })
 
@@ -1832,6 +1890,22 @@ const totalProposedRevenue = computed(() => {
   return quotes.value.reduce((acc, q) => acc + q.monthly_price_try, 0)
 })
 
+const totalSupplierBidsCount = computed(() => {
+  return quotes.value.reduce((acc, q) => acc + (q.bids ? q.bids.length : 0), 0)
+})
+
+const acceptedQuotesCount = computed(() => {
+  return quotes.value.filter(q => q.status === 'Kabul Edildi' || q.status === 'Sözleşme İmzalandı').length
+})
+
+const rejectedQuotesCount = computed(() => {
+  return quotes.value.filter(q => q.status === 'Reddedildi').length
+})
+
+const deletedQuotesCount = computed(() => {
+  return quotes.value.filter(q => q.status === 'İstek Silindi' || q.status === 'Silindi').length
+})
+
 // CUSTOMERS COMPUTED
 const totalCustomerVehicles = computed(() => {
   return customers.value.reduce((acc, c) => acc + c.registered_vehicles_count, 0)
@@ -2155,10 +2229,13 @@ const updateStatus = async (quoteId, newStatus, contractAmount) => {
 
 const getStatusClass = (status) => {
   return {
+    'status-pending': status === 'Teklif Bekleniyor',
     'status-given': status === 'Teklif Verildi',
     'status-reviewing': status === 'Değerlendirmede',
+    'status-accepted': status === 'Kabul Edildi',
     'status-signed': status === 'Sözleşme İmzalandı',
-    'status-rejected': status === 'Reddedildi'
+    'status-rejected': status === 'Reddedildi',
+    'status-deleted': status === 'İstek Silindi' || status === 'Silindi'
   }
 }
 
@@ -2359,6 +2436,12 @@ onMounted(async () => {
   outline: none;
 }
 
+.status-pending {
+  background: #faf5ff;
+  color: #7e22ce;
+  border-color: #e9d5ff;
+}
+
 .status-given {
   background: #eff6ff;
   color: #1d4ed8;
@@ -2371,6 +2454,12 @@ onMounted(async () => {
   border-color: #fde68a;
 }
 
+.status-accepted {
+  background: #f0fdf4;
+  color: #15803d;
+  border-color: #bbf7d0;
+}
+
 .status-signed {
   background: #ecfdf5;
   color: #047857;
@@ -2381,6 +2470,12 @@ onMounted(async () => {
   background: #fff5f5;
   color: #c53030;
   border-color: #fed7d7;
+}
+
+.status-deleted {
+  background: #f8fafc;
+  color: #64748b;
+  border-color: #cbd5e1;
 }
 
 .service-tag {

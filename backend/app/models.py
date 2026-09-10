@@ -47,6 +47,8 @@ class Customer(Base):
     password_hash             = Column(String, nullable=True)
     invitation_token          = Column(String, nullable=True)
     invitation_status         = Column(String, default="Davet Edilmedi") # Davet Edilmedi / Davet Gönderildi / Aktif
+    documents_uploaded        = Column(Boolean, default=False)
+    documents                 = Column(JSON, default=dict) # {"tax_plate": "...", "signature_circular": "...", "activity_certificate": "..."}
 
 
 
@@ -82,6 +84,7 @@ class Quote(Base):
     __tablename__ = "quotes"
 
     id                       = Column(Integer, primary_key=True, index=True)
+    customer_id              = Column(Integer, ForeignKey("customers.id"), nullable=True)
     company_name             = Column(String)
     email                    = Column(String)
     phone                    = Column(String)
@@ -94,6 +97,8 @@ class Quote(Base):
     status                   = Column(String, default="Teklif Verildi")
     contract_amount          = Column(Float, nullable=True)
     created_at               = Column(String)
+    items                    = Column(JSON, default=list, nullable=True)
+    details                  = Column(JSON, default=dict, nullable=True)
 
 
 class Request(Base):

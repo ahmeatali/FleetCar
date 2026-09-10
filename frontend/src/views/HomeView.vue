@@ -414,96 +414,86 @@
       </div>
     </footer>
 
-    <!-- Interactive Dynamic Quote Modal -->
+    <!-- Interactive Dynamic Multi-Step Quote Modal -->
     <div v-if="showQuoteModal" class="modal-overlay" @click.self="showQuoteModal = false">
       <div class="modal-card fade-in-up" style="max-width: 650px;">
-        <div class="modal-header">
-          <h3 class="modal-title">{{ selectedTypeTitle }} Kiralama Teklifi Al</h3>
-          <button class="close-btn" @click="showQuoteModal = false">✕</button>
+        <!-- Modal Header -->
+        <div class="modal-header" style="flex-direction: column; align-items: stretch; gap: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h3 class="modal-title" style="font-size: 1.3rem;">
+              {{ selectedTypeTitle }} Kiralama Teklifi Al
+            </h3>
+            <button class="close-btn" @click="showQuoteModal = false">✕</button>
+          </div>
+          <p style="color: #64748b; font-size: 0.88rem; margin: 0;">
+            Şirketiniz adına detaylı teklif talebi oluşturmak ve evraklarınızı iletmek için giriş yapın veya hızlıca kaydolun.
+          </p>
         </div>
 
-        <form @submit.prevent="submitQuote" style="margin-top: 10px;">
-          <div class="form-group">
-            <label class="form-label">Şirket / Ad Soyad</label>
-            <input type="text" v-model="form.company_name" required class="form-input" placeholder="Örn: Tekno A.Ş. veya Ahmet Yılmaz">
+        <!-- AUTHENTICATION (Kayıt Ol / Giriş Yap) -->
+        <div style="margin-top: 15px;">
+          <div style="display: flex; gap: 10px; background: #f1f5f9; padding: 4px; border-radius: 12px; margin-bottom: 20px;">
+            <button @click="authMode = 'register'" :style="{ background: authMode === 'register' ? '#ffffff' : 'transparent', color: authMode === 'register' ? '#0f172a' : '#64748b', fontWeight: authMode === 'register' ? '700' : '500' }" style="flex: 1; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 0.95rem;">
+              🔑 Kayıt Ol (Yeni Hesap)
+            </button>
+            <button @click="authMode = 'login'" :style="{ background: authMode === 'login' ? '#ffffff' : 'transparent', color: authMode === 'login' ? '#0f172a' : '#64748b', fontWeight: authMode === 'login' ? '700' : '500' }" style="flex: 1; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 0.95rem;">
+              👤 Giriş Yap
+            </button>
           </div>
 
-          <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr;">
+          <!-- Register Form -->
+          <form v-if="authMode === 'register'" @submit.prevent="handleModalRegister">
+            <p style="color: #64748b; font-size: 0.88rem; margin-bottom: 16px;">
+              Teklif alma sürecine başlamak için lütfen öncelikle e-posta ve şifreniz ile kaydolun.
+            </p>
+
             <div class="form-group">
-              <label class="form-label">E-posta</label>
+              <label class="form-label">Şirket / Firma Adı *</label>
+              <input type="text" v-model="form.company_name" required class="form-input" placeholder="Örn: Tekno Lojistik A.Ş.">
+            </div>
+
+            <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr;">
+              <div class="form-group">
+                <label class="form-label">E-posta Adresi *</label>
+                <input type="email" v-model="form.email" required class="form-input" placeholder="isim@sirket.com">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Telefon Numarası *</label>
+                <input type="tel" v-model="form.phone" required class="form-input" placeholder="05XX XXX XX XX">
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 25px;">
+              <label class="form-label">Şifre * (En az 6 karakter)</label>
+              <input type="password" v-model="authPassword" required minlength="6" class="form-input" placeholder="••••••••">
+            </div>
+
+            <button type="submit" class="btn btn-blue" style="width: 100%; padding: 14px;" :disabled="submitting">
+              {{ submitting ? 'Kaydolunuyor...' : 'Kaydol ve Şirket Evraklarına Geç ➔' }}
+            </button>
+          </form>
+
+          <!-- Login Form -->
+          <form v-else @submit.prevent="handleModalLogin">
+            <p style="color: #64748b; font-size: 0.88rem; margin-bottom: 16px;">
+              Mevcut müşteri hesabınızla giriş yaparak teklif sürecine devam edebilirsiniz.
+            </p>
+
+            <div class="form-group">
+              <label class="form-label">E-posta Adresi *</label>
               <input type="email" v-model="form.email" required class="form-input" placeholder="isim@sirket.com">
             </div>
-            <div class="form-group">
-              <label class="form-label">Telefon</label>
-              <input type="tel" v-model="form.phone" required class="form-input" placeholder="05XX XXX XX XX">
-            </div>
-          </div>
 
-          <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr;">
-            <div class="form-group">
-              <label class="form-label">Araç Segmenti</label>
-              <select v-model="form.vehicle_segment" class="form-select">
-                <option value="A">A Segmenti (Ekonomik)</option>
-                <option value="B">B Segmenti (Hatchback/Sedan)</option>
-                <option value="C">C Segmenti (Konfor Sedan)</option>
-                <option value="D">D Segmenti (Prestij Sedan)</option>
-                <option value="E">E Segmenti (Lüks)</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Araç Tipi</label>
-              <select v-model="form.vehicle_type" class="form-select">
-                <option value="Sedan">Sedan</option>
-                <option value="SUV">SUV</option>
-                <option value="Hatchback">Hatchback</option>
-                <option value="Hafif Ticari">Hafif Ticari</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <div class="slider-header" style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-              <label class="form-label">Araç Adedi</label>
-              <span style="font-weight: 700; color: #2563eb;">{{ form.vehicle_count }} Adet</span>
-            </div>
-            <input type="range" min="1" max="100" v-model.number="form.vehicle_count" class="range-slider">
-          </div>
-
-          <div class="grid-2" style="gap: 15px;">
-            <div class="form-group">
-              <label class="form-label">Kiralama Süresi</label>
-              <select v-model.number="form.duration_months" class="form-select">
-                <option :value="12">12 Ay</option>
-                <option :value="24">24 Ay</option>
-                <option :value="36">36 Ay</option>
-                <option :value="48">48 Ay</option>
-              </select>
+            <div class="form-group" style="margin-bottom: 25px;">
+              <label class="form-label">Şifre *</label>
+              <input type="password" v-model="authPassword" required class="form-input" placeholder="••••••••">
             </div>
 
-            <div class="form-group">
-              <label class="form-label">Yıllık Tahmini KM</label>
-              <select v-model.number="form.estimated_annual_mileage" class="form-select">
-                <option :value="10000">10,000 KM</option>
-                <option :value="20000">20,000 KM</option>
-                <option :value="30000">30,000 KM</option>
-                <option :value="40000">40,000 KM</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Instant Price Estimation Box -->
-          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin: 15px 0; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <span style="font-size: 0.8rem; color: #64748b; font-weight: 600; text-transform: uppercase;">Tahmini Aylık Tutar</span>
-              <div style="font-size: 1.8rem; font-weight: 800; color: #2563eb;">₺{{ calculatedPriceFormatted }}</div>
-            </div>
-            <span style="font-size: 0.8rem; color: #64748b;">*KDV Hariç</span>
-          </div>
-
-          <button type="submit" class="btn btn-blue" style="width: 100%; padding: 14px;" :disabled="submitting">
-            {{ submitting ? 'Teklif Kaydediliyor...' : 'Teklifi Kaydet ve Portalı Aç' }}
-          </button>
-        </form>
+            <button type="submit" class="btn btn-blue" style="width: 100%; padding: 14px;" :disabled="submitting">
+              {{ submitting ? 'Giriş Yapılıyor...' : 'Giriş Yap ve Devam Et ➔' }}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
 
@@ -578,6 +568,16 @@ const submittedQuoteDetails = ref(null)
 const quoteType = ref('kurumsal')
 const searchQuery = ref('')
 
+const quoteStep = ref(1) // 1: Auth, 2: Documents, 3: Quote Details
+const authMode = ref('register') // 'register' or 'login'
+const authPassword = ref('')
+
+const docFiles = reactive({
+  tax_plate: '',
+  signature_circular: '',
+  activity_certificate: '',
+  trade_registry: ''
+})
 
 const selectedTypeTitle = computed(() => {
   if (quoteType.value === 'bireysel') return 'Bireysel'
@@ -596,9 +596,149 @@ const form = reactive({
   estimated_annual_mileage: 20000
 })
 
-const openQuoteModal = (type = 'kurumsal') => {
+const onFileSelected = (event, key) => {
+  const file = event.target.files[0]
+  if (file) {
+    docFiles[key] = file.name
+  }
+}
+
+const openQuoteModal = async (type = 'kurumsal') => {
   quoteType.value = type
+
+  const token = localStorage.getItem('fleetcar_token')
+  const customerId = localStorage.getItem('fleetcar_customer_id')
+
+  if (token && customerId) {
+    // Already logged in - redirect directly to quotes management page in panel
+    router.push('/dashboard/quotes')
+    return
+  }
+
+  const userEmail = localStorage.getItem('fleetcar_user_email')
+  const customerName = localStorage.getItem('fleetcar_customer_name')
+
+  if (userEmail) form.email = userEmail
+  if (customerName) form.company_name = customerName
+
   showQuoteModal.value = true
+  quoteStep.value = 1
+  authMode.value = 'register'
+}
+
+const handleModalRegister = async () => {
+  if (!form.email || !authPassword.value) return
+  submitting.value = true
+
+  try {
+    const res = await fetch('/api/customer/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: form.email,
+        password: authPassword.value,
+        company_name: form.company_name,
+        phone: form.phone
+      })
+    })
+
+    if (res.ok) {
+      const data = await res.json()
+      const cust = data.customer || {}
+
+      localStorage.setItem('fleetcar_token', data.token)
+      localStorage.setItem('fleetcar_customer_id', String(cust.id || '1'))
+      localStorage.setItem('fleetcar_customer_name', cust.company_name || form.company_name || 'Müşteri Firma')
+      localStorage.setItem('fleetcar_user_email', cust.email || form.email)
+      localStorage.setItem('fleet_customer', JSON.stringify(cust))
+
+      showQuoteModal.value = false
+      // Redirect to company documents settings tab or quotes page in panel
+      router.push('/dashboard/settings?tab=sirket_evraklari')
+    } else {
+      const errData = await res.json().catch(() => ({}))
+      alert(errData.detail || 'Kayıt yapılırken bir sorun oluştu.')
+    }
+  } catch (err) {
+    console.error('Modal register error:', err)
+    alert('Sunucuya bağlanılamadı.')
+  } finally {
+    submitting.value = false
+  }
+}
+
+const handleModalLogin = async () => {
+  if (!form.email || !authPassword.value) return
+  submitting.value = true
+
+  try {
+    const res = await fetch('/api/customer/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: form.email,
+        password: authPassword.value
+      })
+    })
+
+    if (res.ok) {
+      const data = await res.json()
+      const cust = data.customer || {}
+
+      localStorage.setItem('fleetcar_token', data.token)
+      localStorage.setItem('fleetcar_customer_id', String(cust.id || '1'))
+      localStorage.setItem('fleetcar_customer_name', cust.company_name || 'Müşteri Firma')
+      localStorage.setItem('fleetcar_user_email', cust.email || form.email)
+      localStorage.setItem('fleet_customer', JSON.stringify(cust))
+
+      showQuoteModal.value = false
+      router.push('/dashboard/quotes')
+    } else {
+      const errData = await res.json().catch(() => ({}))
+      alert(errData.detail || 'Giriş yapılamadı!')
+    }
+  } catch (err) {
+    console.error('Modal login error:', err)
+    alert('Sunucuya bağlanılamadı.')
+  } finally {
+    submitting.value = false
+  }
+}
+
+const handleModalDocuments = async () => {
+  const customerId = localStorage.getItem('fleetcar_customer_id')
+  if (!customerId) {
+    alert('Lütfen önce kayıt olun veya giriş yapın.')
+    quoteStep.value = 1
+    return
+  }
+
+  submitting.value = true
+  try {
+    const res = await fetch('/api/customer/documents', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customer_id: Number(customerId),
+        tax_plate: docFiles.tax_plate || 'vergi_levhasi.pdf',
+        signature_circular: docFiles.signature_circular || 'imza_sirkusu.pdf',
+        activity_certificate: docFiles.activity_certificate || 'faaliyet_belgesi.pdf',
+        trade_registry: docFiles.trade_registry || 'ticaret_sicil_gazetesi.pdf'
+      })
+    })
+
+    if (res.ok) {
+      quoteStep.value = 3
+    } else {
+      const errData = await res.json().catch(() => ({}))
+      alert(errData.detail || 'Evraklar kaydedilirken sorun oluştu.')
+    }
+  } catch (err) {
+    console.error('Modal documents error:', err)
+    alert('Sunucuya bağlanılamadı.')
+  } finally {
+    submitting.value = false
+  }
 }
 
 const handleSearch = () => {
@@ -658,7 +798,7 @@ const submitQuote = async () => {
 
 const goToLogin = () => {
   showSuccessModal.value = false
-  router.push('/login')
+  router.push('/dashboard')
 }
 </script>
 

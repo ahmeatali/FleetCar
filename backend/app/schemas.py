@@ -1,30 +1,46 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional, Dict, Any, List
 
+class QuoteItemCreate(BaseModel):
+    vehicle_segment: str
+    vehicle_type: str
+    vehicle_count: int
+    duration_months: int
+    estimated_annual_mileage: int
+    monthly_price_try: Optional[int] = None
+    details: Optional[Dict[str, Any]] = None
+
 class QuoteCreate(BaseModel):
     company_name: str
     email: str
     phone: str
-    vehicle_count: int
-    duration_months: int
-    vehicle_segment: str
-    vehicle_type: str
-    estimated_annual_mileage: int
+    vehicle_count: Optional[int] = 1
+    duration_months: Optional[int] = 12
+    vehicle_segment: Optional[str] = "C"
+    vehicle_type: Optional[str] = "Sedan"
+    estimated_annual_mileage: Optional[int] = 20000
+    items: Optional[List[QuoteItemCreate]] = None
+    details: Optional[Dict[str, Any]] = None
 
 class QuoteResponse(BaseModel):
     id: int
+    customer_id: Optional[int] = None
+    customer_info: Optional[Dict[str, Any]] = None
     company_name: str
     email: str
     phone: str
     vehicle_count: int
-    duration_months: int
-    vehicle_segment: str
-    vehicle_type: str
-    estimated_annual_mileage: int
-    monthly_price_try: int
+    duration_months: Optional[int] = None
+    vehicle_segment: Optional[str] = None
+    vehicle_type: Optional[str] = None
+    estimated_annual_mileage: Optional[int] = None
+    monthly_price_try: Optional[int] = None
     status: str
     created_at: str
     contract_amount: Optional[float] = None
+    items: Optional[List[Dict[str, Any]]] = None
+    bids: Optional[List[Dict[str, Any]]] = None
+    details: Optional[Dict[str, Any]] = None
 
 class QuoteUpdate(BaseModel):
     company_name: str
@@ -211,4 +227,19 @@ class ServiceInvoice(BaseModel):
     invoice_amount: float
     invoice_notes: Optional[str] = None
     file_name: Optional[str] = None
+
+
+class CustomerRegisterRequest(BaseModel):
+    email: str
+    password: str
+    company_name: Optional[str] = None
+    phone: Optional[str] = None
+
+
+class CustomerDocumentUpload(BaseModel):
+    customer_id: Optional[int] = None
+    tax_plate: Optional[str] = None
+    signature_circular: Optional[str] = None
+    activity_certificate: Optional[str] = None
+    trade_registry: Optional[str] = None
 

@@ -48,35 +48,79 @@
         </div>
       </div>
 
-      <!-- Step 2: Customer Credentials Form -->
-      <div v-else class="glass-panel login-card fade-in-up" style="max-width: 440px; width: 100%; padding: 36px; border-radius: 20px; background: #ffffff;">
+      <!-- Step 2: Customer Credentials / Register Form -->
+      <div v-else class="glass-panel login-card fade-in-up" style="max-width: 460px; width: 100%; padding: 36px; border-radius: 20px; background: #ffffff;">
         <button @click="selectedRole = null" style="background: none; border: none; cursor: pointer; color: #2563eb; font-size: 0.88rem; margin-bottom: 20px; font-weight: 600;">
           ← Giriş Tipini Değiştir
         </button>
 
-        <h2 style="font-size: 1.6rem; font-weight: 800; color: #0f172a; margin-bottom: 8px;">Müşteri Girişi</h2>
-        <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 25px;">
-          Filo yönetim panelinize erişmek için bilgilerinizi girin.
-        </p>
-
-        <form @submit.prevent="handleLogin">
-          <div class="form-group">
-            <label class="form-label">E-posta Adresi</label>
-            <input type="email" v-model="email" required class="form-input" placeholder="isim@sirket.com">
-          </div>
-
-          <div class="form-group" style="margin-bottom: 25px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <label class="form-label" style="margin-bottom: 0;">Şifre</label>
-              <a href="#" style="font-size: 0.8rem; color: #2563eb; text-decoration: none;">Şifremi Unuttum?</a>
-            </div>
-            <input type="password" v-model="password" required class="form-input" placeholder="••••••••">
-          </div>
-
-          <button type="submit" class="btn btn-blue" style="width: 100%; padding: 14px;" :disabled="loading">
-            {{ loading ? 'Giriş Yapılıyor...' : 'Giriş Yap' }}
+        <div style="display: flex; gap: 10px; background: #f1f5f9; padding: 4px; border-radius: 12px; margin-bottom: 20px;">
+          <button @click="authMode = 'login'" :style="{ background: authMode === 'login' ? '#ffffff' : 'transparent', color: authMode === 'login' ? '#0f172a' : '#64748b', fontWeight: authMode === 'login' ? '700' : '500' }" style="flex: 1; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 0.95rem; transition: all 0.2s;">
+            Giriş Yap
           </button>
-        </form>
+          <button @click="authMode = 'register'" :style="{ background: authMode === 'register' ? '#ffffff' : 'transparent', color: authMode === 'register' ? '#0f172a' : '#64748b', fontWeight: authMode === 'register' ? '700' : '500' }" style="flex: 1; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 0.95rem; transition: all 0.2s;">
+            Kayıt Ol
+          </button>
+        </div>
+
+        <div v-if="authMode === 'login'">
+          <h2 style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-bottom: 6px;">Müşteri Girişi</h2>
+          <p style="color: #64748b; font-size: 0.88rem; margin-bottom: 20px;">
+            Filo yönetim panelinize erişmek için bilgilerinizi girin.
+          </p>
+
+          <form @submit.prevent="handleLogin">
+            <div class="form-group">
+              <label class="form-label">E-posta Adresi</label>
+              <input type="email" v-model="email" required class="form-input" placeholder="isim@sirket.com">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 25px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label class="form-label" style="margin-bottom: 0;">Şifre</label>
+                <a href="#" style="font-size: 0.8rem; color: #2563eb; text-decoration: none;">Şifremi Unuttum?</a>
+              </div>
+              <input type="password" v-model="password" required class="form-input" placeholder="••••••••">
+            </div>
+
+            <button type="submit" class="btn btn-blue" style="width: 100%; padding: 14px;" :disabled="loading">
+              {{ loading ? 'Giriş Yapılıyor...' : 'Giriş Yap' }}
+            </button>
+          </form>
+        </div>
+
+        <div v-else>
+          <h2 style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-bottom: 6px;">Yeni Müşteri Kaydı</h2>
+          <p style="color: #64748b; font-size: 0.88rem; margin-bottom: 20px;">
+            Teklif almak ve filo yönetim sistemine erişmek için hesabınızı oluşturun.
+          </p>
+
+          <form @submit.prevent="handleRegister">
+            <div class="form-group">
+              <label class="form-label">Şirket / Firma Adı</label>
+              <input type="text" v-model="companyName" class="form-input" placeholder="Örn: Tekno Lojistik A.Ş.">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">E-posta Adresi *</label>
+              <input type="email" v-model="email" required class="form-input" placeholder="isim@sirket.com">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Telefon Numarası</label>
+              <input type="tel" v-model="phone" class="form-input" placeholder="05XX XXX XX XX">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 25px;">
+              <label class="form-label">Şifre * (En az 6 karakter)</label>
+              <input type="password" v-model="password" required minlength="6" class="form-input" placeholder="••••••••">
+            </div>
+
+            <button type="submit" class="btn btn-blue" style="width: 100%; padding: 14px;" :disabled="loading">
+              {{ loading ? 'Kaydediliyor...' : 'Hesap Oluştur ve Devam Et' }}
+            </button>
+          </form>
+        </div>
       </div>
     </main>
   </div>
@@ -90,8 +134,11 @@ const router = useRouter()
 const route = useRoute()
 
 const selectedRole = ref(route.query.role || null)
+const authMode = ref(route.query.tab === 'register' ? 'register' : 'login')
 const email = ref('')
 const password = ref('')
+const companyName = ref('')
+const phone = ref('')
 const loading = ref(false)
 
 const handleLogin = async () => {
@@ -125,6 +172,46 @@ const handleLogin = async () => {
     }
   } catch (err) {
     console.error('Customer Login error:', err)
+    alert('Sunucuya bağlanılamadı. Lütfen backend servisini kontrol edin.')
+  } finally {
+    loading.value = false
+  }
+}
+
+const handleRegister = async () => {
+  if (!email.value || !password.value) return
+  loading.value = true
+  
+  try {
+    const res = await fetch('/api/customer/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: email.value,
+        password: password.value,
+        company_name: companyName.value,
+        phone: phone.value
+      })
+    })
+
+    if (res.ok) {
+      const data = await res.json()
+      const cust = data.customer || {}
+      
+      localStorage.setItem('fleetcar_token', data.token)
+      localStorage.setItem('fleetcar_customer_id', String(cust.id || '1'))
+      localStorage.setItem('fleetcar_customer_name', cust.company_name || companyName.value || 'Müşteri Firma')
+      localStorage.setItem('fleetcar_user_email', cust.email || email.value)
+      localStorage.setItem('fleet_customer', JSON.stringify(cust))
+      
+      alert('Kaydınız başarıyla oluşturuldu! Şimdi teklifinizi oluşturabilirsiniz.')
+      router.push('/')
+    } else {
+      const errData = await res.json().catch(() => ({}))
+      alert(errData.detail || 'Kayıt oluşturulamadı! Lütfen bilgilerinizi kontrol edin.')
+    }
+  } catch (err) {
+    console.error('Customer Register error:', err)
     alert('Sunucuya bağlanılamadı. Lütfen backend servisini kontrol edin.')
   } finally {
     loading.value = false

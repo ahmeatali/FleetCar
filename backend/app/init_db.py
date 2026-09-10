@@ -38,6 +38,18 @@ def create_tables():
                     conn.execute(text("ALTER TABLE customers ADD COLUMN invitation_token VARCHAR;"))
                 if "invitation_status" not in cust_columns:
                     conn.execute(text("ALTER TABLE customers ADD COLUMN invitation_status VARCHAR DEFAULT 'Davet Edilmedi';"))
+                if "documents_uploaded" not in cust_columns:
+                    conn.execute(text("ALTER TABLE customers ADD COLUMN documents_uploaded BOOLEAN DEFAULT 0;"))
+                if "documents" not in cust_columns:
+                    conn.execute(text("ALTER TABLE customers ADD COLUMN documents JSON DEFAULT '{}';"))
+
+        if "quotes" in inspector.get_table_names():
+            quote_columns = [c["name"] for c in inspector.get_columns("quotes")]
+            with engine.begin() as conn:
+                if "items" not in quote_columns:
+                    conn.execute(text("ALTER TABLE quotes ADD COLUMN items JSON DEFAULT '[]';"))
+                if "details" not in quote_columns:
+                    conn.execute(text("ALTER TABLE quotes ADD COLUMN details JSON DEFAULT '{}';"))
     except Exception as e:
         print(f"[MIGRATION LOG] Auto-migration check: {e}")
 

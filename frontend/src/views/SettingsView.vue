@@ -27,24 +27,25 @@
         </button>
       </header>
 
-      <!-- 4-Tab Navigation Bar (Matching Screenshot Dropdown Options) -->
+      <!-- 5-Tab Navigation Bar -->
       <div class="category-tabs-bar">
-        <button @click="activeTab = 'kullanicilar'" class="tab-pill-btn" :class="{ 'active-tab-pill': activeTab === 'kullanicilar' }">
+        <button @click="selectTab('kullanicilar')" class="tab-pill-btn" :class="{ 'active-tab-pill': activeTab === 'kullanicilar' }">
           <span>👥</span> Kullanıcılar
         </button>
-        <button @click="activeTab = 'teslim_formlari'" class="tab-pill-btn" :class="{ 'active-tab-pill': activeTab === 'teslim_formlari' }">
+        <button @click="selectTab('teslim_formlari')" class="tab-pill-btn" :class="{ 'active-tab-pill': activeTab === 'teslim_formlari' }">
           <span>📋</span> Teslim Formları
         </button>
-        <button @click="activeTab = 'bayi_sozlesmesi'" class="tab-pill-btn" :class="{ 'active-tab-pill': activeTab === 'bayi_sozlesmesi' }">
+        <button @click="selectTab('bayi_sozlesmesi')" class="tab-pill-btn" :class="{ 'active-tab-pill': activeTab === 'bayi_sozlesmesi' }">
           <span>📜</span> Bayi Sözleşmesi
         </button>
-        <button @click="activeTab = 'sirket_evraklari'" class="tab-pill-btn" :class="{ 'active-tab-pill': activeTab === 'sirket_evraklari' }">
+        <button @click="selectTab('sirket_evraklari')" class="tab-pill-btn" :class="{ 'active-tab-pill': activeTab === 'sirket_evraklari' }">
           <span>🏢</span> Şirket Evraklarım
         </button>
-        <button @click="activeTab = 'entegrasyonlar'" class="tab-pill-btn" :class="{ 'active-tab-pill': activeTab === 'entegrasyonlar' }">
+        <button @click="selectTab('entegrasyonlar')" class="tab-pill-btn" :class="{ 'active-tab-pill': activeTab === 'entegrasyonlar' }">
           <span>📡</span> API & Entegrasyonlar
         </button>
       </div>
+
 
       <!-- ============================================================== -->
       <!-- 1. KULLANICILAR (Kullanıcı Listesi ve Kullanıcı Ekleme)       -->
@@ -208,33 +209,69 @@
       <!-- ============================================================== -->
       <div v-if="activeTab === 'sirket_evraklari'" class="fade-in-up">
         <div class="glass-panel" style="padding: 28px; background: #ffffff; margin-bottom: 24px;">
-          <h2 style="font-size: 1.3rem; font-weight: 800; color: #0f172a; margin-bottom: 20px;">Kurumsal Şirket Evrakları & Belgeler</h2>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div>
+              <h2 style="font-size: 1.3rem; font-weight: 800; color: #0f172a;">Kurumsal Şirket Evrakları & Belgeler</h2>
+              <p style="font-size: 0.88rem; color: #64748b; margin-top: 4px;">Kiralama teklifleri ve sözleşmeler için yüklediğiniz şirket evraklarını buradan yönetin.</p>
+            </div>
+            <button @click="openUploadModal(null)" class="btn btn-blue" style="padding: 10px 18px; font-weight: 700; font-size: 0.88rem; display: flex; align-items: center; gap: 8px;">
+              <span>📤</span> Yeni Evrak Yükle
+            </button>
+          </div>
 
           <div class="grid-2" style="gap: 20px;">
-            <div class="glass-panel" style="padding: 20px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px;" v-for="doc in companyDocs" :key="doc.id">
-              <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 14px;">
-                <div style="width: 44px; height: 44px; border-radius: 10px; background: #eff6ff; color: #2563eb; font-size: 1.4rem; display: flex; align-items: center; justify-content: center;">
-                  📄
+            <div class="glass-panel" style="padding: 20px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; display: flex; flex-direction: column; justify-content: space-between;" v-for="cat in docCategories" :key="cat.key">
+              <div>
+                <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 12px;">
+                  <div style="width: 44px; height: 44px; border-radius: 10px; background: #eff6ff; color: #2563eb; font-size: 1.4rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    {{ cat.icon }}
+                  </div>
+                  <div style="flex: 1; min-width: 0;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                      <h4 style="font-size: 1rem; font-weight: 800; color: #0f172a; margin: 0;">{{ cat.title }}</h4>
+                      <span v-if="customerDocs[cat.key]" class="badge badge-active">✓ {{ customerDocs[cat.key].status || 'Onaylandı' }}</span>
+                      <span v-else style="background: #fef3c7; color: #b45309; font-size: 0.78rem; font-weight: 700; padding: 3px 10px; border-radius: 20px;">⚠️ Yüklenmedi</span>
+                    </div>
+                    <div v-if="customerDocs[cat.key]" style="font-size: 0.82rem; color: #475569; font-weight: 600; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                      📁 {{ customerDocs[cat.key].file_name }}
+                    </div>
+                    <div v-else style="font-size: 0.8rem; color: #94a3b8; margin-top: 4px;">
+                      {{ cat.required ? '*Zorunlu Belge' : 'Opsiyonel Belge' }}
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <h4 style="font-size: 1rem; font-weight: 800; color: #0f172a;">{{ doc.title }}</h4>
-                  <div style="font-size: 0.8rem; color: #64748b;">Son Güncelleme: {{ doc.updated_at }}</div>
+
+                <div v-if="customerDocs[cat.key]" style="font-size: 0.78rem; color: #64748b; margin-bottom: 15px;">
+                  Yükleme Tarihi: {{ customerDocs[cat.key].uploaded_at }}
                 </div>
-                <span class="badge badge-active" style="margin-left: auto;">{{ doc.status }}</span>
               </div>
 
-              <div style="display: flex; gap: 10px; margin-top: 15px;">
-                <button @click="viewDoc(doc)" class="btn btn-secondary" style="flex: 1; font-size: 0.82rem;">
-                  👁️ Görüntüle
-                </button>
-                <button @click="downloadDoc(doc)" class="btn btn-blue" style="flex: 1; font-size: 0.82rem;">
-                  ⬇️ İndir
-                </button>
+              <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;">
+                <template v-if="customerDocs[cat.key]">
+                  <button @click="viewCustomerDoc(cat.key)" class="btn btn-secondary" style="flex: 1; min-width: 80px; font-size: 0.8rem; padding: 7px 10px;">
+                    👁️ Görüntüle
+                  </button>
+                  <button @click="downloadCustomerDoc(cat.key)" class="btn btn-blue" style="flex: 1; min-width: 70px; font-size: 0.8rem; padding: 7px 10px;">
+                    ⬇️ İndir
+                  </button>
+                  <button @click="openUploadModal(cat.key)" class="btn btn-secondary" style="font-size: 0.8rem; padding: 7px 10px;">
+                    🔄 Yenile
+                  </button>
+                  <button @click="deleteCustomerDoc(cat.key)" class="btn btn-secondary" style="color: #dc2626; font-size: 0.8rem; padding: 7px 10px;">
+                    🗑️ Sil
+                  </button>
+                </template>
+                <template v-else>
+                  <button @click="openUploadModal(cat.key)" class="btn btn-blue" style="width: 100%; font-size: 0.85rem; padding: 9px 12px; font-weight: 700;">
+                    📤 Belge Yükle
+                  </button>
+                </template>
               </div>
             </div>
           </div>
         </div>
       </div>
+
 
       <!-- ============================================================== -->
       <!-- 5. API & ENTEGRASYONLAR                                       -->
@@ -435,33 +472,82 @@
   <!-- 📤 UPLOAD DOCUMENT MODAL -->
   <div v-if="showUploadDocModal" class="modal-overlay" @click.self="showUploadDocModal = false">
     <div class="glass-panel modal-content fade-in-up" style="max-width: 500px; padding: 30px; background: #ffffff;">
-      <h2 style="font-size: 1.4rem; font-weight: 800; color: #0f172a; margin-bottom: 20px;">Şirket Evrakı Yükle</h2>
-      <form @submit.prevent="uploadDocument">
+      <h2 style="font-size: 1.4rem; font-weight: 800; color: #0f172a; margin-bottom: 8px;">Şirket Evrakı Yükle / Güncelle</h2>
+      <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 20px;">Lütfen yüklemek istediğiniz belge kategorisini seçin ve dosyanızı ekleyin.</p>
+      
+      <form @submit.prevent="saveCustomerDoc">
         <div class="form-group">
-          <label class="form-label">Evrak Başlığı</label>
-          <input type="text" v-model="newDocTitle" required class="form-input" placeholder="Örn: 2026 Vergi Levhası">
+          <label class="form-label">Belge Kategorisi *</label>
+          <select v-model="selectedDocCategory" required class="form-select">
+            <option value="tax_plate">📄 Vergi Levhası</option>
+            <option value="signature_circular">✒️ İmza Sirküleri</option>
+            <option value="activity_certificate">🏛️ Oda Kayıt & Faaliyet Belgesi</option>
+            <option value="trade_registry">📜 Ticaret Sicil Gazetesi</option>
+          </select>
         </div>
+
         <div class="form-group">
-          <div class="upload-dropzone">
-            <div style="font-size: 2rem;">📁</div>
-            <div style="font-weight: 600; color: #0f172a; margin-top: 6px;">Dosya Seçin veya Sürükleyin</div>
-            <div style="font-size: 0.8rem; color: #94a3b8;">PDF, PNG, JPG (Maks. 10MB)</div>
-          </div>
+          <label class="form-label">Dosya Seçin *</label>
+          <input type="file" @change="onDocFilePicked" accept=".pdf,.png,.jpg,.jpeg" required class="form-input" style="padding: 8px;">
+          <span v-if="uploadFileName" style="font-size: 0.8rem; color: #16a34a; margin-top: 4px; display: block; font-weight: 600;">Seçilen: {{ uploadFileName }}</span>
         </div>
-        <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px;">
+
+        <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 25px;">
           <button type="button" @click="showUploadDocModal = false" class="btn btn-secondary">İptal</button>
-          <button type="submit" class="btn btn-blue">Yükle ve Kaydet</button>
+          <button type="submit" class="btn btn-blue" :disabled="docSubmitting">
+            {{ docSubmitting ? 'Kaydediliyor...' : 'Yükle ve Kaydet' }}
+          </button>
         </div>
       </form>
     </div>
   </div>
+
+  <!-- 👁️ PREVIEW DOCUMENT MODAL -->
+  <div v-if="showPreviewModal" class="modal-overlay" @click.self="showPreviewModal = false">
+    <div class="glass-panel modal-content fade-in-up" style="max-width: 550px; padding: 30px; background: #ffffff;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h2 style="font-size: 1.3rem; font-weight: 800; color: #0f172a; margin: 0;">Belge Önizleme</h2>
+        <button class="close-btn" @click="showPreviewModal = false">✕</button>
+      </div>
+
+      <div v-if="previewDocData" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px;">
+        <div style="font-size: 3rem; margin-bottom: 10px;">📄</div>
+        <h3 style="font-size: 1.1rem; font-weight: 800; color: #0f172a; margin-bottom: 4px;">{{ previewDocData.title }}</h3>
+        <div style="font-size: 0.85rem; color: #2563eb; font-weight: 700; margin-bottom: 8px;">Dosya: {{ previewDocData.file_name }}</div>
+        <span class="badge badge-active" style="display: inline-block;">✓ Status: {{ previewDocData.status || 'Onaylandı' }}</span>
+        <div style="font-size: 0.8rem; color: #64748b; margin-top: 10px;">Yükleme Tarihi: {{ previewDocData.uploaded_at }}</div>
+      </div>
+
+      <div style="display: flex; gap: 12px; justify-content: flex-end;">
+        <button type="button" @click="showPreviewModal = false" class="btn btn-secondary">Kapat</button>
+        <button type="button" @click="downloadCustomerDoc(previewDocData.key)" class="btn btn-blue">⬇️ Belgeyi İndir</button>
+      </div>
+    </div>
+  </div>
+
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'
 
-const activeTab = ref('kullanicilar')
+const route = useRoute()
+const router = useRouter()
+const activeTab = ref(route.query.tab || 'kullanicilar')
+
+const selectTab = (tabKey) => {
+  activeTab.value = tabKey
+  router.replace({ query: { ...route.query, tab: tabKey } })
+}
+
+watch(() => route.query.tab, (newTab) => {
+  if (newTab) {
+    activeTab.value = newTab
+  }
+})
+
+
 const userSearch = ref('')
 const showAddUserModal = ref(false)
 const showAddFormModal = ref(false)
@@ -621,49 +707,155 @@ const addHandoverForm = () => {
   alert(`${formHandover.plate} plaka için araç teslim formu kaydedildi!`)
 }
 
-onMounted(() => {
-  fetchVehicles()
-})
+// Company Docs Data & Methods
+const customerDocs = ref({})
+const documentsUploaded = ref(false)
 
+const docCategories = [
+  { key: 'tax_plate', title: 'Vergi Levhası', icon: '📄', required: true },
+  { key: 'signature_circular', title: 'İmza Sirküleri', icon: '✒️', required: true },
+  { key: 'activity_certificate', title: 'Oda Kayıt & Faaliyet Belgesi', icon: '🏛️', required: true },
+  { key: 'trade_registry', title: 'Ticaret Sicil Gazetesi', icon: '📜', required: true }
+]
 
-const downloadForm = (form) => {
-  alert(`#TF-${form.id} numaralı Teslim Formu PDF olarak indiriliyor...`)
-}
+const selectedDocCategory = ref('tax_plate')
+const uploadFileName = ref('')
+const docSubmitting = ref(false)
+const showPreviewModal = ref(false)
+const previewDocData = ref(null)
 
-// Contracts Data
-const contracts = ref([
-  { id: 1, name: 'Otokoç Otomotiv Bayi Hizmet Sözleşmesi', code: '2025-OKC-01', start_date: '01.01.2025', end_date: '31.12.2026', commission: '%4.5 Bayi İskontosu' },
-  { id: 2, name: 'VDF Filo Tedarik ve İhale Çerçeve Sözleşmesi', code: '2025-VDF-09', start_date: '15.02.2025', end_date: '15.02.2027', commission: 'Sabit Hizmet Tarifesi' }
-])
-
-const downloadContract = (c) => {
-  alert(`"${c.name}" sözleşme metni indiriliyor...`)
-}
-
-// Company Docs Data
-const companyDocs = ref([
-  { id: 1, title: '2025 Vergi Levhası', updated_at: '10.01.2025', status: 'Onaylandı' },
-  { id: 2, title: 'İmza Sirküleri', updated_at: '15.01.2025', status: 'Onaylandı' },
-  { id: 3, title: 'Ticaret Sicil Gazetesi', updated_at: '05.02.2025', status: 'Onaylandı' },
-  { id: 4, title: 'Oda Kayıt & Faaliyet Belgesi', updated_at: '20.02.2025', status: 'Onaylandı' }
-])
-
-const uploadDocument = () => {
-  if (newDocTitle.value) {
-    companyDocs.value.unshift({
-      id: companyDocs.value.length + 1,
-      title: newDocTitle.value,
-      updated_at: new Date().toLocaleDateString('tr-TR'),
-      status: 'Onaylandı'
-    })
-    showUploadDocModal.value = false
-    newDocTitle.value = ''
-    alert('Evrak başarıyla yüklendi!')
+const fetchCustomerDocs = async () => {
+  const customerId = localStorage.getItem('fleetcar_customer_id')
+  if (!customerId) return
+  try {
+    const res = await fetch(`/api/customer/documents?customer_id=${customerId}`)
+    if (res.ok) {
+      const data = await res.json()
+      customerDocs.value = data.documents || {}
+      documentsUploaded.value = Boolean(data.documents_uploaded)
+    }
+  } catch (err) {
+    console.error('Error fetching customer docs:', err)
   }
 }
 
-const viewDoc = (d) => alert(`"${d.title}" evrakı önizleniyor...`)
-const downloadDoc = (d) => alert(`"${d.title}" evrakı indiriliyor...`)
+const openUploadModal = (key = null) => {
+  if (key) {
+    selectedDocCategory.value = key
+  } else {
+    selectedDocCategory.value = 'tax_plate'
+  }
+  uploadFileName.value = ''
+  showUploadDocModal.value = true
+}
+
+const onDocFilePicked = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    uploadFileName.value = file.name
+  }
+}
+
+const saveCustomerDoc = async () => {
+  const customerId = localStorage.getItem('fleetcar_customer_id')
+  if (!customerId) {
+    alert('Müşteri oturumu bulunamadı. Lütfen tekrar giriş yapın.')
+    return
+  }
+
+  docSubmitting.value = true
+  const payload = {
+    customer_id: Number(customerId)
+  }
+  payload[selectedDocCategory.value] = uploadFileName.value || `${selectedDocCategory.value}_belge.pdf`
+
+  try {
+    const res = await fetch('/api/customer/documents', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+
+    if (res.ok) {
+      const data = await res.json()
+      customerDocs.value = data.customer?.documents || {}
+      documentsUploaded.value = Boolean(data.customer?.documents_uploaded)
+      showUploadDocModal.value = false
+      alert('Şirket evrakı başarıyla yüklendi!')
+    } else {
+      alert('Evrak yüklenirken bir sorun oluştu.')
+    }
+  } catch (err) {
+    console.error('Error saving customer doc:', err)
+    alert('Sunucuya bağlanılamadı.')
+  } finally {
+    docSubmitting.value = false
+  }
+}
+
+const deleteCustomerDoc = async (key) => {
+  const customerId = localStorage.getItem('fleetcar_customer_id')
+  if (!customerId) return
+
+  const catObj = docCategories.find(c => c.key === key)
+  const title = catObj ? catObj.title : key
+
+  if (!confirm(`"${title}" evrakını silmek istediğinize emin misiniz?`)) return
+
+  try {
+    const res = await fetch(`/api/customer/documents/${key}?customer_id=${customerId}`, {
+      method: 'DELETE'
+    })
+
+    if (res.ok) {
+      const data = await res.json()
+      customerDocs.value = data.customer?.documents || {}
+      documentsUploaded.value = Boolean(data.customer?.documents_uploaded)
+      alert(`"${title}" belgesi başarıyla silindi.`)
+    } else {
+      alert('Belge silinirken bir sorun oluştu.')
+    }
+  } catch (err) {
+    console.error('Error deleting doc:', err)
+    alert('Sunucuya bağlanılamadı.')
+  }
+}
+
+const viewCustomerDoc = (key) => {
+  const doc = customerDocs.value[key]
+  const catObj = docCategories.find(c => c.key === key)
+  if (doc) {
+    previewDocData.value = {
+      key,
+      title: catObj ? catObj.title : key,
+      file_name: doc.file_name,
+      uploaded_at: doc.uploaded_at,
+      status: doc.status
+    }
+    showPreviewModal.value = true
+  }
+}
+
+const downloadCustomerDoc = (key) => {
+  const doc = customerDocs.value[key]
+  const catObj = docCategories.find(c => c.key === key)
+  const filename = doc?.file_name || `${key}_belge.pdf`
+  
+  const content = `FleetCar Kurumsal Şirket Evrakı\nBelge Türü: ${catObj?.title || key}\nDosya Adı: ${filename}\nYüklenme Tarihi: ${doc?.uploaded_at || 'Bilinmiyor'}\nDurum: Onaylı`
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.setAttribute('download', filename)
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
+
+onMounted(() => {
+  fetchVehicles()
+  fetchCustomerDocs()
+})
 
 const getRoleBadgeClass = (role) => {
   switch (role) {
@@ -674,3 +866,4 @@ const getRoleBadgeClass = (role) => {
   }
 }
 </script>
+

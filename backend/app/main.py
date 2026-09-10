@@ -1,10 +1,11 @@
 import datetime
 from fastapi import FastAPI, HTTPException, Depends, status, Query
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
-from app.database import get_db
+from app.database import get_db, SessionLocal, engine
 from app import models
 from app.auth import verify_password, hash_password
 from app.email_utils import generate_invitation_token, send_supplier_invitation_email, APP_BASE_URL
@@ -17,7 +18,8 @@ from app.schemas import (
     VehicleRemoval, QuoteUpdate,
     CustomerCreate, CustomerUpdate, BidCreate, BidResponse,
     AdminLoginRequest, SetPasswordRequest,
-    ServiceCheckIn, ServiceWorkOrder, ServiceInvoice
+    ServiceCheckIn, ServiceWorkOrder, ServiceInvoice,
+    CustomerRegisterRequest, CustomerDocumentUpload
 )
 
 app = FastAPI(title="FleetCar API", version="2.0.0")
@@ -31,9 +33,24 @@ app.add_middleware(
 )
 
 
+def check_database_columns():
+    db = SessionLocal()
+    try:
+        res = db.execute(text("PRAGMA table_info(quotes);")).fetchall()
+        columns = [row[1] for row in res]
+        if "customer_id" not in columns:
+            db.execute(text("ALTER TABLE quotes ADD COLUMN customer_id INTEGER;"))
+            db.commit()
+    except Exception as e:
+        print("Column migration notice:", e)
+    finally:
+        db.close()
+
+
 @app.on_event("startup")
 def startup():
     create_tables()
+    check_database_columns()
     seed()
 
 
@@ -91,15 +108,45 @@ def vehicle_dict(v: models.Vehicle, db: Session = None) -> dict:
     return d
 
 
-def quote_dict(q: models.Quote) -> dict:
+def quote_dict(q: models.Quote, db: Session = None) -> dict:
+    bids_list = []
+    customer_info = None
+    if db:
+        bids = db.query(models.SupplierBid).filter(models.SupplierBid.quote_id == q.id).all()
+        bids_list = [bid_dict(b) for b in bids]
+        cid = getattr(q, 'customer_id', None)
+        if cid:
+            cust = db.query(models.Customer).filter(models.Customer.id == cid).first()
+            if cust:
+                customer_info = customer_dict(cust)
+        elif q.email:
+            cust = db.query(models.Customer).filter(models.Customer.email == q.email).first()
+            if cust:
+                customer_info = customer_dict(cust)
+
+    details = getattr(q, 'details', {}) or {}
+    if customer_info and 'customer_info' not in details:
+        details = {**details, "customer_info": customer_info}
+
     return {
-        "id": q.id, "company_name": q.company_name,
-        "email": q.email, "phone": q.phone,
-        "vehicle_count": q.vehicle_count, "duration_months": q.duration_months,
-        "vehicle_segment": q.vehicle_segment, "vehicle_type": q.vehicle_type,
+        "id": q.id,
+        "customer_id": getattr(q, 'customer_id', None),
+        "customer_info": customer_info,
+        "company_name": q.company_name,
+        "email": q.email,
+        "phone": q.phone,
+        "vehicle_count": q.vehicle_count,
+        "duration_months": q.duration_months,
+        "vehicle_segment": q.vehicle_segment,
+        "vehicle_type": q.vehicle_type,
         "estimated_annual_mileage": q.estimated_annual_mileage,
-        "monthly_price_try": q.monthly_price_try, "status": q.status,
-        "created_at": q.created_at, "contract_amount": q.contract_amount
+        "monthly_price_try": q.monthly_price_try,
+        "status": q.status,
+        "created_at": q.created_at,
+        "contract_amount": q.contract_amount,
+        "items": getattr(q, 'items', []) or [],
+        "bids": bids_list,
+        "details": details
     }
 
 
@@ -127,7 +174,9 @@ def customer_dict(c: models.Customer, actual: int = None, deficit: int = None) -
         "status": c.status, "address": c.address,
         "contract_amount": c.contract_amount, "signed_at": c.signed_at,
         "invitation_status": getattr(c, 'invitation_status', 'Davet Edilmedi') or 'Davet Edilmedi',
-        "has_password": bool(getattr(c, 'password_hash', None))
+        "has_password": bool(getattr(c, 'password_hash', None)),
+        "documents_uploaded": getattr(c, 'documents_uploaded', False) or False,
+        "documents": getattr(c, 'documents', {}) or {}
     }
     if actual is not None:
         d["actual_vehicle_count"] = actual
@@ -139,58 +188,111 @@ def customer_dict(c: models.Customer, actual: int = None, deficit: int = None) -
 
 @app.get("/api/quotes", response_model=List[QuoteResponse])
 def get_quotes(db: Session = Depends(get_db)):
-    return [quote_dict(q) for q in db.query(models.Quote).all()]
+    return [quote_dict(q, db) for q in db.query(models.Quote).all()]
 
 
 @app.post("/api/quotes", response_model=QuoteResponse)
 def create_quote(quote: QuoteCreate, db: Session = Depends(get_db)):
-    q = models.Quote(
-        company_name=quote.company_name, email=quote.email, phone=quote.phone,
-        vehicle_count=quote.vehicle_count, duration_months=quote.duration_months,
-        vehicle_segment=quote.vehicle_segment, vehicle_type=quote.vehicle_type,
-        estimated_annual_mileage=quote.estimated_annual_mileage,
-        monthly_price_try=calculate_quote_price(quote),
-        status="Teklif Verildi", created_at=now_str()
-    )
+    cust_id = None
+    cust_info = {}
+    if quote.email:
+        cust = db.query(models.Customer).filter(models.Customer.email == quote.email).first()
+        if cust:
+            if not getattr(cust, 'documents_uploaded', False):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Kiralama teklif talebi oluşturabilmek için şirket evraklarınızı (Vergi Levhası, İmza Sirküsü, Faaliyet Belgesi) yüklemeniz zorunludur."
+                )
+            cust_id = cust.id
+            cust_info = {
+                "id": cust.id,
+                "company_name": cust.company_name,
+                "email": cust.email,
+                "phone": cust.phone,
+                "legal_title": cust.legal_title or cust.company_name,
+                "address": cust.address or "-",
+                "documents_uploaded": getattr(cust, 'documents_uploaded', False)
+            }
+
+    details_dict = quote.details or {}
+    if cust_info:
+        details_dict["customer_info"] = cust_info
+
+    items_list = []
+    if quote.items:
+        items_list = [item.dict() for item in quote.items]
+
+    if items_list:
+        total_price = 0
+        total_count = 0
+        for item in items_list:
+            base = 12000
+            seg  = {"A": 0.70, "B": 0.85, "C": 1.0, "D": 1.30, "E": 1.70}.get(item["vehicle_segment"], 1.0)
+            typ  = {"Sedan": 1.0, "SUV": 1.20, "Hatchback": 0.95, "Hafif Ticari": 1.15, "Station Wagon": 1.05}.get(item["vehicle_type"], 1.0)
+            dur  = {12: 1.0, 24: 0.90, 36: 0.82, 48: 0.75}.get(item["duration_months"], 0.90)
+            km   = {10000: 0.95, 20000: 1.0, 30000: 1.12, 40000: 1.25, 50000: 1.40}.get(item["estimated_annual_mileage"], 1.0)
+            item_price = int(base * seg * typ * dur * km * item["vehicle_count"])
+            item["monthly_price_try"] = item_price
+            total_price += item_price
+            total_count += item["vehicle_count"]
+
+        first_item = items_list[0]
+        v_segment = first_item["vehicle_segment"] if len(items_list) == 1 else f"Çoklu ({len(items_list)} Grup)"
+        v_type = first_item["vehicle_type"] if len(items_list) == 1 else "Çoklu Gövde Tipi"
+        v_duration = first_item["duration_months"] if len(items_list) == 1 else items_list[0]["duration_months"]
+        v_km = first_item["estimated_annual_mileage"] if len(items_list) == 1 else items_list[0]["estimated_annual_mileage"]
+
+        q = models.Quote(
+            customer_id=cust_id,
+            company_name=quote.company_name, email=quote.email, phone=quote.phone,
+            vehicle_count=total_count, duration_months=v_duration,
+            vehicle_segment=v_segment, vehicle_type=v_type,
+            estimated_annual_mileage=v_km,
+            monthly_price_try=total_price,
+            items=items_list,
+            details=details_dict,
+            status="Teklif Bekleniyor", created_at=now_str()
+        )
+    else:
+        q = models.Quote(
+            customer_id=cust_id,
+            company_name=quote.company_name, email=quote.email, phone=quote.phone,
+            vehicle_count=quote.vehicle_count or 1, duration_months=quote.duration_months or 12,
+            vehicle_segment=quote.vehicle_segment or "C", vehicle_type=quote.vehicle_type or "Sedan",
+            estimated_annual_mileage=quote.estimated_annual_mileage or 20000,
+            monthly_price_try=calculate_quote_price(quote),
+            items=[],
+            details=details_dict,
+            status="Teklif Bekleniyor", created_at=now_str()
+        )
     db.add(q); db.commit(); db.refresh(q)
-    return quote_dict(q)
+    return quote_dict(q, db)
 
 
+@app.delete("/api/quotes/{quote_id}")
 @app.put("/api/quotes/{quote_id}/status")
-def update_quote_status(quote_id: int, status_update: StatusUpdate, db: Session = Depends(get_db)):
+def update_quote_status(quote_id: int, status_update: Optional[StatusUpdate] = None, db: Session = Depends(get_db)):
     q = db.query(models.Quote).filter(models.Quote.id == quote_id).first()
     if not q:
         raise HTTPException(status_code=404, detail="Quote not found")
 
-    q.status = status_update.status
+    new_status = status_update.status if status_update else "İstek Silindi"
+    q.status = new_status
 
-    if status_update.status == "Sözleşme İmzalandı":
+    if new_status == "Sözleşme İmzalandı" and status_update:
         amount = status_update.contract_amount or q.monthly_price_try
         q.contract_amount = amount
 
         existing = db.query(models.Customer).filter(
-            models.Customer.company_name.ilike(q.company_name)
+            models.Customer.company_name.ilike(q.company_name) | (models.Customer.email == q.email)
         ).first()
 
-        if not existing:
-            legal = (f"{q.company_name} Anonim Şirketi"
-                     if any(w in q.company_name.lower() for w in ["holding", "a.ş."])
-                     else f"{q.company_name} Limited Şirketi")
-            c = models.Customer(
-                company_name=q.company_name, legal_title=legal,
-                email=q.email, phone=q.phone,
-                registered_vehicles_count=q.vehicle_count,
-                status="Aktif",
-                address="Maslak Plazalar, Şişli, İstanbul",
-                contract_amount=amount, signed_at=now_str()
-            )
-            db.add(c)
-        else:
-            existing.registered_vehicles_count += q.vehicle_count
+        if existing:
+            existing.registered_vehicles_count = (existing.registered_vehicles_count or 0) + (q.vehicle_count or 1)
             existing.contract_amount = (existing.contract_amount or 0) + amount
 
     db.commit()
-    return quote_dict(q)
+    return quote_dict(q, db)
 
 
 @app.put("/api/quotes/{quote_id}", response_model=QuoteResponse)
@@ -253,15 +355,29 @@ def update_bid_status(bid_id: int, status_update: StatusUpdate, db: Session = De
     b = db.query(models.SupplierBid).filter(models.SupplierBid.id == bid_id).first()
     if not b: raise HTTPException(status_code=404, detail="Bid not found")
 
-    b.status = status_update.status
-
-    if status_update.status == "Kabul Edildi":
+    new_st = status_update.status
+    if new_st in ["Kabul Edildi", "Onaylandı"]:
+        b.status = "Onaylandı"
         db.query(models.SupplierBid).filter(
             models.SupplierBid.quote_id == b.quote_id,
             models.SupplierBid.id != bid_id
         ).update({"status": "Reddedildi"})
+        
         q = db.query(models.Quote).filter(models.Quote.id == b.quote_id).first()
-        if q: q.monthly_price_try = b.monthly_price_try
+        if q:
+            q.monthly_price_try = b.monthly_price_try
+            q.contract_amount = b.monthly_price_try
+            q.status = "Sözleşme İmzalandı"
+
+            c = db.query(models.Customer).filter(
+                models.Customer.company_name.ilike(q.company_name) | (models.Customer.email == q.email)
+            ).first()
+            if c:
+                c.registered_vehicles_count = (c.registered_vehicles_count or 0) + (q.vehicle_count or 1)
+                c.contract_amount = (c.contract_amount or 0) + b.monthly_price_try
+                c.signed_at = now_str()
+    else:
+        b.status = new_st
 
     db.commit(); db.refresh(b)
     return bid_dict(b)
@@ -570,6 +686,140 @@ def customer_login(creds: AdminLoginRequest, db: Session = Depends(get_db)):
     }
 
 
+@app.post("/api/customer/register")
+def customer_register(req: CustomerRegisterRequest, db: Session = Depends(get_db)):
+    email_clean = req.email.lower().strip()
+    if len(req.password) < 6:
+        raise HTTPException(status_code=400, detail="Şifre en az 6 karakter olmalıdır.")
+
+    existing = db.query(models.Customer).filter(models.Customer.email.ilike(email_clean)).first()
+    if existing:
+        if existing.password_hash:
+            raise HTTPException(
+                status_code=400,
+                detail="Bu e-posta adresi ile zaten kayıtlı bir müşteri bulunuyor. Lütfen giriş yapın."
+            )
+        else:
+            existing.password_hash = hash_password(req.password)
+            if req.company_name:
+                existing.company_name = req.company_name
+            if req.phone:
+                existing.phone = req.phone
+            existing.invitation_status = "Aktif"
+            db.commit()
+            c = existing
+    else:
+        company_name = req.company_name.strip() if req.company_name else email_clean.split("@")[0].capitalize() + " A.Ş."
+        c = models.Customer(
+            company_name=company_name,
+            legal_title=company_name + " Anonim Şirketi",
+            email=email_clean,
+            phone=req.phone or "",
+            password_hash=hash_password(req.password),
+            status="Aktif",
+            invitation_status="Aktif",
+            address="Maslak, İstanbul",
+            documents_uploaded=False,
+            documents={}
+        )
+        db.add(c)
+        db.commit()
+        db.refresh(c)
+
+    return {
+        "status": "success",
+        "message": "Hesabınız başarıyla oluşturuldu!",
+        "token": f"customer_token_{c.id}_{datetime.datetime.now().timestamp()}",
+        "customer": customer_dict(c)
+    }
+
+
+@app.post("/api/customer/documents")
+def upload_customer_documents(payload: CustomerDocumentUpload, db: Session = Depends(get_db)):
+    if not payload.customer_id:
+        raise HTTPException(status_code=400, detail="Müşteri ID gereklidir.")
+
+    c = db.query(models.Customer).filter(models.Customer.id == payload.customer_id).first()
+    if not c:
+        raise HTTPException(status_code=404, detail="Müşteri bulunamadı.")
+
+    current_docs = dict(c.documents or {})
+    timestamp_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+
+    if payload.tax_plate:
+        current_docs["tax_plate"] = {
+            "file_name": payload.tax_plate,
+            "uploaded_at": timestamp_str,
+            "status": "Onaylandı"
+        }
+    if payload.signature_circular:
+        current_docs["signature_circular"] = {
+            "file_name": payload.signature_circular,
+            "uploaded_at": timestamp_str,
+            "status": "Onaylandı"
+        }
+    if payload.activity_certificate:
+        current_docs["activity_certificate"] = {
+            "file_name": payload.activity_certificate,
+            "uploaded_at": timestamp_str,
+            "status": "Onaylandı"
+        }
+    if payload.trade_registry:
+        current_docs["trade_registry"] = {
+            "file_name": payload.trade_registry,
+            "uploaded_at": timestamp_str,
+            "status": "Onaylandı"
+        }
+
+    c.documents = dict(current_docs)
+    required_keys = ["tax_plate", "signature_circular", "activity_certificate", "trade_registry"]
+    c.documents_uploaded = all(k in c.documents for k in required_keys)
+
+    db.commit()
+    return {
+        "status": "success",
+        "message": "Şirket evrakları başarıyla kaydedildi.",
+        "customer": customer_dict(c)
+    }
+
+
+@app.get("/api/customer/documents")
+def get_customer_documents(customer_id: int, db: Session = Depends(get_db)):
+    c = db.query(models.Customer).filter(models.Customer.id == customer_id).first()
+    if not c:
+        raise HTTPException(status_code=404, detail="Müşteri bulunamadı.")
+    return {
+        "documents_uploaded": bool(c.documents_uploaded),
+        "documents": c.documents or {}
+    }
+
+
+@app.delete("/api/customer/documents/{doc_type}")
+def delete_customer_document(doc_type: str, customer_id: int, db: Session = Depends(get_db)):
+    c = db.query(models.Customer).filter(models.Customer.id == customer_id).first()
+    if not c:
+        raise HTTPException(status_code=404, detail="Müşteri bulunamadı.")
+
+    current_docs = dict(c.documents or {})
+    if doc_type in current_docs:
+        del current_docs[doc_type]
+        c.documents = dict(current_docs)
+        
+        required_keys = ["tax_plate", "signature_circular", "activity_certificate", "trade_registry"]
+        c.documents_uploaded = all(k in c.documents for k in required_keys)
+
+        db.commit()
+
+        return {
+            "status": "success",
+            "message": "Belge başarıyla silindi.",
+            "customer": customer_dict(c)
+        }
+    else:
+        raise HTTPException(status_code=404, detail="Belge bulunamadı.")
+
+
+
 @app.delete("/api/admin/suppliers/{supplier_id}")
 def delete_supplier(supplier_id: int, db: Session = Depends(get_db)):
     s = db.query(models.Supplier).filter(models.Supplier.id == supplier_id).first()
@@ -770,7 +1020,9 @@ def get_company_profile(customer_id: Optional[int] = None, db: Session = Depends
             "actual_vehicles_count": active_count,
             "email": c.email or "-",
             "phone": c.phone or "-",
-            "address": c.address or "-"
+            "address": c.address or "-",
+            "documents_uploaded": getattr(c, 'documents_uploaded', False) or False,
+            "documents": getattr(c, 'documents', {}) or {}
         }
     return {
         "id": 0,

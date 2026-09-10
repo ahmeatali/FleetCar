@@ -6,8 +6,29 @@
 
     <!-- Main Content Area -->
     <main class="portal-main fade-in-up">
+      <!-- ⚠️ Mandatory Company Documents Warning Banner -->
+      <div v-if="documentsUploaded === false" style="background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border: 2px solid #f97316; border-radius: 16px; padding: 18px 24px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 25px -5px rgba(249, 115, 22, 0.15);">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <div style="width: 44px; height: 44px; border-radius: 12px; background: #ea580c; color: #ffffff; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            ⚠️
+          </div>
+          <div>
+            <h3 style="font-size: 1.05rem; font-weight: 800; color: #c2410c; margin-bottom: 4px;">
+              İşlem Yapmadan Önce Şirket Evraklarınızı Tamamlayın!
+            </h3>
+            <p style="color: #9a3412; font-size: 0.88rem; line-height: 1.4; margin: 0;">
+              Teklif alabilmek ve operasyonel işlemleri tamamlayabilmek için şirket evraklarınızı (Vergi Levhası, İmza Sirküsü, Faaliyet Belgesi) yüklemeniz gerekmektedir.
+            </p>
+          </div>
+        </div>
+        <router-link to="/dashboard/settings?tab=sirket_evraklari" class="btn" style="background: #ea580c; color: #ffffff; font-weight: 700; padding: 12px 20px; border-radius: 10px; text-decoration: none; white-space: nowrap; font-size: 0.9rem; flex-shrink: 0; box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25);">
+          📂 Evrakları Tamamla ➔
+        </router-link>
+      </div>
+
       <!-- 🚨 Red Emergency Roadside Banner (From Screenshot) -->
       <div class="emergency-banner">
+
         <div class="emergency-banner-left">
           <div style="font-size: 1.6rem;">🚨</div>
           <div>
@@ -446,17 +467,31 @@ import Sidebar from '../components/Sidebar.vue'
 const stats = ref({})
 const requests = ref([])
 const loading = ref(true)
+const documentsUploaded = ref(true)
 const currentDate = ref(new Date().toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }))
 
 const fetchDashboardData = async () => {
   const customerId = localStorage.getItem('fleetcar_customer_id') || localStorage.getItem('customer_id')
   const statsUrl = customerId ? `/api/dashboard/stats?customer_id=${customerId}` : '/api/dashboard/stats'
   
+  if (customerId) {
+    try {
+      const docRes = await fetch(`/api/customer/documents?customer_id=${customerId}`)
+      if (docRes.ok) {
+        const docData = await docRes.json()
+        documentsUploaded.value = Boolean(docData.documents_uploaded)
+      }
+    } catch (e) {
+      console.error('Doc check error:', e)
+    }
+  }
+
   try {
     const [statsRes, reqsRes] = await Promise.all([
       fetch(statsUrl),
       fetch('/api/requests')
     ])
+
     
     if (statsRes.ok && reqsRes.ok) {
       stats.value = await statsRes.json()

@@ -90,6 +90,69 @@
             </div>
           </div>
         </div>
+
+        <!-- Full Width Bottom Side: Şirket Evrakları -->
+        <div class="glass-panel profile-card" style="grid-column: span 2;">
+          <div class="card-title" style="justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span class="card-icon">📂</span>
+              <h3>Kurumsal Şirket Evrakları</h3>
+            </div>
+            <span v-if="profile.documents_uploaded" style="background: #dcfce7; color: #15803d; font-size: 0.82rem; font-weight: 700; padding: 4px 12px; border-radius: 20px;">
+              ✓ Evraklar Onaylı
+            </span>
+            <span v-else style="background: #fef3c7; color: #b45309; font-size: 0.82rem; font-weight: 700; padding: 4px 12px; border-radius: 20px;">
+              ⚠️ Evrak Bekleniyor
+            </span>
+          </div>
+          <div class="divider"></div>
+
+          <div class="grid-4" style="gap: 20px;">
+            <!-- Vergi Levhası -->
+            <div class="user-info-box" style="position: relative;">
+              <span class="info-label">📄 Vergi Levhası</span>
+              <strong class="info-val" style="font-size: 0.9rem;">
+                {{ profile.documents?.tax_plate?.file_name || 'Yüklenmedi' }}
+              </strong>
+              <span style="font-size: 0.75rem; color: #64748b;" v-if="profile.documents?.tax_plate?.uploaded_at">
+                Tarih: {{ profile.documents.tax_plate.uploaded_at }}
+              </span>
+            </div>
+
+            <!-- İmza Sirküsü -->
+            <div class="user-info-box" style="position: relative;">
+              <span class="info-label">✒️ İmza Sirküsü</span>
+              <strong class="info-val" style="font-size: 0.9rem;">
+                {{ profile.documents?.signature_circular?.file_name || 'Yüklenmedi' }}
+              </strong>
+              <span style="font-size: 0.75rem; color: #64748b;" v-if="profile.documents?.signature_circular?.uploaded_at">
+                Tarih: {{ profile.documents.signature_circular.uploaded_at }}
+              </span>
+            </div>
+
+            <!-- Faaliyet Belgesi -->
+            <div class="user-info-box" style="position: relative;">
+              <span class="info-label">🏛️ Faaliyet Belgesi</span>
+              <strong class="info-val" style="font-size: 0.9rem;">
+                {{ profile.documents?.activity_certificate?.file_name || 'Yüklenmedi' }}
+              </strong>
+              <span style="font-size: 0.75rem; color: #64748b;" v-if="profile.documents?.activity_certificate?.uploaded_at">
+                Tarih: {{ profile.documents.activity_certificate.uploaded_at }}
+              </span>
+            </div>
+
+            <!-- Ticaret Sicil Gazetesi -->
+            <div class="user-info-box" style="position: relative;">
+              <span class="info-label">📜 Ticaret Sicil Gazetesi</span>
+              <strong class="info-val" style="font-size: 0.9rem;">
+                {{ profile.documents?.trade_registry?.file_name || 'Yüklenmedi' }}
+              </strong>
+              <span style="font-size: 0.75rem; color: #64748b;" v-if="profile.documents?.trade_registry?.uploaded_at">
+                Tarih: {{ profile.documents.trade_registry.uploaded_at }}
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
   </div>
