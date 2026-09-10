@@ -1789,7 +1789,7 @@ const copyInviteUrl = () => {
 }
 
 const whatsappShareUrl = computed(() => {
-  const text = `Merhaba ${inviteResult.supplier_name},\n\nFleetCar Filo Yönetim Portalı davetiyeniz hazırlandı. Aşağıdaki bağlantıya tıklayarak şifrenizi belirleyebilirsiniz:\n\n${inviteResult.invite_url}`
+  const text = `Merhaba ${inviteResult.supplier_name},\n\nFleetRent Filo Yönetim Portalı davetiyeniz hazırlandı. Aşağıdaki bağlantıya tıklayarak şifrenizi belirleyebilirsiniz:\n\n${inviteResult.invite_url}`
   return `https://wa.me/?text=${encodeURIComponent(text)}`
 })
 

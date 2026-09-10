@@ -9,7 +9,7 @@
           {{ isServiceAccount ? '🔧' : 'F' }}
         </div>
         <div>
-          <span class="portal-title">FleetCar <span :class="isServiceAccount ? 'tag-service' : 'tag-supplier'">{{ isServiceAccount ? 'Servis Portalı' : 'Tedarikçi Portalı' }}</span></span>
+          <span class="portal-title">FleetRent <span :class="isServiceAccount ? 'tag-service' : 'tag-supplier'">{{ isServiceAccount ? 'Servis Portalı' : 'Tedarikçi Portalı' }}</span></span>
           <h2 class="supplier-name-display">{{ supplierName }}</h2>
         </div>
       </div>

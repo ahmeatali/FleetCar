@@ -22,7 +22,7 @@ from app.schemas import (
     CustomerRegisterRequest, CustomerDocumentUpload
 )
 
-app = FastAPI(title="FleetCar API", version="2.0.0")
+app = FastAPI(title="FleetRent API", version="2.0.0")
 
 app.add_middleware(
     CORSMiddleware,

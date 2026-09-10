@@ -4,7 +4,7 @@
     <header class="hero-dark-bg" style="padding: 16px 8%; text-align: left; height: 60px; display: flex; align-items: center;">
       <router-link to="/" class="nav-logo" style="text-decoration: none;">
         <div class="nav-logo-icon" style="background: linear-gradient(135deg, #7c3aed, #db2777); border-radius: 8px;">F</div>
-        <span style="font-weight: 800; font-size: 1.4rem; color: #ffffff;">FleetCar <span style="color: #c084fc; font-size: 0.85rem; font-weight: 600;">Tedarikçi & Servis Portalı</span></span>
+        <span style="font-weight: 800; font-size: 1.4rem; color: #ffffff;">FleetRent <span style="color: #c084fc; font-size: 0.85rem; font-weight: 600;">Tedarikçi & Servis Portalı</span></span>
       </router-link>
     </header>
 
@@ -52,7 +52,7 @@
       <div v-else class="glass-panel auth-card fade-in-up" style="max-width: 480px; width: 100%; padding: 40px; background: #ffffff; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
         <div class="nav-logo" style="justify-content: center; margin-bottom: 20px;">
           <div class="nav-logo-icon" style="background: linear-gradient(135deg, #7c3aed, #db2777); border-radius: 8px;">F</div>
-          <span style="font-size: 1.6rem; font-weight: 800; color: #0f172a;">FleetCar</span>
+          <span style="font-size: 1.6rem; font-weight: 800; color: #0f172a;">FleetRent</span>
         </div>
 
         <div style="background: rgba(124, 58, 237, 0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(124, 58, 237, 0.15); margin-bottom: 25px; text-align: center;">

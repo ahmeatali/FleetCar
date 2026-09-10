@@ -4,7 +4,7 @@
     <div class="glass-panel auth-card fade-in-up">
       <router-link to="/" class="nav-logo" style="justify-content: center; margin-bottom: 30px;">
         <div class="nav-logo-icon" style="background: linear-gradient(135deg, #7c3aed, #db2777);">F</div>
-        <span style="font-size: 1.6rem; font-weight: 800;">FleetCar <span style="color: #7c3aed; font-size: 0.9rem; vertical-align: super; font-weight: 500;">Yönetici</span></span>
+        <span style="font-size: 1.6rem; font-weight: 800;">FleetRent <span style="color: #7c3aed; font-size: 0.9rem; vertical-align: super; font-weight: 500;">Yönetici</span></span>
       </router-link>
 
       <h2 style="font-size: 1.5rem; text-align: center; margin-bottom: 8px;">Yönetici Girişi</h2>
@@ -23,7 +23,7 @@
             autocomplete="username"
             required 
             class="form-input" 
-            placeholder="admin@fleetcar.com"
+            placeholder="admin@fleetrent.com"
           >
         </div>
 

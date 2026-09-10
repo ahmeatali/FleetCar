@@ -32,7 +32,7 @@ def send_supplier_invitation_email(recipient_email: str, supplier_name: str, tok
 
     is_smtp_configured = bool(smtp_host and smtp_user and smtp_pass)
 
-    subject = f"FleetCar — {supplier_name} Portal Davetiyeniz"
+    subject = f"FleetRent — {supplier_name} Portal Davetiyeniz"
     html_body = f"""
     <!DOCTYPE html>
     <html>
@@ -50,12 +50,12 @@ def send_supplier_invitation_email(recipient_email: str, supplier_name: str, tok
     <body>
         <div class="container">
             <div class="header">
-                <h1 style="margin:0; font-size: 24px;">FleetCar Yönetici Portalı</h1>
+                <h1 style="margin:0; font-size: 24px;">FleetRent Yönetici Portalı</h1>
                 <p style="margin: 5px 0 0 0; opacity: 0.9;">Tedarikçi & Servis Davetiyesi</p>
             </div>
             <div class="content">
                 <h2>Merhaba {supplier_name},</h2>
-                <p>FleetCar Filo Yönetim Platformu'nda şirketiniz adına bir tedarikçi/servis hesabı oluşturuldu.</p>
+                <p>FleetRent Filo Yönetim Platformu'nda şirketiniz adına bir tedarikçi/servis hesabı oluşturuldu.</p>
                 <p>Tedarikçi portalına giriş yapabilmek ve hesabınızı aktifleştirmek için lütfen aşağıdaki butona tıklayarak şifrenizi belirleyin:</p>
                 <div style="text-align: center;">
                     <a href="{invite_url}" class="btn">Şifremi Oluştur ve Giriş Yap ➔</a>
@@ -66,7 +66,7 @@ def send_supplier_invitation_email(recipient_email: str, supplier_name: str, tok
                 </p>
             </div>
             <div class="footer">
-                © 2026 FleetCar Filo Yönetim Hizmetleri A.Ş. — Tüm hakları saklıdır.
+                © 2026 FleetRent Filo Yönetim Hizmetleri A.Ş. — Tüm hakları saklıdır.
             </div>
         </div>
     </body>

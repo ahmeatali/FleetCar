@@ -2,7 +2,7 @@
   <aside class="portal-sidebar">
     <router-link to="/dashboard" class="nav-logo" style="margin-bottom: 20px;">
       <div class="nav-logo-icon">F</div>
-      <span>FleetCar</span>
+      <span>FleetRent</span>
     </router-link>
 
     <!-- User profile summary -->

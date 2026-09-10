@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-FleetCar — Admin Kullanıcısı Oluşturma Scripti
+FleetRent — Admin Kullanıcısı Oluşturma Scripti
 Kullanımı:
-  python create_admin.py --email admin@fleetcar.com --password secretpassword
+  python create_admin.py --email admin@fleetrent.com --password secretpassword
 """
 
 import sys
@@ -23,7 +23,7 @@ from app import models
 from app.auth import hash_password
 
 def main():
-    parser = argparse.ArgumentParser(description="FleetCar Yonetici Hesabi Olusturucu")
+    parser = argparse.ArgumentParser(description="FleetRent Yonetici Hesabi Olusturucu")
     parser.add_argument("--email", help="Yonetici E-posta Adresi")
     parser.add_argument("--password", help="Yonetici Sifresi")
 
