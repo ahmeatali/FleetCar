@@ -29,7 +29,21 @@ if [ -z "$SMTP_HOST" ] || [ -z "$SMTP_USER" ] || [ -z "$SMTP_PASS" ]; then
 fi
 
 echo ""
-echo "[1/2] Çevre değişkenleri $SERVICE_FILE dosyasına ekleniyor..."
+echo "[1/3] backend/.env dosyasına yapılandırma yazılıyor..."
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ENV_FILE="$SCRIPT_DIR/backend/.env"
+
+cat > "$ENV_FILE" << ENV
+SMTP_HOST=$SMTP_HOST
+SMTP_PORT=$SMTP_PORT
+SMTP_USER=$SMTP_USER
+SMTP_PASS=$SMTP_PASS
+SMTP_FROM=$SMTP_FROM
+APP_BASE_URL=https://fleetrent.com.tr
+ENV
+chmod 600 "$ENV_FILE"
+
+echo "[2/3] Çevre değişkenleri $SERVICE_FILE dosyasına ekleniyor..."
 
 cat > /etc/systemd/system/fleetcar-backend.service << SERVICE
 [Unit]
@@ -53,9 +67,11 @@ Restart=always
 WantedBy=multi-user.target
 SERVICE
 
-echo "[2/2] Systemd servisleri güncelleniyor ve backend yeniden başlatılıyor..."
-systemctl daemon-reload
-systemctl restart fleetcar-backend
+echo "[3/3] Systemd servisleri güncelleniyor ve backend yeniden başlatılıyor (eğer sunucudaysa)..."
+if command -v systemctl >/dev/null 2>&1; then
+    systemctl daemon-reload || true
+    systemctl restart fleetcar-backend || true
+fi
 
 echo ""
 echo "=================================================="

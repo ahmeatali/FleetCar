@@ -563,13 +563,17 @@ def send_supplier_invite(supplier_id: int, db: Session = Depends(get_db)):
 @app.get("/api/admin/smtp-status")
 def get_smtp_status():
     import os
+    from app.email_utils import _load_env_file
+    _load_env_file()
     smtp_host = os.environ.get("SMTP_HOST", "").strip()
     smtp_user = os.environ.get("SMTP_USER", "").strip()
+    smtp_from = os.environ.get("SMTP_FROM", "").strip()
     is_configured = bool(smtp_host and smtp_user)
     return {
         "configured": is_configured,
         "smtp_host": smtp_host or "Tanımlanmamış",
-        "smtp_user": smtp_user or "Tanımlanmamış"
+        "smtp_user": smtp_user or "Tanımlanmamış",
+        "smtp_from": smtp_from or smtp_user or "Tanımlanmamış"
     }
 
 

@@ -1,15 +1,31 @@
 import os
 import smtplib
 import secrets
+from pathlib import Path
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-SMTP_HOST = os.environ.get("SMTP_HOST", "")
-SMTP_PORT = int(os.environ.get("SMTP_PORT", 587))
-SMTP_USER = os.environ.get("SMTP_USER", "")
-SMTP_PASS = os.environ.get("SMTP_PASS", "")
-SMTP_FROM = os.environ.get("SMTP_FROM", "noreply@fleetrent.com.tr")
-APP_BASE_URL = os.environ.get("APP_BASE_URL", "https://fleetrent.com.tr")
+
+def _load_env_file():
+    """Load backend/.env variables into os.environ if present."""
+    env_path = Path(__file__).resolve().parent.parent / ".env"
+    if env_path.exists():
+        try:
+            with open(env_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#") and "=" in line:
+                        k, v = line.split("=", 1)
+                        k = k.strip()
+                        v = v.strip().strip('"').strip("'")
+                        if k:
+                            os.environ[k] = v
+        except Exception:
+            pass
+
+
+_load_env_file()
+
 
 
 def generate_invitation_token() -> str:
@@ -22,7 +38,9 @@ def send_supplier_invitation_email(recipient_email: str, supplier_name: str, tok
     Sends an invitation email to a supplier with a password setup link.
     Returns a dictionary with delivery status, SMTP configuration flag, and invite_url.
     """
-    invite_url = f"{APP_BASE_URL}/setup-password?token={token}"
+    _load_env_file()
+    app_base_url = os.environ.get("APP_BASE_URL", "https://fleetrent.com.tr").rstrip("/")
+    invite_url = f"{app_base_url}/setup-password?token={token}"
 
     smtp_host = os.environ.get("SMTP_HOST", "").strip()
     smtp_user = os.environ.get("SMTP_USER", "").strip()
