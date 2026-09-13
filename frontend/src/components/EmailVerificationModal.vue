@@ -23,6 +23,13 @@
         ❌ {{ errMsg }}
       </div>
 
+      <div v-if="verifyUrl" class="direct-link-box" style="margin-bottom: 20px; background: #eff6ff; border: 1px solid #bfdbfe; padding: 12px; border-radius: 12px; text-align: center;">
+        <p style="font-size: 0.82rem; color: #1e40af; margin-bottom: 6px; font-weight: 600;">E-posta beklemek istemiyorsanız doğrudan aşağıdaki butonla doğrulayabilirsiniz:</p>
+        <a :href="verifyUrl" class="btn btn-primary" style="display: block; text-decoration: none; padding: 10px; font-size: 0.88rem; font-weight: 700;">
+          ⚡ Hemen Doğrula ve Devam Et ➔
+        </a>
+      </div>
+
       <div class="action-buttons">
         <button @click="handleResendEmail" class="btn btn-primary" :disabled="loading">
           {{ loading ? 'Gönderiliyor...' : 'Doğrulama E-postasını Tekrar Gönder' }}
@@ -51,6 +58,7 @@ const userEmail = ref('')
 const loading = ref(false)
 const successMsg = ref('')
 const errMsg = ref('')
+const verifyUrl = ref('')
 
 const checkVerificationStatus = () => {
   // Exclude auth/public routes from blocking modal
@@ -117,6 +125,9 @@ const handleResendEmail = async () => {
     const data = await res.json()
     if (res.ok) {
       successMsg.value = data.message || 'Doğrulama e-postası başarıyla gönderildi!'
+      if (data.verify_url) {
+        verifyUrl.value = data.verify_url
+      }
     } else {
       errMsg.value = data.detail || 'E-posta gönderilirken bir hata oluştu.'
     }

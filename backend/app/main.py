@@ -848,8 +848,10 @@ def resend_verification_email(req: ResendVerificationRequest, db: Session = Depe
         res = send_email_verification_email(c.email, c.company_name, v_token)
         return {
             "status": "success",
-            "message": f"Doğrulama bağlantısı [{c.email}] adresine yeniden gönderildi.",
-            "email_sent": res.get("email_sent", False)
+            "message": f"Doğrulama bağlantısı [{c.email}] adresine gönderildi." if res.get("email_sent") else res.get("message", "E-posta gönderilemedi."),
+            "email_sent": res.get("email_sent", False),
+            "smtp_configured": res.get("smtp_configured", False),
+            "verify_url": res.get("verify_url")
         }
 
     # 2. Supplier
@@ -864,8 +866,10 @@ def resend_verification_email(req: ResendVerificationRequest, db: Session = Depe
         res = send_email_verification_email(s.email, s.name, v_token)
         return {
             "status": "success",
-            "message": f"Doğrulama bağlantısı [{s.email}] adresine yeniden gönderildi.",
-            "email_sent": res.get("email_sent", False)
+            "message": f"Doğrulama bağlantısı [{s.email}] adresine gönderildi." if res.get("email_sent") else res.get("message", "E-posta gönderilemedi."),
+            "email_sent": res.get("email_sent", False),
+            "smtp_configured": res.get("smtp_configured", False),
+            "verify_url": res.get("verify_url")
         }
 
     raise HTTPException(status_code=404, detail="Kayıtlı e-posta adresi bulunamadı.")
