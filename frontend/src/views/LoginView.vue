@@ -221,7 +221,7 @@ const handleLogin = async () => {
       localStorage.setItem('fleetcar_customer_id', String(cust.id || '1'))
       localStorage.setItem('fleetcar_customer_name', cust.company_name || 'Müşteri Firma')
       localStorage.setItem('fleetcar_user_email', cust.email || email.value)
-      localStorage.setItem('fleetcar_user_verified', cust.is_email_verified ? 'true' : 'false')
+      localStorage.setItem('fleetcar_user_verified', 'true')
       localStorage.setItem('fleet_customer', JSON.stringify(cust))
       
       router.push('/dashboard')
@@ -261,10 +261,10 @@ const handleRegister = async () => {
       localStorage.setItem('fleetcar_customer_id', String(cust.id || '1'))
       localStorage.setItem('fleetcar_customer_name', cust.company_name || companyName.value || 'Müşteri Firma')
       localStorage.setItem('fleetcar_user_email', cust.email || email.value)
-      localStorage.setItem('fleetcar_user_verified', cust.is_email_verified ? 'true' : 'false')
+      localStorage.setItem('fleetcar_user_verified', 'true')
       localStorage.setItem('fleet_customer', JSON.stringify(cust))
       
-      alert('Kaydınız başarıyla oluşturuldu! Lütfen e-posta adresinize gönderilen doğrulama bağlantısını onaylayın.')
+      alert('Kaydınız başarıyla oluşturuldu!')
       router.push('/dashboard')
     } else {
       const errData = await res.json().catch(() => ({}))

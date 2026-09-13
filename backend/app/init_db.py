@@ -29,7 +29,8 @@ def create_tables():
                 if "invitation_status" not in columns:
                     conn.execute(text("ALTER TABLE suppliers ADD COLUMN invitation_status VARCHAR DEFAULT 'Davet Edilmedi';"))
                 if "is_email_verified" not in columns:
-                    conn.execute(text("ALTER TABLE suppliers ADD COLUMN is_email_verified BOOLEAN DEFAULT 0;"))
+                    conn.execute(text("ALTER TABLE suppliers ADD COLUMN is_email_verified BOOLEAN DEFAULT 1;"))
+                conn.execute(text("UPDATE suppliers SET is_email_verified = 1 WHERE is_email_verified IS NULL OR is_email_verified = 0;"))
                 if "verification_token" not in columns:
                     conn.execute(text("ALTER TABLE suppliers ADD COLUMN verification_token VARCHAR;"))
                 if "reset_token" not in columns:
@@ -59,7 +60,8 @@ def create_tables():
                 if "documents" not in cust_columns:
                     conn.execute(text("ALTER TABLE customers ADD COLUMN documents JSON DEFAULT '{}';"))
                 if "is_email_verified" not in cust_columns:
-                    conn.execute(text("ALTER TABLE customers ADD COLUMN is_email_verified BOOLEAN DEFAULT 0;"))
+                    conn.execute(text("ALTER TABLE customers ADD COLUMN is_email_verified BOOLEAN DEFAULT 1;"))
+                conn.execute(text("UPDATE customers SET is_email_verified = 1 WHERE is_email_verified IS NULL OR is_email_verified = 0;"))
                 if "verification_token" not in cust_columns:
                     conn.execute(text("ALTER TABLE customers ADD COLUMN verification_token VARCHAR;"))
                 if "reset_token" not in cust_columns:

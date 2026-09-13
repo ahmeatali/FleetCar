@@ -31,7 +31,7 @@ class Supplier(Base):
     password_hash       = Column(String, nullable=True)
     invitation_token    = Column(String, nullable=True)
     invitation_status   = Column(String, default="Davet Edilmedi") # Davet Edilmedi / Davet Gönderildi / Aktif
-    is_email_verified   = Column(Boolean, default=False)
+    is_email_verified   = Column(Boolean, default=True)
     verification_token  = Column(String, nullable=True)
     reset_token         = Column(String, nullable=True)
     reset_token_expires = Column(String, nullable=True)
@@ -55,7 +55,7 @@ class Customer(Base):
     invitation_status         = Column(String, default="Davet Edilmedi") # Davet Edilmedi / Davet Gönderildi / Aktif
     documents_uploaded        = Column(Boolean, default=False)
     documents                 = Column(JSON, default=dict) # {"tax_plate": "...", "signature_circular": "...", "activity_certificate": "..."}
-    is_email_verified         = Column(Boolean, default=False)
+    is_email_verified         = Column(Boolean, default=True)
     verification_token        = Column(String, nullable=True)
     reset_token               = Column(String, nullable=True)
     reset_token_expires       = Column(String, nullable=True)

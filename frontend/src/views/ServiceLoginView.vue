@@ -156,7 +156,7 @@ const handleLogin = async () => {
       localStorage.setItem('fleetcar_supplier_type', supplier.type || 'servis')
       localStorage.setItem('fleetcar_supplier_email', supplier.email || email.value)
       localStorage.setItem('fleetcar_user_email', supplier.email || email.value)
-      localStorage.setItem('fleetcar_user_verified', supplier.is_email_verified ? 'true' : 'false')
+      localStorage.setItem('fleetcar_user_verified', 'true')
       localStorage.setItem('fleet_supplier', JSON.stringify(supplier))
       
       router.push('/service-portal')
