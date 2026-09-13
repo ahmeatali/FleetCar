@@ -124,7 +124,11 @@ const handleResendEmail = async () => {
 
     const data = await res.json()
     if (res.ok) {
-      successMsg.value = data.message || 'Doğrulama e-postası başarıyla gönderildi!'
+      if (data.status === 'warning') {
+        errMsg.value = data.message
+      } else {
+        successMsg.value = data.message || 'Doğrulama e-postası başarıyla gönderildi!'
+      }
       if (data.verify_url) {
         verifyUrl.value = data.verify_url
       }
