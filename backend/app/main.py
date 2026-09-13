@@ -849,10 +849,9 @@ def resend_verification_email(req: ResendVerificationRequest, db: Session = Depe
         email_sent = res.get("email_sent", False)
         return {
             "status": "success" if email_sent else "warning",
-            "message": f"Doğrulama bağlantısı [{c.email}] adresine gönderildi." if email_sent else "SMTP e-posta sunucusu henüz yapılandırılmadı. Aşağıdaki '⚡ Hemen Doğrula ve Devam Et' butonuna tıklayarak hesabınızı onaylayabilirsiniz.",
+            "message": f"Doğrulama bağlantısı [{c.email}] adresine gönderildi." if email_sent else "SMTP e-posta sunucusu henüz yapılandırılmadığından e-posta gönderilemedi. Lütfen sistem yöneticinizle iletişime geçiniz.",
             "email_sent": email_sent,
-            "smtp_configured": res.get("smtp_configured", False),
-            "verify_url": res.get("verify_url")
+            "smtp_configured": res.get("smtp_configured", False)
         }
 
     # 2. Supplier
@@ -868,10 +867,9 @@ def resend_verification_email(req: ResendVerificationRequest, db: Session = Depe
         email_sent = res.get("email_sent", False)
         return {
             "status": "success" if email_sent else "warning",
-            "message": f"Doğrulama bağlantısı [{s.email}] adresine gönderildi." if email_sent else "SMTP e-posta sunucusu henüz yapılandırılmadı. Aşağıdaki '⚡ Hemen Doğrula ve Devam Et' butonuna tıklayarak hesabınızı onaylayabilirsiniz.",
+            "message": f"Doğrulama bağlantısı [{s.email}] adresine gönderildi." if email_sent else "SMTP e-posta sunucusu henüz yapılandırılmadığından e-posta gönderilemedi. Lütfen sistem yöneticinizle iletişime geçiniz.",
             "email_sent": email_sent,
-            "smtp_configured": res.get("smtp_configured", False),
-            "verify_url": res.get("verify_url")
+            "smtp_configured": res.get("smtp_configured", False)
         }
 
     raise HTTPException(status_code=404, detail="Kayıtlı e-posta adresi bulunamadı.")
