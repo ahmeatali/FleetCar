@@ -357,15 +357,30 @@ h1, h2, h3, h4, h5, h6 {
   width: 260px;
   background: #ffffff;
   border-right: 1px solid var(--border-color);
-  padding: 30px 20px;
+  padding: 20px 16px;
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 16px;
   position: fixed;
   top: 0;
   bottom: 0;
   left: 0;
   z-index: 90;
+  box-sizing: border-box;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.portal-sidebar::-webkit-scrollbar {
+  width: 5px;
+}
+.portal-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.portal-sidebar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
 }
 
 .portal-main {
@@ -395,9 +410,13 @@ h1, h2, h3, h4, h5, h6 {
     width: 100%;
     position: relative;
     height: auto;
+    max-height: none;
     border-right: none;
     border-bottom: 1px solid var(--border-color);
     padding: 16px 20px;
+    top: auto;
+    bottom: auto;
+    left: auto;
   }
   .portal-main {
     margin-left: 0;

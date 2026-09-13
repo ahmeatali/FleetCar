@@ -1,125 +1,127 @@
 <template>
   <aside class="portal-sidebar">
-    <router-link to="/dashboard" class="nav-logo" style="margin-bottom: 20px;">
-      <div class="nav-logo-icon">F</div>
-      <span>FleetRent</span>
-    </router-link>
-
-    <!-- User profile summary -->
-    <div class="user-profile-summary">
-      <div class="avatar">👨‍💼</div>
-      <div class="profile-details">
-        <h4 class="company-name" :title="customerName">{{ customerName }}</h4>
-        <span class="role-badge">Filo Yöneticisi</span>
-      </div>
-    </div>
-
-    <!-- Warning Box for Missing Company Documents -->
-    <div v-if="documentsUploaded === false" style="background: #fff7ed; border: 1px solid #fed7aa; border-radius: 12px; padding: 12px; margin-bottom: 16px;">
-      <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; color: #c2410c; margin-bottom: 4px; font-size: 0.82rem;">
-        <span>⚠️</span>
-        <span>Evraklar Eksik!</span>
-      </div>
-      <p style="color: #9a3412; font-size: 0.76rem; line-height: 1.4; margin-bottom: 8px;">
-        İşlem yapmadan önce şirket evraklarınızı tamamlayın.
-      </p>
-      <router-link to="/dashboard/settings?tab=sirket_evraklari" style="display: block; text-align: center; background: #ea580c; color: #ffffff; font-weight: 700; padding: 6px 0; border-radius: 8px; text-decoration: none; font-size: 0.78rem;">
-        📂 Evrakları Tamamla ➔
+    <!-- Top Header & Profile Summary -->
+    <div class="sidebar-top">
+      <router-link to="/dashboard" class="nav-logo" style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px; text-decoration: none;">
+        <div class="nav-logo-icon" style="background: #2563eb; color: white; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800;">F</div>
+        <span style="font-weight: 800; font-size: 1.3rem; color: #0f172a;">FleetRent</span>
       </router-link>
+
+      <!-- User profile summary -->
+      <div class="user-profile-summary">
+        <div class="avatar">👨‍💼</div>
+        <div class="profile-details">
+          <h4 class="company-name" :title="customerName">{{ customerName }}</h4>
+          <span class="role-badge">Filo Yöneticisi</span>
+        </div>
+      </div>
+
+      <!-- Warning Box for Missing Company Documents -->
+      <div v-if="documentsUploaded === false" class="doc-warning-box">
+        <div class="doc-warning-title">
+          <span>⚠️</span>
+          <span>Evraklar Eksik!</span>
+        </div>
+        <p class="doc-warning-text">
+          İşlem yapmadan önce şirket evraklarınızı tamamlayın.
+        </p>
+        <router-link to="/dashboard/settings?tab=sirket_evraklari" class="doc-warning-btn">
+          📂 Evrakları Tamamla ➔
+        </router-link>
+      </div>
     </div>
 
-    <!-- Navigation links -->
-    <ul class="sidebar-menu">
-      <li>
-        <router-link to="/dashboard" class="sidebar-link" exact-active-class="active">
-          <span class="icon">📊</span>
-          <span>Genel Bakış</span>
-        </router-link>
-      </li>
-      <li>
-        <router-link to="/dashboard/vehicles" class="sidebar-link" active-class="active">
-          <span class="icon">🚗</span>
-          <span>Araç Yönetimi</span>
-        </router-link>
-      </li>
-      <li>
-        <router-link to="/dashboard/requests" class="sidebar-link" active-class="active">
-          <span class="icon">⚙️</span>
-          <span>Tedarikçi İşlemleri</span>
-        </router-link>
-      </li>
-      <li>
-        <router-link to="/dashboard/quotes" class="sidebar-link" active-class="active">
-          <span class="icon">📑</span>
-          <span>Kiralama Teklifleri</span>
-        </router-link>
-        <!-- Guidance box when customer has uploaded documents but has 0 registered vehicles -->
-        <div v-if="documentsUploaded && hasNoVehicles" style="margin: 6px 0 12px 16px; background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%); border: 1px solid #c7d2fe; border-radius: 10px; padding: 10px;">
-          <div style="display: flex; align-items: center; gap: 5px; font-weight: 700; color: #3730a3; margin-bottom: 4px; font-size: 0.78rem;">
-            <span>🚗</span>
-            <span>Henüz aracınız yok!</span>
-          </div>
-          <p style="color: #4338ca; font-size: 0.72rem; line-height: 1.35; margin-bottom: 8px; font-weight: 500;">
-            Hemen teklif alın, filonuzu kurun.
-          </p>
-          <router-link to="/dashboard/quotes?new=true" style="display: block; text-align: center; background: #4f46e5; color: #ffffff; font-weight: 700; padding: 6px 0; border-radius: 6px; text-decoration: none; font-size: 0.75rem; box-shadow: 0 2px 8px rgba(79, 70, 229, 0.25);">
-            ✨ Hemen Teklif Al
+    <!-- Scrollable Middle Navigation Menu -->
+    <div class="sidebar-menu-wrapper">
+      <ul class="sidebar-menu">
+        <li>
+          <router-link to="/dashboard" class="sidebar-link" exact-active-class="active">
+            <span class="icon">📊</span>
+            <span>Genel Bakış</span>
           </router-link>
-        </div>
-      </li>
-      <li>
-        <router-link to="/dashboard/reports" class="sidebar-link" active-class="active">
-          <span class="icon">📈</span>
-          <span>Raporlar</span>
-        </router-link>
-      </li>
-      <li>
-        <router-link to="/dashboard/settings" class="sidebar-link" active-class="active">
-          <span class="icon">⚙️</span>
-          <span>Ayarlar</span>
-        </router-link>
-        <!-- Sub-links under Ayarlar -->
-        <ul v-if="$route.path.includes('/settings')" style="list-style: none; padding-left: 24px; margin: 4px 0 8px; display: flex; flex-direction: column; gap: 4px;">
-          <li>
-            <router-link to="/dashboard/settings?tab=kullanicilar" style="font-size: 0.8rem; text-decoration: none; display: flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: 6px; transition: all 0.2s;" :style="{ background: $route.query.tab === 'kullanicilar' || !$route.query.tab ? '#eff6ff' : 'transparent', color: $route.query.tab === 'kullanicilar' || !$route.query.tab ? '#2563eb' : '#64748b', fontWeight: $route.query.tab === 'kullanicilar' || !$route.query.tab ? '700' : '500' }">
-              <span>👥</span> Kullanıcılar
+        </li>
+        <li>
+          <router-link to="/dashboard/vehicles" class="sidebar-link" active-class="active">
+            <span class="icon">🚗</span>
+            <span>Araç Yönetimi</span>
+          </router-link>
+        </li>
+        <li>
+          <router-link to="/dashboard/requests" class="sidebar-link" active-class="active">
+            <span class="icon">⚙️</span>
+            <span>Tedarikçi İşlemleri</span>
+          </router-link>
+        </li>
+        <li>
+          <router-link to="/dashboard/quotes" class="sidebar-link" active-class="active">
+            <span class="icon">📑</span>
+            <span>Kiralama Teklifleri</span>
+          </router-link>
+          <!-- Guidance box when customer has uploaded documents but has 0 registered vehicles -->
+          <div v-if="documentsUploaded && hasNoVehicles" class="promo-guidance-box">
+            <div class="promo-guidance-title">
+              <span>🚗</span>
+              <span>Henüz aracınız yok!</span>
+            </div>
+            <p class="promo-guidance-text">
+              Hemen teklif alın, filonuzu kurun.
+            </p>
+            <router-link to="/dashboard/quotes?new=true" class="promo-guidance-btn">
+              ✨ Hemen Teklif Al
             </router-link>
-          </li>
-          <li>
-            <router-link to="/dashboard/settings?tab=teslim_formlari" style="font-size: 0.8rem; text-decoration: none; display: flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: 6px; transition: all 0.2s;" :style="{ background: $route.query.tab === 'teslim_formlari' ? '#eff6ff' : 'transparent', color: $route.query.tab === 'teslim_formlari' ? '#2563eb' : '#64748b', fontWeight: $route.query.tab === 'teslim_formlari' ? '700' : '500' }">
-              <span>📋</span> Teslim Formları
-            </router-link>
-          </li>
-          <li>
-            <router-link to="/dashboard/settings?tab=bayi_sozlesmesi" style="font-size: 0.8rem; text-decoration: none; display: flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: 6px; transition: all 0.2s;" :style="{ background: $route.query.tab === 'bayi_sozlesmesi' ? '#eff6ff' : 'transparent', color: $route.query.tab === 'bayi_sozlesmesi' ? '#2563eb' : '#64748b', fontWeight: $route.query.tab === 'bayi_sozlesmesi' ? '700' : '500' }">
-              <span>📜</span> Bayi Sözleşmesi
-            </router-link>
-          </li>
-          <li>
-            <router-link to="/dashboard/settings?tab=sirket_evraklari" style="font-size: 0.8rem; text-decoration: none; display: flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: 6px; transition: all 0.2s;" :style="{ background: $route.query.tab === 'sirket_evraklari' ? '#eff6ff' : 'transparent', color: $route.query.tab === 'sirket_evraklari' ? '#2563eb' : '#64748b', fontWeight: $route.query.tab === 'sirket_evraklari' ? '700' : '500' }">
-              <span>🏢</span> Şirket Evraklarım
-            </router-link>
-          </li>
-          <li>
-            <router-link to="/dashboard/settings?tab=entegrasyonlar" style="font-size: 0.8rem; text-decoration: none; display: flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: 6px; transition: all 0.2s;" :style="{ background: $route.query.tab === 'entegrasyonlar' ? '#eff6ff' : 'transparent', color: $route.query.tab === 'entegrasyonlar' ? '#2563eb' : '#64748b', fontWeight: $route.query.tab === 'entegrasyonlar' ? '700' : '500' }">
-              <span>📡</span> API & Entegrasyonlar
-            </router-link>
-          </li>
-        </ul>
-      </li>
+          </div>
+        </li>
+        <li>
+          <router-link to="/dashboard/reports" class="sidebar-link" active-class="active">
+            <span class="icon">📈</span>
+            <span>Raporlar</span>
+          </router-link>
+        </li>
+        <li>
+          <router-link to="/dashboard/settings" class="sidebar-link" active-class="active">
+            <span class="icon">⚙️</span>
+            <span>Ayarlar</span>
+          </router-link>
+          <!-- Sub-links under Ayarlar -->
+          <ul v-if="$route.path.includes('/settings')" class="settings-sub-menu">
+            <li>
+              <router-link to="/dashboard/settings?tab=kullanicilar" class="sub-link" :class="{ 'sub-active': $route.query.tab === 'kullanicilar' || !$route.query.tab }">
+                <span>👥</span> Kullanıcılar
+              </router-link>
+            </li>
+            <li>
+              <router-link to="/dashboard/settings?tab=teslim_formlari" class="sub-link" :class="{ 'sub-active': $route.query.tab === 'teslim_formlari' }">
+                <span>📋</span> Teslim Formları
+              </router-link>
+            </li>
+            <li>
+              <router-link to="/dashboard/settings?tab=bayi_sozlesmesi" class="sub-link" :class="{ 'sub-active': $route.query.tab === 'bayi_sozlesmesi' }">
+                <span>📜</span> Bayi Sözleşmesi
+              </router-link>
+            </li>
+            <li>
+              <router-link to="/dashboard/settings?tab=sirket_evraklari" class="sub-link" :class="{ 'sub-active': $route.query.tab === 'sirket_evraklari' }">
+                <span>🏢</span> Şirket Evraklarım
+              </router-link>
+            </li>
+            <li>
+              <router-link to="/dashboard/settings?tab=entegrasyonlar" class="sub-link" :class="{ 'sub-active': $route.query.tab === 'entegrasyonlar' }">
+                <span>📡</span> API & Entegrasyonlar
+              </router-link>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
 
-    </ul>
-
-    <!-- Bottom area: Profile Link + Logout -->
-    <div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px; width: 100%;">
-      <!-- Profile Page Link -->
+    <!-- Pinned Bottom Footer: Profile Link + Logout -->
+    <div class="sidebar-footer">
       <router-link to="/profile" class="sidebar-link" active-class="active">
         <span class="icon">👤</span>
         <span>Profilim</span>
       </router-link>
 
-      <!-- Logout Button -->
-      <button @click="logout" class="sidebar-link logout-btn" style="width: 100%; border: none; background: transparent; cursor: pointer; text-align: left;">
+      <button @click="logout" class="sidebar-link logout-btn">
         <span class="icon">🚪</span>
         <span>Çıkış Yap</span>
       </button>
@@ -164,22 +166,65 @@ const logout = () => {
   localStorage.removeItem('fleetcar_customer_id')
   localStorage.removeItem('fleetcar_customer_name')
   localStorage.removeItem('fleetcar_user_email')
+  localStorage.removeItem('fleetcar_user_verified')
   localStorage.removeItem('fleet_customer')
   router.push('/login?role=customer')
 }
 </script>
 
-
 <style scoped>
+.portal-sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 20px 16px 16px 16px;
+  box-sizing: border-box;
+  background: #ffffff;
+}
+
+.sidebar-top {
+  flex-shrink: 0;
+}
+
+.sidebar-menu-wrapper {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  margin: 10px 0;
+  padding-right: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.sidebar-menu-wrapper::-webkit-scrollbar {
+  width: 4px;
+}
+.sidebar-menu-wrapper::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.sidebar-footer {
+  flex-shrink: 0;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #ffffff;
+  z-index: 5;
+}
+
 .user-profile-summary {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px;
+  padding: 10px 12px;
   background: #f8fafc;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-color, #e2e8f0);
   border-radius: 12px;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 
 .avatar {
@@ -191,30 +236,152 @@ const logout = () => {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+}
+
+.profile-details {
+  min-width: 0;
 }
 
 .company-name {
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 0.88rem;
+  font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 140px;
+  margin: 0;
+  color: #0f172a;
 }
 
 .role-badge {
-  font-size: 0.7rem;
-  color: var(--secondary);
+  font-size: 0.72rem;
+  color: #64748b;
   font-weight: 500;
 }
 
+.doc-warning-box {
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+
+.doc-warning-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  color: #c2410c;
+  margin-bottom: 4px;
+  font-size: 0.82rem;
+}
+
+.doc-warning-text {
+  color: #9a3412;
+  font-size: 0.76rem;
+  line-height: 1.35;
+  margin: 0 0 8px 0;
+}
+
+.doc-warning-btn {
+  display: block;
+  text-align: center;
+  background: #ea580c;
+  color: #ffffff;
+  font-weight: 700;
+  padding: 6px 0;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 0.78rem;
+}
+
+.promo-guidance-box {
+  margin: 6px 0 10px 14px;
+  background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);
+  border: 1px solid #c7d2fe;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.promo-guidance-title {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 700;
+  color: #3730a3;
+  margin-bottom: 4px;
+  font-size: 0.78rem;
+}
+
+.promo-guidance-text {
+  color: #4338ca;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  margin: 0 0 8px 0;
+  font-weight: 500;
+}
+
+.promo-guidance-btn {
+  display: block;
+  text-align: center;
+  background: #4f46e5;
+  color: #ffffff;
+  font-weight: 700;
+  padding: 6px 0;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.75rem;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.25);
+}
+
+.settings-sub-menu {
+  list-style: none;
+  padding-left: 20px;
+  margin: 4px 0 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sub-link {
+  font-size: 0.8rem;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  transition: all 0.2s;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.sub-link:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.sub-active {
+  background: #eff6ff !important;
+  color: #2563eb !important;
+  font-weight: 700 !important;
+}
+
 .logout-btn {
-  color: var(--text-dark);
+  width: 100%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  color: #64748b;
+  font-weight: 600;
 }
 
 .logout-btn:hover {
-  background: #fef2f2;
-  color: #dc2626;
+  background: #fef2f2 !important;
+  color: #dc2626 !important;
 }
 
 .icon {
