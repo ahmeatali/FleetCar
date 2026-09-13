@@ -243,3 +243,17 @@ class CustomerDocumentUpload(BaseModel):
     activity_certificate: Optional[str] = None
     trade_registry: Optional[str] = None
 
+
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    password: str
+
+
+class ResendVerificationRequest(BaseModel):
+    email: str
+
+

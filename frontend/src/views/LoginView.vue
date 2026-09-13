@@ -78,7 +78,7 @@
             <div class="form-group" style="margin-bottom: 25px;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                 <label class="form-label" style="margin-bottom: 0;">Şifre</label>
-                <a href="#" style="font-size: 0.8rem; color: #2563eb; text-decoration: none;">Şifremi Unuttum?</a>
+                <a href="#" @click.prevent="authMode = 'forgot'" style="font-size: 0.8rem; color: #2563eb; text-decoration: none; font-weight: 600;">Şifremi Unuttum?</a>
               </div>
               <input type="password" v-model="password" required class="form-input" placeholder="••••••••">
             </div>
@@ -87,6 +87,34 @@
               {{ loading ? 'Giriş Yapılıyor...' : 'Giriş Yap' }}
             </button>
           </form>
+        </div>
+
+        <div v-else-if="authMode === 'forgot'">
+          <h2 style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-bottom: 6px;">Şifremi Unuttum</h2>
+          <p style="color: #64748b; font-size: 0.88rem; margin-bottom: 20px;">
+            Hesabınıza tanımlı e-posta adresinizi girin, şifre sıfırlama bağlantısını e-postanıza gönderelim.
+          </p>
+
+          <div v-if="forgotSuccess" style="padding: 14px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 12px; color: #065f46; font-size: 0.88rem; margin-bottom: 20px;">
+            ✅ {{ forgotSuccess }}
+          </div>
+
+          <form v-else @submit.prevent="handleForgotPassword">
+            <div class="form-group" style="margin-bottom: 25px;">
+              <label class="form-label">E-posta Adresi *</label>
+              <input type="email" v-model="forgotEmail" required class="form-input" placeholder="isim@sirket.com">
+            </div>
+
+            <button type="submit" class="btn btn-blue" style="width: 100%; padding: 14px;" :disabled="forgotLoading">
+              {{ forgotLoading ? 'Gönderiliyor...' : 'Şifre Sıfırlama Bağlantısı Gönder' }}
+            </button>
+          </form>
+
+          <div style="margin-top: 20px; text-align: center;">
+            <button @click="authMode = 'login'" style="background: none; border: none; cursor: pointer; color: #64748b; font-size: 0.88rem; font-weight: 600;">
+              ← Giriş Ekranına Dön
+            </button>
+          </div>
         </div>
 
         <div v-else>
@@ -141,6 +169,36 @@ const companyName = ref('')
 const phone = ref('')
 const loading = ref(false)
 
+const forgotEmail = ref('')
+const forgotLoading = ref(false)
+const forgotSuccess = ref('')
+
+const handleForgotPassword = async () => {
+  if (!forgotEmail.value) return
+  forgotLoading.value = true
+  forgotSuccess.value = ''
+
+  try {
+    const res = await fetch('/api/auth/forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: forgotEmail.value })
+    })
+
+    const data = await res.json()
+    if (res.ok) {
+      forgotSuccess.value = data.message || 'Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.'
+    } else {
+      alert(data.detail || 'Bir hata oluştu.')
+    }
+  } catch (err) {
+    console.error('Forgot password error:', err)
+    alert('Sunucuya bağlanılamadı.')
+  } finally {
+    forgotLoading.value = false
+  }
+}
+
 const handleLogin = async () => {
   if (!email.value || !password.value) return
   loading.value = true
@@ -163,6 +221,7 @@ const handleLogin = async () => {
       localStorage.setItem('fleetcar_customer_id', String(cust.id || '1'))
       localStorage.setItem('fleetcar_customer_name', cust.company_name || 'Müşteri Firma')
       localStorage.setItem('fleetcar_user_email', cust.email || email.value)
+      localStorage.setItem('fleetcar_user_verified', cust.is_email_verified ? 'true' : 'false')
       localStorage.setItem('fleet_customer', JSON.stringify(cust))
       
       router.push('/dashboard')
@@ -202,10 +261,11 @@ const handleRegister = async () => {
       localStorage.setItem('fleetcar_customer_id', String(cust.id || '1'))
       localStorage.setItem('fleetcar_customer_name', cust.company_name || companyName.value || 'Müşteri Firma')
       localStorage.setItem('fleetcar_user_email', cust.email || email.value)
+      localStorage.setItem('fleetcar_user_verified', cust.is_email_verified ? 'true' : 'false')
       localStorage.setItem('fleet_customer', JSON.stringify(cust))
       
-      alert('Kaydınız başarıyla oluşturuldu! Şimdi teklifinizi oluşturabilirsiniz.')
-      router.push('/')
+      alert('Kaydınız başarıyla oluşturuldu! Lütfen e-posta adresinize gönderilen doğrulama bağlantısını onaylayın.')
+      router.push('/dashboard')
     } else {
       const errData = await res.json().catch(() => ({}))
       alert(errData.detail || 'Kayıt oluşturulamadı! Lütfen bilgilerinizi kontrol edin.')
@@ -218,4 +278,3 @@ const handleRegister = async () => {
   }
 }
 </script>
-

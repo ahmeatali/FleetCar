@@ -8,7 +8,10 @@ from typing import List, Optional
 from app.database import get_db, SessionLocal, engine
 from app import models
 from app.auth import verify_password, hash_password
-from app.email_utils import generate_invitation_token, send_supplier_invitation_email, APP_BASE_URL
+from app.email_utils import (
+    generate_invitation_token, send_supplier_invitation_email,
+    send_password_reset_email, send_email_verification_email, APP_BASE_URL
+)
 from app.init_db import create_tables, seed
 from app.schemas import (
     QuoteCreate, QuoteResponse,
@@ -19,7 +22,8 @@ from app.schemas import (
     CustomerCreate, CustomerUpdate, BidCreate, BidResponse,
     AdminLoginRequest, SetPasswordRequest,
     ServiceCheckIn, ServiceWorkOrder, ServiceInvoice,
-    CustomerRegisterRequest, CustomerDocumentUpload
+    CustomerRegisterRequest, CustomerDocumentUpload,
+    ForgotPasswordRequest, ResetPasswordRequest, ResendVerificationRequest
 )
 
 app = FastAPI(title="FleetRent API", version="2.0.0")
@@ -77,7 +81,8 @@ def supplier_dict(s: models.Supplier) -> dict:
         "services": s.services or [], "contract_type": s.contract_type,
         "email": getattr(s, 'email', None),
         "invitation_status": getattr(s, 'invitation_status', 'Davet Edilmedi') or 'Davet Edilmedi',
-        "has_password": bool(getattr(s, 'password_hash', None))
+        "has_password": bool(getattr(s, 'password_hash', None)),
+        "is_email_verified": getattr(s, 'is_email_verified', True) if getattr(s, 'is_email_verified', None) is not None else True
     }
 
 
@@ -176,7 +181,8 @@ def customer_dict(c: models.Customer, actual: int = None, deficit: int = None) -
         "invitation_status": getattr(c, 'invitation_status', 'Davet Edilmedi') or 'Davet Edilmedi',
         "has_password": bool(getattr(c, 'password_hash', None)),
         "documents_uploaded": getattr(c, 'documents_uploaded', False) or False,
-        "documents": getattr(c, 'documents', {}) or {}
+        "documents": getattr(c, 'documents', {}) or {},
+        "is_email_verified": getattr(c, 'is_email_verified', False) if getattr(c, 'is_email_verified', None) is not None else False
     }
     if actual is not None:
         d["actual_vehicle_count"] = actual
@@ -690,11 +696,141 @@ def customer_login(creds: AdminLoginRequest, db: Session = Depends(get_db)):
     }
 
 
+@app.post("/api/auth/forgot-password")
+def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    import secrets
+    email_clean = req.email.lower().strip()
+    if not email_clean:
+        raise HTTPException(status_code=400, detail="Lütfen geçerli bir e-posta adresi girin.")
+
+    reset_token = secrets.token_urlsafe(32)
+    user_found = False
+    recipient_name = "Kullanıcı"
+
+    # 1. Search Customer
+    c = db.query(models.Customer).filter(models.Customer.email.ilike(email_clean)).first()
+    if c:
+        c.reset_token = reset_token
+        c.reset_token_expires = str(datetime.datetime.now() + datetime.timedelta(hours=2))
+        recipient_name = c.company_name
+        user_found = True
+
+    # 2. Search Supplier if not found
+    if not user_found:
+        s = db.query(models.Supplier).filter(models.Supplier.email == email_clean).first()
+        if s:
+            s.reset_token = reset_token
+            s.reset_token_expires = str(datetime.datetime.now() + datetime.timedelta(hours=2))
+            recipient_name = s.name
+            user_found = True
+
+    # 3. Search AdminUser if not found
+    if not user_found:
+        a = db.query(models.AdminUser).filter(models.AdminUser.email == email_clean).first()
+        if a:
+            a.reset_token = reset_token
+            a.reset_token_expires = str(datetime.datetime.now() + datetime.timedelta(hours=2))
+            recipient_name = "Yönetici"
+            user_found = True
+
+    if user_found:
+        db.commit()
+        send_password_reset_email(email_clean, recipient_name, reset_token)
+
+    return {
+        "status": "success",
+        "message": "Eğer e-posta sistemimizde kayıtlı ise şifre sıfırlama bağlantısı gönderilmiştir. Lütfen gelen kutunuzu ve spam klasörünüzü kontrol edin."
+    }
+
+
+@app.post("/api/auth/reset-password")
+def reset_password(req: ResetPasswordRequest, db: Session = Depends(get_db)):
+    if len(req.password) < 6:
+        raise HTTPException(status_code=400, detail="Şifre en az 6 karakter olmalıdır.")
+
+    if not req.token:
+        raise HTTPException(status_code=400, detail="Geçersiz veya eksik doğrulama kodu.")
+
+    # 1. Customer
+    c = db.query(models.Customer).filter(models.Customer.reset_token == req.token).first()
+    if c:
+        c.password_hash = hash_password(req.password)
+        c.reset_token = None
+        c.reset_token_expires = None
+        db.commit()
+        return {"status": "success", "message": "Şifreniz başarıyla sıfırlandı! Şimdi giriş yapabilirsiniz."}
+
+    # 2. Supplier
+    s = db.query(models.Supplier).filter(models.Supplier.reset_token == req.token).first()
+    if s:
+        s.password_hash = hash_password(req.password)
+        s.reset_token = None
+        s.reset_token_expires = None
+        db.commit()
+        return {"status": "success", "message": "Şifreniz başarıyla sıfırlandı! Şimdi giriş yapabilirsiniz."}
+
+    # 3. Admin
+    a = db.query(models.AdminUser).filter(models.AdminUser.reset_token == req.token).first()
+    if a:
+        a.password_hash = hash_password(req.password)
+        a.reset_token = None
+        a.reset_token_expires = None
+        db.commit()
+        return {"status": "success", "message": "Şifreniz başarıyla sıfırlandı! Şimdi giriş yapabilirsiniz."}
+
+    raise HTTPException(status_code=400, detail="Geçersiz veya süresi dolmuş şifre sıfırlama bağlantısı.")
+
+
+@app.get("/api/auth/verify-email/{token}")
+@app.post("/api/auth/verify-email/{token}")
+def verify_email_token(token: str, db: Session = Depends(get_db)):
+    if not token:
+        raise HTTPException(status_code=400, detail="Geçersiz veya eksik doğrulama kodu.")
+
+    c = db.query(models.Customer).filter(models.Customer.verification_token == token).first()
+    if not c:
+        raise HTTPException(status_code=404, detail="Geçersiz veya süresi dolmuş e-posta doğrulama bağlantısı.")
+
+    c.is_email_verified = True
+    c.verification_token = None
+    db.commit()
+
+    return {
+        "status": "success",
+        "message": "E-posta adresiniz başarıyla doğrulandı! Artık platformdaki tüm işlemleri gerçekleştirebilirsiniz.",
+        "customer": customer_dict(c)
+    }
+
+
+@app.post("/api/auth/resend-verification")
+def resend_verification_email(req: ResendVerificationRequest, db: Session = Depends(get_db)):
+    email_clean = req.email.lower().strip()
+    c = db.query(models.Customer).filter(models.Customer.email.ilike(email_clean)).first()
+    if not c:
+        raise HTTPException(status_code=404, detail="Kayıtlı müşteri bulunamadı.")
+
+    if c.is_email_verified:
+        return {"status": "info", "message": "E-posta adresiniz zaten doğrulanmıştır."}
+
+    v_token = c.verification_token or generate_invitation_token()
+    c.verification_token = v_token
+    db.commit()
+
+    res = send_email_verification_email(c.email, c.company_name, v_token)
+    return {
+        "status": "success",
+        "message": f"Doğrulama bağlantısı [{c.email}] adresine yeniden gönderildi.",
+        "email_sent": res.get("email_sent", False)
+    }
+
+
 @app.post("/api/customer/register")
 def customer_register(req: CustomerRegisterRequest, db: Session = Depends(get_db)):
     email_clean = req.email.lower().strip()
     if len(req.password) < 6:
         raise HTTPException(status_code=400, detail="Şifre en az 6 karakter olmalıdır.")
+
+    v_token = generate_invitation_token()
 
     existing = db.query(models.Customer).filter(models.Customer.email.ilike(email_clean)).first()
     if existing:
@@ -710,6 +846,8 @@ def customer_register(req: CustomerRegisterRequest, db: Session = Depends(get_db
             if req.phone:
                 existing.phone = req.phone
             existing.invitation_status = "Aktif"
+            existing.is_email_verified = False
+            existing.verification_token = v_token
             db.commit()
             c = existing
     else:
@@ -724,15 +862,20 @@ def customer_register(req: CustomerRegisterRequest, db: Session = Depends(get_db
             invitation_status="Aktif",
             address="Maslak, İstanbul",
             documents_uploaded=False,
-            documents={}
+            documents={},
+            is_email_verified=False,
+            verification_token=v_token
         )
         db.add(c)
         db.commit()
         db.refresh(c)
 
+    # Send email verification
+    send_email_verification_email(c.email, c.company_name, v_token)
+
     return {
         "status": "success",
-        "message": "Hesabınız başarıyla oluşturuldu!",
+        "message": "Hesabınız başarıyla oluşturuldu! Lütfen e-posta adresinize gönderilen doğrulama bağlantısına tıklayın.",
         "token": f"customer_token_{c.id}_{datetime.datetime.now().timestamp()}",
         "customer": customer_dict(c)
     }

@@ -1,7 +1,10 @@
 <template>
-  <router-view />
+  <div id="app">
+    <router-view />
+    <EmailVerificationModal />
+  </div>
 </template>
 
 <script setup>
-// Main App Component
+import EmailVerificationModal from './components/EmailVerificationModal.vue'
 </script>

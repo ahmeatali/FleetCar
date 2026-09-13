@@ -21,38 +21,63 @@
           <strong>Araba sağlayıcı ve kiralama firmaları</strong> için e-posta ve şifre ile portal girişi.
         </p>
 
-        <form @submit.prevent="handleLogin">
-          <div class="form-group" style="margin-bottom: 18px;">
-            <label class="form-label" style="font-weight: 600; color: #334155; font-size: 0.88rem;">Tedarikçi E-posta Adresi</label>
-            <input 
-              type="email" 
-              v-model="email" 
-              required 
-              class="form-input" 
-              placeholder="tedarikci@sirket.com"
-              style="height: 48px; font-size: 0.95rem;"
-            >
-          </div>
-
-          <div class="form-group" style="margin-bottom: 25px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <label class="form-label" style="font-weight: 600; color: #334155; font-size: 0.88rem; margin: 0;">Giriş Şifresi</label>
-              <a href="#" style="font-size: 0.8rem; color: #10b981; text-decoration: none;">Şifremi Unuttum?</a>
+        <div v-if="!showForgot">
+          <form @submit.prevent="handleLogin">
+            <div class="form-group" style="margin-bottom: 18px;">
+              <label class="form-label" style="font-weight: 600; color: #334155; font-size: 0.88rem;">Tedarikçi E-posta Adresi</label>
+              <input 
+                type="email" 
+                v-model="email" 
+                required 
+                class="form-input" 
+                placeholder="tedarikci@sirket.com"
+                style="height: 48px; font-size: 0.95rem;"
+              >
             </div>
-            <input 
-              type="password" 
-              v-model="password" 
-              required 
-              class="form-input" 
-              placeholder="••••••••"
-              style="height: 48px;"
-            >
+
+            <div class="form-group" style="margin-bottom: 25px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label class="form-label" style="font-weight: 600; color: #334155; font-size: 0.88rem; margin: 0;">Giriş Şifresi</label>
+                <a href="#" @click.prevent="showForgot = true" style="font-size: 0.8rem; color: #10b981; text-decoration: none; font-weight: 600;">Şifremi Unuttum?</a>
+              </div>
+              <input 
+                type="password" 
+                v-model="password" 
+                required 
+                class="form-input" 
+                placeholder="••••••••"
+                style="height: 48px;"
+              >
+            </div>
+
+            <button type="submit" class="btn btn-block" style="background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; padding: 14px; font-size: 1rem; font-weight: 700; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); width: 100%;" :disabled="loading">
+              {{ loading ? 'Giriş Yapılıyor...' : 'Tedarikçi Portaline Giriş Yap ➔' }}
+            </button>
+          </form>
+        </div>
+
+        <div v-else>
+          <div v-if="forgotSuccess" style="padding: 14px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 12px; color: #065f46; font-size: 0.88rem; margin-bottom: 20px;">
+            ✅ {{ forgotSuccess }}
           </div>
 
-          <button type="submit" class="btn btn-block" style="background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; padding: 14px; font-size: 1rem; font-weight: 700; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); width: 100%;">
-            Tedarikçi Portaline Giriş Yap ➔
-          </button>
-        </form>
+          <form v-else @submit.prevent="handleForgotPassword">
+            <div class="form-group" style="margin-bottom: 25px;">
+              <label class="form-label" style="font-weight: 600; color: #334155;">E-posta Adresi *</label>
+              <input type="email" v-model="forgotEmail" required class="form-input" placeholder="tedarikci@sirket.com" style="height: 48px;">
+            </div>
+
+            <button type="submit" class="btn btn-block" style="background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; padding: 14px; font-weight: 700; border: none; border-radius: 10px; cursor: pointer; width: 100%;" :disabled="forgotLoading">
+              {{ forgotLoading ? 'Gönderiliyor...' : 'Şifre Sıfırlama Bağlantısı Gönder' }}
+            </button>
+          </form>
+
+          <div style="margin-top: 20px; text-align: center;">
+            <button @click="showForgot = false" style="background: none; border: none; cursor: pointer; color: #64748b; font-size: 0.88rem; font-weight: 600;">
+              ← Giriş Ekranına Dön
+            </button>
+          </div>
+        </div>
 
         <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px; text-align: center;">
           <router-link to="/login" style="color: #64748b; font-size: 0.85rem; text-decoration: none;" class="hover-underline">
@@ -75,6 +100,37 @@ const router = useRouter()
 const email = ref('')
 const password = ref('')
 const loading = ref(false)
+
+const showForgot = ref(false)
+const forgotEmail = ref('')
+const forgotLoading = ref(false)
+const forgotSuccess = ref('')
+
+const handleForgotPassword = async () => {
+  if (!forgotEmail.value) return
+  forgotLoading.value = true
+  forgotSuccess.value = ''
+
+  try {
+    const res = await fetch('/api/auth/forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: forgotEmail.value })
+    })
+
+    const data = await res.json()
+    if (res.ok) {
+      forgotSuccess.value = data.message || 'Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.'
+    } else {
+      alert(data.detail || 'Bir hata oluştu.')
+    }
+  } catch (err) {
+    console.error('Forgot password error:', err)
+    alert('Sunucuya bağlanılamadı.')
+  } finally {
+    forgotLoading.value = false
+  }
+}
 
 const handleLogin = async () => {
   if (!email.value || !password.value) return

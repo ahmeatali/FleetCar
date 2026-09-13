@@ -7,28 +7,33 @@ from .database import Base
 class AdminUser(Base):
     __tablename__ = "admin_users"
 
-    id            = Column(Integer, primary_key=True, index=True)
-    email         = Column(String, unique=True, index=True, nullable=False)
-    password_hash = Column(String, nullable=False)
-    created_at    = Column(String)
+    id                  = Column(Integer, primary_key=True, index=True)
+    email               = Column(String, unique=True, index=True, nullable=False)
+    password_hash       = Column(String, nullable=False)
+    created_at          = Column(String)
+    reset_token         = Column(String, nullable=True)
+    reset_token_expires = Column(String, nullable=True)
 
 
 class Supplier(Base):
     __tablename__ = "suppliers"
 
-    id                = Column(Integer, primary_key=True, index=True)
-    name              = Column(String, nullable=False)
-    type              = Column(String, nullable=False)          # servis / lastik / yol_yardim / ikame_arac
-    email             = Column(String, unique=True, index=True, nullable=True)
-    phone             = Column(String)
-    location          = Column(String)                           # "İlçe, İl" computed
-    city              = Column(String)
-    district          = Column(String)
-    services          = Column(JSON, default=list)               # ["Periyodik Bakım", ...]
-    contract_type     = Column(String)                           # Yetkili / Anlaşmalı
-    password_hash     = Column(String, nullable=True)
-    invitation_token  = Column(String, nullable=True)
-    invitation_status = Column(String, default="Davet Edilmedi") # Davet Edilmedi / Davet Gönderildi / Aktif
+    id                  = Column(Integer, primary_key=True, index=True)
+    name                = Column(String, nullable=False)
+    type                = Column(String, nullable=False)          # servis / lastik / yol_yardim / ikame_arac
+    email               = Column(String, unique=True, index=True, nullable=True)
+    phone               = Column(String)
+    location            = Column(String)                           # "İlçe, İl" computed
+    city                = Column(String)
+    district            = Column(String)
+    services            = Column(JSON, default=list)               # ["Periyodik Bakım", ...]
+    contract_type       = Column(String)                           # Yetkili / Anlaşmalı
+    password_hash       = Column(String, nullable=True)
+    invitation_token    = Column(String, nullable=True)
+    invitation_status   = Column(String, default="Davet Edilmedi") # Davet Edilmedi / Davet Gönderildi / Aktif
+    is_email_verified   = Column(Boolean, default=True)
+    reset_token         = Column(String, nullable=True)
+    reset_token_expires = Column(String, nullable=True)
 
 
 class Customer(Base):
@@ -49,6 +54,10 @@ class Customer(Base):
     invitation_status         = Column(String, default="Davet Edilmedi") # Davet Edilmedi / Davet Gönderildi / Aktif
     documents_uploaded        = Column(Boolean, default=False)
     documents                 = Column(JSON, default=dict) # {"tax_plate": "...", "signature_circular": "...", "activity_certificate": "..."}
+    is_email_verified         = Column(Boolean, default=False)
+    verification_token        = Column(String, nullable=True)
+    reset_token               = Column(String, nullable=True)
+    reset_token_expires       = Column(String, nullable=True)
 
 
 

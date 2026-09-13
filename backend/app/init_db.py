@@ -9,6 +9,14 @@ def create_tables():
     # Auto-migration for SQLite missing columns on existing databases
     try:
         inspector = inspect(engine)
+        if "admin_users" in inspector.get_table_names():
+            admin_columns = [c["name"] for c in inspector.get_columns("admin_users")]
+            with engine.begin() as conn:
+                if "reset_token" not in admin_columns:
+                    conn.execute(text("ALTER TABLE admin_users ADD COLUMN reset_token VARCHAR;"))
+                if "reset_token_expires" not in admin_columns:
+                    conn.execute(text("ALTER TABLE admin_users ADD COLUMN reset_token_expires VARCHAR;"))
+
         if "suppliers" in inspector.get_table_names():
             columns = [c["name"] for c in inspector.get_columns("suppliers")]
             with engine.begin() as conn:
@@ -20,6 +28,12 @@ def create_tables():
                     conn.execute(text("ALTER TABLE suppliers ADD COLUMN invitation_token VARCHAR;"))
                 if "invitation_status" not in columns:
                     conn.execute(text("ALTER TABLE suppliers ADD COLUMN invitation_status VARCHAR DEFAULT 'Davet Edilmedi';"))
+                if "is_email_verified" not in columns:
+                    conn.execute(text("ALTER TABLE suppliers ADD COLUMN is_email_verified BOOLEAN DEFAULT 1;"))
+                if "reset_token" not in columns:
+                    conn.execute(text("ALTER TABLE suppliers ADD COLUMN reset_token VARCHAR;"))
+                if "reset_token_expires" not in columns:
+                    conn.execute(text("ALTER TABLE suppliers ADD COLUMN reset_token_expires VARCHAR;"))
 
         if "vehicles" in inspector.get_table_names():
             veh_columns = [c["name"] for c in inspector.get_columns("vehicles")]
@@ -42,6 +56,14 @@ def create_tables():
                     conn.execute(text("ALTER TABLE customers ADD COLUMN documents_uploaded BOOLEAN DEFAULT 0;"))
                 if "documents" not in cust_columns:
                     conn.execute(text("ALTER TABLE customers ADD COLUMN documents JSON DEFAULT '{}';"))
+                if "is_email_verified" not in cust_columns:
+                    conn.execute(text("ALTER TABLE customers ADD COLUMN is_email_verified BOOLEAN DEFAULT 0;"))
+                if "verification_token" not in cust_columns:
+                    conn.execute(text("ALTER TABLE customers ADD COLUMN verification_token VARCHAR;"))
+                if "reset_token" not in cust_columns:
+                    conn.execute(text("ALTER TABLE customers ADD COLUMN reset_token VARCHAR;"))
+                if "reset_token_expires" not in cust_columns:
+                    conn.execute(text("ALTER TABLE customers ADD COLUMN reset_token_expires VARCHAR;"))
 
         if "quotes" in inspector.get_table_names():
             quote_columns = [c["name"] for c in inspector.get_columns("quotes")]
