@@ -29,7 +29,9 @@ def create_tables():
                 if "invitation_status" not in columns:
                     conn.execute(text("ALTER TABLE suppliers ADD COLUMN invitation_status VARCHAR DEFAULT 'Davet Edilmedi';"))
                 if "is_email_verified" not in columns:
-                    conn.execute(text("ALTER TABLE suppliers ADD COLUMN is_email_verified BOOLEAN DEFAULT 1;"))
+                    conn.execute(text("ALTER TABLE suppliers ADD COLUMN is_email_verified BOOLEAN DEFAULT 0;"))
+                if "verification_token" not in columns:
+                    conn.execute(text("ALTER TABLE suppliers ADD COLUMN verification_token VARCHAR;"))
                 if "reset_token" not in columns:
                     conn.execute(text("ALTER TABLE suppliers ADD COLUMN reset_token VARCHAR;"))
                 if "reset_token_expires" not in columns:

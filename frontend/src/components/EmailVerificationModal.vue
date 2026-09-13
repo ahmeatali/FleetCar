@@ -60,9 +60,10 @@ const checkVerificationStatus = () => {
     return
   }
 
-  const token = localStorage.getItem('fleetcar_token')
-  const email = localStorage.getItem('fleetcar_user_email')
+  const token = localStorage.getItem('fleetcar_token') || localStorage.getItem('fleetcar_supplier_token')
+  const email = localStorage.getItem('fleetcar_user_email') || localStorage.getItem('fleetcar_supplier_email')
   const customerStr = localStorage.getItem('fleet_customer')
+  const supplierStr = localStorage.getItem('fleet_supplier')
 
   if (!token || !email) {
     showModal.value = false
@@ -74,13 +75,21 @@ const checkVerificationStatus = () => {
   try {
     if (customerStr) {
       const cust = JSON.parse(customerStr)
-      if (cust && cust.is_email_verified === false) {
+      if (cust && (cust.is_email_verified === false || cust.is_email_verified === 0)) {
+        showModal.value = true
+        return
+      }
+    }
+
+    if (supplierStr) {
+      const supp = JSON.parse(supplierStr)
+      if (supp && (supp.is_email_verified === false || supp.is_email_verified === 0)) {
         showModal.value = true
         return
       }
     }
   } catch (e) {
-    console.error('Failed parsing customer data', e)
+    console.error('Failed parsing user data', e)
   }
 
   // Check explicit item
@@ -123,9 +132,15 @@ const handleLogout = () => {
   localStorage.removeItem('fleetcar_token')
   localStorage.removeItem('fleetcar_customer_id')
   localStorage.removeItem('fleetcar_customer_name')
+  localStorage.removeItem('fleetcar_supplier_token')
+  localStorage.removeItem('fleetcar_supplier_id')
+  localStorage.removeItem('fleetcar_supplier_name')
+  localStorage.removeItem('fleetcar_supplier_type')
+  localStorage.removeItem('fleetcar_supplier_email')
   localStorage.removeItem('fleetcar_user_email')
   localStorage.removeItem('fleetcar_user_verified')
   localStorage.removeItem('fleet_customer')
+  localStorage.removeItem('fleet_supplier')
   showModal.value = false
   router.push('/login')
 }

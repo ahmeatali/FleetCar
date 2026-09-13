@@ -659,6 +659,16 @@ def supplier_login(creds: AdminLoginRequest, db: Session = Depends(get_db)):
         s.invitation_status = "Aktif"
         db.commit()
 
+    if getattr(s, 'is_email_verified', False) is not True:
+        s.is_email_verified = False
+        if not getattr(s, 'verification_token', None):
+            v_token = generate_invitation_token()
+            s.verification_token = v_token
+            db.commit()
+            send_email_verification_email(s.email, s.name, v_token)
+        else:
+            db.commit()
+
     return {
         "status": "success",
         "token": f"supplier_token_{s.id}_{datetime.datetime.now().timestamp()}",
@@ -688,6 +698,16 @@ def customer_login(creds: AdminLoginRequest, db: Session = Depends(get_db)):
         c.password_hash = hash_password(creds.password)
         c.invitation_status = "Aktif"
         db.commit()
+
+    if getattr(c, 'is_email_verified', False) is not True:
+        c.is_email_verified = False
+        if not getattr(c, 'verification_token', None):
+            v_token = generate_invitation_token()
+            c.verification_token = v_token
+            db.commit()
+            send_email_verification_email(c.email, c.company_name, v_token)
+        else:
+            db.commit()
 
     return {
         "status": "success",
@@ -788,40 +808,67 @@ def verify_email_token(token: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Geçersiz veya eksik doğrulama kodu.")
 
     c = db.query(models.Customer).filter(models.Customer.verification_token == token).first()
-    if not c:
-        raise HTTPException(status_code=404, detail="Geçersiz veya süresi dolmuş e-posta doğrulama bağlantısı.")
+    if c:
+        c.is_email_verified = True
+        c.verification_token = None
+        db.commit()
+        return {
+            "status": "success",
+            "message": "E-posta adresiniz başarıyla doğrulandı! Artık platformdaki tüm işlemleri gerçekleştirebilirsiniz.",
+            "customer": customer_dict(c)
+        }
 
-    c.is_email_verified = True
-    c.verification_token = None
-    db.commit()
+    s = db.query(models.Supplier).filter(models.Supplier.verification_token == token).first()
+    if s:
+        s.is_email_verified = True
+        s.verification_token = None
+        db.commit()
+        return {
+            "status": "success",
+            "message": "E-posta adresiniz başarıyla doğrulandı! Artık platformdaki tüm işlemleri gerçekleştirebilirsiniz.",
+            "supplier": supplier_dict(s)
+        }
 
-    return {
-        "status": "success",
-        "message": "E-posta adresiniz başarıyla doğrulandı! Artık platformdaki tüm işlemleri gerçekleştirebilirsiniz.",
-        "customer": customer_dict(c)
-    }
+    raise HTTPException(status_code=404, detail="Geçersiz veya süresi dolmuş e-posta doğrulama bağlantısı.")
 
 
 @app.post("/api/auth/resend-verification")
 def resend_verification_email(req: ResendVerificationRequest, db: Session = Depends(get_db)):
     email_clean = req.email.lower().strip()
+    
+    # 1. Customer
     c = db.query(models.Customer).filter(models.Customer.email.ilike(email_clean)).first()
-    if not c:
-        raise HTTPException(status_code=404, detail="Kayıtlı müşteri bulunamadı.")
+    if c:
+        if c.is_email_verified:
+            return {"status": "info", "message": "E-posta adresiniz zaten doğrulanmıştır."}
 
-    if c.is_email_verified:
-        return {"status": "info", "message": "E-posta adresiniz zaten doğrulanmıştır."}
+        v_token = c.verification_token or generate_invitation_token()
+        c.verification_token = v_token
+        db.commit()
+        res = send_email_verification_email(c.email, c.company_name, v_token)
+        return {
+            "status": "success",
+            "message": f"Doğrulama bağlantısı [{c.email}] adresine yeniden gönderildi.",
+            "email_sent": res.get("email_sent", False)
+        }
 
-    v_token = c.verification_token or generate_invitation_token()
-    c.verification_token = v_token
-    db.commit()
+    # 2. Supplier
+    s = db.query(models.Supplier).filter(models.Supplier.email == email_clean).first()
+    if s:
+        if s.is_email_verified:
+            return {"status": "info", "message": "E-posta adresiniz zaten doğrulanmıştır."}
 
-    res = send_email_verification_email(c.email, c.company_name, v_token)
-    return {
-        "status": "success",
-        "message": f"Doğrulama bağlantısı [{c.email}] adresine yeniden gönderildi.",
-        "email_sent": res.get("email_sent", False)
-    }
+        v_token = s.verification_token or generate_invitation_token()
+        s.verification_token = v_token
+        db.commit()
+        res = send_email_verification_email(s.email, s.name, v_token)
+        return {
+            "status": "success",
+            "message": f"Doğrulama bağlantısı [{s.email}] adresine yeniden gönderildi.",
+            "email_sent": res.get("email_sent", False)
+        }
+
+    raise HTTPException(status_code=404, detail="Kayıtlı e-posta adresi bulunamadı.")
 
 
 @app.post("/api/customer/register")

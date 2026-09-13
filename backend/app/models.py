@@ -31,7 +31,8 @@ class Supplier(Base):
     password_hash       = Column(String, nullable=True)
     invitation_token    = Column(String, nullable=True)
     invitation_status   = Column(String, default="Davet Edilmedi") # Davet Edilmedi / Davet Gönderildi / Aktif
-    is_email_verified   = Column(Boolean, default=True)
+    is_email_verified   = Column(Boolean, default=False)
+    verification_token  = Column(String, nullable=True)
     reset_token         = Column(String, nullable=True)
     reset_token_expires = Column(String, nullable=True)
 
