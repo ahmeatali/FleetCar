@@ -82,7 +82,7 @@ def supplier_dict(s: models.Supplier) -> dict:
         "email": getattr(s, 'email', None),
         "invitation_status": getattr(s, 'invitation_status', 'Davet Edilmedi') or 'Davet Edilmedi',
         "has_password": bool(getattr(s, 'password_hash', None)),
-        "is_email_verified": getattr(s, 'is_email_verified', True) if getattr(s, 'is_email_verified', None) is not None else True
+        "is_email_verified": getattr(s, 'is_email_verified', False) if getattr(s, 'is_email_verified', None) is not None else False
     }
 
 
@@ -182,7 +182,7 @@ def customer_dict(c: models.Customer, actual: int = None, deficit: int = None) -
         "has_password": bool(getattr(c, 'password_hash', None)),
         "documents_uploaded": getattr(c, 'documents_uploaded', False) or False,
         "documents": getattr(c, 'documents', {}) or {},
-        "is_email_verified": getattr(c, 'is_email_verified', True) if getattr(c, 'is_email_verified', None) is not None else True
+        "is_email_verified": getattr(c, 'is_email_verified', False) if getattr(c, 'is_email_verified', None) is not None else False
     }
     if actual is not None:
         d["actual_vehicle_count"] = actual
@@ -660,8 +660,14 @@ def supplier_login(creds: AdminLoginRequest, db: Session = Depends(get_db)):
         db.commit()
 
     if getattr(s, 'is_email_verified', False) is not True:
-        s.is_email_verified = True
-        db.commit()
+        s.is_email_verified = False
+        if not getattr(s, 'verification_token', None):
+            v_token = generate_invitation_token()
+            s.verification_token = v_token
+            db.commit()
+            send_email_verification_email(s.email, s.name, v_token)
+        else:
+            db.commit()
 
     return {
         "status": "success",
@@ -694,8 +700,14 @@ def customer_login(creds: AdminLoginRequest, db: Session = Depends(get_db)):
         db.commit()
 
     if getattr(c, 'is_email_verified', False) is not True:
-        c.is_email_verified = True
-        db.commit()
+        c.is_email_verified = False
+        if not getattr(c, 'verification_token', None):
+            v_token = generate_invitation_token()
+            c.verification_token = v_token
+            db.commit()
+            send_email_verification_email(c.email, c.company_name, v_token)
+        else:
+            db.commit()
 
     return {
         "status": "success",
@@ -885,7 +897,7 @@ def customer_register(req: CustomerRegisterRequest, db: Session = Depends(get_db
             if req.phone:
                 existing.phone = req.phone
             existing.invitation_status = "Aktif"
-            existing.is_email_verified = True
+            existing.is_email_verified = False
             existing.verification_token = v_token
             db.commit()
             c = existing
@@ -902,16 +914,19 @@ def customer_register(req: CustomerRegisterRequest, db: Session = Depends(get_db
             address="Maslak, İstanbul",
             documents_uploaded=False,
             documents={},
-            is_email_verified=True,
+            is_email_verified=False,
             verification_token=v_token
         )
         db.add(c)
         db.commit()
         db.refresh(c)
 
+    # Send verification email
+    send_email_verification_email(c.email, c.company_name, v_token)
+
     return {
         "status": "success",
-        "message": "Hesabınız başarıyla oluşturuldu!",
+        "message": "Hesabınız başarıyla oluşturuldu! Lütfen e-posta kutunuza gönderilen doğrulama bağlantısına tıklayarak hesabınızı onaylayın.",
         "token": f"customer_token_{c.id}_{datetime.datetime.now().timestamp()}",
         "customer": customer_dict(c)
     }

@@ -53,7 +53,52 @@ const successMsg = ref('')
 const errMsg = ref('')
 
 const checkVerificationStatus = () => {
-  showModal.value = false
+  // Exclude auth/public routes from blocking modal
+  const publicRoutes = ['/', '/login', '/admin-login', '/supplier-login', '/service-login', '/setup-password', '/reset-password', '/verify-email']
+  if (publicRoutes.includes(route.path)) {
+    showModal.value = false
+    return
+  }
+
+  const token = localStorage.getItem('fleetcar_token') || localStorage.getItem('fleetcar_supplier_token')
+  const email = localStorage.getItem('fleetcar_user_email') || localStorage.getItem('fleetcar_supplier_email')
+  const customerStr = localStorage.getItem('fleet_customer')
+  const supplierStr = localStorage.getItem('fleet_supplier')
+
+  if (!token || !email) {
+    showModal.value = false
+    return
+  }
+
+  userEmail.value = email
+
+  try {
+    if (customerStr) {
+      const cust = JSON.parse(customerStr)
+      if (cust && (cust.is_email_verified === false || cust.is_email_verified === 0)) {
+        showModal.value = true
+        return
+      }
+    }
+
+    if (supplierStr) {
+      const supp = JSON.parse(supplierStr)
+      if (supp && (supp.is_email_verified === false || supp.is_email_verified === 0)) {
+        showModal.value = true
+        return
+      }
+    }
+  } catch (e) {
+    console.error('Failed parsing user data', e)
+  }
+
+  // Check explicit item
+  const isVerifiedItem = localStorage.getItem('fleetcar_user_verified')
+  if (isVerifiedItem === 'false') {
+    showModal.value = true
+  } else {
+    showModal.value = false
+  }
 }
 
 const handleResendEmail = async () => {
