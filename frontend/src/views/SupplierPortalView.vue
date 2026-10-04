@@ -5,11 +5,9 @@
     <!-- Navbar Header -->
     <header class="supplier-header glass-panel">
       <div class="logo-area">
-        <div class="nav-logo-icon" :style="{ background: isServiceAccount ? 'linear-gradient(135deg, #2563eb, #1d4ed8)' : 'linear-gradient(135deg, #10b981, #059669)' }">
-          {{ isServiceAccount ? '🔧' : 'F' }}
-        </div>
+        <img class="brand-logo-image" src="/fleetrent-logo.jpeg" alt="FleetRent" />
         <div>
-          <span class="portal-title">FleetRent <span :class="isServiceAccount ? 'tag-service' : 'tag-supplier'">{{ isServiceAccount ? 'Servis Portalı' : 'Tedarikçi Portalı' }}</span></span>
+          <span class="portal-title"><span :class="isServiceAccount ? 'tag-service' : 'tag-supplier'">{{ isServiceAccount ? 'Servis Portalı' : 'Tedarikçi Portalı' }}</span></span>
           <h2 class="supplier-name-display">{{ supplierName }}</h2>
         </div>
       </div>
@@ -403,8 +401,13 @@
                       <span class="badge" :class="getStatusBadgeClass(req.status)">{{ req.status }}</span>
                     </td>
                     <td>
-                      <select 
-                        @change="updateStatus(req.id, $event.target.value)" 
+                      <select v-if="req.type === 'yol_yardim'"
+                        @change="updateStatus(req, $event.target.value)"
+                        class="form-select status-select-mini" :value="req.status" :disabled="updatingId === req.id">
+                        <option value="Beklemede">Beklemede</option><option value="Ekip Atandı">Ekip Atandı</option><option value="Yola Çıktı">Yola Çıktı</option><option value="Ekip Varış Noktasında">Ekip Varış Noktasında</option><option value="Çözüldü">Çözüldü</option><option value="İptal Edildi">İptal Et</option>
+                      </select>
+                      <select v-else
+                        @change="updateStatus(req, $event.target.value)"
                         class="form-select status-select-mini"
                         :value="req.status"
                         :disabled="updatingId === req.id"
@@ -592,7 +595,7 @@
                             ⚙️ İş Emri & Parçalar
                           </button>
                           <select 
-                            @change="updateStatus(req.id, $event.target.value)" 
+                            @change="updateStatus(req, $event.target.value)"
                             class="form-select status-select-mini"
                             :value="req.status"
                             :disabled="updatingId === req.id"
@@ -1278,6 +1281,7 @@ const invoiceForm = reactive({
   invoice_notes: '',
   file_name: ''
 })
+const selectedInvoiceFile = ref(null)
 
 const openCheckinModal = (req) => {
   selectedRequestForCheckin.value = req
@@ -1376,12 +1380,14 @@ const openInvoiceModal = (req) => {
   invoiceForm.invoice_amount = req.details?.invoice_amount || req.details?.total_estimated_cost || 0
   invoiceForm.invoice_notes = req.details?.invoice_notes || ''
   invoiceForm.file_name = req.details?.invoice_file_name || ''
+  selectedInvoiceFile.value = null
   showInvoiceModal.value = true
 }
 
 const handleInvoiceFileUpload = (event) => {
   const file = event.target.files[0]
   if (file) {
+    selectedInvoiceFile.value = file
     invoiceForm.file_name = file.name
   }
 }
@@ -1389,10 +1395,17 @@ const handleInvoiceFileUpload = (event) => {
 const submitInvoice = async () => {
   if (!selectedRequestForInvoice.value) return
   try {
+    let file_url = selectedRequestForInvoice.value.details?.invoice_file_url || null
+    if (selectedInvoiceFile.value) {
+      const file = selectedInvoiceFile.value
+      const uploaded = await fetch(`/api/vehicles/${encodeURIComponent(selectedRequestForInvoice.value.vehicle_id)}/files?category=document&document_type=service_invoice&original_name=${encodeURIComponent(file.name)}`, { method:'POST', headers:{'Content-Type':file.type}, body:file })
+      if (!uploaded.ok) return alert('Fatura dosyası yüklenemedi. PDF, JPEG veya PNG dosyası seçin.')
+      file_url = (await uploaded.json()).url
+    }
     const res = await fetch(`/api/requests/${selectedRequestForInvoice.value.id}/invoice`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(invoiceForm)
+      body: JSON.stringify({ ...invoiceForm, file_url })
     })
     if (res.ok) {
       await fetchRequests()
@@ -1408,7 +1421,7 @@ const submitInvoice = async () => {
 
 const fetchRequests = async () => {
   try {
-    const res = await fetch('/api/requests')
+    const res = await fetch(`/api/requests?supplier_id=${supplierId.value}`)
     if (res.ok) {
       requests.value = await res.json()
     }
@@ -1419,7 +1432,7 @@ const fetchRequests = async () => {
 
 const fetchQuotes = async () => {
   try {
-    const res = await fetch('/api/quotes')
+    const res = await fetch(`/api/quotes?supplier_id=${supplierId.value}`)
     if (res.ok) {
       quotes.value = await res.json()
     }
@@ -1441,7 +1454,7 @@ const fetchSupplierBids = async () => {
 
 const fetchVehicles = async () => {
   try {
-    const res = await fetch('/api/vehicles')
+    const res = await fetch(`/api/vehicles?supplier_id=${supplierId.value}`)
     if (res.ok) {
       vehicles.value = await res.json()
     }
@@ -1649,15 +1662,31 @@ const getVehicleServiceHistory = (vehicleId) => {
   return requests.value.filter(r => r.vehicle_id === vehicleId)
 }
 
-const updateStatus = async (requestId, newStatus) => {
+const updateStatus = async (request, newStatus) => {
+  const requestId = request.id
   updatingId.value = requestId
   try {
+    const update = { status: newStatus }
+    if (request.type === 'yol_yardim' && newStatus === 'Ekip Atandı') {
+      update.team_name = prompt('Yardım ekibi adı', request.roadside_case?.team_name || '')
+      if (update.team_name === null) return
+      update.team_phone = prompt('Ekip telefonu', request.roadside_case?.team_phone || '')
+      if (update.team_phone === null) return
+    }
+    if (request.type === 'yol_yardim' && ['Yola Çıktı','Ekip Varış Noktasında'].includes(newStatus)) {
+      const eta = prompt('Tahmini varış süresi (dakika)', request.roadside_case?.eta_minutes || '')
+      if (eta === null) return
+      const distance = prompt('Ekibin kalan mesafesi (km)', request.roadside_case?.distance_km || '')
+      if (distance === null) return
+      update.eta_minutes = eta === '' ? null : Number(eta)
+      update.distance_km = distance === '' ? null : Number(distance)
+    }
     const response = await fetch(`/api/requests/${requestId}/status`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ status: newStatus })
+      body: JSON.stringify(update)
     })
     if (response.ok) {
       await fetchRequests()

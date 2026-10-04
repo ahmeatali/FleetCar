@@ -3,8 +3,8 @@
     <!-- Top Header Bar -->
     <header class="hero-dark-bg" style="padding: 16px 8%; text-align: left; height: 60px; display: flex; align-items: center;">
       <router-link to="/" class="nav-logo" style="text-decoration: none;">
-        <div class="nav-logo-icon" style="background: #10b981; border-radius: 8px;">⇄</div>
-        <span style="font-weight: 800; font-size: 1.4rem; color: #ffffff;">FleetRent <span style="color: #6ee7b7; font-size: 0.85rem; font-weight: 600;">Tedarikçi</span></span>
+        <img class="brand-logo-image brand-logo-image--dark" src="/fleetrent-logo.jpeg" alt="FleetRent" />
+        <span class="brand-logo-role">Tedarikçi</span>
       </router-link>
     </header>
 
@@ -12,8 +12,8 @@
     <main style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 20px;">
       <div class="glass-panel auth-card fade-in-up" style="max-width: 480px; width: 100%; padding: 40px; background: #ffffff; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
         <div class="nav-logo" style="justify-content: center; margin-bottom: 25px;">
-          <div class="nav-logo-icon" style="background: linear-gradient(135deg, #10b981, #059669); border-radius: 8px;">F</div>
-          <span style="font-size: 1.6rem; font-weight: 800; color: #0f172a;">FleetRent <span style="color: #10b981; font-size: 0.85rem; vertical-align: super; font-weight: 600;">Tedarikçi</span></span>
+          <img class="brand-logo-image" src="/fleetrent-logo.jpeg" alt="FleetRent" />
+          <span class="brand-logo-role">Tedarikçi</span>
         </div>
 
         <h2 style="font-size: 1.5rem; text-align: center; margin-bottom: 8px; color: #0f172a; font-weight: 800;">Tedarikçi Girişi</h2>

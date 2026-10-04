@@ -1138,11 +1138,11 @@ const createdQuoteSummary = ref(null)
 
 const submittingQuote = ref(false)
 
-const documentsUploaded = ref(true)
+const documentsUploaded = ref(false)
 const hasNoVehicles = ref(false)
-const companyName = ref(localStorage.getItem('fleetcar_customer_name') || 'Tekno Holding')
-const userEmail = ref(localStorage.getItem('fleetcar_user_email') || 'info@teknoholding.com')
-const companyPhone = ref('0212 555 0000')
+const companyName = ref(localStorage.getItem('fleetcar_customer_name') || '')
+const userEmail = ref(localStorage.getItem('fleetcar_user_email') || '')
+const companyPhone = ref('')
 
 // Multi-item Quote Items State with per-group details
 const createEmptyDetailedForm = () => ({
@@ -1401,7 +1401,9 @@ const fetchCompanyStatus = async () => {
 
 const fetchQuotes = async () => {
   try {
-    const res = await fetch('/api/quotes')
+    const customerId = localStorage.getItem('fleetcar_customer_id')
+    if (!customerId) { quotes.value = []; loading.value = false; return }
+    const res = await fetch(customerId ? `/api/quotes?customer_id=${encodeURIComponent(customerId)}` : '/api/quotes')
     if (res.ok) {
       quotes.value = await res.json()
     }

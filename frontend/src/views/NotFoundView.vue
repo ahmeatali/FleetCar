@@ -6,8 +6,7 @@
     <!-- Top Header Bar -->
     <header style="padding: 20px 8%; display: flex; align-items: center; justify-content: space-between; z-index: 10;">
       <router-link to="/" class="nav-logo" style="text-decoration: none;">
-        <div class="nav-logo-icon" style="background: linear-gradient(135deg, #7c3aed, #3b82f6); border-radius: 10px;">⇄</div>
-        <span style="font-weight: 800; font-size: 1.5rem; color: #ffffff;">FleetRent</span>
+        <img class="brand-logo-image brand-logo-image--dark" src="/fleetrent-logo.jpeg" alt="FleetRent" />
       </router-link>
 
       <router-link to="/" class="btn btn-secondary" style="border-color: rgba(255,255,255,0.2); color: #e2e8f0; font-size: 0.88rem; text-decoration: none;">

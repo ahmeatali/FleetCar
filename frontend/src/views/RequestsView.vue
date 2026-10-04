@@ -74,9 +74,9 @@
 
               <div class="grid-2" style="gap: 16px;">
                 <div class="form-group">
-                  <label class="form-label">KM (GPS)</label>
+                  <label class="form-label">Son kayıtlı kilometre</label>
                   <input type="text" v-model="formServis.details.mileage_gps" class="form-input" placeholder="45.426 km" readonly>
-                  <span style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px;">Otomatik GPS takip sisteminden çekilmektedir</span>
+                  <span style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px;">Araç kaydındaki kilometredir; GPS bağlanınca otomatik alınır.</span>
                 </div>
 
                 <div class="form-group">
@@ -216,9 +216,9 @@
 
               <div class="grid-2" style="gap: 16px;">
                 <div class="form-group">
-                  <label class="form-label">KM (GPS)</label>
+                  <label class="form-label">Son kayıtlı kilometre</label>
                   <input type="text" v-model="formLastik.details.mileage_gps" class="form-input" placeholder="45.426 km" readonly>
-                  <span style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px;">Otomatik GPS takip sisteminden çekilmektedir</span>
+                  <span style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px;">Araç kaydındaki kilometredir; GPS bağlanınca otomatik alınır.</span>
                 </div>
 
                 <div class="form-group">
@@ -496,8 +496,10 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'
 
+const route = useRoute()
 const activeTab = ref('servis')
 const vehicles = ref([])
 const suppliers = ref([])
@@ -505,6 +507,7 @@ const requests = ref([])
 const loading = ref(true)
 const submitting = ref(false)
 const photoInput = ref(null)
+const selectedRoadsidePhoto = ref(null)
 
 const activeCategoryTitle = computed(() => {
   switch (activeTab.value) {
@@ -554,18 +557,16 @@ const updateVehicleKmDisplay = () => {
   if (formServis.vehicle_id) {
     const v = vehicles.value.find(veh => veh.id === formServis.vehicle_id || veh.chassis_no === formServis.vehicle_id)
     if (v) {
-      const kmVal = v.gps_mileage || v.gps_km || v.mileage || v.current_km || 0
-      const isGps = !!(v.gps_mileage || v.gps_km)
-      formServis.details.mileage_gps = isGps ? `${kmVal.toLocaleString('tr-TR')} km (GPS)` : `${kmVal.toLocaleString('tr-TR')} km`
+      const kmVal = v.mileage || 0
+      formServis.details.mileage_gps = `${kmVal.toLocaleString('tr-TR')} km`
     }
   }
 
   if (formLastik.vehicle_id) {
     const v = vehicles.value.find(veh => veh.id === formLastik.vehicle_id || veh.chassis_no === formLastik.vehicle_id)
     if (v) {
-      const kmVal = v.gps_mileage || v.gps_km || v.mileage || v.current_km || 0
-      const isGps = !!(v.gps_mileage || v.gps_km)
-      formLastik.details.mileage_gps = isGps ? `${kmVal.toLocaleString('tr-TR')} km (GPS)` : `${kmVal.toLocaleString('tr-TR')} km`
+      const kmVal = v.mileage || 0
+      formLastik.details.mileage_gps = `${kmVal.toLocaleString('tr-TR')} km`
     }
   }
 }
@@ -613,13 +614,15 @@ const triggerPhotoUpload = () => {
 
 const handlePhotoSelected = (e) => {
   if (e.target.files && e.target.files[0]) {
-    formYolYardim.photo_name = e.target.files[0].name
+    selectedRoadsidePhoto.value = e.target.files[0]
+    formYolYardim.photo_name = selectedRoadsidePhoto.value.name
   }
 }
 
 const fetchData = async () => {
   try {
     const customerId = localStorage.getItem('fleetcar_customer_id') || localStorage.getItem('customer_id')
+    if (!customerId) { vehicles.value=[];requests.value=[];suppliers.value=[];return }
     let vehicleUrl = '/api/vehicles'
     if (customerId) {
       vehicleUrl += `?customer_id=${customerId}`
@@ -627,7 +630,7 @@ const fetchData = async () => {
     const [vRes, sRes, rRes] = await Promise.all([
       fetch(vehicleUrl),
       fetch('/api/suppliers'),
-      fetch('/api/requests')
+      fetch(`/api/requests?customer_id=${encodeURIComponent(customerId)}`)
     ])
     if (vRes.ok && sRes.ok && rRes.ok) {
       vehicles.value = await vRes.json()
@@ -642,6 +645,16 @@ const fetchData = async () => {
         formYolYardim.vehicle_id = vehicles.value[0].id
         updateVehicleKmDisplay()
       }
+      const requestedType = route.query.type
+      if (['servis', 'lastik', 'ikame_arac', 'yol_yardim'].includes(requestedType)) activeTab.value = requestedType
+      if (route.query.vehicle_id) {
+        const vehicleId = String(route.query.vehicle_id)
+        formServis.vehicle_id = vehicleId
+        formLastik.vehicle_id = vehicleId
+        formIkame.vehicle_id = vehicleId
+        formYolYardim.vehicle_id = vehicleId
+      }
+      if (route.query.service_type) formServis.details.service_type = String(route.query.service_type)
     }
   } catch (err) {
     console.error('Error fetching request data:', err)
@@ -657,7 +670,7 @@ const submitRequest = async (type) => {
   if (type === 'servis') {
     payload = {
       vehicle_id: formServis.vehicle_id,
-      supplier_id: suppliers.value.find(s => s.type === 'servis')?.id || 1,
+      supplier_id: suppliers.value.find(s => s.type === 'servis')?.id || null,
       type: 'servis',
       description: formServis.description || `${formServis.details.service_type} Talebi`,
       details: formServis.details
@@ -665,7 +678,7 @@ const submitRequest = async (type) => {
   } else if (type === 'lastik') {
     payload = {
       vehicle_id: formLastik.vehicle_id,
-      supplier_id: suppliers.value.find(s => s.type === 'lastik')?.id || 2,
+      supplier_id: suppliers.value.find(s => s.type === 'lastik')?.id || null,
       type: 'lastik',
       description: formLastik.description || `${formLastik.details.count} Adet ${formLastik.details.tire_type} Değişimi`,
       details: formLastik.details
@@ -673,18 +686,32 @@ const submitRequest = async (type) => {
   } else if (type === 'ikame_arac') {
     payload = {
       vehicle_id: formIkame.vehicle_id,
-      supplier_id: suppliers.value.find(s => s.type === 'ikame_arac')?.id || 4,
+      supplier_id: suppliers.value.find(s => s.type === 'ikame_arac')?.id || null,
       type: 'ikame_arac',
       description: formIkame.description || `İkame Araç Talebi (${formIkame.details.reason})`,
       details: formIkame.details
     }
   } else if (type === 'yol_yardim') {
+    let photos = []
+    if (selectedRoadsidePhoto.value) {
+      const file = selectedRoadsidePhoto.value
+      const upload = await fetch(`/api/vehicles/${encodeURIComponent(formYolYardim.vehicle_id)}/files?category=photo&original_name=${encodeURIComponent(file.name)}`, {
+        method: 'POST', headers: { 'Content-Type': file.type || 'application/octet-stream' }, body: file
+      })
+      if (!upload.ok) {
+        submitting.value = false
+        alert('Fotoğraf yüklenemedi. JPEG, PNG veya WebP dosyası seçin.')
+        return
+      }
+      const savedFile = await upload.json()
+      photos = [savedFile.url]
+    }
     payload = {
       vehicle_id: formYolYardim.vehicle_id,
-      supplier_id: suppliers.value.find(s => s.type === 'yol_yardim')?.id || 3,
+      supplier_id: suppliers.value.find(s => s.type === 'yol_yardim')?.id || null,
       type: 'yol_yardim',
       description: `Yol Yardım Talebi: ${formYolYardim.incidents.join(', ')}`,
-      details: { incidents: formYolYardim.incidents, photo: formYolYardim.photo_name }
+      details: { incidents: formYolYardim.incidents, photos }
     }
   }
 
@@ -741,4 +768,3 @@ onMounted(() => {
   fetchData()
 })
 </script>
-

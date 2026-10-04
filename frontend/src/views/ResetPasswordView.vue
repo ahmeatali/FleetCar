@@ -3,8 +3,7 @@
     <!-- Top Header Bar -->
     <header class="hero-dark-bg" style="padding: 16px 8%; text-align: left; height: 60px; display: flex; align-items: center;">
       <router-link to="/" class="nav-logo" style="text-decoration: none;">
-        <div class="nav-logo-icon" style="background: #2563eb; border-radius: 8px;">⇄</div>
-        <span style="font-weight: 800; font-size: 1.4rem; color: #ffffff;">FleetRent</span>
+        <img class="brand-logo-image brand-logo-image--dark" src="/fleetrent-logo.jpeg" alt="FleetRent" />
       </router-link>
     </header>
 

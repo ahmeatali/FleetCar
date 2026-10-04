@@ -17,14 +17,17 @@
           <p style="color: var(--text-muted); font-size: 0.95rem;">Filo maliyetleri, lokasyon takibi, kilometre ve kullanıcı analizleri.</p>
         </div>
         <div style="display: flex; gap: 10px;">
+          <button v-if="activeTab === 'usage'" @click="showUsageModal = true" class="btn btn-blue">＋ Kullanım kaydı ekle</button>
           <button @click="downloadExcel" class="btn" style="background: #10b981; color: #ffffff; padding: 10px 18px; font-size: 0.88rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
-            <span>📄</span> Excel İndir
+            <span>📄</span> CSV İndir
           </button>
           <button @click="downloadPDF" class="btn" style="background: #ef4444; color: #ffffff; padding: 10px 18px; font-size: 0.88rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
             <span>📄</span> PDF İndir
           </button>
         </div>
       </header>
+
+      <div v-if="showUsageModal" class="modal-overlay" @click.self="showUsageModal = false"><section class="glass-panel" style="width:min(520px,95vw);padding:24px;background:#fff"><h2 style="margin-top:0">Araç kullanım kaydı</h2><form @submit.prevent="saveUsageRecord"><label class="form-label">Araç<select v-model="usageForm.vehicle_id" required class="form-input"><option value="" disabled>Araç seçin</option><option v-for="v in reportVehicles" :key="v.vehicle_id" :value="v.vehicle_id">{{v.plate}}</option></select></label><div class="grid-2"><label class="form-label">Başlangıç<input v-model="usageForm.started_at" type="datetime-local" required class="form-input"></label><label class="form-label">Bitiş<input v-model="usageForm.ended_at" type="datetime-local" required class="form-input"></label></div><p v-if="usageError" style="color:#b91c1c">{{usageError}}</p><footer style="display:flex;justify-content:flex-end;gap:8px"><button type="button" class="btn" @click="showUsageModal=false">Vazgeç</button><button class="btn btn-blue" :disabled="usageSaving">{{usageSaving?'Kaydediliyor…':'Kaydet'}}</button></footer></form></section></div>
 
       <!-- 6-Tab Switcher Bar (FleetRent Premium Pill Bar) -->
       <div class="category-tabs-bar">
@@ -98,7 +101,7 @@
                 <tr>
                   <th>Kullanıcı</th>
                   <th>Plaka</th>
-                  <th>Kira</th>
+                  <th>Aylık Kira</th>
                   <th>HGS</th>
                   <th>Yakıt</th>
                   <th>Lastik</th>
@@ -117,16 +120,10 @@
                 <tr v-for="row in filteredCostData" :key="row.plate">
                   <td>{{ row.user }}</td>
                   <td><strong style="color: #0f172a;">{{ row.plate }}</strong></td>
-                  <td>₺{{ row.kira.toLocaleString() }}</td>
-                  <td>₺{{ row.hgs.toLocaleString() }}</td>
-                  <td>₺{{ row.yakit.toLocaleString() }}</td>
-                  <td><span :style="{ color: row.lastik > 0 ? '#d97706' : '#94a3b8' }">₺{{ row.lastik.toLocaleString() }}</span></td>
-                  <td><span :style="{ color: row.hasar > 0 ? '#dc2626' : '#94a3b8' }">₺{{ row.hasar.toLocaleString() }}</span></td>
-                  <td><span :style="{ color: row.servis > 0 ? '#2563eb' : '#94a3b8' }">₺{{ row.servis.toLocaleString() }}</span></td>
-                  <td>₺{{ row.kmAsim.toLocaleString() }}</td>
-                  <td>₺{{ row.utts.toLocaleString() }}</td>
-                  <td>₺{{ row.tasitTanima.toLocaleString() }}</td>
-                  <td><strong style="color: #0f172a;">₺{{ row.toplam.toLocaleString() }}</strong></td>
+                  <td>{{ money(row.kira) }}</td><td>{{ money(row.hgs) }}</td><td>{{ money(row.yakit) }}</td>
+                  <td>{{ money(row.lastik) }}</td><td>{{ money(row.hasar) }}</td><td>{{ money(row.servis) }}</td>
+                  <td>{{ money(row.kmAsim) }}</td><td>{{ money(row.utts) }}</td><td>{{ money(row.tasitTanima) }}</td>
+                  <td><strong style="color: #0f172a;">{{ money(row.toplam) }}</strong></td>
                 </tr>
               </tbody>
             </table>
@@ -136,46 +133,46 @@
         <!-- Summary Stat Cards -->
         <div class="grid-4" style="gap: 14px; margin-bottom: 14px;">
           <div class="glass-panel stat-card text-center" style="padding: 16px; background: #ffffff;">
-            <div style="font-size: 1.5rem; font-weight: 800; color: #0f172a;">₺{{ costTotals.kira.toLocaleString() }}</div>
-            <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">Kira</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: #0f172a;">{{ money(costTotals.kira) }}</div>
+            <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">Aylık Kira</div>
           </div>
           <div class="glass-panel stat-card text-center" style="padding: 16px; background: #ffffff;">
-            <div style="font-size: 1.5rem; font-weight: 800; color: #0f172a;">₺{{ costTotals.hgs.toLocaleString() }}</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: #0f172a;">{{ money(costTotals.hgs) }}</div>
             <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">HGS</div>
           </div>
           <div class="glass-panel stat-card text-center" style="padding: 16px; background: #ffffff;">
-            <div style="font-size: 1.5rem; font-weight: 800; color: #0f172a;">₺{{ costTotals.yakit.toLocaleString() }}</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: #0f172a;">{{ money(costTotals.yakit) }}</div>
             <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">Yakıt</div>
           </div>
           <div class="glass-panel stat-card text-center" style="padding: 16px; background: #fefce8; border: 1px solid #fef08a;">
-            <div style="font-size: 1.5rem; font-weight: 800; color: #d97706;">₺{{ costTotals.lastik.toLocaleString() }}</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: #d97706;">{{ money(costTotals.lastik) }}</div>
             <div style="font-size: 0.8rem; color: #b45309; margin-top: 4px;">Lastik</div>
           </div>
         </div>
 
         <div class="grid-4" style="gap: 14px; margin-bottom: 20px;">
           <div class="glass-panel stat-card text-center" style="padding: 16px; background: #fef2f2; border: 1px solid #fecaca;">
-            <div style="font-size: 1.5rem; font-weight: 800; color: #dc2626;">₺{{ costTotals.hasar.toLocaleString() }}</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: #dc2626;">{{ money(costTotals.hasar) }}</div>
             <div style="font-size: 0.8rem; color: #b91c1c; margin-top: 4px;">Hasar</div>
           </div>
           <div class="glass-panel stat-card text-center" style="padding: 16px; background: #eff6ff; border: 1px solid #bfdbfe;">
-            <div style="font-size: 1.5rem; font-weight: 800; color: #2563eb;">₺{{ costTotals.servis.toLocaleString() }}</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: #2563eb;">{{ money(costTotals.servis) }}</div>
             <div style="font-size: 0.8rem; color: #1d4ed8; margin-top: 4px;">Servis</div>
           </div>
           <div class="glass-panel stat-card text-center" style="padding: 16px; background: #ffffff;">
-            <div style="font-size: 1.5rem; font-weight: 800; color: #0f172a;">₺{{ costTotals.kmAsim.toLocaleString() }}</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: #0f172a;">{{ money(costTotals.kmAsim) }}</div>
             <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">KM Aşım</div>
           </div>
           <div class="glass-panel stat-card text-center" style="padding: 16px; background: #ffffff;">
-            <div style="font-size: 1.5rem; font-weight: 800; color: #0f172a;">₺{{ costTotals.utts.toLocaleString() }}</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: #0f172a;">{{ money(costTotals.utts) }}</div>
             <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">UTTS</div>
           </div>
         </div>
 
         <!-- Highlight Total Card -->
         <div style="background: #f0fdf4; border: 2px solid #bbf7d0; border-radius: 16px; padding: 24px; text-align: center;">
-          <div style="font-size: 2.2rem; font-weight: 900; color: #16a34a;">₺{{ costTotals.toplam.toLocaleString() }}</div>
-          <div style="font-size: 0.95rem; font-weight: 700; color: #15803d; margin-top: 4px;">Genel Toplam Maliyet</div>
+          <div style="font-size: 2.2rem; font-weight: 900; color: #16a34a;">{{ money(costTotals.toplam) }}</div>
+          <div style="font-size: 0.95rem; font-weight: 700; color: #15803d; margin-top: 4px;">Kapsamı tamamlanmamış maliyet alanları varsa toplam gösterilmez</div>
         </div>
       </div>
 
@@ -276,8 +273,8 @@
                 <tr v-for="row in filteredKmData" :key="row.plate">
                   <td><strong style="color: #0f172a;">{{ row.plate }}</strong></td>
                   <td>{{ row.user }}</td>
-                  <td v-for="(val, idx) in row.months" :key="idx">{{ val.toLocaleString() }}</td>
-                  <td><strong style="color: #2563eb;">{{ row.avg.toLocaleString() }}</strong></td>
+                  <td v-for="(val, idx) in row.months" :key="idx">{{ numberOrUnknown(val) }}</td>
+                  <td><strong style="color: #2563eb;">{{ numberOrUnknown(row.avg) }}</strong></td>
                 </tr>
               </tbody>
             </table>
@@ -289,15 +286,15 @@
             <h4 style="color: #2563eb; font-size: 1.1rem; margin-bottom: 12px;">{{ row.plate }}</h4>
             <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 6px;">
               <span style="color: #64748b;">Mevcut KM:</span>
-              <strong style="color: #0f172a;">{{ row.currentKm.toLocaleString() }} km</strong>
+              <strong style="color: #0f172a;">{{ numberOrUnknown(row.currentKm) }} km</strong>
             </div>
             <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 6px;">
-              <span style="color: #64748b;">Toplam (12 ay):</span>
-              <strong style="color: #0f172a;">{{ row.total12m.toLocaleString() }} km</strong>
+              <span style="color: #64748b;">Kaydedilen dönem toplamı:</span>
+              <strong style="color: #0f172a;">{{ numberOrUnknown(row.total12m) }} km</strong>
             </div>
             <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #cbd5e1;">
               <span style="color: #64748b;">Ortalama:</span>
-              <strong style="color: #2563eb;">{{ row.avg.toLocaleString() }} km</strong>
+              <strong style="color: #2563eb;">{{ numberOrUnknown(row.avg) }} km</strong>
             </div>
           </div>
         </div>
@@ -447,10 +444,7 @@
                 <tr v-for="row in filteredUserData" :key="row.plate">
                   <td>{{ row.user }}</td>
                   <td><strong style="color: #0f172a;">{{ row.plate }}</strong></td>
-                  <td><span :style="{ color: row.kaza > 0 ? '#dc2626' : '#94a3b8' }">₺{{ row.kaza.toLocaleString() }}</span></td>
-                  <td><span :style="{ color: row.servis > 0 ? '#2563eb' : '#94a3b8' }">₺{{ row.servis.toLocaleString() }}</span></td>
-                  <td><span :style="{ color: row.lastik > 0 ? '#d97706' : '#94a3b8' }">₺{{ row.lastik.toLocaleString() }}</span></td>
-                  <td><strong style="color: #0f172a;">₺{{ row.toplam.toLocaleString() }}</strong></td>
+                  <td>{{ money(row.kaza) }}</td><td>{{ money(row.servis) }}</td><td>{{ money(row.lastik) }}</td><td>{{ money(row.toplam) }}</td>
                 </tr>
               </tbody>
             </table>
@@ -459,17 +453,17 @@
 
         <div class="grid-3" style="gap: 20px;">
           <div class="glass-panel text-center" style="padding: 24px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 16px;">
-            <div style="font-size: 2rem; font-weight: 900; color: #dc2626;">₺{{ userTotals.kaza.toLocaleString() }}</div>
+            <div style="font-size: 2rem; font-weight: 900; color: #dc2626;">{{ money(userTotals.kaza) }}</div>
             <div style="font-size: 0.9rem; font-weight: 700; color: #b91c1c; margin-top: 4px;">Toplam Kaza Yansıtılan</div>
           </div>
 
           <div class="glass-panel text-center" style="padding: 24px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 16px;">
-            <div style="font-size: 2rem; font-weight: 900; color: #2563eb;">₺{{ userTotals.servis.toLocaleString() }}</div>
+            <div style="font-size: 2rem; font-weight: 900; color: #2563eb;">{{ money(userTotals.servis) }}</div>
             <div style="font-size: 0.9rem; font-weight: 700; color: #1d4ed8; margin-top: 4px;">Toplam Servis Yansıtılan</div>
           </div>
 
           <div class="glass-panel text-center" style="padding: 24px; background: #fefce8; border: 1px solid #fef08a; border-radius: 16px;">
-            <div style="font-size: 2rem; font-weight: 900; color: #d97706;">₺{{ userTotals.lastik.toLocaleString() }}</div>
+            <div style="font-size: 2rem; font-weight: 900; color: #d97706;">{{ money(userTotals.lastik) }}</div>
             <div style="font-size: 0.9rem; font-weight: 700; color: #b45309; margin-top: 4px;">Toplam Lastik Yansıtılan</div>
           </div>
         </div>
@@ -479,7 +473,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import Sidebar from '../components/Sidebar.vue'
 
 const activeTab = ref('cost')
@@ -494,115 +488,84 @@ const kmData = ref([])
 const usageData = ref([])
 const serviceDurationData = ref([])
 const userData = ref([])
+const reportVehicles = ref([])
+const showUsageModal = ref(false), usageSaving = ref(false), usageError = ref('')
+const usageForm = ref({ vehicle_id:'', started_at:'', ended_at:'' })
 
-onMounted(async () => {
+const formatDuration = minutes => minutes == null ? 'Veri yok' : `${Math.floor(minutes / 60)}s ${minutes % 60}dk`
+const money = value => value == null ? 'Veri yok' : `₺${Number(value).toLocaleString('tr-TR')}`
+const numberOrUnknown = value => value == null ? 'Veri yok' : Number(value).toLocaleString('tr-TR')
+const loadReports = async () => {
   try {
     const customerId = localStorage.getItem('fleetcar_customer_id') || localStorage.getItem('customer_id')
-    let url = '/api/vehicles'
-    if (customerId) {
-      url += `?customer_id=${customerId}`
-    }
-    const res = await fetch(url)
-    if (res.ok) {
-      const vehicles = await res.json()
-
-      costData.value = vehicles.map(v => {
-        const kira = v.monthly_rent || 0
-        const hgs = 0
-        const yakit = 0
-        const lastik = 0
-        const hasar = 0
-        const servis = 0
-        const kmAsim = 0
-        const utts = 0
-        const tasitTanima = 0
-        const toplam = kira + hgs + yakit + lastik + hasar + servis + kmAsim + utts + tasitTanima
-        return {
-          user: v.assigned_user || v.driver_name || 'Atanmadı',
-          plate: v.plate,
-          kira, hgs, yakit, lastik, hasar, servis, kmAsim, utts, tasitTanima, toplam
-        }
-      })
-
-      locationData.value = vehicles.map(v => ({
-        plate: v.plate,
-        user: v.assigned_user || v.driver_name || 'Atanmadı',
-        semt: [{ name: v.city || 'Belirtilmedi', duration: '0s 0dk', sabah: '0s 0dk', ogle: '0s 0dk', aksam: '0s 0dk' }],
-        ilce: [{ name: v.city || 'Belirtilmedi', duration: '0s 0dk', sabah: '0s 0dk', ogle: '0s 0dk', aksam: '0s 0dk' }],
-        il: [{ name: v.city || 'Belirtilmedi', duration: '0s 0dk', sabah: '0s 0dk', ogle: '0s 0dk', aksam: '0s 0dk' }]
-      }))
-
-      kmData.value = vehicles.map(v => {
-        const km = v.current_km || v.km || 0
-        return {
-          plate: v.plate,
-          user: v.assigned_user || v.driver_name || 'Atanmadı',
-          months: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, km],
-          avg: Math.round(km / 12),
-          currentKm: km,
-          total12m: km
-        }
-      })
-
-      usageData.value = vehicles.map(v => ({
-        plate: v.plate,
-        user: v.assigned_user || v.driver_name || 'Atanmadı',
-        months: ['0s 0dk', '0s 0dk', '0s 0dk', '0s 0dk', '0s 0dk', '0s 0dk', '0s 0dk', '0s 0dk', '0s 0dk', '0s 0dk', '0s 0dk', '0s 0dk'],
-        avg: '0s 0dk',
-        totalDuration: '0s 0dk',
-        monthlyAvg: '0s 0dk'
-      }))
-
-      serviceDurationData.value = vehicles.map(v => ({
-        plate: v.plate,
-        user: v.assigned_user || v.driver_name || 'Atanmadı',
-        bakim: '0.0 Gün',
-        lastik: '0.0 Gün',
-        hasar: '0.0 Gün',
-        mekanik: '0.0 Gün',
-        toplam: '0.0 Gün'
-      }))
-
-      userData.value = vehicles.map(v => ({
-        user: v.assigned_user || v.driver_name || 'Atanmadı',
-        plate: v.plate,
-        kaza: 0,
-        servis: 0,
-        lastik: 0,
-        toplam: 0
-      }))
-    }
-  } catch (e) {
-    console.error('Reports fetch error:', e)
-  }
-})
+    if (!customerId) { costData.value=[];locationData.value=[];kmData.value=[];usageData.value=[];serviceDurationData.value=[];userData.value=[];return }
+    const params = new URLSearchParams({ customer_id: customerId })
+    if (startDate.value) params.set('start_date', startDate.value)
+    if (endDate.value) params.set('end_date', endDate.value)
+    const res = await fetch(`/api/reports?${params}`)
+    if (!res.ok) throw new Error('Rapor verileri alınamadı.')
+    const { vehicles = [] } = await res.json()
+    reportVehicles.value = vehicles
+    const now = new Date()
+    const year = Number((startDate.value || endDate.value || `${now.getFullYear()}-01-01`).slice(0, 4))
+    costData.value = vehicles.map(v => {
+      const expenses = v.expenses || {}
+      const kira = v.monthly_rent == null ? null : Number(v.monthly_rent)
+      const row = { user: v.user || 'Atanmadı', plate: v.plate, kira, hgs: v.hgs == null && expenses.hgs == null ? null : Number(v.hgs ?? expenses.hgs), yakit: expenses.fuel == null ? null : Number(expenses.fuel), lastik: expenses.tire == null ? null : Number(expenses.tire), hasar: expenses.damage == null ? null : Number(expenses.damage), servis: v.service_cost == null && expenses.service == null ? null : Number(v.service_cost || 0) + Number(expenses.service || 0), kmAsim: null, utts: null, tasitTanima: null }
+      row.toplam = null
+      return row
+    })
+    locationData.value = vehicles.map(v => {
+      const entries = (v.locations || []).map(point => ({ name: point.label || `${point.latitude}, ${point.longitude}`, duration: 'Süre verisi yok', sabah: '—', ogle: '—', aksam: '—', recorded_at: point.recorded_at }))
+      const locations = entries.length ? entries : [{ name: 'Konum kaydı yok', duration: 'Veri yok', sabah: '—', ogle: '—', aksam: '—' }]
+      const unavailable = [{ name: 'Bölge analizi için veri yok', duration: 'Veri yok', sabah: '—', ogle: '—', aksam: '—' }]
+      return { plate: v.plate, user: v.user || 'Atanmadı', semt: locations, ilce: unavailable, il: unavailable }
+    })
+    kmData.value = vehicles.map(v => {
+      const months = Array.from({length:12}, (_,i) => v.monthly_km?.[`${year}-${String(i+1).padStart(2,'0')}`] ?? null)
+      const valid = months.filter(x => x != null)
+      const total = valid.reduce((sum,x)=>sum+x,0)
+      return { plate:v.plate, user:v.user || 'Atanmadı', months, avg:valid.length?Math.round(total/valid.length):null, currentKm:v.current_mileage, total12m:valid.length?total:null }
+    })
+    usageData.value = vehicles.map(v => {
+      const months = Array.from({length:12},(_,i)=>formatDuration(v.usage_months?.[`${year}-${String(i+1).padStart(2,'0')}`] ?? null))
+      return { plate:v.plate, user:v.user || 'Atanmadı', months, avg:formatDuration(v.usage_minutes == null ? null : Math.round(v.usage_minutes / Math.max(1,Object.keys(v.usage_months || {}).length))), totalDuration:formatDuration(v.usage_minutes), monthlyAvg:formatDuration(v.usage_minutes == null ? null : Math.round(v.usage_minutes/Math.max(1,Object.keys(v.usage_months || {}).length))) }
+    })
+    const days = value => value == null ? 'Veri yok' : `${value.toFixed(1)} gün`
+    serviceDurationData.value = vehicles.map(v => ({ plate:v.plate, user:v.user || 'Atanmadı', bakim:days(v.service_days?.maintenance), lastik:days(v.service_days?.tire), hasar:days(v.service_days?.damage), mekanik:days(v.service_days?.mechanical), toplam:days(v.service_days?.total) }))
+    userData.value = vehicles.map(v => ({ user:v.user || 'Atanmadı', plate:v.plate, kaza:null, servis:null, lastik:null, toplam:null }))
+  } catch (e) { console.error('Reports fetch error:', e) }
+}
+onMounted(loadReports)
+watch([startDate, endDate], loadReports)
+const saveUsageRecord = async () => {
+  usageSaving.value=true;usageError.value=''
+  try {
+    const body={started_at:new Date(usageForm.value.started_at).toISOString(),ended_at:new Date(usageForm.value.ended_at).toISOString(),source:'manual'}
+    const res=await fetch(`/api/vehicles/${encodeURIComponent(usageForm.value.vehicle_id)}/usage-records`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    if(!res.ok)throw new Error((await res.json()).detail||'Kullanım kaydı kaydedilemedi.')
+    showUsageModal.value=false;usageForm.value={vehicle_id:'',started_at:'',ended_at:''};await loadReports()
+  } catch(e){usageError.value=e.message} finally{usageSaving.value=false}
+}
 
 const costTotals = computed(() => {
   const init = { kira: 0, hgs: 0, yakit: 0, lastik: 0, hasar: 0, servis: 0, kmAsim: 0, utts: 0, tasitTanima: 0, toplam: 0 }
-  return filteredCostData.value.reduce((acc, row) => {
-    acc.kira += row.kira || 0
-    acc.hgs += row.hgs || 0
-    acc.yakit += row.yakit || 0
-    acc.lastik += row.lastik || 0
-    acc.hasar += row.hasar || 0
-    acc.servis += row.servis || 0
-    acc.kmAsim += row.kmAsim || 0
-    acc.utts += row.utts || 0
-    acc.tasitTanima += row.tasitTanima || 0
-    acc.toplam += row.toplam || 0
-    return acc
-  }, init)
+  const totals = filteredCostData.value.reduce((acc, row) => { for (const key of Object.keys(init)) if (row[key] != null) acc[key] += Number(row[key]); return acc }, init)
+  for (const key of Object.keys(init)) if (!filteredCostData.value.length || filteredCostData.value.some(row => row[key] == null)) totals[key] = null
+  for (const key of ['kmAsim', 'utts', 'tasitTanima', 'toplam']) totals[key] = null
+  return totals
 })
 
 const userTotals = computed(() => {
   const init = { kaza: 0, servis: 0, lastik: 0, toplam: 0 }
-  return filteredUserData.value.reduce((acc, row) => {
+  const totals = filteredUserData.value.reduce((acc, row) => {
     acc.kaza += row.kaza || 0
     acc.servis += row.servis || 0
     acc.lastik += row.lastik || 0
     acc.toplam += row.toplam || 0
     return acc
   }, init)
+  return { kaza:null, servis:null, lastik:null, toplam:null }
 })
 
 const resetFilters = () => {
@@ -678,7 +641,7 @@ const downloadExcel = () => {
   let rows = []
 
   if (activeTab.value === 'cost') {
-    headers = ['Kullanıcı', 'Plaka', 'Kira (TL)', 'HGS (TL)', 'Yakıt (TL)', 'Lastik (TL)', 'Hasar (TL)', 'Servis (TL)', 'KM Aşım (TL)', 'UTTS (TL)', 'Taşıt Tanıma (TL)', 'Toplam (TL)']
+    headers = ['Kullanıcı', 'Plaka', 'Aylık Kira (TL)', 'HGS (TL)', 'Yakıt (TL)', 'Lastik (TL)', 'Hasar (TL)', 'Servis (TL)', 'KM Aşım (TL)', 'UTTS (TL)', 'Taşıt Tanıma (TL)', 'Toplam (TL)']
     rows = filteredCostData.value.map(r => [r.user, r.plate, r.kira, r.hgs, r.yakit, r.lastik, r.hasar, r.servis, r.kmAsim, r.utts, r.tasitTanima, r.toplam])
   } else if (activeTab.value === 'location') {
     headers = ['Plaka', 'Kullanıcı', 'En Çok Bulunduğu Semt', 'Süre', 'İl']
@@ -725,19 +688,19 @@ const downloadPDF = () => {
       <table>
         <thead>
           <tr>
-            <th>Kullanıcı</th><th>Plaka</th><th>Kira</th><th>HGS</th><th>Yakıt</th><th>Lastik</th><th>Hasar</th><th>Servis</th><th>KM Aşım</th><th>UTTS</th><th>Taşıt Tan.</th><th>Toplam</th>
+            <th>Kullanıcı</th><th>Plaka</th><th>Aylık Kira</th><th>HGS</th><th>Yakıt</th><th>Lastik</th><th>Hasar</th><th>Servis</th><th>KM Aşım</th><th>UTTS</th><th>Taşıt Tan.</th><th>Toplam</th>
           </tr>
         </thead>
         <tbody>
           ${filteredCostData.value.map(r => `
             <tr>
-              <td>${r.user}</td><td><b>${r.plate}</b></td><td>₺${r.kira.toLocaleString()}</td><td>₺${r.hgs.toLocaleString()}</td><td>₺${r.yakit.toLocaleString()}</td><td>₺${r.lastik.toLocaleString()}</td><td>₺${r.hasar.toLocaleString()}</td><td>₺${r.servis.toLocaleString()}</td><td>₺${r.kmAsim.toLocaleString()}</td><td>₺${r.utts.toLocaleString()}</td><td>₺${r.tasitTanima.toLocaleString()}</td><td><b>₺${r.toplam.toLocaleString()}</b></td>
+              <td>${r.user}</td><td><b>${r.plate}</b></td><td>${money(r.kira)}</td><td>${money(r.hgs)}</td><td>${money(r.yakit)}</td><td>${money(r.lastik)}</td><td>${money(r.hasar)}</td><td>${money(r.servis)}</td><td>${money(r.kmAsim)}</td><td>${money(r.utts)}</td><td>${money(r.tasitTanima)}</td><td><b>${money(r.toplam)}</b></td>
             </tr>
           `).join('')}
         </tbody>
       </table>
       <div style="margin-top: 20px; font-size: 18px; font-weight: bold; color: #16a34a; text-align: right;">
-        Genel Toplam Maliyet: ₺${costTotals.value.toplam.toLocaleString()}
+        Genel Toplam Maliyet: ${money(costTotals.value.toplam)}
       </div>
     `
   } else if (activeTab.value === 'km') {
@@ -748,7 +711,7 @@ const downloadPDF = () => {
         </thead>
         <tbody>
           ${filteredKmData.value.map(r => `
-            <tr><td><b>${r.plate}</b></td><td>${r.user}</td>${r.months.map(m => `<td>${m.toLocaleString()}</td>`).join('')}<td><b>${r.avg.toLocaleString()}</b></td></tr>
+            <tr><td><b>${r.plate}</b></td><td>${r.user}</td>${r.months.map(m => `<td>${numberOrUnknown(m)}</td>`).join('')}<td><b>${numberOrUnknown(r.avg)}</b></td></tr>
           `).join('')}
         </tbody>
       </table>
@@ -787,7 +750,7 @@ const downloadPDF = () => {
         </thead>
         <tbody>
           ${filteredUserData.value.map(r => `
-            <tr><td>${r.user}</td><td><b>${r.plate}</b></td><td>₺${r.kaza.toLocaleString()}</td><td>₺${r.servis.toLocaleString()}</td><td>₺${r.lastik.toLocaleString()}</td><td><b>₺${r.toplam.toLocaleString()}</b></td></tr>
+            <tr><td>${r.user}</td><td><b>${r.plate}</b></td><td>${money(r.kaza)}</td><td>${money(r.servis)}</td><td>${money(r.lastik)}</td><td><b>${money(r.toplam)}</b></td></tr>
           `).join('')}
         </tbody>
       </table>
@@ -846,3 +809,7 @@ const downloadPDF = () => {
   }, 500)
 }
 </script>
+
+<style scoped>
+.modal-overlay{position:fixed;inset:0;z-index:1000;background:rgba(8,22,42,.58);display:grid;place-items:center;padding:20px}
+</style>

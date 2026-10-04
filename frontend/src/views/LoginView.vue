@@ -3,8 +3,7 @@
     <!-- Top Header Bar matching screenshot -->
     <header class="hero-dark-bg" style="padding: 16px 8%; text-align: left; height: 60px; display: flex; align-items: center;">
       <router-link to="/" class="nav-logo" style="text-decoration: none;">
-        <div class="nav-logo-icon" style="background: #2563eb; border-radius: 8px;">⇄</div>
-        <span style="font-weight: 800; font-size: 1.4rem; color: #ffffff;">FleetRent</span>
+        <img class="brand-logo-image brand-logo-image--dark" src="/fleetrent-logo.jpeg" alt="FleetRent" />
       </router-link>
     </header>
 
@@ -13,8 +12,7 @@
       <!-- Step 1: Role Selection Screen (matching screenshot with 3 tiles) -->
       <div v-if="selectedRole === null" class="login-selection-card fade-in-up">
         <div class="nav-logo" style="justify-content: center; margin-bottom: 12px;">
-          <div class="nav-logo-icon" style="background: #2563eb; border-radius: 8px;">⇄</div>
-          <span style="font-weight: 800; font-size: 1.6rem; color: #0f172a;">FleetRent</span>
+          <img class="brand-logo-image" src="/fleetrent-logo.jpeg" alt="FleetRent" />
         </div>
         <p style="color: #64748b; font-size: 0.95rem; font-weight: 500;">Giriş tipini seçin</p>
 
@@ -220,7 +218,8 @@ const handleLogin = async () => {
       localStorage.setItem('fleetcar_token', data.token)
       localStorage.setItem('fleetcar_customer_id', String(cust.id || '1'))
       localStorage.setItem('fleetcar_customer_name', cust.company_name || 'Müşteri Firma')
-      localStorage.setItem('fleetcar_user_email', cust.email || email.value)
+      localStorage.setItem('fleetcar_user_email', data.user?.email || cust.email || email.value)
+      if (data.user?.name) localStorage.setItem('fleetcar_user_name', data.user.name)
       localStorage.setItem('fleetcar_user_verified', cust.is_email_verified ? 'true' : 'false')
       localStorage.setItem('fleet_customer', JSON.stringify(cust))
       

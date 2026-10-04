@@ -3,8 +3,7 @@
     <!-- Navbar -->
     <nav class="navbar" style="padding: 16px 8%; background: #ffffff; border-bottom: 1px solid #e2e8f0;">
       <router-link to="/" class="nav-logo">
-        <div class="nav-logo-icon" style="background: #2563eb; border-radius: 8px;">⇄</div>
-        <span style="font-weight: 800; font-size: 1.4rem; color: #0f172a;">FleetRent</span>
+        <img class="brand-logo-image" src="/fleetrent-logo.jpeg" alt="FleetRent" />
       </router-link>
       
       <ul class="nav-links">
@@ -348,8 +347,7 @@
           <!-- Col 1: Logo & About -->
           <div>
             <div class="nav-logo" style="margin-bottom: 16px;">
-              <div class="nav-logo-icon" style="background: #2563eb; border-radius: 8px;">⇄</div>
-              <span style="font-weight: 800; font-size: 1.4rem; color: #ffffff;">FleetRent</span>
+              <img class="brand-logo-image brand-logo-image--dark" src="/fleetrent-logo.jpeg" alt="FleetRent" />
             </div>
             <p style="font-size: 0.88rem; line-height: 1.6; color: #94a3b8; margin-bottom: 20px;">
               Türkiye'nin lider uzun dönem araç kiralama platformu. Kurumsal, bireysel ve R2R ihtiyaçlarınız için profesyonel çözümler sunuyoruz.
@@ -503,8 +501,7 @@
         <button class="close-btn" style="position: absolute; right: 20px; top: 20px;" @click="showLoginRoleModal = false">✕</button>
         
         <div class="nav-logo" style="justify-content: center; margin-bottom: 12px;">
-          <div class="nav-logo-icon" style="background: #2563eb; border-radius: 8px;">⇄</div>
-          <span style="font-weight: 800; font-size: 1.5rem; color: #0f172a;">FleetRent</span>
+          <img class="brand-logo-image" src="/fleetrent-logo.jpeg" alt="FleetRent" />
         </div>
         <p style="color: #64748b; font-size: 0.9rem; font-weight: 500;">Giriş tipini seçin</p>
 
@@ -649,7 +646,8 @@ const handleModalRegister = async () => {
       localStorage.setItem('fleetcar_token', data.token)
       localStorage.setItem('fleetcar_customer_id', String(cust.id || '1'))
       localStorage.setItem('fleetcar_customer_name', cust.company_name || form.company_name || 'Müşteri Firma')
-      localStorage.setItem('fleetcar_user_email', cust.email || form.email)
+      localStorage.setItem('fleetcar_user_email', data.user?.email || cust.email || form.email)
+      if (data.user?.name) localStorage.setItem('fleetcar_user_name', data.user.name)
       localStorage.setItem('fleet_customer', JSON.stringify(cust))
 
       showQuoteModal.value = false
@@ -688,7 +686,8 @@ const handleModalLogin = async () => {
       localStorage.setItem('fleetcar_token', data.token)
       localStorage.setItem('fleetcar_customer_id', String(cust.id || '1'))
       localStorage.setItem('fleetcar_customer_name', cust.company_name || 'Müşteri Firma')
-      localStorage.setItem('fleetcar_user_email', cust.email || form.email)
+      localStorage.setItem('fleetcar_user_email', data.user?.email || cust.email || form.email)
+      if (data.user?.name) localStorage.setItem('fleetcar_user_name', data.user.name)
       localStorage.setItem('fleet_customer', JSON.stringify(cust))
 
       showQuoteModal.value = false
@@ -801,4 +800,3 @@ const goToLogin = () => {
   router.push('/dashboard')
 }
 </script>
-

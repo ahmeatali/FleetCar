@@ -467,12 +467,13 @@ import Sidebar from '../components/Sidebar.vue'
 const stats = ref({})
 const requests = ref([])
 const loading = ref(true)
-const documentsUploaded = ref(true)
+const documentsUploaded = ref(false)
 const currentDate = ref(new Date().toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }))
 
 const fetchDashboardData = async () => {
   const customerId = localStorage.getItem('fleetcar_customer_id') || localStorage.getItem('customer_id')
-  const statsUrl = customerId ? `/api/dashboard/stats?customer_id=${customerId}` : '/api/dashboard/stats'
+  if (!customerId) { stats.value = {}; requests.value = []; loading.value = false; return }
+  const statsUrl = `/api/dashboard/stats?customer_id=${encodeURIComponent(customerId)}`
   
   if (customerId) {
     try {
@@ -489,7 +490,7 @@ const fetchDashboardData = async () => {
   try {
     const [statsRes, reqsRes] = await Promise.all([
       fetch(statsUrl),
-      fetch('/api/requests')
+      fetch(`/api/requests?customer_id=${encodeURIComponent(customerId)}`)
     ])
 
     

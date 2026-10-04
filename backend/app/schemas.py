@@ -60,6 +60,48 @@ class VehicleCreate(BaseModel):
     model: str
     year: int
     fuel: str
+    color: Optional[str] = None
+    contract_start_date: Optional[str] = None
+    contract_end_date: Optional[str] = None
+    monthly_rent: Optional[float] = None
+    monthly_km_limit: Optional[int] = None
+    version: Optional[str] = None
+    engine_no: Optional[str] = None
+    horsepower: Optional[int] = None
+    cylinder_count: Optional[int] = None
+    transmission: Optional[str] = None
+    seat_count: Optional[int] = None
+    trunk_volume_l: Optional[int] = None
+    tire_size: Optional[str] = None
+    registration_date: Optional[str] = None
+    traffic_insurance_policy_no: Optional[str] = None
+    traffic_insurance_expiry_date: Optional[str] = None
+    casco_policy_no: Optional[str] = None
+    casco_insurance_expiry_date: Optional[str] = None
+    hgs_no: Optional[str] = None
+    hgs_balance: Optional[float] = None
+    hgs_last_reload_date: Optional[str] = None
+    hgs_active: Optional[bool] = None
+    delivery_date: Optional[str] = None
+    delivered_by: Optional[str] = None
+    received_by: Optional[str] = None
+    delivery_location: Optional[str] = None
+    delivery_notes: Optional[str] = None
+    contract_no: Optional[str] = None
+    contract_duration_months: Optional[int] = None
+    contract_committed_km: Optional[int] = None
+    contract_signed_at: Optional[str] = None
+    erp_id: Optional[str] = None
+    assignment_user: Optional[str] = None
+    operating_company: Optional[str] = None
+    vehicle_group: Optional[str] = None
+    current_month_km: Optional[int] = None
+    next_service_due_date: Optional[str] = None
+    next_service_due_km: Optional[int] = None
+    gps_latitude: Optional[float] = None
+    gps_longitude: Optional[float] = None
+    gps_location_label: Optional[str] = None
+    gps_last_seen_at: Optional[str] = None
     mileage: int
     chassis_no: str
     license_serial_no: str
@@ -81,6 +123,48 @@ class VehicleResponse(BaseModel):
     model: str
     year: int
     fuel: str
+    color: Optional[str] = None
+    contract_start_date: Optional[str] = None
+    contract_end_date: Optional[str] = None
+    monthly_rent: Optional[float] = None
+    monthly_km_limit: Optional[int] = None
+    version: Optional[str] = None
+    engine_no: Optional[str] = None
+    horsepower: Optional[int] = None
+    cylinder_count: Optional[int] = None
+    transmission: Optional[str] = None
+    seat_count: Optional[int] = None
+    trunk_volume_l: Optional[int] = None
+    tire_size: Optional[str] = None
+    registration_date: Optional[str] = None
+    traffic_insurance_policy_no: Optional[str] = None
+    traffic_insurance_expiry_date: Optional[str] = None
+    casco_policy_no: Optional[str] = None
+    casco_insurance_expiry_date: Optional[str] = None
+    hgs_no: Optional[str] = None
+    hgs_balance: Optional[float] = None
+    hgs_last_reload_date: Optional[str] = None
+    hgs_active: Optional[bool] = None
+    delivery_date: Optional[str] = None
+    delivered_by: Optional[str] = None
+    received_by: Optional[str] = None
+    delivery_location: Optional[str] = None
+    delivery_notes: Optional[str] = None
+    contract_no: Optional[str] = None
+    contract_duration_months: Optional[int] = None
+    contract_committed_km: Optional[int] = None
+    contract_signed_at: Optional[str] = None
+    erp_id: Optional[str] = None
+    assignment_user: Optional[str] = None
+    operating_company: Optional[str] = None
+    vehicle_group: Optional[str] = None
+    current_month_km: Optional[int] = None
+    next_service_due_date: Optional[str] = None
+    next_service_due_km: Optional[int] = None
+    gps_latitude: Optional[float] = None
+    gps_longitude: Optional[float] = None
+    gps_location_label: Optional[str] = None
+    gps_last_seen_at: Optional[str] = None
     status: str
     mileage: int
     chassis_no: str
@@ -110,6 +194,48 @@ class VehicleUpdate(BaseModel):
     model: Optional[str] = None
     year: Optional[int] = None
     fuel: Optional[str] = None
+    color: Optional[str] = None
+    contract_start_date: Optional[str] = None
+    contract_end_date: Optional[str] = None
+    monthly_rent: Optional[float] = None
+    monthly_km_limit: Optional[int] = None
+    version: Optional[str] = None
+    engine_no: Optional[str] = None
+    horsepower: Optional[int] = None
+    cylinder_count: Optional[int] = None
+    transmission: Optional[str] = None
+    seat_count: Optional[int] = None
+    trunk_volume_l: Optional[int] = None
+    tire_size: Optional[str] = None
+    registration_date: Optional[str] = None
+    traffic_insurance_policy_no: Optional[str] = None
+    traffic_insurance_expiry_date: Optional[str] = None
+    casco_policy_no: Optional[str] = None
+    casco_insurance_expiry_date: Optional[str] = None
+    hgs_no: Optional[str] = None
+    hgs_balance: Optional[float] = None
+    hgs_last_reload_date: Optional[str] = None
+    hgs_active: Optional[bool] = None
+    delivery_date: Optional[str] = None
+    delivered_by: Optional[str] = None
+    received_by: Optional[str] = None
+    delivery_location: Optional[str] = None
+    delivery_notes: Optional[str] = None
+    contract_no: Optional[str] = None
+    contract_duration_months: Optional[int] = None
+    contract_committed_km: Optional[int] = None
+    contract_signed_at: Optional[str] = None
+    erp_id: Optional[str] = None
+    assignment_user: Optional[str] = None
+    operating_company: Optional[str] = None
+    vehicle_group: Optional[str] = None
+    current_month_km: Optional[int] = None
+    next_service_due_date: Optional[str] = None
+    next_service_due_km: Optional[int] = None
+    gps_latitude: Optional[float] = None
+    gps_longitude: Optional[float] = None
+    gps_location_label: Optional[str] = None
+    gps_last_seen_at: Optional[str] = None
     mileage: Optional[int] = None
     chassis_no: Optional[str] = None
     license_serial_no: Optional[str] = None
@@ -122,9 +248,114 @@ class VehicleUpdate(BaseModel):
     gps_device_id: Optional[str] = None
     utts_code: Optional[str] = None
 
+class VehicleExpenseCreate(BaseModel):
+    vehicle_id: str
+    kind: str
+    amount: float
+    date: str
+    liters: Optional[float] = None
+    mileage: int
+    note: Optional[str] = None
+
+class VehicleExpenseResponse(VehicleExpenseCreate):
+    id: int
+
+class HgsTransactionCreate(BaseModel):
+    type: str
+    amount: float
+    date: str
+    description: Optional[str] = None
+
+class HgsTransactionResponse(HgsTransactionCreate):
+    id: int
+    vehicle_id: str
+    balance: float
+
+class VehicleLocationCreate(BaseModel):
+    latitude: float
+    longitude: float
+    label: Optional[str] = None
+
+class VehicleLocationResponse(VehicleLocationCreate):
+    id: int
+    vehicle_id: str
+    source: str
+    recorded_at: str
+
+class VehicleFileResponse(BaseModel):
+    id: int
+    vehicle_id: str
+    category: str
+    document_type: Optional[str] = None
+    original_name: str
+    content_type: str
+    file_size: int
+    uploaded_at: str
+    expiry_date: Optional[str] = None
+    url: str
+
+
+class TireRecordCreate(BaseModel):
+    vehicle_id: str
+    brand: str
+    size: str
+    set_no: Optional[str] = None
+    season: str = "Dört Mevsim"
+    production_date: Optional[str] = None
+    installed_at: Optional[str] = None
+    changed_at: Optional[str] = None
+    inspected_at: Optional[str] = None
+    tread_depth_mm: Optional[float] = None
+    status: str = "İyi"
+    remaining_km: Optional[int] = None
+    position: Optional[str] = None
+    notes: Optional[str] = None
+
+
+class TireRecordUpdate(BaseModel):
+    vehicle_id: Optional[str] = None
+    brand: Optional[str] = None
+    size: Optional[str] = None
+    set_no: Optional[str] = None
+    season: Optional[str] = None
+    production_date: Optional[str] = None
+    installed_at: Optional[str] = None
+    changed_at: Optional[str] = None
+    inspected_at: Optional[str] = None
+    tread_depth_mm: Optional[float] = None
+    status: Optional[str] = None
+    remaining_km: Optional[int] = None
+    position: Optional[str] = None
+    notes: Optional[str] = None
+
+
+class TireRecordResponse(TireRecordCreate):
+    id: int
+    plate: Optional[str] = None
+    vehicle_brand: Optional[str] = None
+    vehicle_model: Optional[str] = None
+    vehicle_year: Optional[int] = None
+    vehicle_mileage: Optional[int] = None
+    updated_at: str
+
+
+class TireOperationCreate(BaseModel):
+    vehicle_id: str
+    tire_id: Optional[int] = None
+    type: str
+    date: Optional[str] = None
+    mileage: Optional[int] = None
+    description: Optional[str] = None
+    status: str = "Tamamlandı"
+
+
+class TireOperationResponse(TireOperationCreate):
+    id: int
+    plate: Optional[str] = None
+
 class RequestCreate(BaseModel):
     vehicle_id: str
-    supplier_id: int
+    supplier_id: Optional[int] = None
     type: str
     description: str
     details: Dict[str, Any]
@@ -132,11 +363,12 @@ class RequestCreate(BaseModel):
 class RequestResponse(BaseModel):
     id: int
     vehicle_id: str
-    supplier_id: int
+    supplier_id: Optional[int] = None
     type: str
     status: str
     description: str
     created_at: str
+    completed_at: Optional[str] = None
     details: Dict[str, Any]
 
 class SupplierCreate(BaseModel):
@@ -170,6 +402,10 @@ class SetPasswordRequest(BaseModel):
 class StatusUpdate(BaseModel):
     status: str
     contract_amount: Optional[float] = None
+    team_name: Optional[str] = None
+    team_phone: Optional[str] = None
+    eta_minutes: Optional[int] = None
+    distance_km: Optional[float] = None
 
 class CustomerCreate(BaseModel):
     company_name: str
@@ -216,10 +452,15 @@ class ServiceCheckIn(BaseModel):
     entry_notes: Optional[str] = None
 
 class ServiceWorkOrder(BaseModel):
+    service_type: Optional[str] = None
+    appointment_date: Optional[str] = None
+    work_order_no: Optional[str] = None
     diagnosis_notes: Optional[str] = None
     parts_list: Optional[List[Dict[str, Any]]] = None
     labor_cost: Optional[float] = None
+    parts_cost: Optional[float] = None
     total_estimated_cost: Optional[float] = None
+    notes: Optional[str] = None
 
 class ServiceInvoice(BaseModel):
     invoice_no: str
@@ -227,6 +468,7 @@ class ServiceInvoice(BaseModel):
     invoice_amount: float
     invoice_notes: Optional[str] = None
     file_name: Optional[str] = None
+    file_url: Optional[str] = None
 
 
 class CustomerRegisterRequest(BaseModel):
@@ -257,3 +499,66 @@ class ResendVerificationRequest(BaseModel):
     email: str
 
 
+class RoadsideCaseCreate(BaseModel):
+    vehicle_id: str
+    incident: str
+    location: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    description: Optional[str] = None
+    photos: Optional[List[str]] = None
+
+
+class RoadsideCaseUpdate(BaseModel):
+    status: Optional[str] = None
+    progress: Optional[int] = None
+    location: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    team_name: Optional[str] = None
+    team_phone: Optional[str] = None
+    eta_minutes: Optional[int] = None
+    distance_km: Optional[float] = None
+    description: Optional[str] = None
+
+
+class RoadsideEventCreate(BaseModel):
+    status: str
+    title: str
+    description: Optional[str] = None
+    eta_minutes: Optional[int] = None
+    distance_km: Optional[float] = None
+
+
+class RoadsideEventResponse(RoadsideEventCreate):
+    id: int
+    case_id: int
+    created_at: str
+
+
+class RoadsideCaseResponse(RoadsideCaseCreate):
+    id: int
+    request_id: Optional[int] = None
+    case_no: str
+    plate: str
+    vehicle_brand: Optional[str] = None
+    vehicle_model: Optional[str] = None
+    vehicle_year: Optional[int] = None
+    chassis_no: Optional[str] = None
+    engine_no: Optional[str] = None
+    color: Optional[str] = None
+    contract_start_date: Optional[str] = None
+    contract_end_date: Optional[str] = None
+    status: str
+    progress: int
+    team_name: Optional[str] = None
+    team_phone: Optional[str] = None
+    dispatched_at: Optional[str] = None
+    eta_minutes: Optional[int] = None
+    distance_km: Optional[float] = None
+    arrived_at: Optional[str] = None
+    resolved_at: Optional[str] = None
+    response_minutes: Optional[int] = None
+    photos: Optional[List[str]] = None
+    created_at: str
+    updated_at: str

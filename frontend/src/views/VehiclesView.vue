@@ -3,205 +3,75 @@
   <div class="portal-layout">
     <Sidebar />
 
-    <main class="portal-main fade-in-up">
-      <!-- Header -->
-      <header class="dashboard-header">
-        <div>
-          <h1>Araç Yönetimi</h1>
-          <p style="color: var(--text-muted); font-size: 0.95rem;">Filodaki araçları yönetin, canlı GPS haritadan takip edin, durum ve muayene bilgilerini izleyin.</p>
-        </div>
-        <button @click="showAddModal = true" class="btn btn-primary">
-          ➕ Yeni Araç Ekle
-        </button>
+    <main class="portal-main fade-in-up fleet-page">
+      <header class="fleet-topbar">
+        <label class="fleet-search"><span>⌕</span><input v-model="filters.search" type="search" placeholder="Araç plakası, marka, model veya şasi no ara..." /></label>
+        <div class="fleet-account"><span class="fleet-avatar">{{ userInitials }}</span><span><strong>{{ customerName }}</strong><small>Filo yöneticisi</small></span></div>
       </header>
 
-      <!-- Tabs Section (FleetRent Premium Tab Pill Bar) -->
-      <div class="category-tabs-bar">
-        <button @click="activeTab = 'active'" class="tab-pill-btn" :class="{ 'active-tab-pill': activeTab === 'active' }">
-          <span>🚗</span> Aktif Araçlar ({{ activeVehiclesCount }})
-        </button>
-        <button @click="activeTab = 'old'" class="tab-pill-btn" :class="{ 'active-tab-pill': activeTab === 'old' }">
-          <span>📂</span> Eski Araçlar ({{ oldVehiclesCount }})
-        </button>
-        <button @click="activeTab = 'tracking'" class="tab-pill-btn" :class="{ 'active-tab-pill': activeTab === 'tracking' }">
-          <span>📍</span> Araç Takibi (GPS Harita)
-        </button>
-      </div>
+      <section class="fleet-heading">
+        <div><span class="fleet-eyebrow">FİLO YÖNETİMİ</span><h1>Araçlar</h1><p>Tüm araçlarınızı tek ekrandan yönetin. Filtreleyin, arayın ve detayları görüntüleyin.</p></div>
+        <div class="fleet-heading-actions"><button class="fleet-utility-button" @click="activeTab = activeTab === 'old' ? 'active' : 'old'">{{ activeTab === 'old' ? 'Aktif Araçlar' : 'Eski Araçlar' }}</button><button class="fleet-utility-button" @click="activeTab = activeTab === 'tracking' ? 'active' : 'tracking'">⌖ Araç Takibi</button><button class="btn btn-primary" @click="showAddModal = true">＋ Yeni Araç</button></div>
+      </section>
 
-      <!-- Filter Panel (For Active & Old Vehicles) -->
-      <div v-if="activeTab === 'active' || activeTab === 'old'" class="glass-panel filters-panel" style="margin-top: 20px; padding: 20px; display: flex; gap: 20px; flex-wrap: wrap; align-items: center;">
-        <div style="flex: 1; min-width: 250px;">
-          <input type="text" v-model="filters.search" class="form-input" placeholder="Plaka, marka, model veya şase no ara...">
-        </div>
-        <div style="width: 200px;" v-if="activeTab === 'active'">
-          <select v-model="filters.status" class="form-select">
-            <option value="">Tüm Durumlar</option>
-            <option value="Aktif">Aktif</option>
-            <option value="Serviste">Serviste</option>
-            <option value="Lastik Değişiminde">Lastik Değişiminde</option>
-            <option value="Yol Yardımında">Yol Yardımında</option>
-            <option value="İkame Araç Bekliyor">İkame Araç Bekliyor</option>
-          </select>
-        </div>
-        <div style="width: 160px;">
-          <select v-model="filters.vehicle_segment" class="form-select">
-            <option value="">Tüm Segmentler</option>
-            <option value="A">A Segmenti</option>
-            <option value="B">B Segmenti</option>
-            <option value="C">C Segmenti</option>
-            <option value="D">D Segmenti</option>
-            <option value="E">E Segmenti</option>
-          </select>
-        </div>
-        <div style="width: 160px;">
-          <select v-model="filters.vehicle_type" class="form-select">
-            <option value="">Tüm Tipler</option>
-            <option value="Sedan">Sedan</option>
-            <option value="SUV">SUV</option>
-            <option value="Hatchback">Hatchback</option>
-            <option value="Hafif Ticari">Hafif Ticari</option>
-            <option value="Station Wagon">Station Wagon</option>
-          </select>
-        </div>
-        <div style="width: 150px;">
-          <select v-model="filters.fuel" class="form-select">
-            <option value="">Tüm Yakıtlar</option>
-            <option value="Benzin">Benzin</option>
-            <option value="Dizel">Dizel</option>
-            <option value="Hibrit">Hibrit</option>
-            <option value="Elektrik">Elektrik</option>
-          </select>
-        </div>
-      </div>
+      <section class="fleet-stats" aria-label="Filo özeti">
+        <button class="fleet-stat" :class="{ 'fleet-stat-selected': filters.status === '' }" @click="filters.status = ''"><span class="fleet-stat-icon blue">🚘</span><span><small>Toplam Araç</small><strong>{{ vehicles.length }}<em>{{ activeVehiclesCount }} aktif</em></strong></span></button>
+        <button class="fleet-stat" :class="{ 'fleet-stat-selected': filters.status === 'Aktif' }" @click="filters.status = filters.status === 'Aktif' ? '' : 'Aktif'"><span class="fleet-stat-icon green">✓</span><span><small>Aktif</small><strong>{{ statusCount('Aktif') }}</strong></span></button>
+        <button class="fleet-stat" :class="{ 'fleet-stat-selected': filters.status === 'Serviste' }" @click="filters.status = filters.status === 'Serviste' ? '' : 'Serviste'"><span class="fleet-stat-icon amber">⚒</span><span><small>Serviste</small><strong>{{ statusCount('Serviste') }}</strong></span></button>
+        <button class="fleet-stat" :class="{ 'fleet-stat-selected': filters.status === 'Kaza' }" @click="filters.status = filters.status === 'Kaza' ? '' : 'Kaza'"><span class="fleet-stat-icon red">!</span><span><small>Hasar / Kaza</small><strong>{{ incidentCount }}</strong></span></button>
+        <button class="fleet-stat" :class="{ 'fleet-stat-selected': filters.status === 'İkame Araç Bekliyor' }" @click="filters.status = filters.status === 'İkame Araç Bekliyor' ? '' : 'İkame Araç Bekliyor'"><span class="fleet-stat-icon navy">◷</span><span><small>İkame Bekliyor</small><strong>{{ statusCount('İkame Araç Bekliyor') }}</strong></span></button>
+      </section>
 
-      <!-- Vehicles List Table (For Active & Old Vehicles) -->
-      <div v-if="activeTab === 'active' || activeTab === 'old'" class="glass-panel" style="margin-top: 20px; padding: 10px;">
-        <div v-if="loading" class="text-center" style="padding: 50px 0;">Yükleniyor...</div>
-        
-        <div v-else-if="filteredVehicles.length === 0" class="empty-state">
-          <p>Kriterlere uygun araç bulunamadı.</p>
-        </div>
-
-        <div v-else class="custom-table-container">
-          <table class="custom-table">
-            <thead>
-              <tr>
-                <th>Plaka</th>
-                <th>Araç Detayı</th>
-                <th>Segment</th>
-                <th>Tip</th>
-                <th>Yakıt</th>
-                <th>Mesafe (KM)</th>
-                <th>{{ activeTab === 'active' ? 'Durum' : 'Kaldırılma Nedeni' }}</th>
-                <th>İşlemler</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="vehicle in filteredVehicles" :key="vehicle.id">
-                <td class="plate-td">
-                  <span class="plate-badge">{{ vehicle.plate }}</span>
-                </td>
-                <td>
-                  <strong style="color: #fff; cursor: pointer;" @click="openDetailsModal(vehicle)" class="hover-underline">
-                    {{ vehicle.brand }} {{ vehicle.model }}
-                  </strong>
-                  <div style="font-size: 0.75rem; color: var(--text-dark); font-family: monospace;">
-                    Sicil / Şase No: {{ vehicle.chassis_no }}
-                  </div>
-                </td>
-                <td>{{ vehicle.vehicle_segment }}</td>
-                <td>{{ vehicle.vehicle_type }}</td>
-                <td>{{ vehicle.fuel }}</td>
-                <td>{{ vehicle.mileage?.toLocaleString() }} km</td>
-                <td>
-                  <template v-if="activeTab === 'active'">
-                    <span class="badge" :class="getVehicleBadgeClass(vehicle.status)">{{ vehicle.status }}</span>
-                  </template>
-                  <template v-else>
-                    <span style="font-size: 0.85rem; color: #dc2626; font-weight: bold;">{{ vehicle.removal_reason || 'Kaldırıldı' }}</span>
-                  </template>
-                </td>
-                <td>
-                  <div style="display: flex; gap: 8px;">
-                    <button @click="openDetailsModal(vehicle)" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">
-                      Detay
-                    </button>
-                    <template v-if="activeTab === 'active'">
-                      <button @click="openRemoveModal(vehicle)" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; color: #ef4444;">
-                        Kaldır
-                      </button>
-                    </template>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- ============================================================== -->
-      <!-- 📍 HARİTAYLA ARAÇ TAKİP ALANI (Görseldeki 1'e 1 Tasarım)       -->
-      <!-- ============================================================== -->
-      <div v-if="activeTab === 'tracking'" class="fade-in-up" style="margin-top: 20px;">
-        <!-- Breadcrumb -->
-        <div style="font-size: 0.85rem; color: #64748b; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-          <span style="color: #64748b;">← Geri</span>
-          <span>/ Araçlarım / Araç Takip</span>
-        </div>
-
-        <div class="glass-panel" style="padding: 28px; background: #ffffff; margin-bottom: 25px;">
-          <h2 style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-bottom: 20px;">Araç Takip</h2>
-
-          <!-- Interactive OpenStreetMap / Google Maps Embed Container -->
-          <div class="map-tracking-container">
-            <a href="https://maps.google.com" target="_blank" class="map-overlay-badge">
-              <span>Haritalar'da aç</span> ↗
-            </a>
-            <iframe 
-              class="map-iframe" 
-              src="https://www.openstreetmap.org/export/embed.html?bbox=28.8000%2C40.9000%2C29.2500%2C41.1500&amp;layer=mapnik&amp;marker=41.0082%2C28.9784"
-              allowfullscreen
-            ></iframe>
+      <section class="fleet-workspace">
+        <div class="fleet-list-column">
+          <div class="fleet-filters">
+            <select v-model="filters.status" aria-label="Araç durumu"><option value="">Tüm Durumlar</option><option v-for="status in availableStatuses" :key="status" :value="status">{{ status }}</option><option value="Kaza">Hasar / Kaza</option></select>
+            <select v-model="filters.vehicle_type" aria-label="Marka ve model"><option value="">Tüm Marka / Modeller</option><option v-for="name in availableModels" :key="name" :value="name">{{ name }}</option></select>
+            <input v-model="filters.plate" placeholder="Plaka girin..." aria-label="Plaka" />
+            <select v-model="filters.contract" aria-label="Sözleşme dönemi"><option value="">Tüm Dönemler</option><option value="current">Aktif sözleşmeler</option><option value="expired">Süresi dolanlar</option></select>
+            <button class="fleet-filter-button" @click="page = 1">⌕ Filtrele</button>
+            <button class="fleet-utility-button" @click="exportVehicles">⇩ Dışa Aktar</button>
           </div>
 
-          <!-- Bottom Status Grid Panels matching screenshot -->
-          <div class="grid-2" style="gap: 25px; align-items: start;">
-            <!-- Left Green Panel: Aktif Araçlar -->
-            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 16px; padding: 24px;">
-              <h3 style="font-size: 1.1rem; font-weight: 800; color: #15803d; margin-bottom: 16px;">Aktif Araçlar</h3>
-
-              <div class="map-vehicle-card-active" v-for="v in activeVehiclesList" :key="v.id">
-                <div>
-                  <div style="font-weight: 800; font-size: 1.1rem; color: #0f172a;">{{ v.plate }}</div>
-                  <div style="font-size: 0.85rem; color: #64748b;">{{ v.brand }} {{ v.model }} - {{ v.model_year || 2024 }}</div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <span style="font-size: 0.8rem; font-weight: 700; color: #16a34a; background: #dcfce7; padding: 4px 10px; border-radius: 20px;">
-                    🟢 Seyir Halinde
-                  </span>
-                </div>
-              </div>
+          <div class="fleet-table-card">
+            <div class="fleet-table-scroll">
+              <table class="fleet-table">
+                <thead><tr><th><input type="checkbox" :checked="allVisibleSelected" aria-label="Görünen araçları seç" @change="toggleVisibleSelection" /></th><th>#</th><th>Plaka</th><th>Araç</th><th>Renk</th><th>Yıl</th><th>Şasi No (VIN)</th><th>Durum</th><th>Kira Başlangıcı</th><th>Kira Bitişi</th><th>Km</th><th></th></tr></thead>
+                <tbody>
+                  <tr v-if="loading"><td colspan="12" class="fleet-empty">Araçlar yükleniyor…</td></tr>
+                  <tr v-else-if="!paginatedVehicles.length"><td colspan="12" class="fleet-empty">Filtrelere uygun araç bulunamadı.</td></tr>
+                  <tr v-for="(vehicle, index) in paginatedVehicles" v-else :key="vehicle.id" :class="{ 'fleet-row-selected': currentVehicle?.id === vehicle.id }" @click="selectVehicle(vehicle)">
+                    <td @click.stop><input v-model="selectedVehicleIds" type="checkbox" :value="vehicle.id" :aria-label="`${vehicle.plate} aracını seç`" /></td><td class="fleet-index">{{ (page - 1) * pageSize + index + 1 }}</td>
+                    <td><span class="plate-badge fleet-plate">{{ vehicle.plate }}</span></td>
+                    <td><div class="fleet-vehicle-cell"><span class="fleet-car-thumb" :class="carTone(vehicle)">🚘</span><span><strong>{{ vehicle.brand }} {{ vehicle.model }}</strong><small>{{ vehicle.vehicle_type || 'Araç' }}</small></span></div></td>
+                    <td><span class="fleet-color"><i :class="carTone(vehicle)"></i>{{ vehicle.color || 'Belirtilmedi' }}</span></td><td>{{ vehicle.year || '—' }}</td><td class="fleet-vin">{{ vehicle.chassis_no || '—' }}</td>
+                    <td><span class="badge fleet-status" :class="getVehicleBadgeClass(vehicle.status)">{{ vehicle.is_active ? vehicle.status : 'Filodan çıkarıldı' }}</span></td>
+                    <td>{{ vehicle.contract_start_date ? formatDate(vehicle.contract_start_date) : '—' }}</td><td>{{ vehicle.contract_end_date ? formatDate(vehicle.contract_end_date) : '—' }}</td><td>{{ Number(vehicle.mileage || 0).toLocaleString('tr-TR') }}</td>
+                    <td><button class="fleet-row-menu" :aria-label="`${vehicle.plate} detay sayfasını aç`" @click.stop="goToVehicleDetails(vehicle)">•••</button></td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-
-            <!-- Right Orange Panel: Pasif Araçlar / Servisteki -->
-            <div style="background: #fff7ed; border: 1px solid #ffedd5; border-radius: 16px; padding: 24px;">
-              <h3 style="font-size: 1.1rem; font-weight: 800; color: #c2410c; margin-bottom: 16px;">Pasif Araçlar</h3>
-
-              <div class="map-vehicle-card-active" v-for="v in passiveVehiclesList" :key="v.id" style="border-color: #fed7aa;">
-                <div>
-                  <div style="font-weight: 800; font-size: 1.1rem; color: #0f172a;">{{ v.plate }}</div>
-                  <div style="font-size: 0.85rem; color: #64748b;">{{ v.brand }} {{ v.model }} - {{ v.model_year || 2024 }}</div>
-                </div>
-                <div>
-                  <span style="font-size: 0.8rem; font-weight: 700; color: #ea580c; background: #ffedd5; padding: 4px 10px; border-radius: 20px;">
-                    Serviste
-                  </span>
-                </div>
-              </div>
-            </div>
+            <footer class="fleet-table-footer"><span>Toplam {{ filteredVehicles.length }} araçtan {{ pageStart }}–{{ pageEnd }} görüntüleniyor<span v-if="selectedVehicleIds.length"> · {{ selectedVehicleIds.length }} seçildi</span></span><div class="fleet-pagination"><button :disabled="page <= 1" @click="page--">‹</button><button v-if="page > 3" @click="page = 1">1</button><span v-if="page > 4">…</span><button v-for="number in visiblePages" :key="number" :class="{ current: page === number }" @click="page = number">{{ number }}</button><span v-if="page < totalPages - 3">…</span><button v-if="totalPages > 5 && page < totalPages - 2" @click="page = totalPages">{{ totalPages }}</button><button :disabled="page >= totalPages" @click="page++">›</button></div></footer>
           </div>
+
+          <div v-if="activeTab === 'tracking'" class="fleet-map-card"><div><strong>Araç takibi</strong><button @click="activeTab = 'active'">Kapat</button></div><iframe title="İstanbul araç takip haritası" src="https://www.openstreetmap.org/export/embed.html?bbox=28.8000%2C40.9000%2C29.2500%2C41.1500&amp;layer=mapnik&amp;marker=41.0082%2C28.9784" loading="lazy"></iframe><p>Canlı konum için GPS cihazı ve entegrasyon ayarlarının etkin olması gerekir.</p></div>
         </div>
-      </div>
+
+        <aside v-if="currentVehicle && activeTab !== 'tracking'" class="fleet-detail-panel">
+          <div class="fleet-detail-heading"><div><span class="fleet-eyebrow">ARAÇ DETAYI</span><h2>{{ currentVehicle.plate }}</h2></div><button class="fleet-close" aria-label="Detayları kapat" @click="focusedVehicleId = null">×</button></div>
+          <div class="fleet-car-hero" :class="carTone(currentVehicle)"><span>🚘</span><span class="badge fleet-status" :class="getVehicleBadgeClass(currentVehicle.status)">{{ currentVehicle.is_active ? currentVehicle.status : 'Filodan çıkarıldı' }}</span></div>
+          <h3 class="fleet-detail-model">{{ currentVehicle.brand }} {{ currentVehicle.model }} {{ currentVehicle.vehicle_segment || '' }}</h3><p class="fleet-detail-subtitle">{{ currentVehicle.plate }} · {{ currentVehicle.vehicle_type || 'Araç' }}</p>
+          <div class="fleet-specs"><span>{{ currentVehicle.fuel || 'Yakıt bilgisi yok' }}</span><span>{{ currentVehicle.year || '—' }}</span><span>{{ currentVehicle.vehicle_type || 'Araç tipi yok' }}</span></div>
+          <section class="fleet-info-section"><h4>▦ &nbsp; Temel Bilgiler</h4><dl><template v-for="item in vehicleInfo" :key="item.label"><dt>{{ item.label }}</dt><dd>{{ item.value }}</dd></template></dl></section>
+          <section class="fleet-info-section"><div class="fleet-quick-heading"><h4>⚒ &nbsp; Hızlı İşlemler</h4><button @click="startEditingVehicleFor(currentVehicle)">Düzenle</button></div>
+            <div class="fleet-quick-grid"><button @click="goToRequest('servis')"><span>⚒</span>Servis Talebi Oluştur</button><button @click="goToRequest('servis', 'Hasar Onarım')"><span>⚠</span>Hasar / Kaza Bildir</button><button @click="goToRequest('lastik')"><span>◉</span>Lastik Değişimi Talebi</button><button @click="goToRequest('yol_yardim')"><span>♧</span>Yol Yardımı Talebi</button><button @click="openFuelModal"><span>▣</span>Yakıt / Gider Kaydı</button><button @click="downloadVehicleReport(currentVehicle)"><span>▤</span>Rapor Al</button></div>
+          </section>
+          <section class="fleet-info-section fleet-history"><h4>◷ &nbsp; Son İşlemler</h4><ol v-if="vehicleHistory.length"><li v-for="event in vehicleHistory" :key="event.id"><span class="fleet-history-dot" :class="getVehicleBadgeClass(event.status)"></span><strong>{{ event.title }}</strong><small>{{ formatDateTime(event.created_at) }}</small><p>{{ event.description }}</p></li></ol><p v-else class="fleet-history-empty">Bu araç için henüz kayıtlı işlem yok.</p></section>
+          <div class="fleet-detail-footer"><button @click="activeTab = 'tracking'">⌖ Haritada Görüntüle</button><button @click="goToVehicleDetails(currentVehicle)">Tüm Detaylar</button><button v-if="currentVehicle.is_active" @click="openRemoveModal(currentVehicle)">Filodan Kaldır</button><button v-else @click="reactivateVehicle(currentVehicle)">Tekrar Etkinleştir</button></div>
+        </aside>
+        <aside v-else-if="activeTab !== 'tracking'" class="fleet-detail-panel fleet-no-selection"><span>🚘</span><strong>Detayları görmek için bir araç seçin</strong><p>Tablodaki araç satırına tıklayın.</p></aside>
+      </section>
     </main>
   </div>
 
@@ -235,6 +105,15 @@
               <input type="text" v-model="newVehicleForm.model" required class="form-input" placeholder="Clio">
             </div>
           </div>
+          <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr;">
+            <div class="form-group"><label class="form-label">Renk</label><input v-model="newVehicleForm.color" class="form-input" placeholder="Beyaz"></div>
+            <div class="form-group"><label class="form-label">Sözleşme Başlangıcı</label><input v-model="newVehicleForm.contract_start_date" type="date" class="form-input"></div>
+          </div>
+          <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr;">
+            <div class="form-group"><label class="form-label">Sözleşme Bitişi</label><input v-model="newVehicleForm.contract_end_date" type="date" class="form-input"></div>
+            <div class="form-group"><label class="form-label">Aylık Kira Bedeli (TL)</label><input v-model.number="newVehicleForm.monthly_rent" type="number" min="0" step="0.01" class="form-input"></div>
+          </div>
+          <div class="form-group"><label class="form-label">Aylık Km Limiti</label><input v-model.number="newVehicleForm.monthly_km_limit" type="number" min="0" class="form-input"></div>
 
           <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr;">
             <div class="form-group">
@@ -441,6 +320,15 @@
                 <input type="text" v-model="editVehicleForm.model" required class="form-input">
               </div>
             </div>
+            <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr;">
+              <div class="form-group"><label class="form-label">Renk</label><input v-model="editVehicleForm.color" class="form-input"></div>
+              <div class="form-group"><label class="form-label">Sözleşme Başlangıcı</label><input v-model="editVehicleForm.contract_start_date" type="date" class="form-input"></div>
+            </div>
+            <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr;">
+              <div class="form-group"><label class="form-label">Sözleşme Bitişi</label><input v-model="editVehicleForm.contract_end_date" type="date" class="form-input"></div>
+              <div class="form-group"><label class="form-label">Aylık Kira Bedeli (TL)</label><input v-model.number="editVehicleForm.monthly_rent" type="number" min="0" step="0.01" class="form-input"></div>
+            </div>
+            <div class="form-group"><label class="form-label">Aylık Km Limiti</label><input v-model.number="editVehicleForm.monthly_km_limit" type="number" min="0" class="form-input"></div>
 
             <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr;">
               <div class="form-group">
@@ -482,6 +370,19 @@
     </div>
   </div>
 
+  <!-- Yakıt ve gider kaydı -->
+  <div v-if="showFuelModal" class="modal-overlay" @click.self="showFuelModal = false">
+    <div class="glass-panel modal-content fade-in-up" style="max-width: 480px; padding: 28px; background: #fff;">
+      <h2 style="margin-bottom: 6px;">Yakıt / Gider Kaydı</h2><p style="color: #64748b; margin-bottom: 20px;">{{ currentVehicle?.plate }} · {{ currentVehicle?.brand }} {{ currentVehicle?.model }}</p>
+      <form @submit.prevent="saveFuelRecord"><div class="form-group"><label class="form-label">Gider türü</label><select v-model="fuelForm.kind" class="form-select"><option>Yakıt</option><option>Otopark</option><option>HGS / OGS</option><option>Diğer</option></select></div>
+        <div class="grid-2"><div class="form-group"><label class="form-label">Tutar (TL)</label><input v-model.number="fuelForm.amount" class="form-input" type="number" min="0.01" step="0.01" required></div><div class="form-group"><label class="form-label">Tarih</label><input v-model="fuelForm.date" class="form-input" type="date" required></div></div>
+        <div class="grid-2"><div class="form-group"><label class="form-label">Litre (isteğe bağlı)</label><input v-model.number="fuelForm.liters" class="form-input" type="number" min="0" step="0.01"></div><div class="form-group"><label class="form-label">Kilometre</label><input v-model.number="fuelForm.mileage" class="form-input" type="number" min="0" required></div></div>
+        <div class="form-group"><label class="form-label">Açıklama</label><input v-model="fuelForm.note" class="form-input" placeholder="İstasyon veya gider açıklaması"></div>
+        <div style="display:flex;justify-content:flex-end;gap:10px"><button type="button" class="btn btn-secondary" @click="showFuelModal = false">Vazgeç</button><button class="btn btn-primary" type="submit">Kaydı Ekle</button></div>
+      </form>
+    </div>
+  </div>
+
   <!-- Remove Vehicle Reason Modal -->
   <div v-if="showRemoveModal" class="modal-overlay" @click.self="showRemoveModal = false">
     <div class="glass-panel modal-content fade-in-up" style="max-width: 450px; padding: 30px;">
@@ -515,10 +416,21 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'
 
+const router = useRouter()
+const goToVehicleDetails = vehicle => router.push(`/dashboard/vehicles/${encodeURIComponent(vehicle.id)}`)
 const vehicles = ref([])
+const requests = ref([])
+const focusedVehicleId = ref(null)
+const selectedVehicleIds = ref([])
+const page = ref(1)
+const pageSize = 10
+const showFuelModal = ref(false)
+const fuelRecords = ref([])
+const fuelForm = reactive({ kind: 'Yakıt', amount: '', date: new Date().toISOString().slice(0, 10), liters: '', mileage: 0, note: '' })
 const loading = ref(true)
 const saving = ref(false)
 const showAddModal = ref(false)
@@ -537,6 +449,11 @@ const editVehicleForm = reactive({
   model: '',
   year: 2024,
   fuel: 'Benzin',
+  color: '',
+  contract_start_date: '',
+  contract_end_date: '',
+  monthly_rent: 0,
+  monthly_km_limit: 0,
   mileage: 0,
   chassis_no: '',
   license_serial_no: '',
@@ -551,6 +468,41 @@ const editVehicleForm = reactive({
 })
 
 const activeVehiclesCount = computed(() => vehicles.value.filter(v => v.is_active).length)
+const customerName = localStorage.getItem('fleetcar_customer_name') || 'Filo Yöneticisi'
+const userInitials = customerName.split(/\s+/).map(part => part[0]).slice(0, 2).join('').toLocaleUpperCase('tr-TR')
+const availableStatuses = computed(() => [...new Set(vehicles.value.filter(v => v.is_active).map(v => v.status).filter(Boolean))])
+const availableModels = computed(() => [...new Set(vehicles.value.map(v => [v.brand, v.model].filter(Boolean).join(' ')).filter(Boolean))])
+const statusCount = status => vehicles.value.filter(v => v.is_active && v.status === status).length
+const incidentCount = computed(() => requests.value.filter(r => r.type === 'servis' && /hasar|kaza/i.test((r.details?.service_type || '') + ' ' + (r.description || '')) && !['Tamamlandı', 'İptal Edildi'].includes(r.status)).length)
+const currentVehicle = computed(() => filteredVehicles.value.find(v => v.id === focusedVehicleId.value) || filteredVehicles.value[0] || null)
+const vehicleInfo = computed(() => {
+  const v = currentVehicle.value
+  if (!v) return []
+  return [
+    { label: 'Renk', value: v.color || 'Belirtilmedi' }, { label: 'Şasi No (VIN)', value: v.chassis_no || '—' },
+    { label: 'Ruhsat Seri No', value: v.license_serial_no || '—' }, { label: 'Plaka', value: v.plate || '—' },
+    { label: 'Kira Başlangıcı', value: formatDate(v.contract_start_date) }, { label: 'Kira Bitişi', value: formatDate(v.contract_end_date) },
+    { label: 'Aylık Kira Bedeli', value: v.monthly_rent ? Number(v.monthly_rent).toLocaleString('tr-TR') + ' TL' : '—' },
+    { label: 'Km Limiti (Aylık)', value: v.monthly_km_limit ? Number(v.monthly_km_limit).toLocaleString('tr-TR') + ' km' : '—' },
+    { label: 'Toplam Km', value: Number(v.mileage || 0).toLocaleString('tr-TR') + ' km' }, { label: 'Yakıt Türü', value: v.fuel || '—' },
+    { label: 'GPS Cihazı', value: v.gps_device_id || 'Tanımlanmadı' }, { label: 'Muayene Tarihi', value: formatDate(v.inspection_date) }
+  ]
+})
+const vehicleHistory = computed(() => {
+  const v = currentVehicle.value
+  if (!v) return []
+  const activity = requests.value.filter(r => String(r.vehicle_id) === String(v.id)).map(r => ({
+    id: 'request-' + r.id,
+    title: ({ servis: 'Servis talebi', lastik: 'Lastik değişimi', yol_yardim: 'Yol yardım talebi', ikame_arac: 'İkame araç talebi' }[r.type] || 'Filo işlemi'),
+    description: (r.vehicle_plate || v.plate) + ' · ' + (r.description || r.status),
+    status: r.type === 'servis' ? 'Serviste' : r.type === 'lastik' ? 'Lastik Değişiminde' : r.type === 'yol_yardim' ? 'Yol Yardımında' : 'İkame Araç Bekliyor',
+    created_at: r.created_at
+  }))
+  const expenses = fuelRecords.value.filter(r => String(r.vehicle_id) === String(v.id)).map(r => ({
+    id: r.id, title: r.kind + ' kaydı eklendi', description: Number(r.amount).toLocaleString('tr-TR') + ' TL' + (r.liters ? ' · ' + r.liters + ' L' : '') + (r.note ? ' · ' + r.note : ''), status: 'Aktif', created_at: r.date
+  }))
+  return [...activity, ...expenses].sort((a, b) => String(b.created_at).localeCompare(String(a.created_at))).slice(0, 6)
+})
 const oldVehiclesCount = computed(() => vehicles.value.filter(v => !v.is_active).length)
 
 const activeVehiclesList = computed(() => vehicles.value.filter(v => v.is_active && v.status === 'Aktif'))
@@ -561,7 +513,9 @@ const filters = reactive({
   status: '',
   vehicle_segment: '',
   vehicle_type: '',
-  fuel: ''
+  fuel: '',
+  plate: '',
+  contract: ''
 })
 
 const newVehicleForm = reactive({
@@ -570,6 +524,11 @@ const newVehicleForm = reactive({
   model: '',
   year: 2024,
   fuel: 'Benzin',
+  color: '',
+  contract_start_date: '',
+  contract_end_date: '',
+  monthly_rent: 0,
+  monthly_km_limit: 0,
   mileage: 0,
   chassis_no: '',
   license_serial_no: '',
@@ -586,14 +545,17 @@ const newVehicleForm = reactive({
 const fetchVehicles = async () => {
   try {
     const customerId = localStorage.getItem('fleetcar_customer_id') || localStorage.getItem('customer_id')
+    if (!customerId) { vehicles.value=[];requests.value=[];fuelRecords.value=[];return }
     let url = '/api/vehicles'
     if (customerId) {
       url += `?customer_id=${customerId}`
     }
-    const response = await fetch(url)
-    if (response.ok) {
-      vehicles.value = await response.json()
-    }
+    const expenseUrl = customerId ? '/api/vehicle-expenses?customer_id=' + customerId : '/api/vehicle-expenses'
+    const requestUrl = `/api/requests?customer_id=${encodeURIComponent(customerId)}`
+    const [response, requestResponse, expenseResponse] = await Promise.all([fetch(url), fetch(requestUrl), fetch(expenseUrl)])
+    if (response.ok) vehicles.value = await response.json()
+    if (requestResponse.ok) requests.value = await requestResponse.json()
+    if (expenseResponse.ok) fuelRecords.value = await expenseResponse.json()
   } catch (error) {
     console.error('Error fetching vehicles:', error)
   } finally {
@@ -621,6 +583,7 @@ const addVehicle = async () => {
     if (response.ok) {
       const addedVehicle = await response.json()
       vehicles.value.push(addedVehicle)
+      focusedVehicleId.value = addedVehicle.id
       showAddModal.value = false
       resetForm()
     } else {
@@ -641,6 +604,11 @@ const resetForm = () => {
   newVehicleForm.model = ''
   newVehicleForm.year = 2024
   newVehicleForm.fuel = 'Benzin'
+  newVehicleForm.color = ''
+  newVehicleForm.contract_start_date = ''
+  newVehicleForm.contract_end_date = ''
+  newVehicleForm.monthly_rent = 0
+  newVehicleForm.monthly_km_limit = 0
   newVehicleForm.mileage = 0
   newVehicleForm.chassis_no = ''
   newVehicleForm.license_serial_no = ''
@@ -656,6 +624,7 @@ const resetForm = () => {
 
 const openDetailsModal = (vehicle) => {
   selectedVehicle.value = vehicle
+  focusedVehicleId.value = vehicle.id
   isEditingVehicle.value = false
   showDetailsModal.value = true
 }
@@ -668,6 +637,11 @@ const startEditingVehicle = () => {
   editVehicleForm.model = v.model || ''
   editVehicleForm.year = v.year || 2024
   editVehicleForm.fuel = v.fuel || 'Benzin'
+  editVehicleForm.color = v.color || ''
+  editVehicleForm.contract_start_date = v.contract_start_date || ''
+  editVehicleForm.contract_end_date = v.contract_end_date || ''
+  editVehicleForm.monthly_rent = v.monthly_rent || 0
+  editVehicleForm.monthly_km_limit = v.monthly_km_limit || 0
   editVehicleForm.mileage = v.mileage || 0
   editVehicleForm.chassis_no = v.chassis_no || ''
   editVehicleForm.license_serial_no = v.license_serial_no || ''
@@ -701,6 +675,7 @@ const saveVehicleEdit = async () => {
         vehicles.value[idx] = updatedVehicle
       }
       selectedVehicle.value = updatedVehicle
+      focusedVehicleId.value = updatedVehicle.id
       isEditingVehicle.value = false
     } else {
       const err = await response.json()
@@ -785,27 +760,85 @@ const getVehicleBadgeClass = (status) => {
   }
 }
 
-const filteredVehicles = computed(() => {
-  return vehicles.value.filter(vehicle => {
-    // Filter active tab
-    const matchesTab = activeTab.value === 'active' ? vehicle.is_active : !vehicle.is_active
-    if (!matchesTab) return false
-
-    const searchVal = filters.search.toLowerCase()
-    const matchesSearch = 
-      vehicle.plate.toLowerCase().includes(searchVal) ||
-      vehicle.brand.toLowerCase().includes(searchVal) ||
-      vehicle.model.toLowerCase().includes(searchVal) ||
-      vehicle.chassis_no.toLowerCase().includes(searchVal)
-      
-    const matchesStatus = filters.status === '' || vehicle.status === filters.status
-    const matchesSegment = filters.vehicle_segment === '' || vehicle.vehicle_segment === filters.vehicle_segment
-    const matchesType = filters.vehicle_type === '' || vehicle.vehicle_type === filters.vehicle_type
-    const matchesFuel = filters.fuel === '' || vehicle.fuel === filters.fuel
-    
-    return matchesSearch && matchesStatus && matchesSegment && matchesType && matchesFuel
-  })
+const filteredVehicles = computed(() => vehicles.value.filter(vehicle => {
+  if (!(activeTab.value === 'old' ? !vehicle.is_active : vehicle.is_active)) return false
+  const search = filters.search.trim().toLocaleLowerCase('tr-TR')
+  const searchable = [vehicle.plate, vehicle.brand, vehicle.model, vehicle.chassis_no].some(value => String(value || '').toLocaleLowerCase('tr-TR').includes(search))
+  const model = !filters.vehicle_type || [vehicle.brand, vehicle.model].filter(Boolean).join(' ') === filters.vehicle_type
+  const plate = !filters.plate || String(vehicle.plate || '').toLocaleLowerCase('tr-TR').includes(filters.plate.trim().toLocaleLowerCase('tr-TR'))
+  const date = vehicle.contract_end_date ? new Date(vehicle.contract_end_date) : null
+  const startDate = vehicle.contract_start_date ? new Date(vehicle.contract_start_date) : null
+  const today = new Date()
+  const contract = !filters.contract || (date && (filters.contract === 'current' ? date >= today && (!startDate || startDate <= today) : date < today))
+  const status = !filters.status || (filters.status === 'Kaza' ? requests.value.some(r => String(r.vehicle_id) === String(vehicle.id) && /hasar|kaza/i.test((r.details?.service_type || '') + ' ' + (r.description || '')) && !['Tamamlandı', 'İptal Edildi'].includes(r.status)) : vehicle.status === filters.status)
+  return searchable && model && plate && contract && status
+}))
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredVehicles.value.length / pageSize)))
+const paginatedVehicles = computed(() => filteredVehicles.value.slice((page.value - 1) * pageSize, page.value * pageSize))
+const pageStart = computed(() => filteredVehicles.value.length ? (page.value - 1) * pageSize + 1 : 0)
+const pageEnd = computed(() => Math.min(page.value * pageSize, filteredVehicles.value.length))
+const visiblePages = computed(() => {
+  const start = Math.max(1, Math.min(page.value - 2, totalPages.value - 4))
+  return Array.from({ length: Math.min(totalPages.value, 5) }, (_, i) => start + i)
 })
+const allVisibleSelected = computed(() => paginatedVehicles.value.length > 0 && paginatedVehicles.value.every(v => selectedVehicleIds.value.includes(v.id)))
+watch([filters, activeTab], () => { page.value = 1 }, { deep: true })
+watch(totalPages, count => { if (page.value > count) page.value = count })
+const selectVehicle = vehicle => { focusedVehicleId.value = vehicle.id }
+const toggleVisibleSelection = event => {
+  const ids = paginatedVehicles.value.map(v => v.id)
+  selectedVehicleIds.value = event.target.checked ? [...new Set([...selectedVehicleIds.value, ...ids])] : selectedVehicleIds.value.filter(id => !ids.includes(id))
+}
+const carTone = vehicle => 'tone-' + ['silver', 'blue', 'red', 'navy', 'graphite'][String(vehicle?.id || vehicle?.plate || '').split('').reduce((sum, char) => sum + char.charCodeAt(0), 0) % 5]
+const requestTitle = request => ({ servis: 'Servis talebi', lastik: 'Lastik değişimi', yol_yardim: 'Yol yardım talebi', ikame_arac: 'İkame araç talebi' }[request.type] || 'Filo işlemi')
+const formatDateTime = value => {
+  if (!value) return 'Tarih belirtilmedi'
+  const date = new Date(value)
+  return Number.isNaN(date.valueOf()) ? value : date.toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' })
+}
+const startEditingVehicleFor = vehicle => { openDetailsModal(vehicle); startEditingVehicle() }
+const goToRequest = (type, serviceType = '') => {
+  if (!currentVehicle.value) return
+  const query = new URLSearchParams({ type, vehicle_id: currentVehicle.value.id })
+  if (serviceType) query.set('service_type', serviceType)
+  router.push('/dashboard/requests?' + query.toString())
+}
+const openFuelModal = () => {
+  if (!currentVehicle.value) return
+  fuelForm.amount = ''; fuelForm.date = new Date().toISOString().slice(0, 10)
+  fuelForm.liters = ''; fuelForm.mileage = Number(currentVehicle.value.mileage || 0); fuelForm.note = ''
+  showFuelModal.value = true
+}
+const saveFuelRecord = async () => {
+  try {
+    const response = await fetch('/api/vehicle-expenses', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...fuelForm, vehicle_id: currentVehicle.value.id, amount: Number(fuelForm.amount), liters: fuelForm.liters ? Number(fuelForm.liters) : null, mileage: Number(fuelForm.mileage) })
+    })
+    if (!response.ok) {
+      const error = await response.json()
+      alert(error.detail || 'Gider kaydı eklenemedi.')
+      return
+    }
+    fuelRecords.value.unshift({ ...await response.json(), vehicle_plate: currentVehicle.value.plate, created_at: fuelForm.date })
+    showFuelModal.value = false
+  } catch (error) {
+    console.error('Vehicle expense save error:', error)
+    alert('Gider kaydı kaydedilirken bağlantı hatası oluştu.')
+  }
+}
+const csvDownload = (rows, filename) => {
+  const headers = ['Plaka', 'Marka', 'Model', 'Renk', 'Yıl', 'Şasi No', 'Durum', 'Sözleşme Başlangıcı', 'Sözleşme Bitişi', 'Aylık Kira', 'Aylık Km Limiti', 'Kilometre', 'Yakıt']
+  const fields = ['plate', 'brand', 'model', 'color', 'year', 'chassis_no', 'status', 'contract_start_date', 'contract_end_date', 'monthly_rent', 'monthly_km_limit', 'mileage', 'fuel']
+  const csv = '\uFEFF' + [headers, ...rows.map(row => fields.map(field => row[field] ?? ''))].map(row => row.map(value => '"' + String(value).replaceAll('"', '""') + '"').join(';')).join('\r\n')
+  const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }))
+  const link = document.createElement('a'); link.href = url; link.download = filename; link.click(); URL.revokeObjectURL(url)
+}
+const exportVehicles = () => {
+  const rows = filteredVehicles.value.filter(v => !selectedVehicleIds.value.length || selectedVehicleIds.value.includes(v.id))
+  csvDownload(rows, 'fleetrent-araclar-' + new Date().toISOString().slice(0, 10) + '.csv')
+}
+const downloadVehicleReport = vehicle => csvDownload([vehicle], 'fleetrent-' + vehicle.plate + '-rapor.csv')
 
 onMounted(() => {
   fetchVehicles()
@@ -819,6 +852,287 @@ onMounted(() => {
   align-items: center;
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 20px;
+}
+
+.fleet-page {
+  --fleet-ink: #10284d;
+  --fleet-muted: #73849b;
+  --fleet-line: #e5edf5;
+  --fleet-blue: #1265e9;
+  padding: 0 18px 24px;
+  background: #f5f8fc;
+  color: var(--fleet-ink);
+  font-size: 12px;
+}
+
+:global(.portal-layout:has(.fleet-page) > .portal-sidebar) {
+  width: 190px;
+  background: #071d38;
+  border-right-color: #0c3158;
+  color: #edf5ff;
+}
+:global(.portal-layout:has(.fleet-page) > .portal-sidebar .nav-logo) {
+  width: 158px;
+  height: 37px;
+  margin: 4px 0 16px !important;
+  overflow: hidden;
+  background: white;
+  border-radius: 8px;
+}
+:global(.portal-layout:has(.fleet-page) > .portal-sidebar .user-profile-summary) {
+  background: #0b2748;
+  border-color: #183a5e;
+}
+:global(.portal-layout:has(.fleet-page) > .portal-sidebar .company-name),
+:global(.portal-layout:has(.fleet-page) > .portal-sidebar .sidebar-link) {
+  color: #e8f1fc;
+}
+:global(.portal-layout:has(.fleet-page) > .portal-sidebar .role-badge) {
+  color: #a3b9d1;
+}
+:global(.portal-layout:has(.fleet-page) > .portal-sidebar .sidebar-link.active) {
+  color: white;
+  background: #1265e9;
+  border-radius: 8px;
+  border-left: 0;
+}
+:global(.portal-layout:has(.fleet-page) > .portal-sidebar .sidebar-link:hover) {
+  color: white;
+  background: #12385f;
+}
+:global(.portal-layout:has(.fleet-page) > .portal-sidebar .sidebar-footer) {
+  background: #071d38;
+  border-top-color: #183a5e;
+}
+:global(.portal-layout:has(.fleet-page) > .portal-main) {
+  margin-left: 190px;
+  width: calc(100% - 190px);
+  max-width: calc(100% - 190px);
+}
+
+.fleet-topbar {
+  min-height: 56px;
+  margin: -32px -18px 20px;
+  padding: 8px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border-bottom: 1px solid var(--fleet-line);
+  background: rgba(255, 255, 255, .9);
+}
+.fleet-search {
+  width: min(460px, 58%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #edf2f8;
+  border-radius: 10px;
+  background: #f6f9fd;
+  color: #7c91aa;
+  padding: 8px 12px;
+  font-size: 20px;
+}
+.fleet-search input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--fleet-ink);
+  font: inherit;
+  font-size: 11px;
+}
+.fleet-account { display: flex; align-items: center; gap: 9px; }
+.fleet-account > span:last-child { display: grid; gap: 2px; }
+.fleet-account strong { font-size: 11px; }
+.fleet-account small { color: var(--fleet-muted); font-size: 9px; }
+.fleet-avatar {
+  display: grid;
+  place-items: center;
+  width: 29px;
+  height: 29px;
+  border-radius: 50%;
+  background: #1c70dc;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+}
+.fleet-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin: 0 0 17px; }
+.fleet-heading h1 { margin: 2px 0 2px; font-size: 22px; letter-spacing: -.03em; }
+.fleet-heading p { color: var(--fleet-muted); font-size: 10px; }
+.fleet-eyebrow { color: #91a1b5; font-size: 8px; font-weight: 750; letter-spacing: .1em; }
+.fleet-heading-actions { display: flex; align-items: center; gap: 8px; }
+.fleet-heading-actions .btn { padding: 10px 14px; font-size: 11px; }
+.fleet-utility-button, .fleet-filter-button {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--fleet-line);
+  border-radius: 7px;
+  background: white;
+  color: #47617f;
+  padding: 7px 10px;
+  font-size: 10px;
+  font-weight: 650;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.fleet-filter-button { color: white; background: var(--fleet-blue); border-color: var(--fleet-blue); }
+.fleet-stats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-bottom: 13px; }
+.fleet-stat {
+  min-width: 0;
+  min-height: 58px;
+  padding: 10px;
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  text-align: left;
+  border: 1px solid var(--fleet-line);
+  border-radius: 9px;
+  background: white;
+  color: var(--fleet-ink);
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s;
+}
+.fleet-stat-selected, .fleet-stat:hover { border-color: #9fc2f7; box-shadow: 0 3px 12px rgba(26, 89, 167, .07); }
+.fleet-stat-icon { display: grid; place-items: center; width: 26px; height: 26px; flex: 0 0 26px; border-radius: 50%; font-size: 14px; font-weight: 800; }
+.fleet-stat-icon.blue { background: #e8f1ff; color: #1764d9; }
+.fleet-stat-icon.green { background: #e8f8f1; color: #12a26c; }
+.fleet-stat-icon.amber { background: #fff5e2; color: #ed9c14; }
+.fleet-stat-icon.red { background: #fff0f0; color: #e44e54; }
+.fleet-stat-icon.navy { background: #edf2ff; color: #526fdd; }
+.fleet-stat small, .fleet-stat strong { display: block; }
+.fleet-stat small { color: var(--fleet-muted); font-size: 9px; white-space: nowrap; }
+.fleet-stat strong { margin-top: 2px; font-size: 14px; }
+.fleet-stat em { margin-left: 5px; color: #1aa578; font-size: 8px; font-style: normal; font-weight: 600; }
+.fleet-workspace { display: grid; grid-template-columns: minmax(0, 1fr) minmax(265px, 30%); align-items: start; gap: 13px; }
+.fleet-list-column { min-width: 0; }
+.fleet-filters {
+  min-height: 48px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 9px;
+  padding: 8px;
+  border: 1px solid var(--fleet-line);
+  border-radius: 9px;
+  background: white;
+}
+.fleet-filters select, .fleet-filters input {
+  min-width: 104px;
+  height: 31px;
+  flex: 1 1 105px;
+  border: 1px solid #eaf0f6;
+  border-radius: 6px;
+  outline-color: #8bb5f5;
+  background: #fff;
+  color: #52677f;
+  padding: 5px 7px;
+  font: inherit;
+  font-size: 9px;
+}
+.fleet-filters .fleet-filter-button, .fleet-filters .fleet-utility-button { min-height: 31px; padding: 6px 8px; }
+.fleet-table-card, .fleet-detail-panel, .fleet-map-card { border: 1px solid var(--fleet-line); border-radius: 9px; background: white; overflow: hidden; }
+.fleet-table-scroll { overflow-x: auto; }
+.fleet-table { width: 100%; min-width: 1060px; border-collapse: collapse; text-align: left; }
+.fleet-table th {
+  padding: 10px 6px;
+  border-bottom: 1px solid var(--fleet-line);
+  background: #fbfcfe;
+  color: #8292a6;
+  font-size: 8px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.fleet-table td { height: 43px; padding: 5px 6px; border-bottom: 1px solid #eff3f8; color: #425771; font-size: 8px; white-space: nowrap; }
+.fleet-table tbody tr { cursor: pointer; }
+.fleet-table tbody tr:hover td, .fleet-table tbody tr.fleet-row-selected td { background: #f5f9ff; }
+.fleet-table th:first-child, .fleet-table td:first-child { padding-left: 10px; }
+.fleet-table input[type="checkbox"] { width: 12px; height: 12px; accent-color: #1466e9; vertical-align: middle; }
+.fleet-index { color: #9ba9b8 !important; }
+.fleet-plate { padding: 4px 5px 4px 17px; border-color: #d9e1e9; background: #fafcff; color: #264365; box-shadow: none; font-size: 8px; }
+.fleet-plate::before { width: 11px; font-size: 6px; }
+.fleet-vehicle-cell { display: flex; align-items: center; gap: 6px; }
+.fleet-vehicle-cell > span:last-child { display: grid; gap: 3px; }
+.fleet-vehicle-cell strong { color: #294563; font-size: 8px; font-weight: 700; }
+.fleet-vehicle-cell small { color: #8a9aad; font-size: 7px; }
+.fleet-car-thumb { display: grid; place-items: center; width: 34px; height: 24px; border-radius: 5px; background: #f1f5fa; font-size: 16px; }
+.tone-silver { color: #8090a0; }
+.tone-blue { color: #266dd2; }
+.tone-red { color: #d74346; }
+.tone-navy { color: #163b70; }
+.tone-graphite { color: #44515c; }
+.fleet-color { display: flex; align-items: center; gap: 4px; color: #708399; }
+.fleet-color i { width: 7px; height: 7px; border-radius: 50%; background: #c7d0d9; }
+.fleet-color .tone-blue { background: #266dd2; }.fleet-color .tone-red { background: #d74346; }.fleet-color .tone-navy { background: #163b70; }.fleet-color .tone-graphite { background: #44515c; }
+.fleet-status { padding: 3px 6px; border-radius: 20px; font-size: 7px; text-transform: none; white-space: nowrap; }
+.fleet-vin { max-width: 82px; overflow: hidden; text-overflow: ellipsis; color: #697f98 !important; font-family: monospace; }
+.fleet-row-menu { border: 0; background: none; color: #73859a; font-size: 13px; cursor: pointer; }
+.fleet-empty { height: 86px !important; text-align: center; color: #8697aa !important; }
+.fleet-table-footer { min-height: 37px; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 10px; color: #8696a8; font-size: 8px; }
+.fleet-pagination { display: flex; align-items: center; gap: 3px; }
+.fleet-pagination button { min-width: 22px; height: 22px; border: 0; border-radius: 5px; background: white; color: #657b94; cursor: pointer; font-size: 9px; }
+.fleet-pagination button.current { background: #1467e9; color: white; }.fleet-pagination button:disabled { opacity: .35; cursor: default; }
+.fleet-detail-panel { position: sticky; top: 10px; padding: 12px 12px 0; }
+.fleet-detail-heading { display: flex; align-items: center; justify-content: space-between; }
+.fleet-detail-heading h2 { margin-top: 3px; font-size: 15px; }
+.fleet-close { border: 0; background: none; color: #8999aa; cursor: pointer; font-size: 17px; }
+.fleet-car-hero { height: 90px; margin: 10px -1px 9px; display: grid; place-items: center; position: relative; border-radius: 7px; background: linear-gradient(140deg,#f4f8fc,#eaf1f8); }
+.fleet-car-hero > span:first-child { font-size: 51px; filter: drop-shadow(0 4px 2px #b5c0cb); }
+.fleet-car-hero .fleet-status { position: absolute; top: 7px; right: 7px; }
+.fleet-detail-model { font-size: 11px; line-height: 1.4; }
+.fleet-detail-subtitle { margin-top: 2px; color: #667e99; font-size: 9px; }
+.fleet-specs { display: flex; justify-content: space-between; gap: 5px; padding: 9px 0; border-bottom: 1px solid #eef2f7; color: #627790; font-size: 8px; }
+.fleet-info-section { padding: 10px 0; border-bottom: 1px solid #eef2f7; }
+.fleet-info-section h4 { margin-bottom: 8px; font-size: 9px; }
+.fleet-info-section dl { display: grid; grid-template-columns: minmax(92px, .8fr) 1.2fr; gap: 6px 8px; font-size: 8px; }
+.fleet-info-section dt { color: #8494a7; }.fleet-info-section dd { min-width: 0; overflow-wrap: anywhere; color: #314c6b; font-weight: 600; }
+.fleet-quick-heading { display: flex; justify-content: space-between; align-items: center; }
+.fleet-quick-heading button { border: 0; background: none; color: #1567dd; font-size: 8px; cursor: pointer; }
+.fleet-quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.fleet-quick-grid button { min-height: 29px; display: flex; align-items: center; gap: 5px; border: 1px solid #e5edf5; border-radius: 6px; background: white; color: #49627f; padding: 4px 5px; text-align: left; font-size: 7px; cursor: pointer; }
+.fleet-quick-grid button:hover { border-color: #a8c8f5; background: #f7faff; }.fleet-quick-grid button span { color: #1465dd; font-size: 11px; }
+.fleet-history { border-bottom: 0; }
+.fleet-history ol { display: grid; gap: 10px; margin: 0; padding: 0 0 0 10px; list-style: none; }
+.fleet-history li { min-height: 29px; position: relative; display: grid; gap: 3px; padding-left: 9px; border-left: 1px solid #e2eaf2; }
+.fleet-history li strong { color: #405978; font-size: 8px; }.fleet-history li small, .fleet-history li p { margin: 0; color: #8797a9; font-size: 7px; }
+.fleet-history-dot { position: absolute; left: -4px; top: 1px; width: 7px; height: 7px; border: 1px solid #fff; border-radius: 50%; background: #1aaa77; }
+.fleet-history-dot.badge-service { background: #eea226; }.fleet-history-dot.badge-tire { background: #3178de; }.fleet-history-dot.badge-roadside { background: #e25056; }
+.fleet-history-empty { color: #8797a9; font-size: 8px; }
+.fleet-detail-footer { display: flex; gap: 6px; margin: 0 -12px; padding: 8px 10px; border-top: 1px solid #edf2f7; }
+.fleet-detail-footer button { flex: 1; border: 0; background: #f3f7fc; color: #46617f; padding: 7px 4px; border-radius: 5px; font-size: 8px; cursor: pointer; }
+.fleet-no-selection { min-height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: #6e829a; text-align: center; }.fleet-no-selection > span { font-size: 36px; }.fleet-no-selection strong { font-size: 10px; }.fleet-no-selection p { font-size: 9px; }
+.fleet-map-card { margin-top: 10px; padding: 12px; }.fleet-map-card > div { display:flex; justify-content:space-between; margin-bottom:8px; }.fleet-map-card button { border:0;background:none;color:#1465dd;cursor:pointer; }.fleet-map-card iframe { width:100%;height:260px;border:0;border-radius:6px; }.fleet-map-card p { margin-top:8px;color:#75879b;font-size:9px; }
+
+@media (max-width: 1350px) {
+  .fleet-page { padding-right: 6px; padding-left: 6px; }
+  .fleet-topbar { margin-left: -6px; margin-right: -6px; }
+  .fleet-workspace { grid-template-columns: minmax(0, 1fr) 260px; gap: 8px; }
+  .fleet-stats { gap: 6px; }
+  .fleet-stat { padding: 8px 6px; gap: 6px; }
+}
+@media (max-width: 1050px) {
+  .fleet-workspace { grid-template-columns: 1fr; }
+  .fleet-detail-panel { position: static; }
+  .fleet-stats { grid-template-columns: repeat(3, minmax(0,1fr)); }
+}
+@media (max-width: 700px) {
+  .fleet-page { padding: 0 0 18px; }
+  .fleet-topbar { margin: -24px 0 15px; padding: 8px 10px; }
+  .fleet-account strong { max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fleet-heading { align-items: flex-start; flex-direction: column; }
+  .fleet-heading-actions { width: 100%; flex-wrap: wrap; }
+  .fleet-heading-actions .btn { margin-left: auto; }
+  .fleet-stats { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .fleet-filters { align-items: stretch; }
+  .fleet-filters > * { flex-basis: calc(50% - 6px) !important; }
+  .fleet-table-footer { align-items: flex-start; flex-direction: column; }
+}
+@media (max-width: 900px) {
+  :global(.portal-layout:has(.fleet-page) > .portal-sidebar) { width: 100%; }
+  :global(.portal-layout:has(.fleet-page) > .portal-main) { margin-left: 0; width: 100%; max-width: 100%; }
 }
 
 .plate-td {

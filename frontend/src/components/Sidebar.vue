@@ -3,8 +3,7 @@
     <!-- Top Header & Profile Summary -->
     <div class="sidebar-top">
       <router-link to="/dashboard" class="nav-logo" style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px; text-decoration: none;">
-        <div class="nav-logo-icon" style="background: #2563eb; color: white; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800;">F</div>
-        <span style="font-weight: 800; font-size: 1.3rem; color: #0f172a;">FleetRent</span>
+        <img class="brand-logo-image" src="/fleetrent-logo.jpeg" alt="FleetRent" />
       </router-link>
 
       <!-- User profile summary -->
@@ -44,6 +43,30 @@
           <router-link to="/dashboard/vehicles" class="sidebar-link" active-class="active">
             <span class="icon">🚗</span>
             <span>Araç Yönetimi</span>
+          </router-link>
+        </li>
+        <li>
+          <router-link to="/dashboard/tires" class="sidebar-link" active-class="active">
+            <span class="icon">🛞</span>
+            <span>Lastik Yönetimi</span>
+          </router-link>
+        </li>
+        <li>
+          <router-link to="/dashboard/service-management" class="sidebar-link" active-class="active">
+            <span class="icon">🛠️</span>
+            <span>Servis / Bakım</span>
+          </router-link>
+        </li>
+        <li>
+          <router-link to="/dashboard/work-orders" class="sidebar-link" active-class="active">
+            <span class="icon">📋</span>
+            <span>İş Emirleri</span>
+          </router-link>
+        </li>
+        <li>
+          <router-link to="/dashboard/roadside" class="sidebar-link" active-class="active">
+            <span class="icon">🆘</span>
+            <span>Yol Yardım</span>
           </router-link>
         </li>
         <li>

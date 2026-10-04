@@ -3,6 +3,10 @@ import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import DashboardView from '../views/DashboardView.vue'
 import VehiclesView from '../views/VehiclesView.vue'
+import VehicleDetailsView from '../views/VehicleDetailsView.vue'
+import TireManagementView from '../views/TireManagementView.vue'
+import ServiceManagementView from '../views/ServiceManagementView.vue'
+import RoadsideAssistanceView from '../views/RoadsideAssistanceView.vue'
 import RequestsView from '../views/RequestsView.vue'
 import AdminLoginView from '../views/AdminLoginView.vue'
 import AdminPortalView from '../views/AdminPortalView.vue'
@@ -29,6 +33,36 @@ const routes = [
     path: '/dashboard/vehicles',
     name: 'Vehicles',
     component: VehiclesView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/dashboard/vehicles/:vehicleId',
+    name: 'VehicleDetails',
+    component: VehicleDetailsView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/dashboard/tires',
+    name: 'TireManagement',
+    component: TireManagementView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/dashboard/service-management',
+    name: 'ServiceManagement',
+    component: ServiceManagementView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/dashboard/work-orders',
+    name: 'WorkOrders',
+    component: ServiceManagementView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/dashboard/roadside',
+    name: 'RoadsideAssistance',
+    component: RoadsideAssistanceView,
     meta: { requiresAuth: true }
   },
   {

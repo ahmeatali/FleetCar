@@ -4,8 +4,8 @@
     <!-- Admin Sidebar -->
     <aside class="portal-sidebar admin-sidebar">
       <router-link to="/admin-portal" class="nav-logo" style="margin-bottom: 25px;">
-        <div class="nav-logo-icon" style="background: linear-gradient(135deg, #7c3aed, #db2777);">F</div>
-        <span>FC Yönetici</span>
+        <img class="brand-logo-image" src="/fleetrent-logo.jpeg" alt="FleetRent" />
+        <span class="brand-logo-role">Yönetici</span>
       </router-link>
 
       <div class="admin-profile">

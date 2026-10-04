@@ -310,7 +310,7 @@
 
                 <div class="form-group">
                   <label class="form-label">API Gizli Anahtarı / Token</label>
-                  <input type="password" v-model="gpsConfig.apiSecret" class="form-input" placeholder="••••••••••••••••">
+                  <input type="password" v-model="gpsConfig.apiSecret" class="form-input" :placeholder="gpsConfig.apiSecret_configured ? 'Kayıtlı anahtar (boş bırakırsanız korunur)' : '••••••••••••••••'">
                 </div>
 
                 <div class="form-group">
@@ -349,7 +349,7 @@
 
                 <div class="form-group">
                   <label class="form-label">Kurumsal Müşteri / Cari Kodu</label>
-                  <input type="text" v-model="uttsConfig.clientCode" class="form-input" placeholder="Örn: UTTS-COMPANY-4482">
+                  <input type="password" v-model="uttsConfig.clientCode" class="form-input" :placeholder="uttsConfig.clientCode_configured ? 'Kayıtlı kod (boş bırakırsanız korunur)' : 'UTTS erişim kodu'">
                 </div>
 
                 <div class="form-group">
@@ -421,11 +421,7 @@
           </div>
         </div>
 
-        <div class="form-group">
-          <label class="form-label">Giriş Şifresi *</label>
-          <input type="password" v-model="userForm.password" required class="form-input" placeholder="••••••••">
-          <span style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px;">Kullanıcı ilk girişte şifresini değiştirebilir</span>
-        </div>
+        <div class="form-group"><label class="form-label">İlk giriş şifresi (en az 8 karakter) *</label><input type="password" v-model="userForm.password" minlength="8" required class="form-input" autocomplete="new-password"></div>
 
         <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 25px;">
           <button type="button" @click="showAddUserModal = false" class="btn btn-secondary">İptal</button>
@@ -442,9 +438,9 @@
       <form @submit.prevent="addHandoverForm">
         <div class="form-group">
           <label class="form-label">Teslim Edilecek Araç Plakası</label>
-          <select v-model="formHandover.plate" required class="form-select">
+          <select v-model="formHandover.vehicle_id" required class="form-select">
             <option value="" disabled>Araç seçiniz...</option>
-            <option v-for="v in vehicles" :key="v.id" :value="v.plate">
+            <option v-for="v in vehicles" :key="v.id" :value="v.id">
               {{ v.plate }} ({{ v.brand }} {{ v.model }})
             </option>
           </select>
@@ -556,29 +552,40 @@ const newDocTitle = ref('')
 
 const gpsConfig = reactive({
   provider: 'Arvento',
-  apiKey: localStorage.getItem('gps_api_key') || '',
-  apiSecret: localStorage.getItem('gps_api_secret') || '',
+  apiKey: '',
+  apiSecret: '',
   interval: '15'
 })
 
 const uttsConfig = reactive({
   provider: 'DarphaneUTTS',
-  clientCode: localStorage.getItem('utts_client_code') || '',
+  clientCode: '',
   syncType: 'Daily'
 })
 
-const saveGpsSettings = () => {
-  localStorage.setItem('gps_provider', gpsConfig.provider)
-  localStorage.setItem('gps_api_key', gpsConfig.apiKey)
-  localStorage.setItem('gps_api_secret', gpsConfig.apiSecret)
-  alert('GPS Servis Sağlayıcısı API ayarları kaydedildi!')
+const customerId = localStorage.getItem('fleetcar_customer_id')
+const loadIntegrationSettings = async () => {
+  if (!customerId) return
+  for (const [key, target] of [['gps', gpsConfig], ['utts', uttsConfig]]) {
+    try {
+      const res = await fetch(`/api/customer/settings/${key}?customer_id=${customerId}`)
+      if (!res.ok) continue
+      const { value = {} } = await res.json()
+      Object.assign(target, value)
+    } catch (error) { console.error(`Could not load ${key} settings`, error) }
+  }
 }
 
-const saveUttsSettings = () => {
-  localStorage.setItem('utts_provider', uttsConfig.provider)
-  localStorage.setItem('utts_client_code', uttsConfig.clientCode)
-  alert('UTTS Taşıt Tanıma entegrasyon ayarları kaydedildi!')
+const saveIntegrationSettings = async (key, value) => {
+  if (!customerId) return alert('Müşteri oturumu bulunamadı.')
+  try {
+    const res = await fetch(`/api/customer/settings/${key}?customer_id=${customerId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(value) })
+    if (!res.ok) throw new Error('Ayar kaydedilemedi')
+    alert('Ayarlar sunucuya kaydedildi. Sağlayıcı bağlantısı, geçerli erişim bilgileri ve entegrasyon adaptörü gerektirir.')
+  } catch (error) { alert(error.message || 'Ayarlar kaydedilemedi.') }
 }
+const saveGpsSettings = () => saveIntegrationSettings('gps', gpsConfig)
+const saveUttsSettings = () => saveIntegrationSettings('utts', uttsConfig)
 
 const activeTabTitle = computed(() => {
   switch (activeTab.value) {
@@ -608,7 +615,6 @@ const fetchVehicles = async () => {
 }
 
 // Users List Data
-const storedUsersStr = localStorage.getItem('fleet_customer_users')
 const defaultUser = {
   id: 1,
   name: localStorage.getItem('fleetcar_customer_name') || 'Filo Yöneticisi',
@@ -620,11 +626,8 @@ const defaultUser = {
   is_active: true
 }
 
-const users = ref(storedUsersStr ? JSON.parse(storedUsersStr) : [defaultUser])
-
-const saveUsers = () => {
-  localStorage.setItem('fleet_customer_users', JSON.stringify(users.value))
-}
+const users = ref([])
+const loadUsers = async () => { if (!customerId) return; const res = await fetch(`/api/customer/users?customer_id=${customerId}`); if (res.ok) users.value = await res.json() }
 
 const filteredUsers = computed(() => {
   if (!userSearch.value) return users.value
@@ -645,66 +648,52 @@ const userForm = reactive({
   phone: '',
   role: 'Sürücü',
   assigned_plate: '',
-  password: '123456'
+  password: ''
 })
 
-const addUser = () => {
-  users.value.unshift({
-    id: Date.now(),
-    name: userForm.name,
-    email: userForm.email,
-    phone: userForm.phone,
-    role: userForm.role,
-    assigned_plate: userForm.assigned_plate,
-    created_at: new Date().toLocaleDateString('tr-TR'),
-    is_active: true
-  })
-  saveUsers()
-  alert(`Yeni kullanıcı "${userForm.name}" başarıyla eklendi!`)
+const addUser = async () => {
+  const res = await fetch('/api/customer/users', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ customer_id:Number(customerId), name:userForm.name, email:userForm.email, phone:userForm.phone, role:userForm.role, assigned_plate:userForm.assigned_plate, password:userForm.password, is_active:true }) })
+  if (!res.ok) return alert('Kullanıcı kaydedilemedi.')
+  await loadUsers()
+  alert(`Yeni kullanıcı "${userForm.name}" kaydedildi.`)
   showAddUserModal.value = false
   userForm.name = ''
   userForm.email = ''
   userForm.phone = ''
   userForm.assigned_plate = ''
+  userForm.password = ''
 }
 
 const toggleUserStatus = (user) => {
   user.is_active = !user.is_active
-  saveUsers()
+  fetch(`/api/customer/users/${user.id}?customer_id=${customerId}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({is_active:user.is_active}) }).then(loadUsers)
 }
 
 const editUser = (user) => {
-  alert(`"${user.name}" kullanıcısını düzenleme ekranı açılıyor...`)
+  const name = prompt('Ad Soyad', user.name)
+  if (name === null) return
+  const email = prompt('E-posta', user.email)
+  if (email === null) return
+  fetch(`/api/customer/users/${user.id}?customer_id=${customerId}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name, email}) }).then(loadUsers)
 }
 
 // Delivery / Handover Forms
-const storedFormsStr = localStorage.getItem('fleet_customer_delivery_forms')
-const deliveryForms = ref(storedFormsStr ? JSON.parse(storedFormsStr) : [])
-
-const saveForms = () => {
-  localStorage.setItem('fleet_customer_delivery_forms', JSON.stringify(deliveryForms.value))
-}
+const deliveryForms = ref([])
+const loadDeliveryForms = async () => { if (!customerId) return; const res = await fetch(`/api/customer/delivery-forms?customer_id=${customerId}`); if (res.ok) deliveryForms.value = await res.json() }
 
 const formHandover = reactive({
-  plate: '',
+  vehicle_id: '',
   receiver: '',
   date: new Date().toISOString().slice(0, 10),
   km: 0
 })
 
-const addHandoverForm = () => {
-  deliveryForms.value.unshift({
-    id: Date.now(),
-    plate: formHandover.plate,
-    receiver: formHandover.receiver,
-    issuer: localStorage.getItem('fleetcar_customer_name') || 'Filo Yönetimi',
-    date: formHandover.date,
-    km: formHandover.km,
-    notes: 'Yeni teslim alma formu kaydı.'
-  })
-  saveForms()
+const addHandoverForm = async () => {
+  const res = await fetch('/api/customer/delivery-forms', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ customer_id:Number(customerId), vehicle_id:formHandover.vehicle_id, receiver:formHandover.receiver, issuer:localStorage.getItem('fleetcar_customer_name') || '', date:formHandover.date, km:formHandover.km }) })
+  if (!res.ok) return alert('Teslim formu kaydedilemedi. Araç seçimini kontrol edin.')
+  await loadDeliveryForms()
   showAddFormModal.value = false
-  alert(`${formHandover.plate} plaka için araç teslim formu kaydedildi!`)
+  alert('Araç teslim formu kaydedildi!')
 }
 
 // Company Docs Data & Methods
@@ -752,6 +741,7 @@ const openUploadModal = (key = null) => {
 const onDocFilePicked = (event) => {
   const file = event.target.files[0]
   if (file) {
+    pickedDocFile.value = file
     uploadFileName.value = file.name
   }
 }
@@ -764,17 +754,11 @@ const saveCustomerDoc = async () => {
   }
 
   docSubmitting.value = true
-  const payload = {
-    customer_id: Number(customerId)
-  }
-  payload[selectedDocCategory.value] = uploadFileName.value || `${selectedDocCategory.value}_belge.pdf`
+  const file = pickedDocFile.value
+  if (!file) { docSubmitting.value = false; alert('Lütfen bir dosya seçin.'); return }
 
   try {
-    const res = await fetch('/api/customer/documents', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    })
+    const res = await fetch(`/api/customer/documents/${selectedDocCategory.value}/file?customer_id=${customerId}&original_name=${encodeURIComponent(file.name)}`, { method:'POST', headers:{'Content-Type':file.type}, body:file })
 
     if (res.ok) {
       const data = await res.json()
@@ -838,23 +822,22 @@ const viewCustomerDoc = (key) => {
 
 const downloadCustomerDoc = (key) => {
   const doc = customerDocs.value[key]
-  const catObj = docCategories.find(c => c.key === key)
-  const filename = doc?.file_name || `${key}_belge.pdf`
-  
-  const content = `FleetCar Kurumsal Şirket Evrakı\nBelge Türü: ${catObj?.title || key}\nDosya Adı: ${filename}\nYüklenme Tarihi: ${doc?.uploaded_at || 'Bilinmiyor'}\nDurum: Onaylı`
-  const blob = new Blob([content], { type: 'text/plain;charset=utf-8;' })
-  const url = URL.createObjectURL(blob)
+  if (!doc?.url) return alert('Bu eski kayıtta dosyanın kendisi bulunmuyor; lütfen belgeyi yeniden yükleyin.')
   const link = document.createElement('a')
-  link.href = url
-  link.setAttribute('download', filename)
-  document.body.appendChild(link)
+  link.href = doc.url
+  link.download = doc.file_name || key
+  link.rel = 'noopener'
   link.click()
-  document.body.removeChild(link)
 }
+
+const pickedDocFile = ref(null)
 
 onMounted(() => {
   fetchVehicles()
   fetchCustomerDocs()
+  loadUsers()
+  loadDeliveryForms()
+  loadIntegrationSettings()
 })
 
 const getRoleBadgeClass = (role) => {
@@ -866,4 +849,3 @@ const getRoleBadgeClass = (role) => {
   }
 }
 </script>
-

@@ -232,6 +232,36 @@ h1, h2, h3, h4, h5, h6 {
   text-decoration: none;
 }
 
+.brand-logo-image {
+  display: block;
+  width: 180px;
+  height: 42px;
+  flex: 0 0 auto;
+  object-fit: cover;
+  object-position: center;
+}
+
+.brand-logo-image--dark {
+  background: #fff;
+  border-radius: 8px;
+}
+
+.brand-logo-role {
+  color: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.brand-logo-image--dark + .brand-logo-role {
+  color: #fff;
+}
+
+.admin-sidebar .brand-logo-image {
+  width: 148px;
+  height: 36px;
+}
+
 .nav-logo-icon {
   width: 32px;
   height: 32px;
@@ -1471,8 +1501,6 @@ h1, h2, h3, h4, h5, h6 {
   border-color: #3b82f6;
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
 }
-
-
 
 
 
