@@ -977,7 +977,7 @@ h1, h2, h3, h4, h5, h6 {
   width: 190px !important;
   max-width: 100% !important;
   height: 42px !important;
-  object-fit: contain !important;
+  object-fit: cover !important;
 }
 
 .portal-sidebar .user-profile-summary {
