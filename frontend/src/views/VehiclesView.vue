@@ -865,51 +865,6 @@ onMounted(() => {
   font-size: 12px;
 }
 
-:global(.portal-layout:has(.fleet-page) > .portal-sidebar) {
-  width: 190px;
-  background: #071d38;
-  border-right-color: #0c3158;
-  color: #edf5ff;
-}
-:global(.portal-layout:has(.fleet-page) > .portal-sidebar .nav-logo) {
-  width: 158px;
-  height: 37px;
-  margin: 4px 0 16px !important;
-  overflow: hidden;
-  background: white;
-  border-radius: 8px;
-}
-:global(.portal-layout:has(.fleet-page) > .portal-sidebar .user-profile-summary) {
-  background: #0b2748;
-  border-color: #183a5e;
-}
-:global(.portal-layout:has(.fleet-page) > .portal-sidebar .company-name),
-:global(.portal-layout:has(.fleet-page) > .portal-sidebar .sidebar-link) {
-  color: #e8f1fc;
-}
-:global(.portal-layout:has(.fleet-page) > .portal-sidebar .role-badge) {
-  color: #a3b9d1;
-}
-:global(.portal-layout:has(.fleet-page) > .portal-sidebar .sidebar-link.active) {
-  color: white;
-  background: #1265e9;
-  border-radius: 8px;
-  border-left: 0;
-}
-:global(.portal-layout:has(.fleet-page) > .portal-sidebar .sidebar-link:hover) {
-  color: white;
-  background: #12385f;
-}
-:global(.portal-layout:has(.fleet-page) > .portal-sidebar .sidebar-footer) {
-  background: #071d38;
-  border-top-color: #183a5e;
-}
-:global(.portal-layout:has(.fleet-page) > .portal-main) {
-  margin-left: 190px;
-  width: calc(100% - 190px);
-  max-width: calc(100% - 190px);
-}
-
 .fleet-topbar {
   min-height: 56px;
   margin: -32px -18px 20px;
@@ -1007,6 +962,7 @@ onMounted(() => {
 .fleet-stat strong { margin-top: 2px; font-size: 14px; }
 .fleet-stat em { margin-left: 5px; color: #1aa578; font-size: 8px; font-style: normal; font-weight: 600; }
 .fleet-workspace { display: grid; grid-template-columns: minmax(0, 1fr) minmax(265px, 30%); align-items: start; gap: 13px; }
+.fleet-workspace:has(.fleet-no-selection) { grid-template-columns: minmax(0, 1fr); }
 .fleet-list-column { min-width: 0; }
 .fleet-filters {
   min-height: 48px;
@@ -1104,6 +1060,7 @@ onMounted(() => {
 .fleet-detail-footer { display: flex; gap: 6px; margin: 0 -12px; padding: 8px 10px; border-top: 1px solid #edf2f7; }
 .fleet-detail-footer button { flex: 1; border: 0; background: #f3f7fc; color: #46617f; padding: 7px 4px; border-radius: 5px; font-size: 8px; cursor: pointer; }
 .fleet-no-selection { min-height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: #6e829a; text-align: center; }.fleet-no-selection > span { font-size: 36px; }.fleet-no-selection strong { font-size: 10px; }.fleet-no-selection p { font-size: 9px; }
+.fleet-workspace:has(.fleet-no-selection) .fleet-no-selection { display: none; }
 .fleet-map-card { margin-top: 10px; padding: 12px; }.fleet-map-card > div { display:flex; justify-content:space-between; margin-bottom:8px; }.fleet-map-card button { border:0;background:none;color:#1465dd;cursor:pointer; }.fleet-map-card iframe { width:100%;height:260px;border:0;border-radius:6px; }.fleet-map-card p { margin-top:8px;color:#75879b;font-size:9px; }
 
 @media (max-width: 1350px) {

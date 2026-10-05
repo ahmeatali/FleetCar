@@ -1,12 +1,12 @@
 <template>
   <div>
     <!-- Navbar -->
-    <nav class="navbar" style="padding: 16px 8%; background: #ffffff; border-bottom: 1px solid #e2e8f0;">
+    <nav class="navbar home-navbar" style="padding: 16px 8%; background: #ffffff; border-bottom: 1px solid #e2e8f0;">
       <router-link to="/" class="nav-logo">
         <img class="brand-logo-image" src="/fleetrent-logo.jpeg" alt="FleetRent" />
       </router-link>
       
-      <ul class="nav-links">
+      <ul class="nav-links" :class="{ 'nav-links--open': mobileMenuOpen }">
         <li><a href="#vehicles" class="nav-link" style="color: #475569;">Araçlar <span style="font-size: 0.75rem;">▼</span></a></li>
         <li><a href="#compare" class="nav-link" style="color: #475569;">Karşılaştır</a></li>
         <li><a href="#ai-assistant" class="nav-link" style="color: #475569; font-weight: 600;">✨ AI Asistan</a></li>
@@ -14,13 +14,16 @@
         <li><a href="#contact" class="nav-link" style="color: #475569;">İletişim</a></li>
       </ul>
 
-      <div style="display: flex; align-items: center; gap: 16px;">
-        <div class="fleetrent-nav-search">
+      <div class="home-nav-actions">
+        <div class="fleetrent-nav-search home-nav-search">
           <span style="color: #94a3b8;">🔍</span>
           <input type="text" placeholder="Ara..." v-model="searchQuery" @keyup.enter="handleSearch" />
         </div>
-        <button @click="showLoginRoleModal = true" class="nav-link" style="background: none; border: none; cursor: pointer; color: #334155; font-weight: 600; font-size: 0.95rem;">
+        <button @click="showLoginRoleModal = true" class="nav-link home-login-button" style="background: none; border: none; cursor: pointer; color: #334155; font-weight: 600; font-size: 0.95rem;">
           Giriş
+        </button>
+        <button class="mobile-menu-toggle" type="button" :aria-expanded="mobileMenuOpen" aria-label="Menüyü aç/kapat" @click="mobileMenuOpen = !mobileMenuOpen">
+          <span></span><span></span><span></span>
         </button>
       </div>
     </nav>
@@ -564,6 +567,7 @@ const showSuccessModal = ref(false)
 const submittedQuoteDetails = ref(null)
 const quoteType = ref('kurumsal')
 const searchQuery = ref('')
+const mobileMenuOpen = ref(false)
 
 const quoteStep = ref(1) // 1: Auth, 2: Documents, 3: Quote Details
 const authMode = ref('register') // 'register' or 'login'

@@ -387,16 +387,6 @@ onMounted(loadDetails)
 .vehicle-detail-shell { min-height: 100vh; background: #f4f7fb; color: #173252; font-family: var(--font-sans); }
 .vehicle-detail-layout { min-height: 100vh; }
 .vehicle-details-main { padding: 0 14px 24px; background: #f4f7fb; }
-:global(.portal-layout:has(.vehicle-details-main) > .portal-sidebar) { width: 172px; padding: 16px 10px; background: #071c36; border-color: #0c3156; color: white; }
-:global(.portal-layout:has(.vehicle-details-main) > .portal-sidebar .nav-logo) { width: 150px; height: 38px; margin: 0 0 12px !important; overflow: hidden; background: white; border-radius: 8px; }
-:global(.portal-layout:has(.vehicle-details-main) > .portal-sidebar .brand-logo-image) { width: 150px; height: 38px; }
-:global(.portal-layout:has(.vehicle-details-main) > .portal-sidebar .user-profile-summary) { background: #0c2747; border-color: #17395c; }
-:global(.portal-layout:has(.vehicle-details-main) > .portal-sidebar .company-name), :global(.portal-layout:has(.vehicle-details-main) > .portal-sidebar .sidebar-link) { color: #e7f0fc; }
-:global(.portal-layout:has(.vehicle-details-main) > .portal-sidebar .role-badge) { color: #a7bdd5; }
-:global(.portal-layout:has(.vehicle-details-main) > .portal-sidebar .sidebar-link.active) { color: white; background: #1265e9; border: 0; border-radius: 7px; }
-:global(.portal-layout:has(.vehicle-details-main) > .portal-sidebar .sidebar-link:hover) { color: white; background: #12395f; }
-:global(.portal-layout:has(.vehicle-details-main) > .portal-sidebar .sidebar-footer) { background: #071c36; border-color: #17395c; }
-:global(.portal-layout:has(.vehicle-details-main) > .portal-main) { margin-left: 172px; width: calc(100% - 172px); max-width: calc(100% - 172px); }
 .detail-global-bar { height: 44px; margin: 0 -14px 10px; padding: 6px 15px; display: flex; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid #e7edf4; background: #fff; }
 .detail-search { width: min(430px, 55%); display: flex; align-items: center; gap: 8px; padding: 5px 10px; border: 1px solid #edf1f6; border-radius: 7px; background: #f7f9fc; color: #6e86a3; }
 .detail-search span { font-size: 18px; }.detail-search input { width: 100%; border: 0; outline: 0; background: transparent; color: #173252; font: inherit; font-size: 10px; }

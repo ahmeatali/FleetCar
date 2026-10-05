@@ -14,10 +14,16 @@
   --border-color: #e2e8f0;
   --border-glow: rgba(79, 70, 229, 0.08);
   
-  --primary: #4f46e5;
-  --primary-glow: rgba(79, 70, 229, 0.15);
-  --secondary: #0ea5e9;
-  --secondary-glow: rgba(14, 165, 233, 0.15);
+  --primary: #1268e8;
+  --primary-glow: rgba(18, 104, 232, 0.15);
+  --secondary: #38a3f1;
+  --secondary-glow: rgba(56, 163, 241, 0.15);
+  --portal-bg: #f3f8fd;
+  --portal-surface: #ffffff;
+  --portal-border: #e4ecf5;
+  --portal-ink: #142b4c;
+  --portal-muted: #71839b;
+  --portal-accent: #1268e8;
   
   --accent-purple: #8b5cf6;
   
@@ -54,6 +60,11 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   line-height: 1.5;
+}
+
+#app {
+  width: 100%;
+  min-height: 100vh;
 }
 
 /* Background Gradients & Glow effects - Subtle Light Mode */
@@ -928,6 +939,338 @@ h1, h2, h3, h4, h5, h6 {
   color: #64748b;
 }
 
+/* Shared customer workspace visual language */
+.portal-layout,
+.tire-app,
+.service-app,
+.road-page,
+.vehicle-detail-shell {
+  background: var(--portal-bg) !important;
+  color: var(--portal-ink) !important;
+  font-family: Inter, var(--font-sans) !important;
+}
+
+.portal-layout > .portal-sidebar,
+.tire-app > .portal-sidebar,
+.service-app > .portal-sidebar,
+.road-page > .portal-sidebar,
+.vehicle-detail-layout > .portal-sidebar {
+  width: 260px !important;
+  padding: 20px 16px 16px !important;
+  background: var(--portal-surface) !important;
+  color: var(--portal-ink) !important;
+  border-right: 1px solid var(--portal-border) !important;
+  border-bottom-color: var(--portal-border) !important;
+}
+
+.portal-sidebar .nav-logo {
+  width: 100% !important;
+  max-width: 220px !important;
+  height: 42px !important;
+  margin: 0 0 16px !important;
+  overflow: visible !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+}
+
+.portal-sidebar .brand-logo-image {
+  width: 190px !important;
+  max-width: 100% !important;
+  height: 42px !important;
+  object-fit: contain !important;
+}
+
+.portal-sidebar .user-profile-summary {
+  background: #f7faff !important;
+  border-color: var(--portal-border) !important;
+}
+
+.portal-sidebar .company-name,
+.portal-sidebar .sidebar-link {
+  color: #475b75 !important;
+}
+
+.portal-sidebar .role-badge { color: var(--portal-muted) !important; }
+
+.portal-sidebar .sidebar-link {
+  min-height: 44px;
+  border-left: 3px solid transparent !important;
+  border-radius: 9px !important;
+}
+
+.portal-sidebar .sidebar-link.active {
+  color: var(--portal-accent) !important;
+  background: #edf5ff !important;
+  border-left-color: var(--portal-accent) !important;
+}
+
+.portal-sidebar .sidebar-link:hover {
+  color: var(--portal-accent) !important;
+  background: #f5f9ff !important;
+}
+
+.portal-sidebar .sidebar-footer {
+  background: var(--portal-surface) !important;
+  border-top-color: var(--portal-border) !important;
+}
+
+.portal-layout > .portal-main {
+  margin-left: 260px !important;
+  width: calc(100% - 260px) !important;
+  max-width: calc(100% - 260px) !important;
+  background: var(--portal-bg) !important;
+}
+
+.portal-layout .glass-panel,
+.portal-layout .stat-card,
+.portal-layout .widget-list-card {
+  border-color: var(--portal-border);
+  border-radius: 12px;
+  background: var(--portal-surface);
+  box-shadow: 0 2px 8px rgba(23, 61, 104, 0.06);
+}
+
+.portal-layout .btn-primary,
+.portal-layout .btn-blue {
+  background: var(--portal-accent);
+}
+
+.portal-layout > .portal-main > header.dashboard-header,
+.portal-layout > .portal-main > .fleet-heading,
+.portal-layout > .portal-main > .page-heading {
+  color: var(--portal-ink);
+}
+
+.portal-layout > .portal-main > header.dashboard-header h1,
+.portal-layout > .portal-main .fleet-heading h1,
+.portal-layout > .portal-main .page-heading h1 {
+  color: var(--portal-ink);
+  font-size: 1.4rem;
+  line-height: 1.3;
+}
+
+.portal-layout > .portal-main > header.dashboard-header p,
+.portal-layout > .portal-main .fleet-heading p,
+.portal-layout > .portal-main .page-heading p {
+  color: var(--portal-muted);
+}
+
+@media (max-width: 900px) {
+  .portal-layout > .portal-sidebar,
+  .tire-app > .portal-sidebar,
+  .service-app > .portal-sidebar,
+  .road-page > .portal-sidebar,
+  .vehicle-detail-layout > .portal-sidebar {
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    position: relative !important;
+    top: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--portal-border) !important;
+    overflow: visible !important;
+  }
+
+  .portal-layout > .portal-main { margin-left: 0 !important; width: 100% !important; max-width: 100% !important; }
+}
+
+/* Bring the legacy overview widgets into the same calm blue workspace. */
+.customer-overview > div:first-child {
+  background: #fff8e7 !important;
+  border: 1px solid #f5d982 !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+
+.customer-overview > div:first-child h3 { color: #805a0b !important; }
+.customer-overview > div:first-child p { color: #79643a !important; }
+.customer-overview > div:first-child > a { background: var(--portal-accent) !important; box-shadow: none !important; }
+.portal-main .emergency-banner {
+  background: #fff !important;
+  color: var(--portal-ink) !important;
+  border: 1px solid var(--portal-border) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 8px rgba(23, 61, 104, 0.06) !important;
+}
+.portal-main .emergency-banner-sub { color: var(--portal-muted) !important; }
+.portal-main .emergency-banner > a { background: var(--portal-accent) !important; color: #fff !important; }
+.customer-overview .stat-card { flex-direction: column; align-items: flex-start; gap: 10px; padding: 18px; }
+.customer-overview .stat-header { width: 100%; margin: 0; }
+.customer-overview .stat-title { font-size: .78rem; }
+.customer-overview .stat-value { font-size: 1.75rem; margin: 0; }
+
+@media (max-width: 700px) {
+  .customer-overview > div:first-child {
+    padding: 14px !important;
+    gap: 12px !important;
+    flex-wrap: wrap !important;
+  }
+
+  .customer-overview > div:first-child > a { white-space: normal !important; }
+
+  .customer-overview .emergency-banner {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px !important;
+  }
+
+  .customer-overview .emergency-banner > a { margin-left: auto; }
+}
+
+/* Public home page mobile layout */
+.home-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.mobile-menu-toggle {
+  display: none;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: #fff;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.mobile-menu-toggle span {
+  width: 17px;
+  height: 2px;
+  border-radius: 2px;
+  background: #1e293b;
+}
+
+@media (max-width: 768px) {
+  .home-navbar {
+    position: sticky;
+    top: 0;
+    min-height: 64px;
+    padding: 10px 16px !important;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .home-navbar .brand-logo-image {
+    width: 148px;
+    height: 36px;
+  }
+
+  .home-nav-actions {
+    margin-left: auto;
+    gap: 10px;
+  }
+
+  .home-nav-search { display: none; }
+  .mobile-menu-toggle { display: flex; }
+
+  .home-navbar .nav-links {
+    display: none;
+    order: 3;
+    flex: 0 0 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 6px 0 2px;
+    border-top: 1px solid #edf1f6;
+  }
+
+  .home-navbar .nav-links.nav-links--open { display: flex; }
+
+  .home-navbar .nav-links li { width: 100%; }
+
+  .home-navbar .nav-link {
+    display: block;
+    padding: 11px 8px;
+    font-size: 0.95rem;
+  }
+
+  .hero-dark-bg {
+    width: 100%;
+    padding: 58px 20px 48px;
+    text-align: center;
+  }
+
+  .hero-dark-bg > .container {
+    width: 100%;
+    max-width: 560px !important;
+    margin: 0 auto;
+    padding: 0 !important;
+  }
+
+  .hero-pill-badge {
+    max-width: 100%;
+    padding: 8px 12px;
+    margin-bottom: 22px;
+    font-size: 0.75rem;
+    line-height: 1.4;
+  }
+
+  .hero-dark-title {
+    margin-bottom: 16px;
+    font-size: clamp(2.25rem, 10vw, 3.1rem);
+    line-height: 1.08;
+  }
+
+  .hero-dark-subtitle {
+    max-width: 36rem;
+    margin-bottom: 25px;
+    font-size: 1rem;
+    line-height: 1.65;
+  }
+
+  .hero-dark-bg .btn {
+    min-height: 48px;
+    padding: 12px 18px !important;
+    flex: 1 1 145px;
+    font-size: 0.92rem !important;
+  }
+
+  .trust-badges-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 10px;
+    margin-top: 30px;
+    text-align: left;
+    font-size: 0.76rem;
+  }
+
+  .trust-badge-item { gap: 6px; }
+
+  .container { max-width: 100%; }
+
+  section.container {
+    padding: 54px 18px !important;
+  }
+
+  #partners .text-center { margin-bottom: 26px !important; }
+  #partners h2, .container h2 { font-size: clamp(1.75rem, 8vw, 2.2rem) !important; }
+  #partners .text-center p { font-size: 0.95rem !important; line-height: 1.6; }
+
+  .grid-2, .grid-3, .grid-4 {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .partner-card {
+    width: 100%;
+    min-height: 72px;
+    padding: 14px;
+  }
+}
+
+@media (max-width: 380px) {
+  .home-navbar { padding-right: 12px !important; padding-left: 12px !important; }
+  .home-navbar .brand-logo-image { width: 132px; }
+  .hero-dark-bg { padding-right: 15px; padding-left: 15px; }
+  .trust-badges-row { font-size: 0.7rem; }
+}
+
 .feature-box {
   background: #ffffff;
   border: 1px solid #e2e8f0;
@@ -1501,8 +1844,3 @@ h1, h2, h3, h4, h5, h6 {
   border-color: #3b82f6;
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
 }
-
-
-
-
-

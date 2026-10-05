@@ -1,11 +1,11 @@
 <template>
   <div class="app-bg-glow"></div>
-  <div class="portal-layout">
+  <div class="portal-layout customer-overview-layout">
     <!-- Reusable Sidebar -->
     <Sidebar />
 
     <!-- Main Content Area -->
-    <main class="portal-main fade-in-up">
+    <main class="portal-main fade-in-up customer-overview">
       <!-- ⚠️ Mandatory Company Documents Warning Banner -->
       <div v-if="documentsUploaded === false" style="background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border: 2px solid #f97316; border-radius: 16px; padding: 18px 24px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 25px -5px rgba(249, 115, 22, 0.15);">
         <div style="display: flex; align-items: center; gap: 16px;">
