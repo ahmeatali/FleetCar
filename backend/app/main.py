@@ -1066,13 +1066,13 @@ def get_smtp_status():
     _load_env_file()
     smtp_host = os.environ.get("SMTP_HOST", "").strip()
     smtp_user = os.environ.get("SMTP_USER", "").strip()
-    smtp_from = os.environ.get("SMTP_FROM", "").strip()
-    is_configured = bool(smtp_host and smtp_user)
+    smtp_pass = os.environ.get("SMTP_PASS", "").strip()
+    is_configured = bool(smtp_host and smtp_user and smtp_pass)
     return {
         "configured": is_configured,
-        "smtp_host": smtp_host or "Tanımlanmamış",
-        "smtp_user": smtp_user or "Tanımlanmamış",
-        "smtp_from": smtp_from or smtp_user or "Tanımlanmamış"
+        "host_configured": bool(smtp_host),
+        "user_configured": bool(smtp_user),
+        "password_configured": bool(smtp_pass)
     }
 
 
