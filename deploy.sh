@@ -93,6 +93,11 @@ WantedBy=multi-user.target
 UNIT
 
 chown -R www-data:www-data "$APP_DIR"
+# Gunicorn opens these files as www-data. Create them before systemd starts the
+# service so a clean deployment does not fail on a missing log file.
+touch /var/log/fleetcar-backend.log /var/log/fleetcar-backend-error.log
+chown www-data:www-data /var/log/fleetcar-backend.log /var/log/fleetcar-backend-error.log
+chmod 640 /var/log/fleetcar-backend.log /var/log/fleetcar-backend-error.log
 systemctl daemon-reload
 systemctl enable fleetcar-backend
 systemctl restart fleetcar-backend
