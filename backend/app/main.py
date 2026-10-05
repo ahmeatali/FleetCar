@@ -33,7 +33,7 @@ from app.schemas import (
     CustomerCreate, CustomerUpdate, BidCreate, BidResponse,
     AdminLoginRequest, SetPasswordRequest,
     ServiceCheckIn, ServiceWorkOrder, ServiceInvoice,
-    CustomerRegisterRequest, CustomerDocumentUpload,
+    CustomerRegisterRequest, SupplierRegisterRequest, CustomerDocumentUpload,
     ForgotPasswordRequest, ResetPasswordRequest, ResendVerificationRequest
 )
 
@@ -985,8 +985,10 @@ def get_vehicle_services(vehicle_id: str, db: Session = Depends(get_db)):
 # ─────────────────── SUPPLIERS ─────────────────────────────────────────────
 
 @app.get("/api/suppliers", response_model=List[SupplierResponse])
-def get_suppliers(type: Optional[str] = None, db: Session = Depends(get_db)):
+def get_suppliers(type: Optional[str] = None, include_unverified: bool = False, db: Session = Depends(get_db)):
     q = db.query(models.Supplier)
+    if not include_unverified:
+        q = q.filter(models.Supplier.is_email_verified == True)
     if type:
         q = q.filter(models.Supplier.type == type)
     return [supplier_dict(s) for s in q.all()]
@@ -1083,7 +1085,7 @@ def verify_supplier_token(token: str, db: Session = Depends(get_db)):
             "status": "valid",
             "supplier_name": s.name,
             "email": s.email,
-            "account_type": "supplier"
+            "account_type": "service" if str(s.type or "").lower() in SERVICE_SUPPLIER_TYPES else "supplier"
         }
     c = db.query(models.Customer).filter(models.Customer.invitation_token == token).first()
     if c:
@@ -1107,10 +1109,14 @@ def set_supplier_password(req: SetPasswordRequest, db: Session = Depends(get_db)
         s.password_hash = hash_password(req.password)
         s.invitation_status = "Aktif"
         s.invitation_token = None
+        # The invitation link is delivered to this address; consuming it proves mailbox access.
+        s.is_email_verified = True
+        s.verification_token = None
         db.commit()
         return {
             "status": "success",
-            "message": "Şifreniz başarıyla oluşturuldu! Şimdi giriş yapabilirsiniz."
+            "message": "Şifreniz oluşturuldu, e-posta adresiniz doğrulandı. Giriş yapabilirsiniz.",
+            "account_type": "service" if str(s.type or "").lower() in SERVICE_SUPPLIER_TYPES else "supplier"
         }
 
     c = db.query(models.Customer).filter(models.Customer.invitation_token == req.token).first()
@@ -1118,17 +1124,73 @@ def set_supplier_password(req: SetPasswordRequest, db: Session = Depends(get_db)
         c.password_hash = hash_password(req.password)
         c.invitation_status = "Aktif"
         c.invitation_token = None
+        c.is_email_verified = True
+        c.verification_token = None
         db.commit()
         return {
             "status": "success",
-            "message": "Şifreniz başarıyla oluşturuldu! Şimdi giriş yapabilirsiniz."
+            "message": "Şifreniz oluşturuldu, e-posta adresiniz doğrulandı. Giriş yapabilirsiniz.",
+            "account_type": "customer"
         }
 
     raise HTTPException(status_code=404, detail="Geçersiz veya süresi dolmuş davet bağlantısı.")
 
 
-@app.post("/api/supplier/login")
-def supplier_login(creds: AdminLoginRequest, db: Session = Depends(get_db)):
+SERVICE_SUPPLIER_TYPES = {"servis", "lastik", "yol_yardim"}
+
+
+@app.post("/api/supplier/register")
+def supplier_register(req: SupplierRegisterRequest, db: Session = Depends(get_db)):
+    email_clean = req.email.lower().strip()
+    name = req.name.strip()
+    if not name or not email_clean:
+        raise HTTPException(status_code=400, detail="Firma adı ve e-posta zorunludur.")
+    if len(req.password) < 8:
+        raise HTTPException(status_code=400, detail="Şifre en az 8 karakter olmalıdır.")
+    if req.account_type == "service" and not req.service_type:
+        raise HTTPException(status_code=400, detail="Servis türünü seçin.")
+
+    if db.query(models.Supplier).filter(models.Supplier.email.ilike(email_clean)).first():
+        raise HTTPException(status_code=409, detail="Bu e-posta adresi zaten kayıtlı.")
+    if db.query(models.Customer).filter(models.Customer.email.ilike(email_clean)).first():
+        raise HTTPException(status_code=409, detail="Bu e-posta adresi başka bir hesapta kayıtlı.")
+    if db.query(models.CustomerPortalUser).filter(models.CustomerPortalUser.email.ilike(email_clean)).first():
+        raise HTTPException(status_code=409, detail="Bu e-posta adresi başka bir hesapta kayıtlı.")
+
+    account_type = req.account_type
+    supplier_type = req.service_type if account_type == "service" else "ikame_arac"
+    token = generate_invitation_token()
+    supplier = models.Supplier(
+        name=name,
+        type=supplier_type,
+        email=email_clean,
+        phone=(req.phone or "").strip(),
+        location="",
+        city="",
+        district="",
+        services=[supplier_type],
+        contract_type="Başvuru Bekliyor",
+        password_hash=hash_password(req.password),
+        invitation_status="E-posta Doğrulaması Bekleniyor",
+        is_email_verified=False,
+        verification_token=token,
+    )
+    db.add(supplier)
+    db.commit()
+    db.refresh(supplier)
+
+    email_result = send_email_verification_email(supplier.email, supplier.name, token)
+    return {
+        "status": "pending_verification",
+        "message": "Kayıt oluşturuldu. Giriş yapmadan önce e-posta adresinizi doğrulayın.",
+        "account_type": account_type,
+        "email_sent": email_result.get("email_sent", False),
+        "smtp_configured": email_result.get("smtp_configured", False),
+        "supplier": supplier_dict(supplier),
+    }
+
+
+def _supplier_login(creds: AdminLoginRequest, db: Session, expected_type: str):
     email_clean = creds.email.lower().strip()
     s = db.query(models.Supplier).filter(models.Supplier.email == email_clean).first()
     
@@ -1138,33 +1200,41 @@ def supplier_login(creds: AdminLoginRequest, db: Session = Depends(get_db)):
             detail=f"[{email_clean}] e-posta adresine tanımlı bir tedarikçi veya servis bulunamadı. Lütfen yöneticinizle iletişime geçin."
         )
 
-    if s.password_hash:
-        if not verify_password(creds.password, s.password_hash):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Hatalı şifre! Lütfen girmiş olduğunuz şifreyi kontrol edin."
-            )
-    else:
-        # If admin added email but supplier hasn't set password yet via invite, set it now
-        s.password_hash = hash_password(creds.password)
-        s.invitation_status = "Aktif"
-        db.commit()
+    is_service_account = str(s.type or "").lower() in SERVICE_SUPPLIER_TYPES
+    if expected_type == "service" and not is_service_account:
+        raise HTTPException(status_code=403, detail="Bu hesap tedarikçi portalına aittir. Tedarikçi girişini kullanın.")
+    if expected_type == "supplier" and is_service_account:
+        raise HTTPException(status_code=403, detail="Bu hesap servis portalına aittir. Servis girişini kullanın.")
 
-    if getattr(s, 'is_email_verified', False) is not True:
-        s.is_email_verified = False
+    if not s.password_hash or not verify_password(creds.password, s.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="E-posta veya şifre hatalı. Davetli hesaplar önce e-postalarındaki bağlantıdan şifre oluşturmalıdır."
+        )
+
+    if getattr(s, "is_email_verified", False) is not True:
         if not getattr(s, 'verification_token', None):
             v_token = generate_invitation_token()
             s.verification_token = v_token
             db.commit()
             send_email_verification_email(s.email, s.name, v_token)
-        else:
-            db.commit()
+        raise HTTPException(status_code=403, detail="E-posta adresiniz henüz doğrulanmadı. E-postanızdaki doğrulama bağlantısını kullanın veya yeniden gönderin.")
 
     return {
         "status": "success",
         "token": f"supplier_token_{s.id}_{datetime.datetime.now().timestamp()}",
         "supplier": supplier_dict(s)
     }
+
+
+@app.post("/api/supplier/login")
+def supplier_login(creds: AdminLoginRequest, db: Session = Depends(get_db)):
+    return _supplier_login(creds, db, "supplier")
+
+
+@app.post("/api/service/login")
+def service_login(creds: AdminLoginRequest, db: Session = Depends(get_db)):
+    return _supplier_login(creds, db, "service")
 
 
 @app.post("/api/customer/login")
@@ -1176,6 +1246,12 @@ def customer_login(creds: AdminLoginRequest, db: Session = Depends(get_db)):
         user = db.query(models.CustomerPortalUser).filter(models.CustomerPortalUser.email.ilike(email_clean), models.CustomerPortalUser.is_active == True).first()
         if not user or not user.password_hash or not verify_password(creds.password, user.password_hash):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="E-posta veya şifre hatalı.")
+        if not getattr(user, "is_email_verified", False):
+            if not user.verification_token:
+                user.verification_token = generate_invitation_token()
+                db.commit()
+                send_email_verification_email(user.email, user.name, user.verification_token)
+            raise HTTPException(status_code=403, detail="E-posta adresiniz henüz doğrulanmadı. E-postanızdaki doğrulama bağlantısını kullanın veya yeniden gönderin.")
         c = db.query(models.Customer).filter_by(id=user.customer_id).first()
         if not c: raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Kullanıcı şirket hesabı bulunamadı.")
         return {"status":"success", "token":f"customer_user_token_{user.id}_{datetime.datetime.now().timestamp()}",
@@ -1188,20 +1264,15 @@ def customer_login(creds: AdminLoginRequest, db: Session = Depends(get_db)):
                 detail="Hatalı şifre! Lütfen girmiş olduğunuz şifreyi kontrol edin."
             )
     else:
-        # First time login setup fallback
-        c.password_hash = hash_password(creds.password)
-        c.invitation_status = "Aktif"
-        db.commit()
+        raise HTTPException(status_code=401, detail="Bu müşteri hesabı için henüz şifre oluşturulmamış. E-postanızdaki davet bağlantısını kullanın.")
 
-    if getattr(c, 'is_email_verified', False) is not True:
-        c.is_email_verified = False
+    if getattr(c, "is_email_verified", False) is not True:
         if not getattr(c, 'verification_token', None):
             v_token = generate_invitation_token()
             c.verification_token = v_token
             db.commit()
             send_email_verification_email(c.email, c.company_name, v_token)
-        else:
-            db.commit()
+        raise HTTPException(status_code=403, detail="E-posta adresiniz henüz doğrulanmadı. E-postanızdaki doğrulama bağlantısını kullanın veya yeniden gönderin.")
 
     return {
         "status": "success",
@@ -1305,22 +1376,39 @@ def verify_email_token(token: str, db: Session = Depends(get_db)):
     if c:
         c.is_email_verified = True
         c.verification_token = None
+        if c.password_hash:
+            c.invitation_status = "Aktif"
         db.commit()
         return {
             "status": "success",
             "message": "E-posta adresiniz başarıyla doğrulandı! Artık platformdaki tüm işlemleri gerçekleştirebilirsiniz.",
-            "customer": customer_dict(c)
+            "customer": customer_dict(c),
+            "account_type": "customer",
         }
 
     s = db.query(models.Supplier).filter(models.Supplier.verification_token == token).first()
     if s:
         s.is_email_verified = True
         s.verification_token = None
+        if s.password_hash:
+            s.invitation_status = "Aktif"
         db.commit()
         return {
             "status": "success",
             "message": "E-posta adresiniz başarıyla doğrulandı! Artık platformdaki tüm işlemleri gerçekleştirebilirsiniz.",
-            "supplier": supplier_dict(s)
+            "supplier": supplier_dict(s),
+            "account_type": "service" if str(s.type or "").lower() in SERVICE_SUPPLIER_TYPES else "supplier"
+        }
+
+    user = db.query(models.CustomerPortalUser).filter(models.CustomerPortalUser.verification_token == token).first()
+    if user:
+        user.is_email_verified = True
+        user.verification_token = None
+        db.commit()
+        return {
+            "status": "success",
+            "message": "E-posta adresiniz başarıyla doğrulandı. Artık giriş yapabilirsiniz.",
+            "account_type": "customer",
         }
 
     raise HTTPException(status_code=404, detail="Geçersiz veya süresi dolmuş e-posta doğrulama bağlantısı.")
@@ -1329,44 +1417,40 @@ def verify_email_token(token: str, db: Session = Depends(get_db)):
 @app.post("/api/auth/resend-verification")
 def resend_verification_email(req: ResendVerificationRequest, db: Session = Depends(get_db)):
     email_clean = req.email.lower().strip()
-    
-    # 1. Customer
-    c = db.query(models.Customer).filter(models.Customer.email.ilike(email_clean)).first()
-    if c:
-        if c.is_email_verified:
-            return {"status": "info", "message": "E-posta adresiniz zaten doğrulanmıştır."}
+    kind = req.account_type
+    account = None
+    if kind in (None, "customer"):
+        account = db.query(models.Customer).filter(models.Customer.email.ilike(email_clean)).first()
+        if account:
+            name = account.company_name
+    if not account and kind in (None, "customer_user"):
+        account = db.query(models.CustomerPortalUser).filter(models.CustomerPortalUser.email.ilike(email_clean), models.CustomerPortalUser.is_active == True).first()
+        if account:
+            name = account.name
+    if not account and kind in (None, "service", "supplier"):
+        candidate = db.query(models.Supplier).filter(models.Supplier.email.ilike(email_clean)).first()
+        if candidate:
+            is_service = str(candidate.type or "").lower() in SERVICE_SUPPLIER_TYPES
+            if kind is None or (kind == "service") == is_service:
+                account = candidate
+                name = candidate.name
 
-        v_token = c.verification_token or generate_invitation_token()
-        c.verification_token = v_token
-        db.commit()
-        res = send_email_verification_email(c.email, c.company_name, v_token)
-        email_sent = res.get("email_sent", False)
-        return {
-            "status": "success" if email_sent else "warning",
-            "message": f"Doğrulama bağlantısı [{c.email}] adresine gönderildi." if email_sent else "SMTP e-posta sunucusu henüz yapılandırılmadığından e-posta gönderilemedi. Lütfen sistem yöneticinizle iletişime geçiniz.",
-            "email_sent": email_sent,
-            "smtp_configured": res.get("smtp_configured", False)
-        }
+    if not account:
+        raise HTTPException(status_code=404, detail="Bu hesap türü için kayıtlı e-posta adresi bulunamadı.")
+    if account.is_email_verified:
+        return {"status": "info", "message": "E-posta adresiniz zaten doğrulanmıştır."}
 
-    # 2. Supplier
-    s = db.query(models.Supplier).filter(models.Supplier.email == email_clean).first()
-    if s:
-        if s.is_email_verified:
-            return {"status": "info", "message": "E-posta adresiniz zaten doğrulanmıştır."}
-
-        v_token = s.verification_token or generate_invitation_token()
-        s.verification_token = v_token
-        db.commit()
-        res = send_email_verification_email(s.email, s.name, v_token)
-        email_sent = res.get("email_sent", False)
-        return {
-            "status": "success" if email_sent else "warning",
-            "message": f"Doğrulama bağlantısı [{s.email}] adresine gönderildi." if email_sent else "SMTP e-posta sunucusu henüz yapılandırılmadığından e-posta gönderilemedi. Lütfen sistem yöneticinizle iletişime geçiniz.",
-            "email_sent": email_sent,
-            "smtp_configured": res.get("smtp_configured", False)
-        }
-
-    raise HTTPException(status_code=404, detail="Kayıtlı e-posta adresi bulunamadı.")
+    v_token = account.verification_token or generate_invitation_token()
+    account.verification_token = v_token
+    db.commit()
+    res = send_email_verification_email(account.email, name, v_token)
+    email_sent = res.get("email_sent", False)
+    return {
+        "status": "success" if email_sent else "warning",
+        "message": f"Doğrulama bağlantısı [{account.email}] adresine gönderildi." if email_sent else "E-posta gönderilemedi. Lütfen daha sonra tekrar deneyin veya sistem yöneticisiyle iletişime geçin.",
+        "email_sent": email_sent,
+        "smtp_configured": res.get("smtp_configured", False),
+    }
 
 
 @app.post("/api/customer/register")
@@ -1376,6 +1460,9 @@ def customer_register(req: CustomerRegisterRequest, db: Session = Depends(get_db
         raise HTTPException(status_code=400, detail="Şifre en az 6 karakter olmalıdır.")
 
     v_token = generate_invitation_token()
+
+    if db.query(models.Supplier).filter(models.Supplier.email.ilike(email_clean)).first() or db.query(models.CustomerPortalUser).filter(models.CustomerPortalUser.email.ilike(email_clean)).first():
+        raise HTTPException(status_code=409, detail="Bu e-posta adresi başka bir hesapta kayıtlı.")
 
     existing = db.query(models.Customer).filter(models.Customer.email.ilike(email_clean)).first()
     if existing:
@@ -1390,7 +1477,8 @@ def customer_register(req: CustomerRegisterRequest, db: Session = Depends(get_db
                 existing.company_name = req.company_name
             if req.phone:
                 existing.phone = req.phone
-            existing.invitation_status = "Aktif"
+            existing.invitation_status = "E-posta Doğrulaması Bekleniyor"
+            existing.invitation_token = None
             existing.is_email_verified = False
             existing.verification_token = v_token
             db.commit()
@@ -1404,7 +1492,7 @@ def customer_register(req: CustomerRegisterRequest, db: Session = Depends(get_db
             phone=req.phone or "",
             password_hash=hash_password(req.password),
             status="Aktif",
-            invitation_status="Aktif",
+            invitation_status="E-posta Doğrulaması Bekleniyor",
             address="Maslak, İstanbul",
             documents_uploaded=False,
             documents={},
@@ -1416,13 +1504,15 @@ def customer_register(req: CustomerRegisterRequest, db: Session = Depends(get_db
         db.refresh(c)
 
     # Send verification email
-    send_email_verification_email(c.email, c.company_name, v_token)
+    email_result = send_email_verification_email(c.email, c.company_name, v_token)
 
     return {
         "status": "success",
         "message": "Hesabınız başarıyla oluşturuldu! Lütfen e-posta kutunuza gönderilen doğrulama bağlantısına tıklayarak hesabınızı onaylayın.",
-        "token": f"customer_token_{c.id}_{datetime.datetime.now().timestamp()}",
-        "customer": customer_dict(c)
+        "account_type": "customer",
+        "email_sent": email_result.get("email_sent", False),
+        "smtp_configured": email_result.get("smtp_configured", False),
+        "customer": customer_dict(c),
     }
 
 
@@ -1549,7 +1639,8 @@ def save_customer_setting(key: str, customer_id: int, payload: dict, db: Session
 def customer_user_dict(user):
     return {"id": user.id, "customer_id": user.customer_id, "name": user.name, "email": user.email,
             "phone": user.phone, "role": user.role, "assigned_plate": user.assigned_plate,
-            "is_active": user.is_active, "created_at": user.created_at, "has_password": bool(user.password_hash)}
+            "is_active": user.is_active, "is_email_verified": bool(user.is_email_verified),
+            "created_at": user.created_at, "has_password": bool(user.password_hash)}
 
 
 @app.get("/api/customer/users")
@@ -1568,13 +1659,18 @@ def create_customer_user(payload: dict, db: Session = Depends(get_db)):
         raise HTTPException(status_code=422, detail="İlk giriş şifresi en az 8 karakter olmalıdır.")
     duplicate = db.query(models.CustomerPortalUser).filter(models.CustomerPortalUser.email.ilike(payload["email"].strip())).first()
     owner = db.query(models.Customer).filter(models.Customer.email.ilike(payload["email"].strip())).first()
-    if duplicate or owner: raise HTTPException(status_code=409, detail="Bu e-posta adresi zaten kayıtlı.")
+    supplier_owner = db.query(models.Supplier).filter(models.Supplier.email.ilike(payload["email"].strip())).first()
+    if duplicate or owner or supplier_owner: raise HTTPException(status_code=409, detail="Bu e-posta adresi zaten kayıtlı.")
+    verification_token = generate_invitation_token()
     user = models.CustomerPortalUser(customer_id=customer_id, name=payload["name"], email=payload["email"],
         password_hash=hash_password(payload["password"]),
         phone=payload.get("phone"), role=payload.get("role", "Sürücü"), assigned_plate=payload.get("assigned_plate"),
-        is_active=payload.get("is_active", True), created_at=now_str())
+        is_active=payload.get("is_active", True), is_email_verified=False,
+        verification_token=verification_token, created_at=now_str())
     db.add(user); db.commit(); db.refresh(user)
-    return customer_user_dict(user)
+    email_result = send_email_verification_email(user.email, user.name, verification_token)
+    return {**customer_user_dict(user), "email_sent": email_result.get("email_sent", False),
+            "smtp_configured": email_result.get("smtp_configured", False)}
 
 
 @app.put("/api/customer/users/{user_id}")
@@ -1585,12 +1681,21 @@ def update_customer_user(user_id: int, customer_id: int, payload: dict, db: Sess
     if payload.get("email"):
         duplicate = db.query(models.CustomerPortalUser).filter(models.CustomerPortalUser.email.ilike(payload["email"].strip()), models.CustomerPortalUser.id != user_id).first()
         owner = db.query(models.Customer).filter(models.Customer.email.ilike(payload["email"].strip())).first()
-        if duplicate or owner: raise HTTPException(status_code=409, detail="Bu e-posta adresi zaten kayıtlı.")
+        supplier_owner = db.query(models.Supplier).filter(models.Supplier.email.ilike(payload["email"].strip())).first()
+        if duplicate or owner or supplier_owner: raise HTTPException(status_code=409, detail="Bu e-posta adresi zaten kayıtlı.")
+        email_changed = payload["email"].strip().lower() != user.email.strip().lower()
+    else:
+        email_changed = False
     for key in ("name", "email", "phone", "role", "assigned_plate", "is_active"):
         if key in payload: setattr(user, key, payload[key])
     if payload.get("password"):
         if len(payload["password"]) < 8: raise HTTPException(status_code=422, detail="Şifre en az 8 karakter olmalıdır.")
         user.password_hash = hash_password(payload["password"])
+    if email_changed:
+        user.is_email_verified = False
+        user.verification_token = generate_invitation_token()
+        db.commit()
+        send_email_verification_email(user.email, user.name, user.verification_token)
     db.commit(); db.refresh(user)
     return customer_user_dict(user)
 

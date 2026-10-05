@@ -95,7 +95,7 @@
                   <td>
                     <span style="font-size: 0.8rem; font-weight: 700; padding: 4px 10px; border-radius: 20px;"
                       :style="{ background: user.is_active ? '#dcfce7' : '#fef2f2', color: user.is_active ? '#16a34a' : '#dc2626' }">
-                      {{ user.is_active ? '🟢 Aktif' : '🔴 Pasif' }}
+                      {{ !user.is_active ? '🔴 Pasif' : !user.is_email_verified ? '✉️ E-posta Bekleniyor' : '🟢 Aktif' }}
                     </span>
                   </td>
                   <td>
@@ -654,8 +654,11 @@ const userForm = reactive({
 const addUser = async () => {
   const res = await fetch('/api/customer/users', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ customer_id:Number(customerId), name:userForm.name, email:userForm.email, phone:userForm.phone, role:userForm.role, assigned_plate:userForm.assigned_plate, password:userForm.password, is_active:true }) })
   if (!res.ok) return alert('Kullanıcı kaydedilemedi.')
+  const result = await res.json().catch(() => ({}))
   await loadUsers()
-  alert(`Yeni kullanıcı "${userForm.name}" kaydedildi.`)
+  alert(result.email_sent
+    ? `Yeni kullanıcı "${userForm.name}" kaydedildi. Giriş yapmadan önce e-posta doğrulaması gerekiyor.`
+    : `Yeni kullanıcı "${userForm.name}" kaydedildi ancak doğrulama e-postası gönderilemedi. Kullanıcı giriş ekranından yeniden gönderebilir.`)
   showAddUserModal.value = false
   userForm.name = ''
   userForm.email = ''

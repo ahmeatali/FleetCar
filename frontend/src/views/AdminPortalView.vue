@@ -1951,7 +1951,7 @@ const fetchCustomers = async () => {
 
 const fetchSuppliers = async () => {
   try {
-    const response = await fetch('/api/suppliers')
+    const response = await fetch('/api/suppliers?include_unverified=true')
     if (response.ok) {
       suppliers.value = await response.json()
     }
@@ -2860,5 +2860,4 @@ onMounted(async () => {
   white-space: nowrap;
 }
 </style>
-
 

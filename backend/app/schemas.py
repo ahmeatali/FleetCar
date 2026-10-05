@@ -1,5 +1,6 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional, Dict, Any, List
+import re
+from pydantic import BaseModel, field_validator
+from typing import Optional, Dict, Any, List, Literal
 
 class QuoteItemCreate(BaseModel):
     vehicle_segment: str
@@ -471,11 +472,30 @@ class ServiceInvoice(BaseModel):
     file_url: Optional[str] = None
 
 
-class CustomerRegisterRequest(BaseModel):
+class EmailRequest(BaseModel):
     email: str
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, value: str) -> str:
+        value = value.strip().lower()
+        if len(value) > 254 or not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", value):
+            raise ValueError("Geçerli bir e-posta adresi girin.")
+        return value
+
+
+class CustomerRegisterRequest(EmailRequest):
     password: str
     company_name: Optional[str] = None
     phone: Optional[str] = None
+
+
+class SupplierRegisterRequest(EmailRequest):
+    account_type: Literal["service", "supplier"]
+    name: str
+    password: str
+    phone: Optional[str] = None
+    service_type: Optional[Literal["servis", "lastik", "yol_yardim"]] = None
 
 
 class CustomerDocumentUpload(BaseModel):
@@ -495,8 +515,8 @@ class ResetPasswordRequest(BaseModel):
     password: str
 
 
-class ResendVerificationRequest(BaseModel):
-    email: str
+class ResendVerificationRequest(EmailRequest):
+    account_type: Optional[Literal["customer", "customer_user", "service", "supplier"]] = None
 
 
 class RoadsideCaseCreate(BaseModel):

@@ -11,6 +11,7 @@ import RequestsView from '../views/RequestsView.vue'
 import AdminLoginView from '../views/AdminLoginView.vue'
 import AdminPortalView from '../views/AdminPortalView.vue'
 import ProfileView from '../views/ProfileView.vue'
+import RegistrationView from '../views/RegistrationView.vue'
 
 const routes = [
   {
@@ -22,6 +23,12 @@ const routes = [
     path: '/login',
     name: 'Login',
     component: LoginView
+  },
+  {
+    path: '/register/:accountType',
+    name: 'Register',
+    component: RegistrationView,
+    beforeEnter: to => ['service', 'supplier'].includes(to.params.accountType) || { name: 'NotFound' }
   },
   {
     path: '/dashboard',

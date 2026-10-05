@@ -335,6 +335,8 @@ class CustomerPortalUser(Base):
     role = Column(String, nullable=False, default="Sürücü")
     assigned_plate = Column(String, nullable=True)
     is_active = Column(Boolean, nullable=False, default=True)
+    is_email_verified = Column(Boolean, nullable=False, default=False)
+    verification_token = Column(String, nullable=True)
     created_at = Column(String, nullable=False)
 
 

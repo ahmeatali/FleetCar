@@ -98,7 +98,7 @@ def send_supplier_invitation_email(recipient_email: str, supplier_name: str, tok
     </html>
     """
 
-    print(f"\n[EMAIL INVITE] To: {recipient_email} | Supplier: {supplier_name} | Link: {invite_url}\n")
+    print(f"[EMAIL INVITE] To: {recipient_email} | Supplier: {supplier_name}")
 
     if not is_smtp_configured:
         print("[SMTP INFO] SMTP credentials missing in environment. Email simulated.")
@@ -276,7 +276,7 @@ def send_email_verification_email(recipient_email: str, recipient_name: str, tok
     </html>
     """
 
-    print(f"\n[EMAIL VERIFY] To: {recipient_email} | Link: {verify_url}\n")
+    print(f"[EMAIL VERIFY] To: {recipient_email}")
 
     if not is_smtp_configured:
         return {"email_sent": False, "smtp_configured": False, "verify_url": verify_url, "message": "SMTP yapılandırılmadı."}
@@ -297,4 +297,3 @@ def send_email_verification_email(recipient_email: str, recipient_name: str, tok
     except Exception as e:
         print(f"[SMTP ERROR] Failed email verification to {recipient_email}: {e}")
         return {"email_sent": False, "smtp_configured": True, "verify_url": verify_url, "message": f"SMTP hatası: {e}"}
-

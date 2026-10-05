@@ -23,11 +23,11 @@
           </div>
           <h2 style="font-size: 1.5rem; font-weight: 800; color: #065f46; margin-bottom: 12px;">E-posta Adresiniz Doğrulanmıştır!</h2>
           <p style="color: #475569; font-size: 0.95rem; line-height: 1.6; margin-bottom: 24px;">
-            Tebrikler! FleetRent hesabınız başarıyla doğrulandı. Artık araç kiralama, teklif oluşturma ve filo yönetimi işlemlerinize kesintisiz devam edebilirsiniz.
+            E-posta adresiniz onaylandı. Şimdi {{ accountLabel }} giriş sayfasından e-posta ve şifrenizle oturum açabilirsiniz.
           </p>
 
-          <button @click="goToDashboard" class="btn btn-blue" style="width: 100%; padding: 14px; font-weight: 700; border-radius: 12px;">
-            Filo Yönetim Paneline Git ➔
+          <button @click="goToLogin" class="btn btn-blue" style="width: 100%; padding: 14px; font-weight: 700; border-radius: 12px;">
+            {{ accountLabel }} girişine git ➔
           </button>
         </div>
 
@@ -60,6 +60,8 @@ const router = useRouter()
 const loading = ref(true)
 const success = ref(false)
 const errorMsg = ref('')
+const accountType = ref('customer')
+const accountLabel = ref('Müşteri')
 
 onMounted(async () => {
   const token = route.query.token || ''
@@ -78,6 +80,8 @@ onMounted(async () => {
 
     if (res.ok) {
       success.value = true
+      accountType.value = data.account_type || (data.supplier ? 'supplier' : 'customer')
+      accountLabel.value = accountType.value === 'service' ? 'Servis' : accountType.value === 'supplier' ? 'Tedarikçi' : 'Müşteri'
       localStorage.setItem('fleetcar_user_verified', 'true')
       
       const custStr = localStorage.getItem('fleet_customer')
@@ -99,13 +103,9 @@ onMounted(async () => {
   }
 })
 
-const goToDashboard = () => {
-  const token = localStorage.getItem('fleetcar_token')
-  if (token) {
-    router.push('/dashboard')
-  } else {
-    router.push('/login')
-  }
+const goToLogin = () => {
+  const paths = { customer: '/login', service: '/service-login', supplier: '/supplier-login' }
+  router.push(paths[accountType.value] || '/login')
 }
 </script>
 

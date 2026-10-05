@@ -21,6 +21,12 @@
           <strong>Bakım/Onarım, Lastik Hizmetleri & Oto Kurtarma</strong> noktaları için e-posta ve şifre ile portal girişi.
         </p>
 
+        <div v-if="verificationRequired" style="padding:13px;margin-bottom:18px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;color:#1e3a8a;font-size:.86rem;">
+          E-posta adresiniz doğrulanmamış. Gelen kutunuzdaki bağlantıyı kullanın.
+          <button @click="resendVerification" :disabled="resendLoading" style="display:block;margin-top:9px;border:0;background:none;padding:0;color:#1d4ed8;font-weight:700;cursor:pointer;">{{ resendLoading ? 'Gönderiliyor…' : 'Doğrulama e-postasını yeniden gönder' }}</button>
+          <span v-if="resendMessage" style="display:block;margin-top:7px;">{{ resendMessage }}</span>
+        </div>
+
         <div v-if="!showForgot">
           <form @submit.prevent="handleLogin">
             <div class="form-group" style="margin-bottom: 18px;">
@@ -86,6 +92,7 @@
           <router-link to="/login" style="color: #64748b; font-size: 0.85rem; text-decoration: none;" class="hover-underline">
             ← Müşteri Portalı Girişine Dön
           </router-link>
+          <router-link to="/register/service" style="color:#2563eb;font-size:.85rem;font-weight:700;text-decoration:none;">Servis hesabı oluştur →</router-link>
         </div>
       </div>
     </main>
@@ -105,6 +112,9 @@ const showForgot = ref(false)
 const forgotEmail = ref('')
 const forgotLoading = ref(false)
 const forgotSuccess = ref('')
+const verificationRequired = ref(false)
+const resendLoading = ref(false)
+const resendMessage = ref('')
 
 const handleForgotPassword = async () => {
   if (!forgotEmail.value) return
@@ -137,7 +147,7 @@ const handleLogin = async () => {
   loading.value = true
   
   try {
-    const res = await fetch('/api/supplier/login', {
+    const res = await fetch('/api/service/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -162,6 +172,7 @@ const handleLogin = async () => {
       router.push('/service-portal')
     } else {
       const errData = await res.json().catch(() => ({}))
+      if (res.status === 403 && String(errData.detail || '').includes('doğrulanmadı')) verificationRequired.value = true
       alert(errData.detail || 'Giriş yapılamadı! Lütfen e-posta ve şifrenizi kontrol edin.')
     }
   } catch (err) {
@@ -170,5 +181,16 @@ const handleLogin = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const resendVerification = async () => {
+  resendLoading.value = true
+  resendMessage.value = ''
+  try {
+    const res = await fetch('/api/auth/resend-verification', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email.value, account_type: 'service' }) })
+    const data = await res.json().catch(() => ({}))
+    resendMessage.value = data.message || data.detail || 'Doğrulama e-postası gönderilemedi.'
+  } catch { resendMessage.value = 'Sunucuya bağlanılamadı.' }
+  finally { resendLoading.value = false }
 }
 </script>

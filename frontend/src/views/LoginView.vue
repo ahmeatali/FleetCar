@@ -85,6 +85,13 @@
               {{ loading ? 'Giriş Yapılıyor...' : 'Giriş Yap' }}
             </button>
           </form>
+          <div v-if="verificationRequired" style="margin-top: 14px; padding: 14px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; color: #1e3a8a; font-size: 0.88rem;">
+            E-posta adresiniz doğrulanmamış. Giriş yapabilmek için gelen kutunuzdaki bağlantıyı kullanın.
+            <button @click="resendVerification" :disabled="resendLoading" style="display:block;margin-top:10px;border:0;background:none;padding:0;color:#1d4ed8;font-weight:700;cursor:pointer;">
+              {{ resendLoading ? 'Gönderiliyor…' : 'Doğrulama e-postasını yeniden gönder' }}
+            </button>
+            <span v-if="resendMessage" style="display:block;margin-top:8px;">{{ resendMessage }}</span>
+          </div>
         </div>
 
         <div v-else-if="authMode === 'forgot'">
@@ -113,6 +120,17 @@
               ← Giriş Ekranına Dön
             </button>
           </div>
+        </div>
+
+        <div v-else-if="registrationPending">
+          <h2 style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-bottom: 6px;">E-postanızı doğrulayın</h2>
+          <p style="color: #64748b; font-size: 0.9rem; line-height: 1.6; margin-bottom: 16px;">{{ registrationMessage }}</p>
+          <p style="font-weight:700;color:#0f172a;text-align:center;">{{ email }}</p>
+          <button @click="resendVerification" :disabled="resendLoading" class="btn btn-blue" style="width: 100%; padding: 14px; margin-top: 12px;">
+            {{ resendLoading ? 'Gönderiliyor…' : 'Doğrulama e-postasını yeniden gönder' }}
+          </button>
+          <p v-if="resendMessage" style="margin-top:12px;color:#475569;font-size:.88rem;">{{ resendMessage }}</p>
+          <button @click="authMode = 'login'" style="display:block;margin:20px auto 0;background:none;border:0;color:#2563eb;font-weight:700;cursor:pointer;">Giriş sayfasına dön</button>
         </div>
 
         <div v-else>
@@ -166,6 +184,11 @@ const password = ref('')
 const companyName = ref('')
 const phone = ref('')
 const loading = ref(false)
+const registrationPending = ref(false)
+const registrationMessage = ref('')
+const verificationRequired = ref(false)
+const resendLoading = ref(false)
+const resendMessage = ref('')
 
 const forgotEmail = ref('')
 const forgotLoading = ref(false)
@@ -226,6 +249,7 @@ const handleLogin = async () => {
       router.push('/dashboard')
     } else {
       const errData = await res.json().catch(() => ({}))
+      if (res.status === 403) verificationRequired.value = true
       alert(errData.detail || 'Giriş yapılamadı! Lütfen e-posta ve şifrenizi kontrol edin.')
     }
   } catch (err) {
@@ -233,6 +257,23 @@ const handleLogin = async () => {
     alert('Sunucuya bağlanılamadı. Lütfen backend servisini kontrol edin.')
   } finally {
     loading.value = false
+  }
+}
+
+const resendVerification = async () => {
+  resendLoading.value = true
+  resendMessage.value = ''
+  try {
+    const res = await fetch('/api/auth/resend-verification', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.value, account_type: 'customer' })
+    })
+    const data = await res.json().catch(() => ({}))
+    resendMessage.value = data.message || data.detail || 'Doğrulama e-postası gönderilemedi.'
+  } catch {
+    resendMessage.value = 'Sunucuya bağlanılamadı.'
+  } finally {
+    resendLoading.value = false
   }
 }
 
@@ -254,17 +295,10 @@ const handleRegister = async () => {
 
     if (res.ok) {
       const data = await res.json()
-      const cust = data.customer || {}
-      
-      localStorage.setItem('fleetcar_token', data.token)
-      localStorage.setItem('fleetcar_customer_id', String(cust.id || '1'))
-      localStorage.setItem('fleetcar_customer_name', cust.company_name || companyName.value || 'Müşteri Firma')
-      localStorage.setItem('fleetcar_user_email', cust.email || email.value)
-      localStorage.setItem('fleetcar_user_verified', cust.is_email_verified ? 'true' : 'false')
-      localStorage.setItem('fleet_customer', JSON.stringify(cust))
-      
-      alert('Kaydınız başarıyla oluşturuldu! Lütfen e-posta kutunuza gönderilen doğrulama bağlantısına tıklayarak hesabınızı onaylayın.')
-      router.push('/dashboard')
+      registrationPending.value = true
+      registrationMessage.value = data.email_sent
+        ? 'Kayıt tamamlandı. Giriş yapmadan önce e-posta adresinize gönderdiğimiz doğrulama bağlantısına tıklayın.'
+        : 'Kayıt tamamlandı ancak doğrulama e-postası gönderilemedi. Aşağıdaki düğmeyle yeniden deneyin.'
     } else {
       const errData = await res.json().catch(() => ({}))
       alert(errData.detail || 'Kayıt oluşturulamadı! Lütfen bilgilerinizi kontrol edin.')
