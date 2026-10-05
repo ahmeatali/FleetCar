@@ -867,7 +867,7 @@ onMounted(() => {
 
 .fleet-topbar {
   min-height: 56px;
-  margin: -32px -18px 20px;
+  margin: 0 -18px 20px;
   padding: 8px 22px;
   display: flex;
   align-items: center;
@@ -1077,7 +1077,7 @@ onMounted(() => {
 }
 @media (max-width: 700px) {
   .fleet-page { padding: 0 0 18px; }
-  .fleet-topbar { margin: -24px 0 15px; padding: 8px 10px; }
+  .fleet-topbar { margin: 0 0 15px; padding: 8px 10px; }
   .fleet-account strong { max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .fleet-heading { align-items: flex-start; flex-direction: column; }
   .fleet-heading-actions { width: 100%; flex-wrap: wrap; }
