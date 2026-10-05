@@ -1,9 +1,14 @@
+import base64
+import json
 import os
 import smtplib
 import secrets
 from pathlib import Path
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from urllib.error import HTTPError, URLError
+from urllib.parse import urlencode
+from urllib.request import Request, urlopen
 
 
 def _load_env_file():
@@ -34,6 +39,86 @@ _load_env_file()
 APP_BASE_URL = os.environ.get("APP_BASE_URL", "https://fleetrent.com.tr")
 
 
+def _gmail_api_credentials():
+    """Return Gmail API OAuth settings only when the full set is present."""
+    return {
+        "client_id": os.environ.get("GMAIL_API_CLIENT_ID", "").strip(),
+        "client_secret": os.environ.get("GMAIL_API_CLIENT_SECRET", "").strip(),
+        "refresh_token": os.environ.get("GMAIL_API_REFRESH_TOKEN", "").strip(),
+        "sender": os.environ.get("GMAIL_API_SENDER", "").strip(),
+    }
+
+
+def _email_transport_configured(smtp_host: str, smtp_user: str, smtp_pass: str) -> bool:
+    google = _gmail_api_credentials()
+    return bool(
+        all(google.values())
+        or (smtp_host and smtp_user and smtp_pass)
+    )
+
+
+def _send_message(recipient_email: str, subject: str, html_body: str, smtp_from: str,
+                  smtp_host: str, smtp_user: str, smtp_pass: str, smtp_port: int) -> str:
+    """Send with Gmail's HTTPS API when configured, otherwise use SMTP."""
+    google = _gmail_api_credentials()
+    if all(google.values()):
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = subject
+        msg['From'] = google['sender']
+        msg['To'] = recipient_email
+        msg.attach(MIMEText(html_body, 'html', 'utf-8'))
+        raw_message = base64.urlsafe_b64encode(msg.as_bytes()).decode('ascii')
+
+        token_request = Request(
+            'https://oauth2.googleapis.com/token',
+            data=urlencode({
+                'client_id': google['client_id'],
+                'client_secret': google['client_secret'],
+                'refresh_token': google['refresh_token'],
+                'grant_type': 'refresh_token',
+            }).encode('ascii'),
+            headers={'Content-Type': 'application/x-www-form-urlencoded'},
+            method='POST',
+        )
+        with urlopen(token_request, timeout=15) as response:
+            access_token = json.loads(response.read().decode('utf-8'))['access_token']
+
+        send_request = Request(
+            'https://gmail.googleapis.com/gmail/v1/users/me/messages/send',
+            data=json.dumps({'raw': raw_message}).encode('utf-8'),
+            headers={
+                'Authorization': f'Bearer {access_token}',
+                'Content-Type': 'application/json',
+            },
+            method='POST',
+        )
+        with urlopen(send_request, timeout=15):
+            pass
+        return 'gmail_api'
+
+    if not (smtp_host and smtp_user and smtp_pass):
+        raise RuntimeError('E-posta gönderim ayarları eksik.')
+
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = subject
+    msg['From'] = smtp_from
+    msg['To'] = recipient_email
+    msg.attach(MIMEText(html_body, 'html', 'utf-8'))
+    with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as server:
+        server.starttls()
+        server.login(smtp_user, smtp_pass)
+        server.sendmail(smtp_from, [recipient_email], msg.as_string())
+    return 'smtp'
+
+
+def _email_error_message(error: Exception) -> str:
+    if isinstance(error, HTTPError):
+        return f"E-posta servisi isteği reddetti (HTTP {error.code}); OAuth ayarlarını ve gönderici hesabını kontrol edin."
+    if isinstance(error, (TimeoutError, OSError, URLError)):
+        return "E-posta sunucusuna ağ bağlantısı kurulamadı. SMTP kısıtını veya Gmail API OAuth ayarlarını kontrol edin."
+    return "E-posta gönderilemedi. Gmail API OAuth ayarlarını ve gönderici hesabını kontrol edin."
+
+
 
 def generate_invitation_token() -> str:
     """Generate a secure hex token for invitation URL."""
@@ -55,7 +140,7 @@ def send_supplier_invitation_email(recipient_email: str, supplier_name: str, tok
     smtp_port = int(os.environ.get("SMTP_PORT", "587"))
     smtp_from = os.environ.get("SMTP_FROM", "noreply@fleetrent.com.tr").strip()
 
-    is_smtp_configured = bool(smtp_host and smtp_user and smtp_pass)
+    is_smtp_configured = _email_transport_configured(smtp_host, smtp_user, smtp_pass)
 
     subject = f"FleetRent — {supplier_name} Portal Davetiyeniz"
     html_body = f"""
@@ -106,20 +191,12 @@ def send_supplier_invitation_email(recipient_email: str, supplier_name: str, tok
             "email_sent": False,
             "smtp_configured": False,
             "invite_url": invite_url,
-            "message": "SMTP e-posta sunucusu henüz yapılandırılmadı. Davet bağlantısı aşağıdan kopyalanabilir."
+            "message": "E-posta gönderim ayarları henüz yapılandırılmadı. Davet bağlantısı aşağıdan kopyalanabilir."
         }
 
     try:
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = subject
-        msg['From'] = smtp_from
-        msg['To'] = recipient_email
-        msg.attach(MIMEText(html_body, 'html', 'utf-8'))
-
-        with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as server:
-            server.starttls()
-            server.login(smtp_user, smtp_pass)
-            server.sendmail(smtp_from, [recipient_email], msg.as_string())
+        _send_message(recipient_email, subject, html_body, smtp_from,
+                      smtp_host, smtp_user, smtp_pass, smtp_port)
         
         return {
             "email_sent": True,
@@ -128,13 +205,13 @@ def send_supplier_invitation_email(recipient_email: str, supplier_name: str, tok
             "message": f"Davet e-postası [{recipient_email}] adresine başarıyla gönderildi."
         }
     except Exception as e:
-        err_msg = str(e)
-        print(f"[SMTP ERROR] Failed to send email to {recipient_email}: {err_msg}")
+        err_msg = _email_error_message(e)
+        print(f"[EMAIL ERROR] Supplier invitation failed ({type(e).__name__}).")
         return {
             "email_sent": False,
             "smtp_configured": True,
             "invite_url": invite_url,
-            "message": f"SMTP hatası: {err_msg}"
+            "message": err_msg
         }
 
 
@@ -152,7 +229,7 @@ def send_password_reset_email(recipient_email: str, recipient_name: str, token: 
     smtp_port = int(os.environ.get("SMTP_PORT", "587"))
     smtp_from = os.environ.get("SMTP_FROM", "info@fleetrent.com.tr").strip()
 
-    is_smtp_configured = bool(smtp_host and smtp_user and smtp_pass)
+    is_smtp_configured = _email_transport_configured(smtp_host, smtp_user, smtp_pass)
     subject = "FleetRent — Şifre Sıfırlama Talebi"
     
     html_body = f"""
@@ -199,24 +276,16 @@ def send_password_reset_email(recipient_email: str, recipient_name: str, token: 
     print(f"\n[EMAIL RESET] To: {recipient_email} | Link: {reset_url}\n")
 
     if not is_smtp_configured:
-        return {"email_sent": False, "smtp_configured": False, "reset_url": reset_url, "message": "SMTP yapılandırılmadı."}
+        return {"email_sent": False, "smtp_configured": False, "reset_url": reset_url, "message": "E-posta gönderim ayarları yapılandırılmadı."}
 
     try:
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = subject
-        msg['From'] = smtp_from
-        msg['To'] = recipient_email
-        msg.attach(MIMEText(html_body, 'html', 'utf-8'))
-
-        with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as server:
-            server.starttls()
-            server.login(smtp_user, smtp_pass)
-            server.sendmail(smtp_from, [recipient_email], msg.as_string())
+        _send_message(recipient_email, subject, html_body, smtp_from,
+                      smtp_host, smtp_user, smtp_pass, smtp_port)
         
         return {"email_sent": True, "smtp_configured": True, "reset_url": reset_url, "message": "Şifre sıfırlama e-postası gönderildi."}
     except Exception as e:
-        print(f"[SMTP ERROR] Failed password reset email to {recipient_email}: {e}")
-        return {"email_sent": False, "smtp_configured": True, "reset_url": reset_url, "message": f"SMTP hatası: {e}"}
+        print(f"[EMAIL ERROR] Password reset failed ({type(e).__name__}).")
+        return {"email_sent": False, "smtp_configured": True, "reset_url": reset_url, "message": _email_error_message(e)}
 
 
 def send_email_verification_email(recipient_email: str, recipient_name: str, token: str) -> dict:
@@ -233,7 +302,7 @@ def send_email_verification_email(recipient_email: str, recipient_name: str, tok
     smtp_port = int(os.environ.get("SMTP_PORT", "587"))
     smtp_from = os.environ.get("SMTP_FROM", "info@fleetrent.com.tr").strip()
 
-    is_smtp_configured = bool(smtp_host and smtp_user and smtp_pass)
+    is_smtp_configured = _email_transport_configured(smtp_host, smtp_user, smtp_pass)
     subject = "FleetRent — E-posta Adresinizi Doğrulayın"
     
     html_body = f"""
@@ -279,21 +348,13 @@ def send_email_verification_email(recipient_email: str, recipient_name: str, tok
     print(f"[EMAIL VERIFY] To: {recipient_email}")
 
     if not is_smtp_configured:
-        return {"email_sent": False, "smtp_configured": False, "verify_url": verify_url, "message": "SMTP yapılandırılmadı."}
+        return {"email_sent": False, "smtp_configured": False, "verify_url": verify_url, "message": "E-posta gönderim ayarları yapılandırılmadı."}
 
     try:
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = subject
-        msg['From'] = smtp_from
-        msg['To'] = recipient_email
-        msg.attach(MIMEText(html_body, 'html', 'utf-8'))
-
-        with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as server:
-            server.starttls()
-            server.login(smtp_user, smtp_pass)
-            server.sendmail(smtp_from, [recipient_email], msg.as_string())
+        _send_message(recipient_email, subject, html_body, smtp_from,
+                      smtp_host, smtp_user, smtp_pass, smtp_port)
         
         return {"email_sent": True, "smtp_configured": True, "verify_url": verify_url, "message": "E-posta doğrulama bağlantısı gönderildi."}
     except Exception as e:
-        print(f"[SMTP ERROR] Failed email verification to {recipient_email}: {e}")
-        return {"email_sent": False, "smtp_configured": True, "verify_url": verify_url, "message": f"SMTP hatası: {e}"}
+        print(f"[EMAIL ERROR] Verification email failed ({type(e).__name__}).")
+        return {"email_sent": False, "smtp_configured": True, "verify_url": verify_url, "message": _email_error_message(e)}

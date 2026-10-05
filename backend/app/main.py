@@ -1067,9 +1067,18 @@ def get_smtp_status():
     smtp_host = os.environ.get("SMTP_HOST", "").strip()
     smtp_user = os.environ.get("SMTP_USER", "").strip()
     smtp_pass = os.environ.get("SMTP_PASS", "").strip()
-    is_configured = bool(smtp_host and smtp_user and smtp_pass)
+    gmail_api_configured = all(os.environ.get(key, "").strip() for key in (
+        "GMAIL_API_CLIENT_ID",
+        "GMAIL_API_CLIENT_SECRET",
+        "GMAIL_API_REFRESH_TOKEN",
+        "GMAIL_API_SENDER",
+    ))
+    smtp_configured = bool(smtp_host and smtp_user and smtp_pass)
+    is_configured = smtp_configured or gmail_api_configured
     return {
         "configured": is_configured,
+        "smtp_configured": smtp_configured,
+        "gmail_api_configured": gmail_api_configured,
         "host_configured": bool(smtp_host),
         "user_configured": bool(smtp_user),
         "password_configured": bool(smtp_pass)
