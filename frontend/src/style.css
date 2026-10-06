@@ -1844,3 +1844,101 @@ h1, h2, h3, h4, h5, h6 {
   border-color: #3b82f6;
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
 }
+
+/* Shared customer navigation, matching the fleet overview. */
+.portal-sidebar.customer-navigation { background:#031826 !important; color:#d4e1ec !important; padding:12px 8px !important; border-right:1px solid #102d42 !important; gap:10px; }
+.portal-sidebar.customer-navigation .fleet-brand { color:white; }
+@media (min-width:901px) { .portal-sidebar.customer-navigation {width:220px !important;} .portal-layout:has(> .customer-navigation) > .portal-main {margin-left:220px !important;width:calc(100% - 220px) !important;max-width:calc(100% - 220px) !important;} }
+@media (max-width:900px) { .customer-navigation .fleet-menu {grid-template-columns:repeat(3,minmax(0,1fr));} .customer-navigation .fleet-support {display:none;} }
+@media (max-width:500px) { .customer-navigation .fleet-menu {grid-template-columns:repeat(2,minmax(0,1fr));} }
+@media (min-width:901px) {
+  .tire-app:has(> .customer-navigation) > .tire-main,
+  .service-app:has(> .customer-navigation) > .service-main,
+  .road-page:has(> .customer-navigation) > .road-main { margin-left:220px !important; width:calc(100% - 220px) !important; }
+}
+
+/* Customer mobile navigation and record cards. */
+.mobile-filter-toggle,.mobile-action-label{display:none}
+@media(max-width:900px){
+  .portal-layout:has(> .customer-navigation),.tire-app:has(> .customer-navigation),.service-app:has(> .customer-navigation),.road-page:has(> .customer-navigation),.vehicle-detail-layout:has(> .customer-navigation){flex-direction:column!important}
+  .portal-sidebar.customer-navigation{position:fixed!important;inset:0 auto 0 0!important;width:min(320px,88vw)!important;height:100dvh!important;max-height:100dvh!important;overflow-y:auto!important;z-index:202!important;transform:translateX(-105%);visibility:hidden;transition:transform .2s ease,visibility .2s;gap:10px!important;padding:14px 10px!important}
+  .portal-sidebar.customer-navigation.mobile-open{transform:translateX(0);visibility:visible}
+  .customer-navigation~main{margin-left:0!important;width:100%!important;max-width:100%!important;min-width:0}
+  .customer-navigation nav{overflow-y:auto!important;flex:1;min-height:0}
+}
+@media(max-width:600px){
+  .customer-navigation~main{padding-bottom:calc(24px + env(safe-area-inset-bottom))!important}
+  .customer-navigation~main :is(button,a,input,select,textarea){touch-action:manipulation}
+  .customer-navigation~main :is(input:not([type=checkbox]):not([type=radio]),select,textarea){font-size:16px!important;min-height:44px;box-sizing:border-box;max-width:100%}
+  .customer-navigation~main :is(button,.primary-action,.primary-btn,.plate-link){min-height:44px;font-size:13px!important}
+  .customer-navigation~main :is(input[type=checkbox],input[type=radio]){width:22px!important;height:22px!important}
+  .road-page .road-top,.service-app .topbar,.tire-app .tire-topbar{height:auto!important;min-height:64px;flex-wrap:wrap;padding:12px 16px!important;gap:8px}
+  .road-page .road-top>label,.service-app .topbar>label,.tire-app .top-search{width:100%!important;max-width:none!important;flex-basis:100%!important;padding:0 10px!important;min-height:44px}
+  .road-page .road-account,.service-app .service-account,.tire-app .top-user{display:none!important}
+  .road-page .road-content,.service-app .content,.tire-app .tire-content{padding:16px!important}
+  .road-page .heading,.service-app .page-title,.tire-app .page-heading,.customer-navigation~main .overview-heading{display:flex;flex-direction:column;align-items:stretch!important;gap:12px;margin-bottom:16px!important}
+  .road-page .heading h1,.service-app .page-title h1,.tire-app .page-heading h1{font-size:22px!important;line-height:1.3;margin:0}
+  .road-page .heading p,.service-app .page-title p,.tire-app .page-heading p,.customer-navigation~main .overview-heading p{font-size:13px!important;line-height:1.5;margin:6px 0 0!important}
+  .road-page .metrics,.service-app .metrics,.tire-app .overview-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;margin-bottom:16px!important}
+  .road-page .metrics small,.service-app .metrics small,.tire-app .metric-card small{font-size:12px!important;line-height:1.4}
+  .road-page .metrics b,.service-app .metrics b,.tire-app .metric-card strong{font-size:25px!important}
+  .tire-app .metric-card{padding:14px!important;gap:10px;min-height:90px;box-sizing:border-box}.tire-app .metric-card em{display:none}
+  .road-page .metrics article,.service-app .metrics article{min-height:90px!important;box-sizing:border-box;padding:14px 10px 14px 43px!important}
+  .road-page .metrics article:last-child{grid-column:1/-1}
+  .mobile-filter-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;border:1px solid #dce6f2;border-radius:8px;background:white;color:#244268;padding:10px 14px;margin-bottom:12px;font-weight:600}
+  .road-page .filters,.service-app .filters,.tire-app .filter-bar{display:none!important}
+  .road-page .filters.mobile-expanded,.service-app .filters.mobile-expanded,.tire-app .filter-bar.mobile-expanded{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px!important;padding:14px!important;margin-bottom:14px}
+  .road-page .filters>label,.service-app .filters>label,.tire-app .filter-bar>label{min-width:0!important;max-width:none!important;display:flex;flex-direction:column;gap:6px}
+  .road-page .filters .find,.service-app .filters .search,.tire-app .filter-search{grid-column:1/-1;height:auto!important;border:0!important;padding:0!important}
+  .road-page .filters small,.service-app .filters small,.tire-app .filter-bar small{font-size:12px!important}
+  .road-page .filters>button,.service-app .filters>button,.tire-app .filter-bar>button{grid-column:1/-1}
+  .road-page .tabs,.service-app .tabs{margin-bottom:12px;scrollbar-width:none}.road-page .tabs button,.service-app .tabs button{min-width:max-content;padding:12px!important;font-size:13px!important}
+  .road-page .panel>header,.service-app .panel>header,.tire-app .panel-title{min-height:52px!important;padding:10px 14px!important;gap:8px;box-sizing:border-box;flex-wrap:wrap;font-size:14px!important}
+  .tire-app .panel-title h2{font-size:14px!important}.tire-app .table-actions{width:100%;justify-content:flex-start!important;gap:8px}.tire-app .table-actions button{padding:8px!important}
+  .road-page .scroll,.service-app .table-wrap,.tire-app .table-scroll,.customer-navigation~main .fleet-table-scroll{overflow:visible!important}
+  .road-page table,.service-app table,.tire-app table,.customer-navigation~main .fleet-table{display:block;width:100%!important;min-width:0!important;border:0}
+  .road-page thead,.service-app thead,.tire-app thead,.customer-navigation~main .fleet-table thead{display:none}
+  .road-page tbody,.service-app tbody,.tire-app tbody,.customer-navigation~main .fleet-table tbody{display:flex;flex-direction:column;gap:12px;padding:12px;box-sizing:border-box}
+  .road-page tbody tr,.service-app tbody tr,.tire-app tbody tr,.customer-navigation~main .fleet-table tbody tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;border:1px solid #dce7f2;border-radius:10px;padding:14px;background:#fff!important}
+  .road-page tbody tr.selected,.service-app tbody tr.selected{border-color:#0064ff;box-shadow:0 0 0 1px #0064ff}
+  .road-page td,.service-app td,.tire-app td,.customer-navigation~main .fleet-table td{display:flex;flex-direction:column;align-items:flex-start;height:auto!important;min-height:0;border:0!important;padding:0!important;white-space:normal!important;max-width:none!important;font-size:14px!important;line-height:1.5;overflow-wrap:anywhere;min-width:0}
+  .road-page td::before,.service-app td::before,.tire-app td::before,.customer-navigation~main .fleet-table td::before{content:attr(data-label);font-size:11px;color:#73849b;display:block;margin-bottom:3px}
+  .road-page td[colspan],.service-app td[colspan],.tire-app td[colspan],.customer-navigation~main .fleet-table td[colspan]{grid-column:1/-1;align-items:center;min-height:100px!important;justify-content:center}
+  .road-page td[data-label=Konum],.service-app td[data-label=Açıklama],.tire-app td[data-label=Araç],.customer-navigation~main .fleet-table td[data-label=Araç]{grid-column:1/-1}
+  .service-app td.desc{max-width:none!important;overflow:visible;text-overflow:clip}
+  .road-page td small,.service-app td small,.tire-app td small,.customer-navigation~main .fleet-table td small{font-size:12px!important;line-height:1.5}
+  .road-page td .vehicle-row span,.road-page td .vehicle-row b,.service-app td .pill,.service-app td .state,.tire-app td .status-pill{font-size:12px!important}
+  .tire-app td:is([data-label=Üretim],[data-label=Ebat]),.customer-navigation~main .fleet-table td:is([data-label=Sıra],[data-label="Şasi No"],[data-label="Kira Başlangıcı"]){display:none}
+  .road-page td[data-label=İşlem],.service-app td[data-label=Detay],.tire-app td[data-label=İşlem],.customer-navigation~main .fleet-table td[data-label=İşlem]{grid-column:1/-1;width:100%}
+  .road-page td[data-label=İşlem]::before,.service-app td[data-label=Detay]::before,.tire-app td[data-label=İşlem]::before,.customer-navigation~main .fleet-table td[data-label=İşlem]::before{display:none}
+  .mobile-action-label{display:inline}.desktop-action-label{display:none}
+  .road-page .dots,.service-app .dots,.customer-navigation~main .fleet-row-menu{width:100%;border:1px solid #dce6f2!important;background:#f1f7ff!important;color:#0064df!important;border-radius:7px!important;font-weight:600}
+  .tire-app .row-actions{display:flex;width:100%;gap:8px}.tire-app .row-actions button{width:auto!important;flex:1;font-size:13px!important;background:#f1f7ff;color:#0064df}
+  .road-page .panel footer,.service-app .panel footer,.tire-app .table-footer,.customer-navigation~main .fleet-table-footer{flex-wrap:wrap;gap:10px;padding:12px!important;font-size:12px!important}
+  .road-page .panel footer span,.service-app .panel footer span{display:flex;align-items:center;gap:14px}
+  .road-page .details-col{scroll-margin-top:76px;gap:16px!important}.road-page .details-col,.service-app .right-col,.tire-app .right-column{margin-top:16px!important}
+  .road-page .vehicle-info dl,.road-page .request-info dl,.service-app .vehicle-panel dl{font-size:13px!important;line-height:1.5;gap:10px!important}
+  .road-page .request-info h3,.road-page .vehicle-info>b,.road-page .vehicle-info>strong,.service-app .vehicle-name,.service-app .vehicle-panel .plate{font-size:15px!important}
+  .road-page .timeline li b,.road-page .timeline li small,.road-page .timeline li p,.service-app .due-list b,.service-app .due-list small,.tire-app .timeline li b,.tire-app .timeline li small,.tire-app .timeline li p{font-size:13px!important;line-height:1.5}
+  .service-app .quick button,.tire-app .outline-wide{font-size:13px!important;min-height:48px}
+  .tire-app .legend>div,.tire-app .legend b,.tire-app .legend small,.tire-app .brand-row,.tire-app .brand-row small,.tire-app .tip-card p{font-size:12px!important;line-height:1.5}
+  .tire-app .brand-row{grid-template-columns:80px 1fr 36px 25px!important}.tire-app .season-item small,.tire-app .season-item em{font-size:11px!important}
+  .road-page .dialog,.service-app .dialog,.tire-app .modal-card{width:100%!important;max-height:90dvh!important;padding:18px!important;box-sizing:border-box}
+  .road-page .dialog label,.service-app .dialog label,.tire-app .modal-card label{font-size:14px!important;line-height:1.5}
+  .road-page .form-grid,.service-app .form-grid,.tire-app .form-grid{grid-template-columns:1fr!important}
+  .customer-navigation~main .overview-stat{min-height:100px;box-sizing:border-box;padding:14px 10px!important}.customer-navigation~main .overview-stat span,.customer-navigation~main .overview-stat small{font-size:12px!important}.customer-navigation~main .overview-stat strong{font-size:23px!important}
+  .customer-navigation~main .overview-panel .panel-title h2{font-size:15px!important}.customer-navigation~main .activity-row,.customer-navigation~main .event-row{min-height:64px;font-size:13px!important}.customer-navigation~main .activity-row small,.customer-navigation~main .event-row small{font-size:12px!important}
+}
+@media(prefers-reduced-motion:reduce){.portal-sidebar.customer-navigation{transition:none!important}}
+@media(max-width:600px){
+ .road-page .dialog :is(input,select,textarea),.service-app .dialog :is(input,select,textarea),.tire-app .modal-card :is(input,select,textarea){font-size:16px!important;min-height:44px;box-sizing:border-box;width:100%}
+ .road-page .dialog button,.service-app .dialog button,.tire-app .modal-card button{min-height:44px!important;min-width:44px;font-size:14px!important}
+}
+@media(max-width:600px){
+ .tire-app .table-footer{height:auto!important;min-height:64px;flex-direction:column;align-items:stretch!important}.tire-app .pagination{justify-content:flex-end}
+ .customer-navigation~main .overview-stats{gap:10px!important}.customer-navigation~main .overview-stat{align-items:flex-start!important}.customer-navigation~main .overview-stat:last-child{grid-column:1/-1;min-height:90px}.customer-navigation~main .overview-stat .stat-symbol{width:28px;height:28px;min-width:28px;font-size:18px!important}.customer-navigation~main .overview-stat div{min-width:0}
+ .customer-navigation~.overview-main .overview-grid{display:flex!important;flex-direction:column}.customer-navigation~.overview-main .overview-grid>article:last-child{order:-1}.customer-navigation~main .location-preview{min-height:260px!important}.customer-navigation~main .dashboard-map{height:170px!important}
+ .customer-navigation~main .event-row{display:grid!important;grid-template-columns:28px minmax(0,1fr) auto;gap:8px!important;padding:12px 0!important}.customer-navigation~main .event-row>.day-badge{grid-column:3;font-size:11px}.customer-navigation~main .event-row>small{grid-column:2;grid-row:2}.customer-navigation~main .event-row>.event-icon{grid-row:1/3}
+ .customer-navigation~main .overview-panel .panel-title>a{min-height:44px;display:flex;align-items:center;font-size:12px!important}.customer-navigation~main .contract-row{min-height:44px;font-size:13px!important}.customer-navigation~main .vehicle-status{flex-wrap:wrap;gap:12px;font-size:12px!important}.customer-navigation~main .vehicle-status a{min-height:32px}
+ .customer-navigation~main .fleet-vehicle-cell strong,.customer-navigation~main .fleet-plate,.customer-navigation~main .fleet-status{font-size:14px!important}
+}

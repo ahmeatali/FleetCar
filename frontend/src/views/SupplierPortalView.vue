@@ -395,7 +395,7 @@
                         <span v-if="req.details.location">📍 <strong>Konum:</strong> {{ req.details.location }}</span>
                       </div>
                     </td>
-                    <td>{{ getSupplierName(req.supplier_id) }}</td>
+                    <td>{{ req.supplier_id == null && req.type === 'yol_yardim' ? 'Üstlenilmeyi bekliyor' : getSupplierName(req.supplier_id) }}</td>
                     <td>{{ formatDate(req.created_at) }}</td>
                     <td>
                       <span class="badge" :class="getStatusBadgeClass(req.status)">{{ req.status }}</span>
@@ -404,8 +404,8 @@
                       <select v-if="req.type === 'yol_yardim'"
                         @change="updateStatus(req, $event.target.value)"
                         class="form-select status-select-mini" :value="req.status" :disabled="updatingId === req.id">
-                        <option value="Beklemede">Beklemede</option><option value="Ekip Atandı">Ekip Atandı</option><option value="Yola Çıktı">Yola Çıktı</option><option value="Ekip Varış Noktasında">Ekip Varış Noktasında</option><option value="Çözüldü">Çözüldü</option><option value="İptal Edildi">İptal Et</option>
-                      </select>
+                        <option value="Beklemede">Beklemede</option><option value="Ekip Atandı">Ekip Atandı</option><option value="Yola Çıktı">Yola Çıktı</option><option value="Yolda">Yolda</option><option value="Ekip Varış Noktasında">Ekip Varış Noktasında</option><option value="Çözüldü">Çözüldü</option><option value="İptal Edildi">İptal Et</option>
+                      </select><button v-if="req.type === 'yol_yardim'" class="btn btn-secondary" style="margin-top:6px;font-size:11px" @click="openRoadsideUpdate(req)">{{req.supplier_id == null ? 'Talebi Üstlen' : 'Ekip / Varış Bilgileri'}}</button>
                       <select v-else
                         @change="updateStatus(req, $event.target.value)"
                         class="form-select status-select-mini"
@@ -519,10 +519,10 @@
         <div v-if="currentTab === 'requests'">
           <div class="glass-panel" style="padding: 25px;">
             <h3 style="margin-bottom: 10px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px; color: #2563eb;">
-              📥 Gelen Tamir & Bakım Talepleri
+              {{ supplierType === 'yol_yardim' ? '📥 Gelen Yol Yardım Talepleri' : '📥 Gelen Tamir & Bakım Talepleri' }}
             </h3>
             <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px;">
-              Filolardan servisinize iletilen bakım, mekanik arıza ve periyodik servis taleplerini inceleyin, randevu ve araç kabul kaydı oluşturun.
+              {{ supplierType === 'yol_yardim' ? 'Bekleyen yol yardım taleplerini üstlenin, ekibi atayın ve varış bilgilerini müşteriyle paylaşın.' : 'Filolardan servisinize iletilen bakım, mekanik arıza ve periyodik servis taleplerini inceleyin, randevu ve araç kabul kaydı oluşturun.' }}
             </p>
 
             <div v-if="loading" class="text-center" style="padding: 50px 0;">Yükleniyor...</div>
@@ -586,12 +586,23 @@
                       <span class="badge" :class="getStatusBadgeClass(req.status)">{{ req.status }}</span>
                     </td>
                     <td>
-                      <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <button v-if="!req.details?.entry_date" @click="openCheckinModal(req)" class="btn btn-primary" style="padding: 4px 10px; font-size: 0.8rem; background: #2563eb; border: none;">
+                      <div v-if="req.type === 'yol_yardim'" style="display:flex;flex-direction:column;gap:6px">
+                        <span v-if="req.roadside_case?.team_name" style="font-size:11px">{{req.roadside_case.team_name}} · {{req.roadside_case.eta_minutes == null ? 'Varış bekleniyor' : req.roadside_case.eta_minutes + ' dk'}}</span>
+                        <button class="btn btn-primary" style="font-size:11px" @click="openRoadsideUpdate(req)">{{req.supplier_id == null ? 'Talebi Üstlen' : 'Ekip / Varış Bilgileri'}}</button>
+                      </div>
+                      <div v-else-if="req.type === 'lastik'" style="display:flex;flex-direction:column;gap:6px">
+                        <span style="font-size:11px">{{req.details?.tire_operation || 'Lastik Servisi'}}</span>
+                        <button v-if="req.supplier_id == null" class="btn btn-primary" :disabled="updatingId === req.id" @click="updateStatus(req,'Onaylandı')">Talebi Üstlen</button>
+                        <button v-else-if="!['Tamamlandı','İptal Edildi'].includes(req.status)" class="btn btn-primary" @click="openTireCompletion(req)">Lastik İşlemini Tamamla</button>
+                        <button v-if="req.supplier_id != null && !['Tamamlandı','İptal Edildi'].includes(req.status)" class="btn btn-secondary" :disabled="updatingId === req.id" @click="updateStatus(req,'İptal Edildi')">Talebi İptal Et</button>
+                      </div>
+                      <div v-else style="display: flex; flex-direction: column; gap: 6px;">
+                        <button v-if="req.supplier_id == null" @click="updateStatus(req, 'Onaylandı')" class="btn btn-primary" :disabled="updatingId === req.id" style="font-size:11px">Talebi Üstlen</button>
+                        <button v-if="!req.details?.entry_date && req.supplier_id != null" @click="openCheckinModal(req)" class="btn btn-primary" style="padding: 4px 10px; font-size: 0.8rem; background: #2563eb; border: none;">
                           🔑 Servise Giriş Kaydı Yap
                         </button>
                         <div style="display: flex; gap: 6px;">
-                          <button @click="openWorkOrderModal(req)" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem; color: #2563eb; border-color: #bfdbfe;">
+                          <button :disabled="req.supplier_id == null" @click="openWorkOrderModal(req)" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem; color: #2563eb; border-color: #bfdbfe;">
                             ⚙️ İş Emri & Parçalar
                           </button>
                           <select 
@@ -604,7 +615,7 @@
                             <option value="Beklemede">Beklemede</option>
                             <option value="Servise Girdi">Servise Girdi</option>
                             <option value="Onay Bekliyor">Onay Bekliyor</option>
-                            <option value="Parça Bekliyor">Parça Bekliyor</option>
+                            <option value="Parça Bekliyor">Parça Bekliyor</option><option value="Eksper Bekliyor">Eksper Bekliyor</option><option value="Kaza">Kaza</option>
                             <option value="Onarımda">Onarımda</option>
                             <option value="Test & Yıkama">Test & Yıkama</option>
                             <option value="Teslimata Hazır">Teslimata Hazır</option>
@@ -1180,10 +1191,39 @@
       </form>
     </div>
   </div>
+
+  <div v-if="roadsideRequest" class="roadside-service-overlay" @click.self="roadsideRequest = null">
+    <form class="roadside-service-dialog" @submit.prevent="saveRoadsideUpdate">
+      <h2>{{roadsideRequest.supplier_id == null ? 'Yol Yardım Talebini Üstlen' : 'Yol Yardım Ekibini Güncelle'}}</h2>
+      <p>{{roadsideRequest.vehicle_plate}} · {{roadsideRequest.description}}</p>
+      <p v-if="roadsideRequest.details?.location">⌖ {{roadsideRequest.details.location}}</p>
+      <a v-if="roadsideRequest.details?.latitude != null && roadsideRequest.details?.longitude != null" :href="`https://www.openstreetmap.org/?mlat=${roadsideRequest.details.latitude}&mlon=${roadsideRequest.details.longitude}#map=16/${roadsideRequest.details.latitude}/${roadsideRequest.details.longitude}`" target="_blank" rel="noreferrer">Müşteri Konumunu Aç ↗</a>
+      <label>Durum<select v-model="roadsideForm.status"><option>Beklemede</option><option>Ekip Atandı</option><option>Yola Çıktı</option><option>Yolda</option><option>Ekip Varış Noktasında</option><option>Çözüldü</option><option>İptal Edildi</option></select></label>
+      <label>Ekip Adı<input v-model.trim="roadsideForm.team_name" :required="roadsideForm.status !== 'Beklemede' && roadsideForm.status !== 'İptal Edildi'" /></label>
+      <label>İletişim Telefonu<input v-model.trim="roadsideForm.team_phone" type="tel" /></label>
+      <div class="roadside-service-fields"><label>Tahmini Varış (dk)<input v-model.number="roadsideForm.eta_minutes" type="number" min="0" /></label><label>Kalan Mesafe (km)<input v-model.number="roadsideForm.distance_km" type="number" min="0" step="0.1" /></label></div>
+      <p v-if="roadsideError" role="alert" class="roadside-service-error">{{roadsideError}}</p>
+      <footer><button type="button" class="btn btn-secondary" @click="roadsideRequest = null" :disabled="updatingId != null">Vazgeç</button><button class="btn btn-primary" :disabled="updatingId != null">{{updatingId != null ? 'Kaydediliyor…' : 'Kaydet'}}</button></footer>
+    </form>
+  </div>
+
+<div v-if="tireRequest" class="roadside-service-overlay" @click.self="tireRequest=null">
+  <form class="roadside-service-dialog tire-service-dialog" @submit.prevent="saveTireCompletion">
+    <h2>Lastik İşlemini Tamamla</h2><p>{{tireRequest.vehicle_plate}} · {{tireRequest.description}}</p>
+    <p v-if="tireServiceLoading">Lastik kayıtları yükleniyor…</p>
+    <label>Lastik Kaydı<select v-model="tireCompletionForm.tire_id" required :disabled="Boolean(tireRequest.details?.tire_id)"><option value="" disabled>Lastik seçin</option><option v-for="tire in tireServiceRecords" :key="tire.id" :value="tire.id">{{tire.brand}} · {{tire.size}} · {{tire.set_no || tire.id}}</option></select></label>
+    <label>Yapılan İşlem<select v-model="tireCompletionForm.type"><option>Rotasyon</option><option>Lastik değişimi</option><option>Basınç kontrolü</option><option>Diş derinliği kontrolü</option><option>Balans</option></select></label>
+    <div class="roadside-service-fields"><label>İşlem Tarihi<input v-model="tireCompletionForm.date" type="date" :max="new Date().toLocaleDateString('sv-SE')" required/></label><label>Araç Kilometresi<input v-model.number="tireCompletionForm.mileage" type="number" min="0"/></label></div>
+    <div class="roadside-service-fields"><label v-if="tireCompletionForm.type==='Lastik değişimi'">Yeni Kalan Kullanım (km)<input v-model.number="tireCompletionForm.remaining_km" type="number" min="0"/></label><label>Diş Derinliği (mm)<input v-model.number="tireCompletionForm.tread_depth_mm" type="number" min="0" max="20" step="0.1"/></label></div>
+    <label>İşlem Notları<textarea v-model.trim="tireCompletionForm.description" rows="3"/></label>
+    <p v-if="tireServiceError" role="alert" class="roadside-service-error">{{tireServiceError}}</p>
+    <footer><button type="button" class="btn btn-secondary" @click="tireRequest=null" :disabled="updatingId!=null">Vazgeç</button><button class="btn btn-primary" :disabled="updatingId!=null || tireServiceLoading || !tireServiceRecords.length">{{updatingId!=null ? 'Kaydediliyor…' : 'Tamamla ve Kaydet'}}</button></footer>
+  </form>
+</div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
@@ -1299,7 +1339,7 @@ const submitCheckin = async () => {
     const res = await fetch(`/api/requests/${selectedRequestForCheckin.value.id}/checkin`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(checkinForm)
+      body: JSON.stringify({ ...checkinForm, supplier_id: supplierId.value })
     })
     if (res.ok) {
       await fetchRequests()
@@ -1358,7 +1398,7 @@ const submitWorkOrder = async () => {
     const res = await fetch(`/api/requests/${selectedRequestForWorkOrder.value.id}/work-order`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(workOrderForm)
+      body: JSON.stringify({ ...workOrderForm, supplier_id: supplierId.value })
     })
     if (res.ok) {
       await fetchRequests()
@@ -1375,7 +1415,7 @@ const submitWorkOrder = async () => {
 const openInvoiceModal = (req) => {
   selectedRequestForInvoice.value = req
   const today = new Date().toISOString().split('T')[0]
-  invoiceForm.invoice_no = req.details?.invoice_no || `FAT-2026-${req.id}`
+  invoiceForm.invoice_no = req.details?.invoice_no || ''
   invoiceForm.invoice_date = req.details?.invoice_date || today
   invoiceForm.invoice_amount = req.details?.invoice_amount || req.details?.total_estimated_cost || 0
   invoiceForm.invoice_notes = req.details?.invoice_notes || ''
@@ -1405,7 +1445,7 @@ const submitInvoice = async () => {
     const res = await fetch(`/api/requests/${selectedRequestForInvoice.value.id}/invoice`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...invoiceForm, file_url })
+      body: JSON.stringify({ ...invoiceForm, file_url, supplier_id: supplierId.value })
     })
     if (res.ok) {
       await fetchRequests()
@@ -1464,7 +1504,7 @@ const fetchVehicles = async () => {
 }
 
 const filteredRequests = computed(() => {
-  return requests.value.filter(r => r.supplier_id === supplierId.value)
+  return requests.value.filter(r => r.supplier_id === supplierId.value || (['servis','lastik','yol_yardim'].includes(supplierType.value) && r.type === supplierType.value && r.supplier_id == null))
 })
 
 const openQuotes = computed(() => {
@@ -1503,11 +1543,11 @@ const pendingRequestsCount = computed(() => {
 })
 
 const activeRequestsCount = computed(() => {
-  return filteredRequests.value.filter(r => ['Onaylandı', 'İşlemde'].includes(r.status)).length
+  return filteredRequests.value.filter(r => ['Onaylandı', 'İşlemde', 'Ekip Atandı', 'Yola Çıktı', 'Yolda', 'Ekip Varış Noktasında'].includes(r.status)).length
 })
 
 const completedRequestsCount = computed(() => {
-  return filteredRequests.value.filter(r => r.status === 'Tamamlandı').length
+  return filteredRequests.value.filter(r => ['Tamamlandı', 'Çözüldü'].includes(r.status)).length
 })
 
 const maintenanceRequestsCount = computed(() => {
@@ -1662,25 +1702,69 @@ const getVehicleServiceHistory = (vehicleId) => {
   return requests.value.filter(r => r.vehicle_id === vehicleId)
 }
 
+const tireRequest = ref(null), tireServiceRecords = ref([]), tireServiceError = ref(''), tireServiceLoading = ref(false)
+const tireCompletionForm = reactive({tire_id:'',type:'Rotasyon',date:'',mileage:null,remaining_km:null,tread_depth_mm:null,description:''})
+const openTireCompletion = async request => {
+  tireRequest.value=request; tireServiceError.value=''; tireServiceRecords.value=[]; tireServiceLoading.value=true
+  Object.assign(tireCompletionForm,{tire_id:request.details?.tire_id || '',type:request.details?.tire_operation || 'Lastik değişimi',
+    date:new Date().toLocaleDateString('sv-SE'),mileage:request.details?.mileage ?? null,remaining_km:null,tread_depth_mm:null,description:''})
+  try {
+    const response=await fetch(`/api/tires?vehicle_id=${encodeURIComponent(request.vehicle_id)}&supplier_id=${supplierId.value}`)
+    if(!response.ok)throw Error('Bu aracın lastik kayıtları yüklenemedi.')
+    tireServiceRecords.value=await response.json()
+    if(!tireCompletionForm.tire_id)tireCompletionForm.tire_id=tireServiceRecords.value[0]?.id || ''
+  }catch(error){tireServiceError.value=error.message}finally{tireServiceLoading.value=false}
+}
+const saveTireCompletion = async () => {
+  const request=tireRequest.value;updatingId.value=request.id;tireServiceError.value=''
+  try {
+    const response=await fetch(`/api/requests/${request.id}/tire-operation`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      ...tireCompletionForm,tire_id:Number(tireCompletionForm.tire_id),vehicle_id:request.vehicle_id,supplier_id:supplierId.value,
+      mileage:tireCompletionForm.mileage === '' ? null : tireCompletionForm.mileage,
+      remaining_km:tireCompletionForm.remaining_km === '' ? null : tireCompletionForm.remaining_km,
+      tread_depth_mm:tireCompletionForm.tread_depth_mm === '' ? null : tireCompletionForm.tread_depth_mm})})
+    if(!response.ok){const data=await response.json().catch(()=>({}));throw Error(typeof data.detail==='string'?data.detail:'İşlem kaydedilemedi. Alanları kontrol edin.')}
+    tireRequest.value=null;await fetchRequests()
+  }catch(error){tireServiceError.value=error.message}finally{updatingId.value=null}
+}
+const roadsideRequest = ref(null)
+const roadsideError = ref('')
+const roadsideForm = reactive({ status:'', team_name:'', team_phone:'', eta_minutes:null, distance_km:null })
+const openRoadsideUpdate = request => {
+  roadsideRequest.value = request
+  roadsideError.value = ''
+  Object.assign(roadsideForm, {status:request.status, team_name:request.roadside_case?.team_name || '',
+    team_phone:request.roadside_case?.team_phone || '', eta_minutes:request.roadside_case?.eta_minutes ?? null,
+    distance_km:request.roadside_case?.distance_km ?? null})
+}
+const saveRoadsideUpdate = async () => {
+  const request = roadsideRequest.value
+  updatingId.value = request.id
+  roadsideError.value = ''
+  try {
+    const response = await fetch(`/api/requests/${request.id}/status`, {method:'PUT',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({...roadsideForm,supplier_id:supplierId.value,
+        eta_minutes:roadsideForm.eta_minutes === '' ? null : roadsideForm.eta_minutes,
+        distance_km:roadsideForm.distance_km === '' ? null : roadsideForm.distance_km})})
+    if (!response.ok) {
+      const data = await response.json().catch(()=>({}))
+      throw Error(typeof data.detail === 'string' ? data.detail : 'Bilgiler kaydedilemedi. Süre ve mesafe alanlarını kontrol edin.')
+    }
+    roadsideRequest.value = null
+    await fetchRequests()
+  } catch (error) { roadsideError.value = error.message }
+  finally { updatingId.value = null }
+}
 const updateStatus = async (request, newStatus) => {
+  if (request.type === 'yol_yardim') {
+    openRoadsideUpdate(request)
+    roadsideForm.status = newStatus
+    return
+  }
   const requestId = request.id
   updatingId.value = requestId
   try {
-    const update = { status: newStatus }
-    if (request.type === 'yol_yardim' && newStatus === 'Ekip Atandı') {
-      update.team_name = prompt('Yardım ekibi adı', request.roadside_case?.team_name || '')
-      if (update.team_name === null) return
-      update.team_phone = prompt('Ekip telefonu', request.roadside_case?.team_phone || '')
-      if (update.team_phone === null) return
-    }
-    if (request.type === 'yol_yardim' && ['Yola Çıktı','Ekip Varış Noktasında'].includes(newStatus)) {
-      const eta = prompt('Tahmini varış süresi (dakika)', request.roadside_case?.eta_minutes || '')
-      if (eta === null) return
-      const distance = prompt('Ekibin kalan mesafesi (km)', request.roadside_case?.distance_km || '')
-      if (distance === null) return
-      update.eta_minutes = eta === '' ? null : Number(eta)
-      update.distance_km = distance === '' ? null : Number(distance)
-    }
+    const update = { status: newStatus, supplier_id: supplierId.value }
     const response = await fetch(`/api/requests/${requestId}/status`, {
       method: 'PUT',
       headers: {
@@ -1726,7 +1810,12 @@ const handleLogout = () => {
   router.push(isServiceAccount.value ? '/service-login' : '/supplier-login')
 }
 
+let roadsideRefreshTimer
+onUnmounted(() => clearInterval(roadsideRefreshTimer))
 onMounted(async () => {
+  roadsideRefreshTimer = setInterval(() => {
+    if (isServiceAccount.value && !document.hidden && !roadsideRequest.value && !tireRequest.value && updatingId.value == null) fetchRequests()
+  }, 15000)
   if (!supplierId.value) {
     router.push(isServiceAccount.value ? '/service-login' : '/supplier-login')
     return
@@ -2097,4 +2186,7 @@ onMounted(async () => {
 .modal-content {
   width: 100%;
 }
+
+.roadside-service-overlay{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:20px;background:#04192b99}.roadside-service-dialog{background:white;padding:24px;border-radius:12px;width:min(520px,100%);max-height:90vh;overflow:auto;color:#234269}.roadside-service-dialog h2{font-size:20px}.roadside-service-dialog p{font-size:12px;color:#637b96;margin:10px 0}.roadside-service-dialog label{display:flex;flex-direction:column;gap:6px;margin:12px 0;font-size:12px}.roadside-service-dialog input,.roadside-service-dialog select{padding:10px;border:1px solid #d5e3f0;border-radius:5px;font:inherit;width:100%;box-sizing:border-box}.roadside-service-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.roadside-service-dialog footer{display:flex;gap:10px;justify-content:flex-end}.roadside-service-dialog .roadside-service-error{color:#ba3232;background:#fff0f0;padding:10px}
+.tire-service-dialog textarea{width:100%;box-sizing:border-box;padding:10px;border:1px solid #d5e3f0;border-radius:5px;font:inherit}
 </style>
