@@ -5,7 +5,7 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException, Depends, status, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from sqlalchemy import text
+from sqlalchemy import text, or_, and_
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
@@ -299,11 +299,7 @@ def create_quote(quote: QuoteCreate, db: Session = Depends(get_db)):
     if quote.email:
         cust = db.query(models.Customer).filter(models.Customer.email == quote.email).first()
         if cust:
-            if not has_actual_customer_documents(cust):
-                raise HTTPException(
-                    status_code=400,
-                    detail="Kiralama teklif talebi oluşturabilmek için şirket evraklarınızı (Vergi Levhası, İmza Sirküsü, Faaliyet Belgesi) yüklemeniz zorunludur."
-                )
+            # Company documents are optional for quotation requests for now.
             cust_id = cust.id
             cust_info = {
                 "id": cust.id,
@@ -312,7 +308,7 @@ def create_quote(quote: QuoteCreate, db: Session = Depends(get_db)):
                 "phone": cust.phone,
                 "legal_title": cust.legal_title or cust.company_name,
                 "address": cust.address or "-",
-                "documents_uploaded": getattr(cust, 'documents_uploaded', False)
+                "documents_uploaded": has_actual_customer_documents(cust)
             }
 
     details_dict = quote.details or {}
@@ -623,11 +619,87 @@ def tire_record_dict(record: models.TireRecord, vehicle: models.Vehicle) -> dict
     }
 
 
+TIRE_STATUSES = ("İyi", "Yaklaşan", "Değişim Gerekli", "Mücbir Durum")
+TIRE_OPERATION_TYPES = ("Rotasyon", "Lastik değişimi", "Basınç kontrolü", "Diş derinliği kontrolü", "Balans")
+
+
+@app.get("/api/tire-overview")
+def get_tire_overview(customer_id: int, db: Session = Depends(get_db)):
+    fleet = db.query(models.Vehicle).filter_by(customer_id=customer_id).all()
+    ids = [vehicle.id for vehicle in fleet]
+    vehicles_by_id = {vehicle.id: vehicle for vehicle in fleet}
+    records = db.query(models.TireRecord).filter(models.TireRecord.vehicle_id.in_(ids)).order_by(
+        models.TireRecord.updated_at.desc(), models.TireRecord.id.desc()).all()
+    operations = db.query(models.TireOperation).filter(models.TireOperation.vehicle_id.in_(ids)).order_by(
+        models.TireOperation.date.desc(), models.TireOperation.id.desc()).all()
+    requests = db.query(models.Request).filter(models.Request.vehicle_id.in_(ids), models.Request.type == "lastik",
+        models.Request.status.notin_(["Tamamlandı", "Çözüldü", "İptal Edildi"])).all()
+    photos = db.query(models.VehicleFile).filter(models.VehicleFile.vehicle_id.in_(ids), models.VehicleFile.category == "photo").order_by(models.VehicleFile.id.desc()).all()
+    photo_urls = {}
+    for photo in photos:
+        photo_urls.setdefault(photo.vehicle_id, "/uploads/vehicles/" + photo.stored_name)
+    recent_rotations = {}
+    for operation in operations:
+        if operation.type == "Rotasyon" and operation.status == "Tamamlandı" and operation.tire_id is not None:
+            recent_rotations.setdefault(operation.tire_id, operation.date)
+    today = datetime.date.today()
+    tires = []
+    for record in records:
+        vehicle = vehicles_by_id[record.vehicle_id]
+        item = tire_record_dict(record, vehicle)
+        item["vehicle_group"] = vehicle.vehicle_group or vehicle.vehicle_segment or vehicle.vehicle_type
+        item["photo_url"] = photo_urls.get(vehicle.id)
+        baseline = max((value for value in (recent_rotations.get(record.id), record.changed_at, record.installed_at) if value), default=None)
+        rotation_due_date = None
+        if baseline:
+            try:
+                rotation_due_date = datetime.date.fromisoformat(baseline[:10]) + datetime.timedelta(days=183)
+            except ValueError:
+                pass
+        item["last_rotated_at"] = recent_rotations.get(record.id)
+        item["rotation_due_date"] = rotation_due_date.isoformat() if rotation_due_date else None
+        item["rotation_due"] = bool(rotation_due_date and rotation_due_date <= today)
+        item["pending_request"] = next(({"id": request.id, "status": request.status, "operation_type": (request.details or {}).get("tire_operation")}
+            for request in requests if str((request.details or {}).get("tire_id")) == str(record.id)), None)
+        tires.append(item)
+    total = len(tires)
+    percent = lambda count: round(count * 100 / total, 1) if total else 0
+    states = {state: sum(item["status"] == state for item in tires) for state in TIRE_STATUSES}
+    brands = {}
+    seasons = {}
+    for item in tires:
+        brand = item["brand"] or "Belirtilmemiş"
+        brands[brand] = brands.get(brand, 0) + 1
+        season = item["season"] if item["season"] in ("Yaz", "Kış", "Dört Mevsim") else "Diğer"
+        seasons[season] = seasons.get(season, 0) + 1
+    upcoming = [item for item in tires if item["status"] != "İyi" or item["rotation_due"]]
+    upcoming.sort(key=lambda item: (0 if item["status"] in ("Mücbir Durum", "Değişim Gerekli") else 1,
+        item["remaining_km"] if item["remaining_km"] is not None else 999999999))
+    return {"tires": tires, "vehicles": [vehicle_dict(vehicle) for vehicle in fleet],
+        "operations": [tire_operation_dict(operation, vehicles_by_id[operation.vehicle_id]) for operation in operations],
+        "upcoming": upcoming,
+        "summary": {"total": total, "change_pending": states["Değişim Gerekli"],
+            "rotation_due": sum(item["rotation_due"] for item in tires), "critical": states["Mücbir Durum"]},
+        "status_counts": [{"name": state, "count": states[state], "percent": percent(states[state])} for state in TIRE_STATUSES],
+        "brands": [{"name": name, "count": count, "percent": percent(count)} for name, count in sorted(brands.items(), key=lambda item: -item[1])],
+        "seasons": [{"name": name, "count": seasons.get(name, 0), "percent": percent(seasons.get(name, 0))} for name in ("Yaz", "Kış", "Dört Mevsim", "Diğer")],
+        "groups": sorted({item["vehicle_group"] for item in tires if item["vehicle_group"]}),
+        "guidance": "Rotasyon planını araç ve lastik üreticisinin bakım aralığına göre belirleyin.",
+        "guide": "Lastiklerin basınç ve diş derinliği kontrollerini düzenli yaptırın. Hasar veya düzensiz aşınma varsa lastik servisinden kontrol talep edin."}
+
+
 @app.get("/api/tires", response_model=List[TireRecordResponse])
-def get_tire_records(customer_id: Optional[int] = None, db: Session = Depends(get_db)):
+def get_tire_records(customer_id: Optional[int] = None, db: Session = Depends(get_db),
+                     supplier_id: Optional[int] = None, vehicle_id: Optional[str] = None):
     query = db.query(models.TireRecord, models.Vehicle).join(models.Vehicle, models.TireRecord.vehicle_id == models.Vehicle.id)
     if customer_id:
         query = query.filter(models.Vehicle.customer_id == customer_id)
+    if vehicle_id:
+        query = query.filter(models.Vehicle.id == vehicle_id)
+    if supplier_id:
+        assigned = db.query(models.Request.vehicle_id).filter(models.Request.supplier_id == supplier_id,
+            models.Request.type == "lastik")
+        query = query.filter(models.Vehicle.id.in_(assigned))
     return [tire_record_dict(tire, vehicle) for tire, vehicle in query.order_by(models.TireRecord.updated_at.desc()).all()]
 
 
@@ -637,7 +709,7 @@ def create_tire_record(data: TireRecordCreate, db: Session = Depends(get_db)):
     if not vehicle:
         raise HTTPException(status_code=404, detail="Araç bulunamadı.")
     stamp = now_str()
-    values = data.dict()
+    values = data.model_dump()
     record = models.TireRecord(**values, created_at=stamp, updated_at=stamp)
     db.add(record)
     if data.changed_at:
@@ -651,7 +723,7 @@ def update_tire_record(tire_id: int, data: TireRecordUpdate, db: Session = Depen
     record = db.query(models.TireRecord).filter(models.TireRecord.id == tire_id).first()
     if not record:
         raise HTTPException(status_code=404, detail="Lastik kaydı bulunamadı.")
-    values = data.dict(exclude_unset=True)
+    values = data.model_dump(exclude_unset=True)
     vehicle_id = values.pop("vehicle_id", record.vehicle_id)
     vehicle = db.query(models.Vehicle).filter(models.Vehicle.id == vehicle_id).first()
     if not vehicle:
@@ -692,17 +764,84 @@ def get_tire_operations(customer_id: Optional[int] = None, db: Session = Depends
 
 @app.post("/api/tire-operations", response_model=TireOperationResponse)
 def create_tire_operation(data: TireOperationCreate, db: Session = Depends(get_db)):
-    vehicle = db.query(models.Vehicle).filter(models.Vehicle.id == data.vehicle_id).first()
+    vehicle = db.query(models.Vehicle).filter_by(id=data.vehicle_id).first()
     if not vehicle:
         raise HTTPException(status_code=404, detail="Araç bulunamadı.")
-    if data.tire_id and not db.query(models.TireRecord).filter_by(id=data.tire_id, vehicle_id=data.vehicle_id).first():
+    tire = db.query(models.TireRecord).filter_by(id=data.tire_id, vehicle_id=data.vehicle_id).first() if data.tire_id else None
+    if data.tire_id and not tire:
         raise HTTPException(status_code=404, detail="Bu araca bağlı lastik kaydı bulunamadı.")
-    payload = data.dict()
-    payload["date"] = payload["date"] or now_str()
-    record = models.TireOperation(**payload)
-    db.add(record)
-    db.commit(); db.refresh(record)
-    return tire_operation_dict(record, vehicle)
+    if data.type not in TIRE_OPERATION_TYPES or data.status != "Tamamlandı":
+        raise HTTPException(status_code=400, detail="Geçersiz lastik işlemi. Planlanan işlemler için servis talebi açın.")
+    operation_date = data.date or datetime.date.today().isoformat()
+    try:
+        if datetime.date.fromisoformat(operation_date[:10]) > datetime.date.today():
+            raise ValueError()
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Tamamlanan işlem tarihi bugün veya geçmişte olmalıdır.")
+    request = None
+    if data.request_id:
+        request = db.query(models.Request).filter_by(id=data.request_id, vehicle_id=vehicle.id, type="lastik").first()
+        if not request:
+            raise HTTPException(status_code=404, detail="Bu araca ait lastik talebi bulunamadı.")
+        if not data.supplier_id:
+            raise HTTPException(status_code=400, detail="Servis bilgisi gereklidir.")
+        if request.status == "İptal Edildi":
+            raise HTTPException(status_code=409, detail="İptal edilmiş talep tamamlanamaz.")
+        if not tire:
+            raise HTTPException(status_code=400, detail="Tamamlanan işlem için lastik kaydı seçilmelidir.")
+        expected_tire = (request.details or {}).get("tire_id")
+        if expected_tire is not None and str(expected_tire) != str(data.tire_id):
+            raise HTTPException(status_code=400, detail="İşlem lastiği talep kaydıyla eşleşmiyor.")
+        if request.supplier_id != data.supplier_id:
+            raise HTTPException(status_code=409, detail="Önce lastik talebini üstlenin.")
+        claim_service_request(request, data.supplier_id, db)
+        existing_id = (request.details or {}).get("completed_tire_operation_id")
+        if existing_id:
+            existing = db.query(models.TireOperation).filter_by(id=existing_id).first()
+            if existing:
+                return tire_operation_dict(existing, vehicle)
+        claimed = db.query(models.Request).filter(models.Request.id == request.id,
+            models.Request.status.notin_(["Tamamlandı", "Çözüldü", "İptal Edildi"])).update({"status": "İşlemde"}, synchronize_session=False)
+        if not claimed:
+            db.rollback()
+            raise HTTPException(status_code=409, detail="Bu talep zaten kapatılmış.")
+        db.refresh(request)
+    payload = data.model_dump(exclude={"request_id", "supplier_id", "remaining_km", "tread_depth_mm"})
+    payload["date"] = operation_date
+    operation = models.TireOperation(**payload)
+    db.add(operation); db.flush()
+    if tire:
+        # Historical entries remain in the history without rolling back a newer inspection.
+        if not tire.inspected_at or operation_date[:10] >= tire.inspected_at[:10]:
+            tire.inspected_at = operation_date[:10]
+            if data.tread_depth_mm is not None:
+                tire.tread_depth_mm = data.tread_depth_mm
+        if data.type == "Lastik değişimi" and (not tire.changed_at or operation_date[:10] >= tire.changed_at[:10]):
+            tire.changed_at = operation_date[:10]
+            tire.status = "İyi"
+            tire.remaining_km = data.remaining_km
+            vehicle.tire_change_date = operation_date[:10]
+        tire.updated_at = now_str()
+    if data.mileage is not None and data.mileage > (vehicle.mileage or 0):
+        vehicle.mileage = data.mileage
+        db.add(models.VehicleMileageRecord(vehicle_id=vehicle.id, mileage=data.mileage,
+            recorded_at=operation_date, source="tire_service"))
+    if request:
+        details = dict(request.details or {})
+        details["completed_tire_operation_id"] = operation.id
+        request.details = details
+        request.status = "Tamamlandı"; request.completed_at = now_str()
+        service_history(request, data.type + " Tamamlandı")
+        other = db.query(models.Request).filter(models.Request.vehicle_id == vehicle.id,
+            models.Request.id != request.id, models.Request.status.notin_(["Tamamlandı", "Çözüldü", "İptal Edildi"])).first()
+        vehicle.status = STATUS_MAP.get(other.type, "Aktif") if other else "Aktif"
+    db.commit(); db.refresh(operation)
+    return tire_operation_dict(operation, vehicle)
+
+
+@app.post("/api/requests/{request_id}/tire-operation", response_model=TireOperationResponse)
+def complete_tire_request(request_id: int, data: TireOperationCreate, db: Session = Depends(get_db)):
+    return create_tire_operation(data.model_copy(update={"request_id": request_id}), db)
 
 
 def vehicle_file_dict(record: models.VehicleFile) -> dict:
@@ -1797,13 +1936,120 @@ def _enrich_request(r: models.Request, db: Session) -> dict:
     return d
 
 
+SERVICE_STATUSES = {"Beklemede", "Onaylandı", "İşlemde", "Servise Girdi", "Onay Bekliyor",
+    "Parça Bekliyor", "Onarımda", "Test & Yıkama", "Teslimata Hazır", "Eksper Bekliyor",
+    "Kaza", "Tamamlandı", "İptal Edildi"}
+TERMINAL_REQUEST_STATUSES = {"Tamamlandı", "Çözüldü", "İptal Edildi"}
+
+
+def claim_service_request(request, supplier_id, db):
+    if supplier_id is None:
+        return
+    supplier = db.query(models.Supplier).filter_by(id=supplier_id).first()
+    if not supplier or (request.type in SERVICE_SUPPLIER_TYPES and supplier.type != request.type):
+        raise HTTPException(status_code=403, detail="Bu talebi yalnızca ilgili hizmet servisi üstlenebilir.")
+    if request.supplier_id is not None:
+        if request.supplier_id != supplier_id:
+            raise HTTPException(status_code=409, detail="Talep başka bir servise atanmış.")
+        return
+    claimed = db.query(models.Request).filter(models.Request.id == request.id,
+        models.Request.supplier_id.is_(None)).update({"supplier_id": supplier_id}, synchronize_session=False)
+    if not claimed:
+        db.rollback()
+        raise HTTPException(status_code=409, detail="Talep başka bir servis tarafından üstlenildi.")
+    db.refresh(request)
+
+
+def service_history(request, title):
+    details = dict(request.details or {})
+    history = list(details.get("service_history") or [])
+    history.append({"title": title, "status": request.status, "created_at": now_str(), "supplier_id": request.supplier_id})
+    details["service_history"] = history
+    request.details = details
+
+
+def service_kind(request):
+    service_type = str((request.details or {}).get("service_type") or "").lower()
+    if request.type == "yol_yardim":
+        return "roadside"
+    if request.type != "servis":
+        return "other"
+    if "hasar" in service_type or "kaza" in service_type or request.status == "Kaza":
+        return "damage"
+    if "ekspertiz" in service_type:
+        return "expertise"
+    if service_type == "diğer":
+        return "other"
+    return "service"
+
+
+@app.get("/api/service-overview")
+def get_service_overview(customer_id: int, db: Session = Depends(get_db)):
+    fleet = db.query(models.Vehicle).filter_by(customer_id=customer_id).all()
+    vehicle_ids = [vehicle.id for vehicle in fleet]
+    requests = db.query(models.Request).filter(models.Request.vehicle_id.in_(vehicle_ids)).order_by(
+        models.Request.created_at.desc(), models.Request.id.desc()).all()
+    photos = db.query(models.VehicleFile).filter(models.VehicleFile.vehicle_id.in_(vehicle_ids),
+        models.VehicleFile.category == "photo").order_by(models.VehicleFile.id.desc()).all()
+    photo_urls = {}
+    for photo in photos:
+        photo_urls.setdefault(photo.vehicle_id, "/uploads/vehicles/" + photo.stored_name)
+    vehicles = []
+    due = []
+    today = datetime.date.today()
+    for vehicle in fleet:
+        item = vehicle_dict(vehicle)
+        item["photo_url"] = photo_urls.get(vehicle.id)
+        item["group"] = vehicle.vehicle_group or vehicle.vehicle_segment or vehicle.vehicle_type
+        vehicles.append(item)
+        if not vehicle.is_active:
+            continue
+        due_days = None
+        if vehicle.next_service_due_date:
+            try:
+                due_days = (datetime.date.fromisoformat(vehicle.next_service_due_date[:10]) - today).days
+            except ValueError:
+                pass
+        remaining_km = vehicle.next_service_due_km - vehicle.mileage if vehicle.next_service_due_km is not None and vehicle.mileage is not None else None
+        if (due_days is not None and due_days <= 30) or (remaining_km is not None and remaining_km <= 2000):
+            due.append({**item, "days_until_service": due_days, "km_until_service": remaining_km})
+    due.sort(key=lambda item: (item["days_until_service"] if item["days_until_service"] is not None else 99999,
+                              item["km_until_service"] if item["km_until_service"] is not None else 99999))
+    records = []
+    for request in requests:
+        item = _enrich_request(request, db)
+        item["kind"] = service_kind(request)
+        item["photo_url"] = photo_urls.get(request.vehicle_id)
+        details = request.details or {}
+        item["amount"] = next((details[key] for key in ("invoice_amount", "total_estimated_cost") if details.get(key) is not None), None)
+        item["amount_source"] = "Fatura" if details.get("invoice_amount") is not None else "Tahmini" if item["amount"] is not None else None
+        records.append(item)
+    tabs = {kind: sum(item["kind"] == kind for item in records) for kind in ("service", "damage", "roadside", "expertise", "other")}
+    tabs["all"] = len(records)
+    tabs["workorders"] = sum(item["type"] == "servis" for item in records)
+    return {"vehicles": vehicles, "records": records, "due_vehicles": due,
+        "summary": {"service": tabs["service"], "damage": tabs["damage"],
+                    "open_work_orders": sum(item["type"] == "servis" and item["status"] not in TERMINAL_REQUEST_STATUSES for item in records),
+                    "due_vehicles": len(due), "tabs": tabs},
+        "statuses": sorted({item["status"] for item in records}),
+        "groups": sorted({item["group"] for item in vehicles if item["group"]})}
+
+
 @app.get("/api/requests")
 def get_requests(customer_id: Optional[int] = None, supplier_id: Optional[int] = None, db: Session = Depends(get_db)):
     query = db.query(models.Request)
     if customer_id:
         query = query.join(models.Vehicle, models.Request.vehicle_id == models.Vehicle.id).filter(models.Vehicle.customer_id == customer_id)
     if supplier_id:
-        query = query.filter(models.Request.supplier_id == supplier_id)
+        supplier = db.query(models.Supplier).filter_by(id=supplier_id).first()
+        if not supplier:
+            raise HTTPException(status_code=404, detail="Servis bulunamadı.")
+        if supplier.type in SERVICE_SUPPLIER_TYPES:
+            query = query.filter(or_(models.Request.supplier_id == supplier_id,
+                and_(models.Request.supplier_id.is_(None), models.Request.type == supplier.type,
+                     models.Request.status == "Beklemede")))
+        else:
+            query = query.filter(models.Request.supplier_id == supplier_id)
     return [_enrich_request(r, db) for r in query.order_by(models.Request.created_at.desc(), models.Request.id.desc()).all()]
 
 
@@ -1814,6 +2060,20 @@ def create_request(req: RequestCreate, db: Session = Depends(get_db)):
     if req.supplier_id is not None:
         s = db.query(models.Supplier).filter(models.Supplier.id == req.supplier_id).first()
         if not s: raise HTTPException(status_code=404, detail="Supplier not found")
+        if req.type in SERVICE_SUPPLIER_TYPES and s.type != req.type:
+            raise HTTPException(status_code=400, detail="Seçilen firma bu hizmet türünü sağlamıyor.")
+
+    if req.type == "lastik" and (req.details or {}).get("tire_id") is not None:
+        tire_id = req.details["tire_id"]
+        tire = db.query(models.TireRecord).filter_by(id=tire_id, vehicle_id=v.id).first()
+        if not tire:
+            raise HTTPException(status_code=404, detail="Bu araca ait lastik kaydı bulunamadı.")
+        if req.details.get("tire_operation") not in TIRE_OPERATION_TYPES:
+            raise HTTPException(status_code=400, detail="Geçersiz lastik işlem türü.")
+        active = db.query(models.Request).filter_by(vehicle_id=v.id, type="lastik").filter(
+            models.Request.status.notin_(["Tamamlandı", "Çözüldü", "İptal Edildi"])).all()
+        if any(str((request.details or {}).get("tire_id")) == str(tire_id) for request in active):
+            raise HTTPException(status_code=409, detail="Bu lastik için devam eden bir servis talebi var.")
 
     r = models.Request(
         vehicle_id=req.vehicle_id, supplier_id=req.supplier_id,
@@ -1845,6 +2105,8 @@ def create_request(req: RequestCreate, db: Session = Depends(get_db)):
         db.add(case)
         db.flush()
         db.add(models.RoadsideEvent(case_id=case.id, status="Beklemede", title="Talep Oluşturuldu", description=req.description, created_at=r.created_at))
+    if req.type == "servis":
+        service_history(r, "Talep Oluşturuldu")
     v.status = STATUS_MAP.get(req.type, "Aktif")
     db.commit(); db.refresh(r)
     return request_dict(r)
@@ -1861,6 +2123,7 @@ def roadside_case_dict(case: models.RoadsideCase, vehicle: models.Vehicle) -> di
         "id": case.id, "request_id": case.request_id, "vehicle_id": case.vehicle_id,
         "case_no": case.case_no, "plate": vehicle.plate, "vehicle_brand": vehicle.brand,
         "vehicle_model": vehicle.model, "vehicle_year": vehicle.year, "chassis_no": vehicle.chassis_no,
+        "vehicle_group": vehicle.vehicle_group or vehicle.vehicle_segment or vehicle.vehicle_type,
         "engine_no": getattr(vehicle, "engine_no", None), "color": getattr(vehicle, "color", None),
         "contract_start_date": getattr(vehicle, "contract_start_date", None),
         "contract_end_date": getattr(vehicle, "contract_end_date", None),
@@ -1880,6 +2143,39 @@ def roadside_event_dict(event: models.RoadsideEvent) -> dict:
             "title": event.title, "description": event.description,
             "eta_minutes": event.eta_minutes, "distance_km": event.distance_km,
             "created_at": event.created_at}
+
+
+@app.get("/api/roadside-overview")
+def get_roadside_overview(customer_id: int, db: Session = Depends(get_db)):
+    rows = db.query(models.RoadsideCase, models.Vehicle).join(
+        models.Vehicle, models.RoadsideCase.vehicle_id == models.Vehicle.id
+    ).filter(models.Vehicle.customer_id == customer_id).order_by(
+        models.RoadsideCase.created_at.desc(), models.RoadsideCase.id.desc()).all()
+    vehicle_ids = [vehicle.id for _, vehicle in rows]
+    photos = db.query(models.VehicleFile).filter(models.VehicleFile.vehicle_id.in_(vehicle_ids),
+        models.VehicleFile.category == "photo").order_by(models.VehicleFile.id.desc()).all()
+    photo_urls = {}
+    for photo in photos:
+        photo_urls.setdefault(photo.vehicle_id, "/uploads/vehicles/" + photo.stored_name)
+    cutoff = (datetime.datetime.now() - datetime.timedelta(days=7)).strftime("%Y-%m-%d %H:%M")
+    cases = []
+    for case, vehicle in rows:
+        item = roadside_case_dict(case, vehicle)
+        item["vehicle_photo"] = photo_urls.get(vehicle.id)
+        cases.append(item)
+    def summarize(items):
+        responses = [item["response_minutes"] for item in items if item["response_minutes"] is not None]
+        return {"total": len(items),
+            "active": sum(item["status"] not in ("Çözüldü", "İptal Edildi") for item in items),
+            "resolved": sum(item["status"] == "Çözüldü" for item in items),
+            "average_response_minutes": round(sum(responses) / len(responses)) if responses else None,
+            "tabs": {"all": len(items), "Beklemede": sum(item["status"] == "Beklemede" for item in items),
+                "moving": sum(item["status"] in ("Ekip Atandı", "Yola Çıktı", "Yolda", "Ekip Varış Noktasında") for item in items),
+                "Çözüldü": sum(item["status"] == "Çözüldü" for item in items),
+                "İptal Edildi": sum(item["status"] == "İptal Edildi" for item in items)}}
+    recent = [item for item in cases if item["created_at"] >= cutoff]
+    return {"cases": cases, "summary": summarize(cases), "last_seven_days": summarize(recent),
+        "last_seven_days_count": len(recent), "recent_case_ids": [item["id"] for item in recent]}
 
 
 @app.get("/api/roadside-cases", response_model=List[RoadsideCaseResponse])
@@ -1954,27 +2250,31 @@ def update_roadside_case(case_id: int, data: RoadsideCaseUpdate, db: Session = D
     case = db.query(models.RoadsideCase).filter(models.RoadsideCase.id == case_id).first()
     if not case: raise HTTPException(status_code=404, detail="Yol yardım talebi bulunamadı.")
     vehicle = db.query(models.Vehicle).filter(models.Vehicle.id == case.vehicle_id).first()
-    values = data.dict(exclude_unset=True)
+    values = data.model_dump(exclude_unset=True)
     latitude = values.get("latitude", case.latitude)
     longitude = values.get("longitude", case.longitude)
     if (latitude is None) != (longitude is None):
         raise HTTPException(status_code=400, detail="Konum için enlem ve boylam birlikte girilmelidir.")
     if latitude is not None and (not -90 <= latitude <= 90 or not -180 <= longitude <= 180):
         raise HTTPException(status_code=400, detail="Konum koordinatları geçersiz.")
+    if "status" in values and values["status"] not in ROADSIDE_PROGRESS:
+        raise HTTPException(status_code=400, detail="Geçersiz yol yardım durumu.")
     old_status = case.status
     for key, value in values.items(): setattr(case, key, value)
     if "status" in values:
-        case.progress = values.get("progress", ROADSIDE_PROGRESS.get(case.status, case.progress))
+        case.progress = ROADSIDE_PROGRESS[case.status]
         if case.status in ("Yola Çıktı", "Yolda") and not case.dispatched_at: case.dispatched_at = now_str()
         if case.status in ("Ekip Varış Noktasında", "Çözüldü") and not case.arrived_at:
             case.arrived_at = now_str()
-            start = case.dispatched_at or case.created_at
+            start = case.created_at
             try: case.response_minutes = max(0, int((datetime.datetime.now() - datetime.datetime.strptime(start, "%Y-%m-%d %H:%M")).total_seconds() // 60))
             except (ValueError, TypeError): pass
         if case.status == "Çözüldü": case.resolved_at = now_str()
         if case.request_id:
             request = db.query(models.Request).filter(models.Request.id == case.request_id).first()
-            if request: request.status = case.status
+            if request:
+                request.status = case.status
+                request.completed_at = now_str() if case.status == "Çözüldü" else None
         if case.status in ("Çözüldü", "İptal Edildi") and vehicle:
             other = db.query(models.Request).filter(
                 models.Request.vehicle_id == vehicle.id,
@@ -1983,20 +2283,28 @@ def update_roadside_case(case_id: int, data: RoadsideCaseUpdate, db: Session = D
             ).first()
             vehicle.status = {"servis": "Serviste", "lastik": "Lastik Değişiminde",
                               "yol_yardim": "Yol Yardımında", "ikame_arac": "İkame Araç Bekliyor"}.get(other.type, "Aktif") if other else "Aktif"
-    if "latitude" in values and vehicle:
+    if ("latitude" in values or "longitude" in values) and vehicle and case.latitude is not None:
         vehicle.gps_latitude = case.latitude; vehicle.gps_longitude = case.longitude
         vehicle.gps_location_label = case.location; vehicle.gps_last_seen_at = now_str()
         db.add(models.VehicleLocation(vehicle_id=vehicle.id, latitude=case.latitude,
                                       longitude=case.longitude, label=case.location,
                                       source="roadside_customer", recorded_at=vehicle.gps_last_seen_at))
+    request = db.query(models.Request).filter_by(id=case.request_id).first() if case.request_id else None
+    if request and any(field in values for field in ("latitude", "longitude", "location", "description")):
+        details = dict(request.details or {})
+        details.update({"latitude": case.latitude, "longitude": case.longitude, "location": case.location})
+        request.details = details
+        request.description = case.description
+    if "status" in values and case.status not in ("Çözüldü", "İptal Edildi") and vehicle:
+        vehicle.status = "Yol Yardımında"
     case.updated_at = now_str()
-    if case.status != old_status:
+    if case.status != old_status or any(key in values for key in ("team_name", "team_phone", "eta_minutes", "distance_km")):
         db.add(models.RoadsideEvent(case_id=case.id, status=case.status,
             title={"Beklemede":"Talep Oluşturuldu", "Ekip Atandı":"Yol Yardım Ekibi Atandı",
                    "Yola Çıktı":"Ekip Yola Çıktı", "Yolda":"Ekip Yola Çıktı",
                    "Ekip Varış Noktasında":"Ekip Varış Noktasında", "Çözüldü":"Sorun Çözüldü",
                    "İptal Edildi":"Talep İptal Edildi"}.get(case.status, case.status),
-            description=case.description, eta_minutes=case.eta_minutes,
+            description=case.team_name or case.description, eta_minutes=case.eta_minutes,
             distance_km=case.distance_km, created_at=case.updated_at))
     db.commit(); db.refresh(case)
     return roadside_case_dict(case, vehicle)
@@ -2026,31 +2334,29 @@ def create_roadside_event(case_id: int, data: RoadsideEventCreate, db: Session =
 def update_request_status(request_id: int, status_update: StatusUpdate, db: Session = Depends(get_db)):
     r = db.query(models.Request).filter(models.Request.id == request_id).first()
     if not r: raise HTTPException(status_code=404, detail="Request not found")
+    if r.type == "yol_yardim" and status_update.status not in ROADSIDE_PROGRESS:
+        raise HTTPException(status_code=400, detail="Geçersiz yol yardım durumu.")
+    if r.type in ("servis", "lastik") and status_update.status not in SERVICE_STATUSES:
+        raise HTTPException(status_code=400, detail="Geçersiz servis durumu.")
+    if r.type == "lastik" and (r.details or {}).get("tire_id") is not None and status_update.status == "Tamamlandı" and not (r.details or {}).get("completed_tire_operation_id"):
+        raise HTTPException(status_code=400, detail="Lastik işlemini kaydederek talebi tamamlayın.")
+    claim_service_request(r, status_update.supplier_id, db)
+    previous_status = r.status
     r.status = status_update.status
 
     roadside_case = db.query(models.RoadsideCase).filter(models.RoadsideCase.request_id == r.id).first() if r.type == "yol_yardim" else None
     if roadside_case:
-        roadside_case.status = status_update.status
-        roadside_case.progress = ROADSIDE_PROGRESS.get(status_update.status, roadside_case.progress)
+        values = {"status": status_update.status}
         for field in ("team_name", "team_phone", "eta_minutes", "distance_km"):
             value = getattr(status_update, field, None)
-            if value is not None: setattr(roadside_case, field, value)
-        if status_update.status in ("Yola Çıktı", "Yolda") and not roadside_case.dispatched_at: roadside_case.dispatched_at = now_str()
-        if status_update.status in ("Ekip Varış Noktasında", "Çözüldü") and not roadside_case.arrived_at:
-            roadside_case.arrived_at = now_str()
-            start = roadside_case.dispatched_at or roadside_case.created_at
-            try: roadside_case.response_minutes = max(0, int((datetime.datetime.strptime(roadside_case.arrived_at, "%Y-%m-%d %H:%M") - datetime.datetime.strptime(start, "%Y-%m-%d %H:%M")).total_seconds() // 60))
-            except (ValueError, TypeError): pass
-        if status_update.status == "Çözüldü": roadside_case.resolved_at = now_str()
-        roadside_case.updated_at = now_str()
-        db.add(models.RoadsideEvent(case_id=roadside_case.id, status=status_update.status,
-            title=status_update.status, description=r.description,
-            eta_minutes=roadside_case.eta_minutes, distance_km=roadside_case.distance_km,
-            created_at=roadside_case.updated_at))
+            if value is not None:
+                values[field] = value
+        update_roadside_case(roadside_case.id, RoadsideCaseUpdate(**values), db)
+        return request_dict(r)
 
     if status_update.status in ("Tamamlandı", "Çözüldü"):
         r.completed_at = now_str()
-    elif status_update.status in ("İptal Edildi", "Beklemede", "Onaylandı", "İşlemde"):
+    else:
         r.completed_at = None
 
     if status_update.status in ["Tamamlandı", "Çözüldü", "İptal Edildi"]:
@@ -2063,6 +2369,13 @@ def update_request_status(request_id: int, status_update: StatusUpdate, db: Sess
             ).first()
             v.status = STATUS_MAP.get(other.type, "Aktif") if other else "Aktif"
 
+    if r.type == "servis":
+        if r.status != previous_status:
+            service_history(r, r.status)
+        if r.status not in TERMINAL_REQUEST_STATUSES:
+            vehicle = db.query(models.Vehicle).filter_by(id=r.vehicle_id).first()
+            if vehicle:
+                vehicle.status = "Serviste"
     db.commit()
     return request_dict(r)
 
@@ -2071,6 +2384,7 @@ def update_request_status(request_id: int, status_update: StatusUpdate, db: Sess
 def service_checkin(request_id: int, data: ServiceCheckIn, db: Session = Depends(get_db)):
     r = db.query(models.Request).filter(models.Request.id == request_id).first()
     if not r: raise HTTPException(status_code=404, detail="Request not found")
+    claim_service_request(r, data.supplier_id, db)
     
     details = dict(r.details or {})
     details["entry_date"] = now_str()
@@ -2084,8 +2398,12 @@ def service_checkin(request_id: int, data: ServiceCheckIn, db: Session = Depends
     
     r.details = details
     r.status = "Servise Girdi"
+    r.completed_at = None
+    service_history(r, "Servise Giriş Yapıldı")
     
     v = db.query(models.Vehicle).filter(models.Vehicle.id == r.vehicle_id).first()
+    if v:
+        v.status = "Serviste"
     if v and data.entry_mileage > (v.mileage or 0):
         v.mileage = data.entry_mileage
         db.add(models.VehicleMileageRecord(vehicle_id=v.id, mileage=data.entry_mileage, recorded_at=now_str(), source="service_checkin"))
@@ -2098,14 +2416,16 @@ def service_checkin(request_id: int, data: ServiceCheckIn, db: Session = Depends
 def service_work_order(request_id: int, data: ServiceWorkOrder, db: Session = Depends(get_db)):
     r = db.query(models.Request).filter(models.Request.id == request_id).first()
     if not r: raise HTTPException(status_code=404, detail="Request not found")
+    claim_service_request(r, data.supplier_id, db)
     
     details = dict(r.details or {})
-    for key, value in data.dict(exclude_unset=True).items():
+    for key, value in data.model_dump(exclude_unset=True, exclude={"supplier_id"}).items():
         details[key] = value
     if not details.get("work_order_no"):
         details["work_order_no"] = f"SERV-{datetime.datetime.now().year}-{r.id:04d}"
     
     r.details = details
+    service_history(r, "İş Emri Güncellendi")
     db.commit()
     return _enrich_request(r, db)
 
@@ -2114,6 +2434,7 @@ def service_work_order(request_id: int, data: ServiceWorkOrder, db: Session = De
 def service_invoice(request_id: int, data: ServiceInvoice, db: Session = Depends(get_db)):
     r = db.query(models.Request).filter(models.Request.id == request_id).first()
     if not r: raise HTTPException(status_code=404, detail="Request not found")
+    claim_service_request(r, data.supplier_id, db)
     
     details = dict(r.details or {})
     details["invoice_no"] = data.invoice_no
@@ -2127,6 +2448,7 @@ def service_invoice(request_id: int, data: ServiceInvoice, db: Session = Depends
         details["invoice_file_url"] = data.file_url
 
     r.details = details
+    service_history(r, "Fatura Yüklendi")
     db.commit()
     return _enrich_request(r, db)
 

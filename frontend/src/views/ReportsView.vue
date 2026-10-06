@@ -475,8 +475,12 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import Sidebar from '../components/Sidebar.vue'
+import { useRoute } from 'vue-router'
 
-const activeTab = ref('cost')
+const route = useRoute()
+const reportTabs = ['cost', 'location', 'km', 'usage', 'service', 'user']
+const activeTab = ref(reportTabs.includes(route.query.tab) ? route.query.tab : 'cost')
+watch(() => route.query.tab, tab => { activeTab.value = reportTabs.includes(tab) ? tab : 'cost' })
 const filterPlate = ref('')
 const filterUser = ref('')
 const startDate = ref('')

@@ -41,13 +41,13 @@
                   <tr v-if="loading"><td colspan="12" class="fleet-empty">Araçlar yükleniyor…</td></tr>
                   <tr v-else-if="!paginatedVehicles.length"><td colspan="12" class="fleet-empty">Filtrelere uygun araç bulunamadı.</td></tr>
                   <tr v-for="(vehicle, index) in paginatedVehicles" v-else :key="vehicle.id" :class="{ 'fleet-row-selected': currentVehicle?.id === vehicle.id }" @click="selectVehicle(vehicle)">
-                    <td @click.stop><input v-model="selectedVehicleIds" type="checkbox" :value="vehicle.id" :aria-label="`${vehicle.plate} aracını seç`" /></td><td class="fleet-index">{{ (page - 1) * pageSize + index + 1 }}</td>
-                    <td><span class="plate-badge fleet-plate">{{ vehicle.plate }}</span></td>
-                    <td><div class="fleet-vehicle-cell"><span class="fleet-car-thumb" :class="carTone(vehicle)">🚘</span><span><strong>{{ vehicle.brand }} {{ vehicle.model }}</strong><small>{{ vehicle.vehicle_type || 'Araç' }}</small></span></div></td>
-                    <td><span class="fleet-color"><i :class="carTone(vehicle)"></i>{{ vehicle.color || 'Belirtilmedi' }}</span></td><td>{{ vehicle.year || '—' }}</td><td class="fleet-vin">{{ vehicle.chassis_no || '—' }}</td>
-                    <td><span class="badge fleet-status" :class="getVehicleBadgeClass(vehicle.status)">{{ vehicle.is_active ? vehicle.status : 'Filodan çıkarıldı' }}</span></td>
-                    <td>{{ vehicle.contract_start_date ? formatDate(vehicle.contract_start_date) : '—' }}</td><td>{{ vehicle.contract_end_date ? formatDate(vehicle.contract_end_date) : '—' }}</td><td>{{ Number(vehicle.mileage || 0).toLocaleString('tr-TR') }}</td>
-                    <td><button class="fleet-row-menu" :aria-label="`${vehicle.plate} detay sayfasını aç`" @click.stop="goToVehicleDetails(vehicle)">•••</button></td>
+                    <td data-label="Seç" @click.stop><input v-model="selectedVehicleIds" type="checkbox" :value="vehicle.id" :aria-label="`${vehicle.plate} aracını seç`" /></td><td data-label="Sıra" class="fleet-index">{{ (page - 1) * pageSize + index + 1 }}</td>
+                    <td data-label="Plaka"><span class="plate-badge fleet-plate">{{ vehicle.plate }}</span></td>
+                    <td data-label="Araç"><div class="fleet-vehicle-cell"><span class="fleet-car-thumb" :class="carTone(vehicle)">🚘</span><span><strong>{{ vehicle.brand }} {{ vehicle.model }}</strong><small>{{ vehicle.vehicle_type || 'Araç' }}</small></span></div></td>
+                    <td data-label="Renk"><span class="fleet-color"><i :class="carTone(vehicle)"></i>{{ vehicle.color || 'Belirtilmedi' }}</span></td><td data-label="Yıl">{{ vehicle.year || '—' }}</td><td data-label="Şasi No" class="fleet-vin">{{ vehicle.chassis_no || '—' }}</td>
+                    <td data-label="Durum"><span class="badge fleet-status" :class="getVehicleBadgeClass(vehicle.status)">{{ vehicle.is_active ? vehicle.status : 'Filodan çıkarıldı' }}</span></td>
+                    <td data-label="Kira Başlangıcı">{{ vehicle.contract_start_date ? formatDate(vehicle.contract_start_date) : '—' }}</td><td data-label="Kira Bitişi">{{ vehicle.contract_end_date ? formatDate(vehicle.contract_end_date) : '—' }}</td><td data-label="Kilometre">{{ Number(vehicle.mileage || 0).toLocaleString('tr-TR') }}</td>
+                    <td data-label="İşlem"><button class="fleet-row-menu" :aria-label="`${vehicle.plate} detay sayfasını aç`" @click.stop="goToVehicleDetails(vehicle)"><span class="desktop-action-label">•••</span><span class="mobile-action-label">Araç Detayları</span></button></td>
                   </tr>
                 </tbody>
               </table>
@@ -417,10 +417,11 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'
 
 const router = useRouter()
+const route = useRoute()
 const goToVehicleDetails = vehicle => router.push(`/dashboard/vehicles/${encodeURIComponent(vehicle.id)}`)
 const vehicles = ref([])
 const requests = ref([])
@@ -509,7 +510,7 @@ const activeVehiclesList = computed(() => vehicles.value.filter(v => v.is_active
 const passiveVehiclesList = computed(() => vehicles.value.filter(v => !v.is_active || v.status !== 'Aktif'))
 
 const filters = reactive({
-  search: '',
+  search: String(route.query.search || ''),
   status: '',
   vehicle_segment: '',
   vehicle_type: '',
@@ -782,6 +783,7 @@ const visiblePages = computed(() => {
   return Array.from({ length: Math.min(totalPages.value, 5) }, (_, i) => start + i)
 })
 const allVisibleSelected = computed(() => paginatedVehicles.value.length > 0 && paginatedVehicles.value.every(v => selectedVehicleIds.value.includes(v.id)))
+watch(() => route.query.search, value => { filters.search = String(value || '') })
 watch([filters, activeTab], () => { page.value = 1 }, { deep: true })
 watch(totalPages, count => { if (page.value > count) page.value = count })
 const selectVehicle = vehicle => { focusedVehicleId.value = vehicle.id }

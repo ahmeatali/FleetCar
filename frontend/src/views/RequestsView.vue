@@ -470,7 +470,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="req in requests" :key="req.id">
+                <tr v-for="req in visibleRequests" :key="req.id">
                   <td>#{{ req.id }}</td>
                   <td><strong style="color: #2563eb;">{{ req.vehicle_plate }}</strong></td>
                   <td><span class="badge" :class="getBadgeClass(req.type)">{{ getTypeName(req.type) }}</span></td>
@@ -500,10 +500,13 @@ import { useRoute } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'
 
 const route = useRoute()
-const activeTab = ref('servis')
+const requestTabs = ['servis', 'lastik', 'ikame_arac', 'yol_yardim', 'list']
+const activeTab = ref(requestTabs.includes(route.query.type) ? route.query.type : 'servis')
+watch(() => route.query.type, type => { if (requestTabs.includes(type)) activeTab.value = type })
 const vehicles = ref([])
 const suppliers = ref([])
 const requests = ref([])
+const visibleRequests = computed(() => route.query.request_id ? requests.value.filter(request => String(request.id) === String(route.query.request_id)) : requests.value)
 const loading = ref(true)
 const submitting = ref(false)
 const photoInput = ref(null)
@@ -646,7 +649,7 @@ const fetchData = async () => {
         updateVehicleKmDisplay()
       }
       const requestedType = route.query.type
-      if (['servis', 'lastik', 'ikame_arac', 'yol_yardim'].includes(requestedType)) activeTab.value = requestedType
+      if (['servis', 'lastik', 'ikame_arac', 'yol_yardim', 'list'].includes(requestedType)) activeTab.value = requestedType
       if (route.query.vehicle_id) {
         const vehicleId = String(route.query.vehicle_id)
         formServis.vehicle_id = vehicleId

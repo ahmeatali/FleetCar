@@ -16,35 +16,15 @@
         </button>
       </header>
 
-      <!-- ⚠️ Missing Documents Warning Banner -->
-      <div v-if="!documentsUploaded" class="glass-panel" style="background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border: 2px solid #ea580c; border-radius: 16px; padding: 22px; margin-top: 25px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; box-shadow: 0 10px 25px -5px rgba(234, 88, 12, 0.15);">
-        <div style="display: flex; align-items: center; gap: 16px;">
-          <div style="width: 48px; height: 48px; border-radius: 12px; background: #ea580c; color: #ffffff; font-size: 1.6rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-            ⚠️
-          </div>
-          <div>
-            <h3 style="font-size: 1.05rem; font-weight: 800; color: #9a3412; margin-bottom: 4px;">
-              Şirket Evraklarınız Eksik! Kiralama Teklifi Alamazsınız
-            </h3>
-            <p style="color: #c2410c; font-size: 0.9rem; margin: 0; line-height: 1.4;">
-              Filo kiralama teklif talebinde bulunabilmek için öncelikle Vergi Levhası, İmza Sirküsü ve Faaliyet Belgenizi yüklemeniz gerekmektedir.
-            </p>
-          </div>
-        </div>
-        <router-link to="/dashboard/settings?tab=sirket_evraklari" class="btn" style="background: #ea580c; color: #ffffff; font-weight: 800; padding: 12px 22px; border-radius: 10px; text-decoration: none; white-space: nowrap; font-size: 0.92rem; flex-shrink: 0; box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25);">
-          📂 Evrakları Tamamla ➔
-        </router-link>
-      </div>
-
       <!-- Zero-Vehicle Highlight Banner -->
-      <div v-else-if="documentsUploaded && hasNoVehicles" class="glass-panel" style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.12) 0%, rgba(124, 58, 237, 0.12) 100%); border: 1px solid rgba(124, 58, 237, 0.25); border-radius: 16px; padding: 22px; margin-top: 25px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+      <div v-if="hasNoVehicles" class="glass-panel" style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.12) 0%, rgba(124, 58, 237, 0.12) 100%); border: 1px solid rgba(124, 58, 237, 0.25); border-radius: 16px; padding: 22px; margin-top: 25px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
         <div>
           <div style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 1.1rem; color: #a78bfa; margin-bottom: 6px;">
             <span>🚗</span>
             <span>Henüz Şirketinize Kayıtlı Araç Bulunmuyor!</span>
           </div>
           <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0;">
-            Şirket evraklarınız yüklenmiştir. İhtiyacınıza uygun ticari veya binek araç filoları için hemen teklif isteyin.
+            İhtiyacınıza uygun ticari veya binek araç filoları için hemen teklif isteyin.
           </p>
         </div>
         <button @click="openNewQuoteModal" class="btn btn-primary" style="background: #1268e8; border: none; font-weight: 700; padding: 10px 20px; font-size: 0.9rem; white-space: nowrap;">
@@ -1138,7 +1118,6 @@ const createdQuoteSummary = ref(null)
 
 const submittingQuote = ref(false)
 
-const documentsUploaded = ref(false)
 const hasNoVehicles = ref(false)
 const companyName = ref(localStorage.getItem('fleetcar_customer_name') || '')
 const userEmail = ref(localStorage.getItem('fleetcar_user_email') || '')
@@ -1387,7 +1366,6 @@ const fetchCompanyStatus = async () => {
     const res = await fetch(`/api/company/profile?customer_id=${customerId}`)
     if (res.ok) {
       const data = await res.json()
-      documentsUploaded.value = Boolean(data.documents_uploaded)
       const totalVehicles = (data.actual_vehicles_count || 0) + (data.registered_vehicles_count || 0)
       hasNoVehicles.value = (totalVehicles === 0)
       if (data.company_name) companyName.value = data.company_name
@@ -1562,22 +1540,10 @@ const openPreviewModal = () => {
 }
 
 const openNewQuoteModal = () => {
-  if (!documentsUploaded.value) {
-    alert('⚠️ Kiralama teklifi alabilmeniz için şirket evraklarınızı (Vergi Levhası, İmza Sirküsü, Faaliyet Belgesi) yüklemeniz zorunludur. Lütfen önce evraklarınızı tamamlayın.')
-    router.push('/dashboard/settings?tab=sirket_evraklari')
-    return
-  }
   showNewQuoteModal.value = true
 }
 
 const confirmAndSubmitQuote = async () => {
-  if (!documentsUploaded.value) {
-    alert('⚠️ Kiralama teklifi oluşturabilmeniz için şirket evraklarınızı yüklemeniz zorunludur.')
-    showPreviewModal.value = false
-    showNewQuoteModal.value = false
-    router.push('/dashboard/settings?tab=sirket_evraklari')
-    return
-  }
 
   submittingQuote.value = true
   try {
@@ -1638,12 +1604,6 @@ const confirmAndSubmitQuote = async () => {
 
 watch(showNewQuoteModal, (val) => {
   if (val) {
-    if (!documentsUploaded.value) {
-      showNewQuoteModal.value = false
-      alert('⚠️ Kiralama teklifi alabilmeniz için şirket evraklarınızı (Vergi Levhası, İmza Sirküsü, Faaliyet Belgesi) yüklemeniz zorunludur. Lütfen önce evraklarınızı tamamlayın.')
-      router.push('/dashboard/settings?tab=sirket_evraklari')
-      return
-    }
     quoteItems.value = [createNewQuoteItem()]
   }
 })

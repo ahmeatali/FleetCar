@@ -83,7 +83,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'
 
@@ -98,7 +98,9 @@ const expenses = ref([])
 const files = ref([])
 const hgsTransactions = ref([])
 const locations = ref([])
-const activeTab = ref('general')
+const detailTabs = ['general','service','fuel','hgs','roadside','documents','photos','locations','history']
+const activeTab = ref(detailTabs.includes(route.query.tab) ? route.query.tab : 'general')
+watch(() => route.query.tab, tab => { activeTab.value = detailTabs.includes(tab) ? tab : 'general' })
 const showEditModal = ref(false)
 const showActions = ref(false)
 const showMoreQuickActions = ref(false)

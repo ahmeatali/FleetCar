@@ -1,413 +1,82 @@
 <template>
-  <aside class="portal-sidebar">
-    <!-- Top Header & Profile Summary -->
-    <div class="sidebar-top">
-      <router-link to="/dashboard" class="nav-logo" style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px; text-decoration: none;">
-        <img class="brand-logo-image" src="/fleetrent-logo.jpeg" alt="FleetRent" />
-      </router-link>
-
-      <!-- User profile summary -->
-      <div class="user-profile-summary">
-        <div class="avatar">👨‍💼</div>
-        <div class="profile-details">
-          <h4 class="company-name" :title="customerName">{{ customerName }}</h4>
-          <span class="role-badge">Filo Yöneticisi</span>
-        </div>
-      </div>
-
-      <!-- Warning Box for Missing Company Documents -->
-      <div v-if="documentsUploaded === false" class="doc-warning-box">
-        <div class="doc-warning-title">
-          <span>⚠️</span>
-          <span>Evraklar Eksik!</span>
-        </div>
-        <p class="doc-warning-text">
-          İşlem yapmadan önce şirket evraklarınızı tamamlayın.
-        </p>
-        <router-link to="/dashboard/settings?tab=sirket_evraklari" class="doc-warning-btn">
-          📂 Evrakları Tamamla ➔
-        </router-link>
-      </div>
-    </div>
-
-    <!-- Scrollable Middle Navigation Menu -->
-    <div class="sidebar-menu-wrapper">
-      <ul class="sidebar-menu">
-        <li>
-          <router-link to="/dashboard" class="sidebar-link" exact-active-class="active">
-            <span class="icon">📊</span>
-            <span>Genel Bakış</span>
-          </router-link>
-        </li>
-        <li>
-          <router-link to="/dashboard/vehicles" class="sidebar-link" active-class="active">
-            <span class="icon">🚗</span>
-            <span>Araç Yönetimi</span>
-          </router-link>
-        </li>
-        <li>
-          <router-link to="/dashboard/tires" class="sidebar-link" active-class="active">
-            <span class="icon">🛞</span>
-            <span>Lastik Yönetimi</span>
-          </router-link>
-        </li>
-        <li>
-          <router-link to="/dashboard/service-management" class="sidebar-link" active-class="active">
-            <span class="icon">🛠️</span>
-            <span>Servis / Bakım</span>
-          </router-link>
-        </li>
-        <li>
-          <router-link to="/dashboard/work-orders" class="sidebar-link" active-class="active">
-            <span class="icon">📋</span>
-            <span>İş Emirleri</span>
-          </router-link>
-        </li>
-        <li>
-          <router-link to="/dashboard/roadside" class="sidebar-link" active-class="active">
-            <span class="icon">🆘</span>
-            <span>Yol Yardım</span>
-          </router-link>
-        </li>
-        <li>
-          <router-link to="/dashboard/requests" class="sidebar-link" active-class="active">
-            <span class="icon">⚙️</span>
-            <span>Tedarikçi İşlemleri</span>
-          </router-link>
-        </li>
-        <li>
-          <router-link to="/dashboard/quotes" class="sidebar-link" active-class="active">
-            <span class="icon">📑</span>
-            <span>Kiralama Teklifleri</span>
-          </router-link>
-          <!-- Guidance box when customer has uploaded documents but has 0 registered vehicles -->
-          <div v-if="documentsUploaded && hasNoVehicles" class="promo-guidance-box">
-            <div class="promo-guidance-title">
-              <span>🚗</span>
-              <span>Henüz aracınız yok!</span>
-            </div>
-            <p class="promo-guidance-text">
-              Hemen teklif alın, filonuzu kurun.
-            </p>
-            <router-link to="/dashboard/quotes?new=true" class="promo-guidance-btn">
-              ✨ Hemen Teklif Al
-            </router-link>
-          </div>
-        </li>
-        <li>
-          <router-link to="/dashboard/reports" class="sidebar-link" active-class="active">
-            <span class="icon">📈</span>
-            <span>Raporlar</span>
-          </router-link>
-        </li>
-        <li>
-          <router-link to="/dashboard/settings" class="sidebar-link" active-class="active">
-            <span class="icon">⚙️</span>
-            <span>Ayarlar</span>
-          </router-link>
-          <!-- Sub-links under Ayarlar -->
-          <ul v-if="$route.path.includes('/settings')" class="settings-sub-menu">
-            <li>
-              <router-link to="/dashboard/settings?tab=kullanicilar" class="sub-link" :class="{ 'sub-active': $route.query.tab === 'kullanicilar' || !$route.query.tab }">
-                <span>👥</span> Kullanıcılar
-              </router-link>
-            </li>
-            <li>
-              <router-link to="/dashboard/settings?tab=teslim_formlari" class="sub-link" :class="{ 'sub-active': $route.query.tab === 'teslim_formlari' }">
-                <span>📋</span> Teslim Formları
-              </router-link>
-            </li>
-            <li>
-              <router-link to="/dashboard/settings?tab=bayi_sozlesmesi" class="sub-link" :class="{ 'sub-active': $route.query.tab === 'bayi_sozlesmesi' }">
-                <span>📜</span> Bayi Sözleşmesi
-              </router-link>
-            </li>
-            <li>
-              <router-link to="/dashboard/settings?tab=sirket_evraklari" class="sub-link" :class="{ 'sub-active': $route.query.tab === 'sirket_evraklari' }">
-                <span>🏢</span> Şirket Evraklarım
-              </router-link>
-            </li>
-            <li>
-              <router-link to="/dashboard/settings?tab=entegrasyonlar" class="sub-link" :class="{ 'sub-active': $route.query.tab === 'entegrasyonlar' }">
-                <span>📡</span> API & Entegrasyonlar
-              </router-link>
-            </li>
-          </ul>
-        </li>
-      </ul>
-    </div>
-
-    <!-- Pinned Bottom Footer: Profile Link + Logout -->
-    <div class="sidebar-footer">
-      <router-link to="/profile" class="sidebar-link" active-class="active">
-        <span class="icon">👤</span>
-        <span>Profilim</span>
-      </router-link>
-
-      <button @click="logout" class="sidebar-link logout-btn">
-        <span class="icon">🚪</span>
-        <span>Çıkış Yap</span>
-      </button>
-    </div>
+  <header class="mobile-navigation-bar"><router-link to="/dashboard" class="mobile-brand">Fleet<span>Rent</span></router-link><span class="mobile-page-name">{{ currentLabel }}</span><button ref="menuButton" class="mobile-menu-toggle" aria-controls="customer-menu" :aria-expanded="mobileOpen" aria-label="Müşteri menüsünü aç" @click="mobileOpen = true">☰</button></header>
+  <div v-if="mobileOpen" class="mobile-navigation-backdrop" @click="closeMenu" aria-hidden="true"></div>
+  <aside id="customer-menu" ref="menuPanel" class="portal-sidebar customer-navigation" :class="{'mobile-open': mobileOpen}" :inert="isMobile && !mobileOpen" :role="isMobile ? 'dialog' : undefined" :aria-modal="isMobile && mobileOpen ? 'true' : undefined" aria-label="Müşteri menüsü">
+    <button ref="closeButton" class="mobile-menu-close" aria-label="Menüyü kapat" @click="closeMenu">×</button>
+    <router-link to="/dashboard" class="fleet-brand"><span class="brand-symbol">⬡</span> Fleet<span>Rent</span></router-link>
+    <nav aria-label="Müşteri menüsü"><ul class="fleet-menu">
+      <li v-for="item in items" :key="item.label">
+        <router-link v-if="item.to" :to="item.to" class="fleet-nav-link" :class="{selected: isSelected(item)}"><span class="nav-glyph" aria-hidden="true">{{ item.icon }}</span>{{ item.label }}</router-link>
+        <button v-else class="fleet-nav-link unavailable" :aria-label="item.label + ': Yakında'" aria-disabled="true"><span class="unavailable-content"><span class="nav-glyph" aria-hidden="true">{{ item.icon }}</span>{{ item.label }}</span><span class="coming-soon">Yakında</span></button>
+      </li>
+    </ul></nav>
+    <div class="fleet-support"><strong>♧ &nbsp;7/24 Destek</strong><p>Her zaman yanınızdayız.</p><router-link to="/dashboard/roadside" class="support-action">Destek Talebi Oluştur</router-link></div>
+    <div class="account-actions"><router-link to="/profile">Profilim</router-link><button @click="logout">Çıkış Yap</button></div>
   </aside>
 </template>
-
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-
-const router = useRouter()
-const documentsUploaded = ref(true)
-const hasNoVehicles = ref(false)
-
-const customerName = computed(() => {
-  return localStorage.getItem('fleetcar_customer_name') || localStorage.getItem('fleetcar_user_email') || 'Filo Müşterisi'
-})
-
-const checkCompanyStatus = async () => {
-  const customerId = localStorage.getItem('fleetcar_customer_id')
-  if (!customerId) return
-  try {
-    const res = await fetch(`/api/company/profile?customer_id=${customerId}`)
-    if (res.ok) {
-      const data = await res.json()
-      documentsUploaded.value = Boolean(data.documents_uploaded)
-      const totalVehicles = (data.actual_vehicles_count || 0) + (data.registered_vehicles_count || 0)
-      hasNoVehicles.value = (totalVehicles === 0)
-    }
-  } catch (e) {
-    console.error('Company status check error:', e)
+import { useRoute, useRouter } from 'vue-router'
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
+const route = useRoute(), router = useRouter()
+const mobileOpen = ref(false), isMobile = ref(false), menuButton = ref(null), menuPanel = ref(null), closeButton = ref(null)
+let media, previousOverflow = ''
+const items = [
+  {label:'Ana Sayfa',icon:'⌂',to:'/dashboard'},
+  {label:'Araçlar',icon:'▱',to:'/dashboard/vehicles'},
+  {label:'Talep & Teklifler',icon:'▤',to:'/dashboard/quotes'},
+  {label:'Sözleşmeler',icon:'▣'},
+  {label:'Servis / Bakım',icon:'⚒',to:'/dashboard/service-management'},
+  {label:'Lastik Yönetimi',icon:'◎',to:'/dashboard/tires'},
+  {label:'Hasar ve Kaza',icon:'⚠',to:'/dashboard/service-management?tab=damage'},
+  {label:'Yol Yardım',icon:'♧',to:'/dashboard/roadside'},
+  {label:'Şoförlü Araçlar',icon:'♧'},
+  {label:'Araç Takip',icon:'⌖',to:'/dashboard/reports?tab=location'},
+  {label:'HGS & Cezalar',icon:'♜'},
+  {label:'Yakıt',icon:'▥',to:'/dashboard/reports?tab=cost'},
+  {label:'Faturalar',icon:'▤'},
+  {label:'Raporlar',icon:'▥',to:'/dashboard/reports'},
+  {label:'Belgeler',icon:'▤',to:'/dashboard/settings?tab=sirket_evraklari'},
+  {label:'Bildirimler',icon:'♧'},
+  {label:'Ayarlar',icon:'⚙',to:'/dashboard/settings'},
+  {label:'Tedarikçi İşlemleri',icon:'▤',to:'/dashboard/requests'},
+  {label:'İş Emirleri',icon:'▣',to:'/dashboard/work-orders'}
+]
+const isSelected = item => {
+  const [path, query] = item.to.split('?')
+  if (query) return route.path === path && route.query.tab === new URLSearchParams(query).get('tab')
+  return (path === '/dashboard' ? route.path === path : route.path.startsWith(path)) && !items.some(other => other.to?.includes('?') && other.to.split('?')[0] === route.path && route.query.tab === new URLSearchParams(other.to.split('?')[1]).get('tab'))
+}
+const currentLabel = computed(() => items.find(item => item.to && isSelected(item))?.label || 'Müşteri Portalı')
+function closeMenu(){mobileOpen.value=false;nextTick(()=>menuButton.value?.focus())}
+function handleMenuKey(event){
+  if(!isMobile.value || !mobileOpen.value)return
+  if(event.key==='Escape'){event.preventDefault();closeMenu()}
+  if(event.key==='Tab'){
+    const focusable=[...menuPanel.value.querySelectorAll('a,button')].filter(el=>el.getClientRects().length)
+    const first=focusable[0],last=focusable.at(-1)
+    if(event.shiftKey && document.activeElement===first){event.preventDefault();last?.focus()}
+    else if(!event.shiftKey && document.activeElement===last){event.preventDefault();first?.focus()}
   }
 }
-
-onMounted(() => {
-  checkCompanyStatus()
-})
-
+function syncMobile(){isMobile.value=media.matches;if(!media.matches)mobileOpen.value=false}
+watch(mobileOpen,async open=>{if(open){previousOverflow=document.body.style.overflow;document.body.style.overflow='hidden';await nextTick();closeButton.value?.focus()}else document.body.style.overflow=previousOverflow})
+watch(()=>route.fullPath,()=>{mobileOpen.value=false})
+onMounted(()=>{media=window.matchMedia('(max-width:900px)');syncMobile();media.addEventListener('change',syncMobile);document.addEventListener('keydown',handleMenuKey)})
+onUnmounted(()=>{document.removeEventListener('keydown',handleMenuKey);media?.removeEventListener('change',syncMobile);if(mobileOpen.value)document.body.style.overflow=previousOverflow})
 const logout = () => {
-  localStorage.removeItem('fleetcar_token')
-  localStorage.removeItem('fleetcar_customer_id')
-  localStorage.removeItem('fleetcar_customer_name')
-  localStorage.removeItem('fleetcar_user_email')
-  localStorage.removeItem('fleetcar_user_verified')
-  localStorage.removeItem('fleet_customer')
+  for (const key of ['fleetcar_token','fleetcar_customer_id','fleetcar_customer_name','fleetcar_user_email','fleetcar_user_verified','fleet_customer','customer_id']) localStorage.removeItem(key)
   router.push('/login?role=customer')
 }
 </script>
-
 <style scoped>
-.portal-sidebar {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  padding: 20px 16px 16px 16px;
-  box-sizing: border-box;
-  background: #ffffff;
-}
-
-.sidebar-top {
-  flex-shrink: 0;
-}
-
-.sidebar-menu-wrapper {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  margin: 10px 0;
-  padding-right: 2px;
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
-}
-
-.sidebar-menu-wrapper::-webkit-scrollbar {
-  width: 4px;
-}
-.sidebar-menu-wrapper::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
-}
-
-.sidebar-footer {
-  flex-shrink: 0;
-  margin-top: auto;
-  padding-top: 10px;
-  border-top: 1px solid #f1f5f9;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  background: #ffffff;
-  z-index: 5;
-}
-
-.user-profile-summary {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  background: #f8fafc;
-  border: 1px solid var(--border-color, #e2e8f0);
-  border-radius: 12px;
-  margin-bottom: 10px;
-}
-
-.avatar {
-  font-size: 1.3rem;
-  background: rgba(79, 70, 229, 0.1);
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.profile-details {
-  min-width: 0;
-}
-
-.company-name {
-  font-size: 0.88rem;
-  font-weight: 700;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 140px;
-  margin: 0;
-  color: #0f172a;
-}
-
-.role-badge {
-  font-size: 0.72rem;
-  color: #64748b;
-  font-weight: 500;
-}
-
-.doc-warning-box {
-  background: #fff7ed;
-  border: 1px solid #fed7aa;
-  border-radius: 12px;
-  padding: 10px 12px;
-  margin-bottom: 10px;
-}
-
-.doc-warning-title {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 700;
-  color: #c2410c;
-  margin-bottom: 4px;
-  font-size: 0.82rem;
-}
-
-.doc-warning-text {
-  color: #9a3412;
-  font-size: 0.76rem;
-  line-height: 1.35;
-  margin: 0 0 8px 0;
-}
-
-.doc-warning-btn {
-  display: block;
-  text-align: center;
-  background: #ea580c;
-  color: #ffffff;
-  font-weight: 700;
-  padding: 6px 0;
-  border-radius: 8px;
-  text-decoration: none;
-  font-size: 0.78rem;
-}
-
-.promo-guidance-box {
-  margin: 6px 0 10px 14px;
-  background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);
-  border: 1px solid #c7d2fe;
-  border-radius: 10px;
-  padding: 10px;
-}
-
-.promo-guidance-title {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-weight: 700;
-  color: #3730a3;
-  margin-bottom: 4px;
-  font-size: 0.78rem;
-}
-
-.promo-guidance-text {
-  color: #4338ca;
-  font-size: 0.72rem;
-  line-height: 1.35;
-  margin: 0 0 8px 0;
-  font-weight: 500;
-}
-
-.promo-guidance-btn {
-  display: block;
-  text-align: center;
-  background: #4f46e5;
-  color: #ffffff;
-  font-weight: 700;
-  padding: 6px 0;
-  border-radius: 6px;
-  text-decoration: none;
-  font-size: 0.75rem;
-  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.25);
-}
-
-.settings-sub-menu {
-  list-style: none;
-  padding-left: 20px;
-  margin: 4px 0 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.sub-link {
-  font-size: 0.8rem;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 8px;
-  border-radius: 6px;
-  transition: all 0.2s;
-  color: #64748b;
-  font-weight: 500;
-}
-
-.sub-link:hover {
-  background: #f1f5f9;
-  color: #0f172a;
-}
-
-.sub-active {
-  background: #eff6ff !important;
-  color: #2563eb !important;
-  font-weight: 700 !important;
-}
-
-.logout-btn {
-  width: 100%;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  text-align: left;
-  color: #64748b;
-  font-weight: 600;
-}
-
-.logout-btn:hover {
-  background: #fef2f2 !important;
-  color: #dc2626 !important;
-}
-
-.icon {
-  font-size: 1.2rem;
+.fleet-brand{display:flex;align-items:center;color:white;text-decoration:none;font-size:25px;font-weight:750;letter-spacing:-1px;padding:0 8px 16px}.fleet-brand>span:last-child{color:#0875ff}.brand-symbol{color:#0875ff;font-size:40px;margin-right:8px}.fleet-menu{list-style:none;padding:0;margin:0;display:grid;gap:3px}.fleet-nav-link{display:flex;align-items:center;gap:12px;padding:10px 12px;border:0;border-radius:5px;color:#d4e1ec;background:transparent;width:100%;text-align:left;text-decoration:none;font:inherit;font-size:13px;min-height:38px;position:relative;cursor:pointer}.fleet-nav-link:hover{background:#112f43;color:white}.fleet-nav-link.selected{background:#0064ff;color:white;box-shadow:0 4px 14px #0064ff30}.nav-glyph{font-size:23px;width:22px;display:inline-block;text-align:center;line-height:1}.unavailable{cursor:default}.unavailable-content{display:flex;gap:12px;align-items:center;filter:blur(.7px);opacity:.55}.coming-soon{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;opacity:0;background:#031826b3;border-radius:5px;color:white;font-size:12px}.unavailable:hover .coming-soon,.unavailable:focus-visible .coming-soon{opacity:1}.fleet-support{margin-top:auto;border:1px solid #163047;padding:12px 10px;border-radius:6px;font-size:12px;color:white}.fleet-support p{margin:6px 0 12px;color:#afc2d3}.support-action{display:block;text-align:center;padding:10px 5px;background:#0064ff;color:white;border-radius:4px;text-decoration:none}.account-actions{display:flex;justify-content:space-between;font-size:11px;padding:10px 8px}.account-actions a,.account-actions button{color:#afc2d3;background:none;border:0;text-decoration:none;cursor:pointer}nav{overflow-y:auto;min-height:0;scrollbar-width:thin;flex:1}
+.mobile-navigation-bar,.mobile-menu-close,.mobile-navigation-backdrop{display:none}
+@media(max-width:900px){
+.mobile-navigation-bar{display:flex;position:sticky;top:0;z-index:100;height:60px;min-height:60px;width:100%;box-sizing:border-box;align-items:center;gap:12px;padding:8px 16px;background:#031826;color:white}
+.mobile-brand{color:white;text-decoration:none;font-size:21px;font-weight:750;white-space:nowrap}.mobile-brand span{color:#0875ff}.mobile-page-name{flex:1;font-size:12px;text-align:right;color:#c7d8e6}
+.mobile-menu-toggle,.mobile-menu-close{width:44px;height:44px;min-width:44px;border:1px solid #244055;border-radius:8px;background:#112f43;color:white;font-size:24px;cursor:pointer}
+.mobile-menu-close{display:block;position:absolute;right:12px;top:12px}.fleet-brand{padding-top:5px;padding-right:45px;font-size:24px}
+.mobile-navigation-backdrop{display:block;position:fixed;inset:0;background:#03182699;z-index:201}
+.customer-navigation .fleet-menu{grid-template-columns:1fr!important}.fleet-nav-link{font-size:14px;min-height:46px}.account-actions{font-size:14px}.account-actions a,.account-actions button{min-height:44px;display:flex;align-items:center}
 }
 </style>
