@@ -6,7 +6,7 @@
     <main class="portal-main fade-in-up fleet-page">
       <header class="fleet-topbar">
         <label class="fleet-search"><span>⌕</span><input v-model="filters.search" type="search" placeholder="Araç plakası, marka, model veya şasi no ara..." /></label>
-        <div class="fleet-account"><span class="fleet-avatar">{{ userInitials }}</span><span><strong>{{ customerName }}</strong><small>Filo yöneticisi</small></span></div>
+        <div class="customer-header-actions"><NotificationBell /><div class="fleet-account"><span class="fleet-avatar">{{ userInitials }}</span><span><strong>{{ customerName }}</strong><small>Filo yöneticisi</small></span></div></div>
       </header>
 
       <section class="fleet-heading">
@@ -40,9 +40,9 @@
                 <tbody>
                   <tr v-if="loading"><td colspan="12" class="fleet-empty">Araçlar yükleniyor…</td></tr>
                   <tr v-else-if="!paginatedVehicles.length"><td colspan="12" class="fleet-empty">Filtrelere uygun araç bulunamadı.</td></tr>
-                  <tr v-for="(vehicle, index) in paginatedVehicles" v-else :key="vehicle.id" :class="{ 'fleet-row-selected': currentVehicle?.id === vehicle.id }" @click="selectVehicle(vehicle)">
+                  <tr v-for="(vehicle, index) in paginatedVehicles" v-else :key="vehicle.id" @click="goToVehicleDetails(vehicle)">
                     <td data-label="Seç" @click.stop><input v-model="selectedVehicleIds" type="checkbox" :value="vehicle.id" :aria-label="`${vehicle.plate} aracını seç`" /></td><td data-label="Sıra" class="fleet-index">{{ (page - 1) * pageSize + index + 1 }}</td>
-                    <td data-label="Plaka"><span class="plate-badge fleet-plate">{{ vehicle.plate }}</span></td>
+                    <td data-label="Plaka"><router-link :to="{ name: 'VehicleDetails', params: { vehicleId: vehicle.id } }" class="plate-badge fleet-plate" @click.stop>{{ vehicle.plate }}</router-link></td>
                     <td data-label="Araç"><div class="fleet-vehicle-cell"><span class="fleet-car-thumb" :class="carTone(vehicle)">🚘</span><span><strong>{{ vehicle.brand }} {{ vehicle.model }}</strong><small>{{ vehicle.vehicle_type || 'Araç' }}</small></span></div></td>
                     <td data-label="Renk"><span class="fleet-color"><i :class="carTone(vehicle)"></i>{{ vehicle.color || 'Belirtilmedi' }}</span></td><td data-label="Yıl">{{ vehicle.year || '—' }}</td><td data-label="Şasi No" class="fleet-vin">{{ vehicle.chassis_no || '—' }}</td>
                     <td data-label="Durum"><span class="badge fleet-status" :class="getVehicleBadgeClass(vehicle.status)">{{ vehicle.is_active ? vehicle.status : 'Filodan çıkarıldı' }}</span></td>
@@ -58,19 +58,6 @@
           <div v-if="activeTab === 'tracking'" class="fleet-map-card"><div><strong>Araç takibi</strong><button @click="activeTab = 'active'">Kapat</button></div><iframe title="İstanbul araç takip haritası" src="https://www.openstreetmap.org/export/embed.html?bbox=28.8000%2C40.9000%2C29.2500%2C41.1500&amp;layer=mapnik&amp;marker=41.0082%2C28.9784" loading="lazy"></iframe><p>Canlı konum için GPS cihazı ve entegrasyon ayarlarının etkin olması gerekir.</p></div>
         </div>
 
-        <aside v-if="currentVehicle && activeTab !== 'tracking'" class="fleet-detail-panel">
-          <div class="fleet-detail-heading"><div><span class="fleet-eyebrow">ARAÇ DETAYI</span><h2>{{ currentVehicle.plate }}</h2></div><button class="fleet-close" aria-label="Detayları kapat" @click="focusedVehicleId = null">×</button></div>
-          <div class="fleet-car-hero" :class="carTone(currentVehicle)"><span>🚘</span><span class="badge fleet-status" :class="getVehicleBadgeClass(currentVehicle.status)">{{ currentVehicle.is_active ? currentVehicle.status : 'Filodan çıkarıldı' }}</span></div>
-          <h3 class="fleet-detail-model">{{ currentVehicle.brand }} {{ currentVehicle.model }} {{ currentVehicle.vehicle_segment || '' }}</h3><p class="fleet-detail-subtitle">{{ currentVehicle.plate }} · {{ currentVehicle.vehicle_type || 'Araç' }}</p>
-          <div class="fleet-specs"><span>{{ currentVehicle.fuel || 'Yakıt bilgisi yok' }}</span><span>{{ currentVehicle.year || '—' }}</span><span>{{ currentVehicle.vehicle_type || 'Araç tipi yok' }}</span></div>
-          <section class="fleet-info-section"><h4>▦ &nbsp; Temel Bilgiler</h4><dl><template v-for="item in vehicleInfo" :key="item.label"><dt>{{ item.label }}</dt><dd>{{ item.value }}</dd></template></dl></section>
-          <section class="fleet-info-section"><div class="fleet-quick-heading"><h4>⚒ &nbsp; Hızlı İşlemler</h4><button @click="startEditingVehicleFor(currentVehicle)">Düzenle</button></div>
-            <div class="fleet-quick-grid"><button @click="goToRequest('servis')"><span>⚒</span>Servis Talebi Oluştur</button><button @click="goToRequest('servis', 'Hasar Onarım')"><span>⚠</span>Hasar / Kaza Bildir</button><button @click="goToRequest('lastik')"><span>◉</span>Lastik Değişimi Talebi</button><button @click="goToRequest('yol_yardim')"><span>♧</span>Yol Yardımı Talebi</button><button @click="openFuelModal"><span>▣</span>Yakıt / Gider Kaydı</button><button @click="downloadVehicleReport(currentVehicle)"><span>▤</span>Rapor Al</button></div>
-          </section>
-          <section class="fleet-info-section fleet-history"><h4>◷ &nbsp; Son İşlemler</h4><ol v-if="vehicleHistory.length"><li v-for="event in vehicleHistory" :key="event.id"><span class="fleet-history-dot" :class="getVehicleBadgeClass(event.status)"></span><strong>{{ event.title }}</strong><small>{{ formatDateTime(event.created_at) }}</small><p>{{ event.description }}</p></li></ol><p v-else class="fleet-history-empty">Bu araç için henüz kayıtlı işlem yok.</p></section>
-          <div class="fleet-detail-footer"><button @click="activeTab = 'tracking'">⌖ Haritada Görüntüle</button><button @click="goToVehicleDetails(currentVehicle)">Tüm Detaylar</button><button v-if="currentVehicle.is_active" @click="openRemoveModal(currentVehicle)">Filodan Kaldır</button><button v-else @click="reactivateVehicle(currentVehicle)">Tekrar Etkinleştir</button></div>
-        </aside>
-        <aside v-else-if="activeTab !== 'tracking'" class="fleet-detail-panel fleet-no-selection"><span>🚘</span><strong>Detayları görmek için bir araç seçin</strong><p>Tablodaki araç satırına tıklayın.</p></aside>
       </section>
     </main>
   </div>
@@ -416,6 +403,7 @@
 </template>
 
 <script setup>
+import NotificationBell from '../components/NotificationBell.vue'
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'
@@ -786,7 +774,6 @@ const allVisibleSelected = computed(() => paginatedVehicles.value.length > 0 && 
 watch(() => route.query.search, value => { filters.search = String(value || '') })
 watch([filters, activeTab], () => { page.value = 1 }, { deep: true })
 watch(totalPages, count => { if (page.value > count) page.value = count })
-const selectVehicle = vehicle => { focusedVehicleId.value = vehicle.id }
 const toggleVisibleSelection = event => {
   const ids = paginatedVehicles.value.map(v => v.id)
   selectedVehicleIds.value = event.target.checked ? [...new Set([...selectedVehicleIds.value, ...ids])] : selectedVehicleIds.value.filter(id => !ids.includes(id))
@@ -1010,7 +997,7 @@ onMounted(() => {
 .fleet-table th:first-child, .fleet-table td:first-child { padding-left: 10px; }
 .fleet-table input[type="checkbox"] { width: 12px; height: 12px; accent-color: #1466e9; vertical-align: middle; }
 .fleet-index { color: #9ba9b8 !important; }
-.fleet-plate { padding: 4px 5px 4px 17px; border-color: #d9e1e9; background: #fafcff; color: #264365; box-shadow: none; font-size: 8px; }
+.fleet-plate { text-decoration:none; padding: 4px 5px 4px 17px; border-color: #d9e1e9; background: #fafcff; color: #264365; box-shadow: none; font-size: 8px; }
 .fleet-plate::before { width: 11px; font-size: 6px; }
 .fleet-vehicle-cell { display: flex; align-items: center; gap: 6px; }
 .fleet-vehicle-cell > span:last-child { display: grid; gap: 3px; }
@@ -1211,4 +1198,5 @@ onMounted(() => {
   color: #475569;
   border: 1px solid #cbd5e1;
 }
+.fleet-workspace { grid-template-columns: minmax(0, 1fr); }
 </style>

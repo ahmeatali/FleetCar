@@ -572,6 +572,7 @@
                       </span>
                     </td>
                     <td style="font-size: 0.85rem;">
+                      <div v-if="hasPreferredDates(req.details)">Tercih edilen aralık: {{ preferredDateRange(req.details) }}</div>
                       <div v-if="req.details?.entry_date" style="color: #10b981; font-weight: bold;">
                         Servise Girdi: {{ formatDate(req.details.entry_date) }}
                       </div>
@@ -1223,6 +1224,7 @@
 </template>
 
 <script setup>
+import { hasPreferredDates, preferredDateRange } from '../utils/preferredDates'
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 

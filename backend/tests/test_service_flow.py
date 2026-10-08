@@ -33,6 +33,25 @@ class ServiceFlowTests(unittest.TestCase):
     def create(self,service_type='Periyodik Bakım',vehicle='car'):
         return main.create_request(RequestCreate(vehicle_id=vehicle,type='servis',description=service_type,details={'service_type':service_type}),self.db)
 
+    def test_preferred_date_range_is_saved_for_service_and_tire_requests(self):
+        for request_type in ['servis', 'lastik']:
+            for end in ['2026-10-08', '2026-10-15']:
+                dates = {'preferred_date_start': '2026-10-08', 'preferred_date_end': end}
+                result = main.create_request(RequestCreate(vehicle_id='car', type=request_type, description='Range', details=dates), self.db)
+                self.assertEqual(result['details']['preferred_date_start'], dates['preferred_date_start'])
+                self.assertEqual(result['details']['preferred_date_end'], end)
+                stored = self.db.get(models.Request, result['id'])
+                self.assertEqual(stored.details['preferred_date_end'], end)
+
+    def test_invalid_preferred_date_ranges_are_rejected(self):
+        for request_type in ['servis', 'lastik']:
+            for start, end in [('2026-10-15', '2026-10-08'), ('2026-10-08', None), (None, '2026-10-08'), ('bad', '2026-10-08'), ('2026-02-30', '2026-03-01')]:
+                with self.subTest(type=request_type, start=start, end=end):
+                    with self.assertRaises(HTTPException) as error:
+                        main.create_request(RequestCreate(vehicle_id='car', type=request_type, description='Invalid', details={'preferred_date_start': start, 'preferred_date_end': end}), self.db)
+                    self.assertEqual(error.exception.status_code, 400)
+        self.assertEqual(self.db.query(models.Request).count(), 0)
+
     def test_unassigned_service_claim_and_lifecycle_reaches_customer(self):
         request=self.create('Hasar / Kaza'); rid=request['id']
         self.assertTrue(request['details']['work_order_no'].startswith('HS-'))

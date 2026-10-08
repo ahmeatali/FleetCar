@@ -1,6 +1,6 @@
 <template>
 <div class="road-page"><Sidebar/><main class="road-main">
-  <header class="road-top"><label>⌕ <input v-model="search" placeholder="Araç, plaka, model, talep no..." /></label><router-link to="/profile" class="road-account"><span class="road-avatar">{{initials}}</span><span><strong>{{customerName}}</strong><small>Filo Yöneticisi</small></span></router-link></header>
+  <header class="road-top"><label>⌕ <input v-model="search" placeholder="Araç, plaka, model, talep no..." /></label><div class="customer-header-actions"><NotificationBell /><router-link to="/profile" class="road-account"><span class="road-avatar">{{initials}}</span><span><strong>{{customerName}}</strong><small>Filo Yöneticisi</small></span></router-link></div></header>
   <div v-if="loadError" class="road-alert" role="alert">{{loadError}} <button @click="load">Tekrar Dene</button></div><div v-if="notice" class="road-alert" role="status">{{notice}}</div><div class="road-content" :aria-busy="loading">
     <header class="heading"><div><h1>♧ Yol Yardım</h1><p>Araçlarınızın yol yardım taleplerini görüntüleyin, takip edin ve hızlıca çözüm sağlayın.</p></div><button class="primary" @click="openCreate">＋ Yol Yardım Talebi</button></header>
     <section class="metrics">
@@ -32,6 +32,7 @@
 </template>
 
 <script setup>
+import NotificationBell from '../components/NotificationBell.vue'
 import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import Sidebar from '../components/Sidebar.vue'
 const filtersExpanded=ref(false)

@@ -14,6 +14,7 @@
           <span>➕</span>
           <span>Yeni Teklif İsteyin</span>
         </button>
+        <NotificationBell />
       </header>
 
       <!-- Zero-Vehicle Highlight Banner -->
@@ -1097,6 +1098,7 @@
 </template>
 
 <script setup>
+import NotificationBell from '../components/NotificationBell.vue'
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'

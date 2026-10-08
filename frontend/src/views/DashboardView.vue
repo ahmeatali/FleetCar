@@ -1,7 +1,7 @@
 <template>
   <div class="portal-layout fleet-dashboard"><Sidebar />
     <main class="portal-main overview-main">
-      <div class="overview-topbar"><form class="overview-search" @submit.prevent="searchVehicles"><span>⌕</span><input v-model="search" placeholder="Plaka, marka veya model ara…" aria-label="Araç ara" /></form><span class="date-chip">▦ &nbsp;{{ currentDate }}</span><router-link to="/profile" class="overview-account"><span class="account-avatar">{{ initials }}</span><span><strong>{{ customerName }}</strong><small>Filo Yöneticisi</small></span></router-link></div>
+      <div class="overview-topbar"><form class="overview-search" @submit.prevent="searchVehicles"><span>⌕</span><input v-model="search" placeholder="Plaka, marka veya model ara…" aria-label="Araç ara" /></form><span class="date-chip">▦ &nbsp;{{ currentDate }}</span><div class="customer-header-actions"><NotificationBell /><router-link to="/profile" class="overview-account"><span class="account-avatar">{{ initials }}</span><span><strong>{{ customerName }}</strong><small>Filo Yöneticisi</small></span></router-link></div></div>
       <div class="overview-heading"><div><h1>Merhaba {{ customerName }},</h1><p>Filo operasyonlarınızın güncel durumu.</p></div><router-link to="/dashboard/requests" class="primary-action">＋ Yeni Talep Oluştur</router-link></div>
       <div v-if="error" class="overview-alert" role="alert">{{ error }} <button @click="load">Tekrar Dene</button></div>
       <p v-if="loading" role="status">Dashboard verileri yükleniyor…</p>
@@ -21,6 +21,7 @@
   </div>
 </template>
 <script setup>
+import NotificationBell from '../components/NotificationBell.vue'
 import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'

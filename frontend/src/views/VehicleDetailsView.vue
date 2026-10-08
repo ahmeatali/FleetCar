@@ -6,7 +6,7 @@
       <main class="portal-main vehicle-details-main">
         <header class="detail-global-bar">
           <label class="detail-search"><span>⌕</span><input v-model="pageSearch" placeholder="Araç, plaka, marka, model, kullanıcı, rapor..." @keydown.enter="returnToList" /></label>
-          <div class="detail-profile"><span>{{ userInitials }}</span><div><strong>{{ userName }}</strong><small>{{ companyName }} · Filo Yöneticisi</small></div><button aria-label="Profil menüsü">⌄</button></div>
+          <div class="customer-header-actions"><NotificationBell /><div class="detail-profile"><span>{{ userInitials }}</span><div><strong>{{ userName }}</strong><small>{{ companyName }} · Filo Yöneticisi</small></div><button aria-label="Profil menüsü">⌄</button></div></div>
         </header>
 
         <div class="detail-breadcrumb"><router-link to="/dashboard/vehicles">‹ Araçlar</router-link><span>›</span><span>Araç Detayı</span></div>
@@ -83,6 +83,7 @@
 </template>
 
 <script setup>
+import NotificationBell from '../components/NotificationBell.vue'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'

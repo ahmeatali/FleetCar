@@ -18,6 +18,7 @@
         <button @click="activeTab = 'list'" class="btn btn-secondary" v-if="activeTab !== 'list'">
           📋 Taleplerim Listesi
         </button>
+        <NotificationBell />
       </header>
 
       <!-- Category Switcher Tabs (FleetRent Premium Tab Pill Bar) -->
@@ -80,15 +81,15 @@
                 </div>
 
                 <div class="form-group">
-                  <label class="form-label">Tercih Edilen Tarih 1 *</label>
-                  <input type="date" v-model="formServis.details.date1" required class="form-input">
+                  <label class="form-label">Tercih Edilen Tarih Aralığı — Başlangıç *</label>
+                  <input type="date" v-model="formServis.details.preferred_date_start" :max="formServis.details.preferred_date_end || undefined" required class="form-input">
                 </div>
               </div>
 
               <div class="grid-2" style="gap: 16px;">
                 <div class="form-group">
-                  <label class="form-label">Tercih Edilen Tarih 2 *</label>
-                  <input type="date" v-model="formServis.details.date2" required class="form-input">
+                  <label class="form-label">Tercih Edilen Tarih Aralığı — Bitiş *</label>
+                  <input type="date" v-model="formServis.details.preferred_date_end" :min="formServis.details.preferred_date_start || undefined" required class="form-input">
                 </div>
 
                 <div class="form-group">
@@ -222,15 +223,15 @@
                 </div>
 
                 <div class="form-group">
-                  <label class="form-label">Tercih Edilen Tarih 1 *</label>
-                  <input type="date" v-model="formLastik.details.date1" required class="form-input">
+                  <label class="form-label">Tercih Edilen Tarih Aralığı — Başlangıç *</label>
+                  <input type="date" v-model="formLastik.details.preferred_date_start" :max="formLastik.details.preferred_date_end || undefined" required class="form-input">
                 </div>
               </div>
 
               <div class="grid-2" style="gap: 16px;">
                 <div class="form-group">
-                  <label class="form-label">Tercih Edilen Tarih 2 *</label>
-                  <input type="date" v-model="formLastik.details.date2" required class="form-input">
+                  <label class="form-label">Tercih Edilen Tarih Aralığı — Bitiş *</label>
+                  <input type="date" v-model="formLastik.details.preferred_date_end" :min="formLastik.details.preferred_date_start || undefined" required class="form-input">
                 </div>
 
                 <div class="form-group">
@@ -476,7 +477,7 @@
                   <td><span class="badge" :class="getBadgeClass(req.type)">{{ getTypeName(req.type) }}</span></td>
                   <td>{{ req.supplier_name || 'Otomatik Atanıyor' }}</td>
                   <td>
-                    {{ req.description }}
+                    {{ req.description }}<small v-if="hasPreferredDates(req.details)" style="display:block">Tercih edilen aralık: {{ preferredDateRange(req.details) }}</small>
                     <div v-if="req.details" style="font-size: 0.78rem; color: #64748b; margin-top: 4px;">
                       <span v-if="req.details.valet_service">🚖 Vale İsteniyor | </span>
                       <span v-if="req.details.city">📍 {{ req.details.city }} / {{ req.details.district }}</span>
@@ -495,6 +496,8 @@
 </template>
 
 <script setup>
+import NotificationBell from '../components/NotificationBell.vue'
+import { hasPreferredDates, preferredDateRange } from '../utils/preferredDates'
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'
@@ -533,8 +536,8 @@ const formServis = reactive({
   details: {
     service_type: 'Periyodik Bakım',
     mileage_gps: '0 km',
-    date1: '',
-    date2: '',
+    preferred_date_start: '',
+    preferred_date_end: '',
     city: 'İstanbul',
     district: 'Ümraniye',
     valet_service: false
@@ -549,8 +552,8 @@ const formLastik = reactive({
     count: '4',
     tire_size: '205/55 R16',
     mileage_gps: '0 km',
-    date1: '',
-    date2: '',
+    preferred_date_start: '',
+    preferred_date_end: '',
     city: 'İstanbul',
     district: 'Ümraniye'
   }
@@ -667,6 +670,10 @@ const fetchData = async () => {
 }
 
 const submitRequest = async (type) => {
+  const dates = type === 'servis' ? formServis.details : type === 'lastik' ? formLastik.details : null
+  if (dates && (!dates.preferred_date_start || !dates.preferred_date_end || dates.preferred_date_end < dates.preferred_date_start)) {
+    alert('Geçerli bir başlangıç ve bitiş tarihi seçin.'); return
+  }
   submitting.value = true
   let payload = {}
 
