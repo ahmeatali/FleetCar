@@ -1942,3 +1942,10 @@ h1, h2, h3, h4, h5, h6 {
  .customer-navigation~main .overview-panel .panel-title>a{min-height:44px;display:flex;align-items:center;font-size:12px!important}.customer-navigation~main .contract-row{min-height:44px;font-size:13px!important}.customer-navigation~main .vehicle-status{flex-wrap:wrap;gap:12px;font-size:12px!important}.customer-navigation~main .vehicle-status a{min-height:32px}
  .customer-navigation~main .fleet-vehicle-cell strong,.customer-navigation~main .fleet-plate,.customer-navigation~main .fleet-status{font-size:14px!important}
 }
+
+/* Keep the customer menu anchored while the page content scrolls. */
+@media (min-width:901px) {
+  .portal-sidebar.customer-navigation { position:fixed !important; inset:0 auto 0 0 !important; height:100dvh !important; max-height:100dvh !important; overflow:hidden !important; }
+  .portal-sidebar.customer-navigation .fleet-nav-link { height:clamp(28px, calc((100dvh - 165px) / 19 - 3px), 38px); min-height:28px; padding-block:2px; }
+}
+.customer-header-actions { display:flex; align-items:center; gap:12px; margin-left:auto; }

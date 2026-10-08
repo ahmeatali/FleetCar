@@ -10,7 +10,6 @@
         <button v-else class="fleet-nav-link unavailable" :aria-label="item.label + ': Yakında'" aria-disabled="true"><span class="unavailable-content"><span class="nav-glyph" aria-hidden="true">{{ item.icon }}</span>{{ item.label }}</span><span class="coming-soon">Yakında</span></button>
       </li>
     </ul></nav>
-    <div class="fleet-support"><strong>♧ &nbsp;7/24 Destek</strong><p>Her zaman yanınızdayız.</p><router-link to="/dashboard/roadside" class="support-action">Destek Talebi Oluştur</router-link></div>
     <div class="account-actions"><router-link to="/profile">Profilim</router-link><button @click="logout">Çıkış Yap</button></div>
   </aside>
 </template>

@@ -2055,6 +2055,17 @@ def get_requests(customer_id: Optional[int] = None, supplier_id: Optional[int] =
 
 @app.post("/api/requests", response_model=RequestResponse)
 def create_request(req: RequestCreate, db: Session = Depends(get_db)):
+    if req.type in {"servis", "lastik"}:
+        start = req.details.get("preferred_date_start")
+        end = req.details.get("preferred_date_end")
+        if start or end:
+            try:
+                start_date = datetime.date.fromisoformat(start)
+                end_date = datetime.date.fromisoformat(end)
+            except (TypeError, ValueError):
+                raise HTTPException(status_code=400, detail="Geçerli bir başlangıç ve bitiş tarihi seçin.")
+            if end_date < start_date:
+                raise HTTPException(status_code=400, detail="Bitiş tarihi başlangıç tarihinden önce olamaz.")
     v = db.query(models.Vehicle).filter(models.Vehicle.id == req.vehicle_id).first()
     if not v: raise HTTPException(status_code=404, detail="Vehicle not found")
     if req.supplier_id is not None:

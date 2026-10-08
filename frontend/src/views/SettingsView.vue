@@ -25,6 +25,7 @@
         <button v-if="activeTab === 'sirket_evraklari'" @click="showUploadDocModal = true" class="btn btn-blue" style="padding: 10px 20px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
           <span>📤</span> Evrak Yükle
         </button>
+        <NotificationBell />
       </header>
 
       <!-- 5-Tab Navigation Bar -->
@@ -524,6 +525,7 @@
 </template>
 
 <script setup>
+import NotificationBell from '../components/NotificationBell.vue'
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'

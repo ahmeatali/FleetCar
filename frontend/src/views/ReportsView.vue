@@ -25,6 +25,7 @@
             <span>📄</span> PDF İndir
           </button>
         </div>
+        <NotificationBell />
       </header>
 
       <div v-if="showUsageModal" class="modal-overlay" @click.self="showUsageModal = false"><section class="glass-panel" style="width:min(520px,95vw);padding:24px;background:#fff"><h2 style="margin-top:0">Araç kullanım kaydı</h2><form @submit.prevent="saveUsageRecord"><label class="form-label">Araç<select v-model="usageForm.vehicle_id" required class="form-input"><option value="" disabled>Araç seçin</option><option v-for="v in reportVehicles" :key="v.vehicle_id" :value="v.vehicle_id">{{v.plate}}</option></select></label><div class="grid-2"><label class="form-label">Başlangıç<input v-model="usageForm.started_at" type="datetime-local" required class="form-input"></label><label class="form-label">Bitiş<input v-model="usageForm.ended_at" type="datetime-local" required class="form-input"></label></div><p v-if="usageError" style="color:#b91c1c">{{usageError}}</p><footer style="display:flex;justify-content:flex-end;gap:8px"><button type="button" class="btn" @click="showUsageModal=false">Vazgeç</button><button class="btn btn-blue" :disabled="usageSaving">{{usageSaving?'Kaydediliyor…':'Kaydet'}}</button></footer></form></section></div>
@@ -473,6 +474,7 @@
 </template>
 
 <script setup>
+import NotificationBell from '../components/NotificationBell.vue'
 import { ref, computed, onMounted, watch } from 'vue'
 import Sidebar from '../components/Sidebar.vue'
 import { useRoute } from 'vue-router'

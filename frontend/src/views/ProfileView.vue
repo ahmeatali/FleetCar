@@ -10,6 +10,7 @@
           <h1>Şirket Profili</h1>
           <p style="color: var(--text-muted); font-size: 0.95rem;">Şirketinizin kurumsal kimlik, tescil ve yetkili kullanıcı bilgilerini görüntüleyin.</p>
         </div>
+        <NotificationBell />
       </header>
 
       <div v-if="loading" class="text-center" style="padding: 50px 0;">Yükleniyor...</div>
@@ -159,6 +160,7 @@
 </template>
 
 <script setup>
+import NotificationBell from '../components/NotificationBell.vue'
 import { ref, onMounted } from 'vue'
 import Sidebar from '../components/Sidebar.vue'
 
