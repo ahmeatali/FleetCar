@@ -578,7 +578,9 @@ def vehicle_expense_dict(expense: models.VehicleExpense) -> dict:
     return {
         "id": expense.id, "vehicle_id": expense.vehicle_id, "kind": expense.kind,
         "amount": expense.amount, "date": expense.date, "liters": expense.liters,
-        "mileage": expense.mileage, "note": expense.note
+        "mileage": expense.mileage, "note": expense.note,
+        "fuel_type": expense.fuel_type, "station": expense.station, "receipt_no": expense.receipt_no,
+        "latitude": expense.latitude, "longitude": expense.longitude, "full_tank": bool(expense.full_tank)
     }
 
 
@@ -592,11 +594,17 @@ def get_vehicle_expenses(customer_id: Optional[int] = None, db: Session = Depend
 
 
 @app.post("/api/vehicle-expenses", response_model=VehicleExpenseResponse)
-def create_vehicle_expense(expense: VehicleExpenseCreate, db: Session = Depends(get_db)):
+def create_vehicle_expense(expense: VehicleExpenseCreate, db: Session = Depends(get_db), customer_id: Optional[int] = None):
     vehicle = db.query(models.Vehicle).filter(models.Vehicle.id == expense.vehicle_id).first()
-    if not vehicle:
+    if not vehicle or (customer_id is not None and vehicle.customer_id != customer_id):
         raise HTTPException(status_code=404, detail="Araç bulunamadı.")
-    record = models.VehicleExpense(**expense.dict())
+    try:
+        datetime.datetime.fromisoformat(expense.date.replace("Z", "+00:00"))
+    except ValueError:
+        raise HTTPException(status_code=422, detail="Geçerli bir kayıt tarihi girin.")
+    if (expense.latitude is None) != (expense.longitude is None):
+        raise HTTPException(status_code=422, detail="Enlem ve boylam birlikte girilmelidir.")
+    record = models.VehicleExpense(**expense.model_dump())
     db.add(record)
     if int(expense.mileage) > int(vehicle.mileage or 0):
         vehicle.mileage = int(expense.mileage)
@@ -604,6 +612,39 @@ def create_vehicle_expense(expense: VehicleExpenseCreate, db: Session = Depends(
     db.commit()
     db.refresh(record)
     return vehicle_expense_dict(record)
+
+
+@app.get("/api/vehicle-expenses/{expense_id}", response_model=VehicleExpenseResponse)
+def get_vehicle_expense(expense_id: int, customer_id: int, db: Session = Depends(get_db)):
+    record = db.query(models.VehicleExpense).join(models.Vehicle).filter(
+        models.VehicleExpense.id == expense_id, models.Vehicle.customer_id == customer_id
+    ).first()
+    if not record:
+        raise HTTPException(status_code=404, detail="Yakıt kaydı bulunamadı.")
+    return vehicle_expense_dict(record)
+
+
+@app.get("/api/fuel-overview")
+def get_fuel_overview(customer_id: int, start_date: Optional[str] = None, end_date: Optional[str] = None,
+                      vehicle_id: Optional[str] = None, vehicle_group: Optional[str] = None,
+                      fuel_type: Optional[str] = None, station: Optional[str] = None,
+                      search: Optional[str] = None, db: Session = Depends(get_db)):
+    from app.fuel import build_fuel_overview
+    vehicles = db.query(models.Vehicle).filter(models.Vehicle.customer_id == customer_id).all()
+    records = db.query(models.VehicleExpense).join(models.Vehicle).filter(
+        models.Vehicle.customer_id == customer_id, models.VehicleExpense.kind == "Yakıt"
+    ).all()
+    photos = db.query(models.VehicleFile).join(models.Vehicle).filter(
+        models.Vehicle.customer_id == customer_id, models.VehicleFile.category == "photo"
+    ).order_by(models.VehicleFile.id.desc()).all()
+    photo_urls = {}
+    for photo in photos:
+        photo_urls.setdefault(photo.vehicle_id, f"/uploads/vehicles/{photo.stored_name}")
+    try:
+        return build_fuel_overview(vehicles, [vehicle_expense_dict(r) for r in records], photo_urls,
+                                   start_date, end_date, vehicle_id, vehicle_group, fuel_type, station, search)
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error))
 
 
 def tire_record_dict(record: models.TireRecord, vehicle: models.Vehicle) -> dict:

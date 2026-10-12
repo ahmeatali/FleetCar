@@ -75,6 +75,16 @@ def create_tables():
                         if column_name not in veh_columns:
                             conn.execute(text(f"ALTER TABLE vehicles ADD COLUMN {column_name} {column_type};"))
 
+        if "vehicle_expenses" in inspector.get_table_names():
+            expense_columns = {c["name"] for c in inspector.get_columns("vehicle_expenses")}
+            with engine.begin() as conn:
+                for name, column_type in {
+                    "fuel_type": "VARCHAR", "station": "VARCHAR", "receipt_no": "VARCHAR",
+                    "latitude": "FLOAT", "longitude": "FLOAT", "full_tank": "BOOLEAN NOT NULL DEFAULT 0"
+                }.items():
+                    if name not in expense_columns:
+                        conn.execute(text(f"ALTER TABLE vehicle_expenses ADD COLUMN {name} {column_type};"))
+
         if "customers" in inspector.get_table_names():
             cust_columns = [c["name"] for c in inspector.get_columns("customers")]
             with engine.begin() as conn:

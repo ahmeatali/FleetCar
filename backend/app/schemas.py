@@ -252,14 +252,24 @@ class VehicleUpdate(BaseModel):
 class VehicleExpenseCreate(BaseModel):
     vehicle_id: str
     kind: str
-    amount: float
+    amount: float = Field(ge=0, allow_inf_nan=False)
     date: str
-    liters: Optional[float] = None
-    mileage: int
+    liters: Optional[float] = Field(default=None, gt=0, allow_inf_nan=False)
+    mileage: int = Field(ge=0)
     note: Optional[str] = None
+    fuel_type: Optional[str] = None
+    station: Optional[str] = None
+    receipt_no: Optional[str] = None
+    latitude: Optional[float] = Field(default=None, ge=-90, le=90, allow_inf_nan=False)
+    longitude: Optional[float] = Field(default=None, ge=-180, le=180, allow_inf_nan=False)
+    full_tank: bool = False
 
 class VehicleExpenseResponse(VehicleExpenseCreate):
     id: int
+    # Legacy stored records may predate the stricter input validation.
+    amount: float
+    liters: Optional[float] = None
+    mileage: int
 
 class HgsTransactionCreate(BaseModel):
     type: str

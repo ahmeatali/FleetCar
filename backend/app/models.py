@@ -200,6 +200,12 @@ class VehicleExpense(Base):
     liters     = Column(Float, nullable=True)
     mileage    = Column(Integer, nullable=False)
     note       = Column(Text, nullable=True)
+    fuel_type  = Column(String, nullable=True)
+    station    = Column(String, nullable=True)
+    receipt_no = Column(String, nullable=True)
+    latitude   = Column(Float, nullable=True)
+    longitude  = Column(Float, nullable=True)
+    full_tank  = Column(Boolean, nullable=False, default=False)
 
 
 class VehicleFile(Base):

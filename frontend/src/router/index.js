@@ -37,6 +37,12 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/dashboard/fuel',
+    name: 'FuelExpenses',
+    component: () => import('../views/FuelExpensesView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/dashboard/vehicles',
     name: 'Vehicles',
     component: VehiclesView,

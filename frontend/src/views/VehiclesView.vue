@@ -11,7 +11,7 @@
 
       <section class="fleet-heading">
         <div><span class="fleet-eyebrow">FİLO YÖNETİMİ</span><h1>Araçlar</h1><p>Tüm araçlarınızı tek ekrandan yönetin. Filtreleyin, arayın ve detayları görüntüleyin.</p></div>
-        <div class="fleet-heading-actions"><button class="fleet-utility-button" @click="activeTab = activeTab === 'old' ? 'active' : 'old'">{{ activeTab === 'old' ? 'Aktif Araçlar' : 'Eski Araçlar' }}</button><button class="fleet-utility-button" @click="activeTab = activeTab === 'tracking' ? 'active' : 'tracking'">⌖ Araç Takibi</button><button class="btn btn-primary" @click="showAddModal = true">＋ Yeni Araç</button></div>
+        <div class="fleet-heading-actions"><button class="fleet-utility-button" @click="activeTab = activeTab === 'old' ? 'active' : 'old'">{{ activeTab === 'old' ? 'Aktif Araçlar' : 'Eski Araçlar' }}</button><button class="fleet-utility-button" @click="activeTab = activeTab === 'tracking' ? 'active' : 'tracking'">⌖ Araç Takibi</button></div>
       </section>
 
       <section class="fleet-stats" aria-label="Filo özeti">
@@ -24,27 +24,33 @@
 
       <section class="fleet-workspace">
         <div class="fleet-list-column">
-          <div class="fleet-filters">
-            <select v-model="filters.status" aria-label="Araç durumu"><option value="">Tüm Durumlar</option><option v-for="status in availableStatuses" :key="status" :value="status">{{ status }}</option><option value="Kaza">Hasar / Kaza</option></select>
-            <select v-model="filters.vehicle_type" aria-label="Marka ve model"><option value="">Tüm Marka / Modeller</option><option v-for="name in availableModels" :key="name" :value="name">{{ name }}</option></select>
-            <input v-model="filters.plate" placeholder="Plaka girin..." aria-label="Plaka" />
-            <select v-model="filters.contract" aria-label="Sözleşme dönemi"><option value="">Tüm Dönemler</option><option value="current">Aktif sözleşmeler</option><option value="expired">Süresi dolanlar</option></select>
-            <button class="fleet-filter-button" @click="page = 1">⌕ Filtrele</button>
-            <button class="fleet-utility-button" @click="exportVehicles">⇩ Dışa Aktar</button>
+          <div class="fleet-list-toolbar">
+            <form class="fleet-filters" @submit.prevent="page = 1">
+              <label><span>Durum</span><select v-model="filters.status"><option value="">Tümü</option><option v-for="status in availableStatuses" :key="status" :value="status">{{ status }}</option><option value="Kaza">Hasar / Kaza</option></select></label>
+              <label><span>Marka / Model</span><select v-model="filters.vehicle_type"><option value="">Tümü</option><option v-for="name in availableModels" :key="name" :value="name">{{ name }}</option></select></label>
+              <label><span>Plaka</span><input v-model="filters.plate" placeholder="Plaka girin..." /></label>
+              <label><span>Sözleşme Dönemi</span><select v-model="filters.contract"><option value="">Tümü</option><option value="current">Aktif sözleşmeler</option><option value="expired">Süresi dolanlar</option></select></label>
+              <button type="submit" class="fleet-filter-button">⌕ Filtrele</button>
+            </form>
+            <div class="fleet-list-actions">
+              <button class="fleet-utility-button" @click="exportVehicles">⇩ Dışa Aktar</button>
+              <button class="btn btn-primary" @click="showAddModal = true">＋ Yeni Araç</button>
+            </div>
           </div>
 
           <div class="fleet-table-card">
             <div class="fleet-table-scroll">
               <table class="fleet-table">
-                <thead><tr><th><input type="checkbox" :checked="allVisibleSelected" aria-label="Görünen araçları seç" @change="toggleVisibleSelection" /></th><th>#</th><th>Plaka</th><th>Araç</th><th>Renk</th><th>Yıl</th><th>Şasi No (VIN)</th><th>Durum</th><th>Kira Başlangıcı</th><th>Kira Bitişi</th><th>Km</th><th></th></tr></thead>
+                <thead><tr><th><input type="checkbox" :checked="allVisibleSelected" aria-label="Görünen araçları seç" @change="toggleVisibleSelection" /></th><th>#</th><th>Plaka</th><th>Marka / Model</th><th>Renk</th><th>Yıl</th><th>Şasi No (VIN)</th><th>Motor No</th><th>Durum</th><th>Kira Başlangıç</th><th>Kira Bitiş</th><th>Km</th><th>İşlemler</th></tr></thead>
                 <tbody>
-                  <tr v-if="loading"><td colspan="12" class="fleet-empty">Araçlar yükleniyor…</td></tr>
-                  <tr v-else-if="!paginatedVehicles.length"><td colspan="12" class="fleet-empty">Filtrelere uygun araç bulunamadı.</td></tr>
+                  <tr v-if="loading"><td colspan="13" class="fleet-empty">Araçlar yükleniyor…</td></tr>
+                  <tr v-else-if="!paginatedVehicles.length"><td colspan="13" class="fleet-empty">Filtrelere uygun araç bulunamadı.</td></tr>
                   <tr v-for="(vehicle, index) in paginatedVehicles" v-else :key="vehicle.id" @click="goToVehicleDetails(vehicle)">
                     <td data-label="Seç" @click.stop><input v-model="selectedVehicleIds" type="checkbox" :value="vehicle.id" :aria-label="`${vehicle.plate} aracını seç`" /></td><td data-label="Sıra" class="fleet-index">{{ (page - 1) * pageSize + index + 1 }}</td>
                     <td data-label="Plaka"><router-link :to="{ name: 'VehicleDetails', params: { vehicleId: vehicle.id } }" class="plate-badge fleet-plate" @click.stop>{{ vehicle.plate }}</router-link></td>
-                    <td data-label="Araç"><div class="fleet-vehicle-cell"><span class="fleet-car-thumb" :class="carTone(vehicle)">🚘</span><span><strong>{{ vehicle.brand }} {{ vehicle.model }}</strong><small>{{ vehicle.vehicle_type || 'Araç' }}</small></span></div></td>
-                    <td data-label="Renk"><span class="fleet-color"><i :class="carTone(vehicle)"></i>{{ vehicle.color || 'Belirtilmedi' }}</span></td><td data-label="Yıl">{{ vehicle.year || '—' }}</td><td data-label="Şasi No" class="fleet-vin">{{ vehicle.chassis_no || '—' }}</td>
+                    <td data-label="Araç"><div class="fleet-vehicle-cell"><span class="fleet-car-thumb" aria-hidden="true">🚘</span><span><strong>{{ vehicle.brand }} {{ vehicle.model }}</strong><small v-if="vehicle.version">{{ vehicle.version }}</small></span></div></td>
+                    <td data-label="Renk"><span class="fleet-color"><i :style="{ backgroundColor: vehicleColor(vehicle.color) }" aria-hidden="true"></i>{{ vehicle.color || 'Belirtilmedi' }}</span></td><td data-label="Yıl">{{ vehicle.year || '—' }}</td><td data-label="Şasi No" class="fleet-vin">{{ vehicle.chassis_no || '—' }}</td>
+                    <td data-label="Motor No" class="fleet-vin">{{ vehicle.engine_no || '—' }}</td>
                     <td data-label="Durum"><span class="badge fleet-status" :class="getVehicleBadgeClass(vehicle.status)">{{ vehicle.is_active ? vehicle.status : 'Filodan çıkarıldı' }}</span></td>
                     <td data-label="Kira Başlangıcı">{{ vehicle.contract_start_date ? formatDate(vehicle.contract_start_date) : '—' }}</td><td data-label="Kira Bitişi">{{ vehicle.contract_end_date ? formatDate(vehicle.contract_end_date) : '—' }}</td><td data-label="Kilometre">{{ Number(vehicle.mileage || 0).toLocaleString('tr-TR') }}</td>
                     <td data-label="İşlem"><button class="fleet-row-menu" :aria-label="`${vehicle.plate} detay sayfasını aç`" @click.stop="goToVehicleDetails(vehicle)"><span class="desktop-action-label">•••</span><span class="mobile-action-label">Araç Detayları</span></button></td>
@@ -91,6 +97,10 @@
               <label class="form-label">Model</label>
               <input type="text" v-model="newVehicleForm.model" required class="form-input" placeholder="Clio">
             </div>
+          </div>
+          <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr;">
+            <div class="form-group"><label class="form-label">Versiyon</label><input v-model="newVehicleForm.version" class="form-input" placeholder="1.5 Passion X-Pack"></div>
+            <div class="form-group"><label class="form-label">Motor No</label><input v-model="newVehicleForm.engine_no" class="form-input" placeholder="22R-1234567"></div>
           </div>
           <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr;">
             <div class="form-group"><label class="form-label">Renk</label><input v-model="newVehicleForm.color" class="form-input" placeholder="Beyaz"></div>
@@ -308,6 +318,10 @@
               </div>
             </div>
             <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr;">
+              <div class="form-group"><label class="form-label">Versiyon</label><input v-model="editVehicleForm.version" class="form-input" placeholder="1.5 Passion X-Pack"></div>
+              <div class="form-group"><label class="form-label">Motor No</label><input v-model="editVehicleForm.engine_no" class="form-input" placeholder="22R-1234567"></div>
+            </div>
+            <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr;">
               <div class="form-group"><label class="form-label">Renk</label><input v-model="editVehicleForm.color" class="form-input"></div>
               <div class="form-group"><label class="form-label">Sözleşme Başlangıcı</label><input v-model="editVehicleForm.contract_start_date" type="date" class="form-input"></div>
             </div>
@@ -436,6 +450,8 @@ const editVehicleForm = reactive({
   plate: '',
   brand: '',
   model: '',
+  version: '',
+  engine_no: '',
   year: 2024,
   fuel: 'Benzin',
   color: '',
@@ -511,6 +527,8 @@ const newVehicleForm = reactive({
   plate: '',
   brand: '',
   model: '',
+  version: '',
+  engine_no: '',
   year: 2024,
   fuel: 'Benzin',
   color: '',
@@ -591,6 +609,8 @@ const resetForm = () => {
   newVehicleForm.plate = ''
   newVehicleForm.brand = ''
   newVehicleForm.model = ''
+  newVehicleForm.version = ''
+  newVehicleForm.engine_no = ''
   newVehicleForm.year = 2024
   newVehicleForm.fuel = 'Benzin'
   newVehicleForm.color = ''
@@ -624,6 +644,8 @@ const startEditingVehicle = () => {
   editVehicleForm.plate = v.plate || ''
   editVehicleForm.brand = v.brand || ''
   editVehicleForm.model = v.model || ''
+  editVehicleForm.version = v.version || ''
+  editVehicleForm.engine_no = v.engine_no || ''
   editVehicleForm.year = v.year || 2024
   editVehicleForm.fuel = v.fuel || 'Benzin'
   editVehicleForm.color = v.color || ''
@@ -733,7 +755,7 @@ const formatDate = (dateStr) => {
   try {
     const d = new Date(dateStr)
     if (isNaN(d.getTime())) return dateStr
-    return d.toLocaleDateString('tr-TR')
+    return d.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' })
   } catch (e) {
     return dateStr
   }
@@ -758,6 +780,7 @@ const filteredVehicles = computed(() => vehicles.value.filter(vehicle => {
   const date = vehicle.contract_end_date ? new Date(vehicle.contract_end_date) : null
   const startDate = vehicle.contract_start_date ? new Date(vehicle.contract_start_date) : null
   const today = new Date()
+  today.setHours(0, 0, 0, 0)
   const contract = !filters.contract || (date && (filters.contract === 'current' ? date >= today && (!startDate || startDate <= today) : date < today))
   const status = !filters.status || (filters.status === 'Kaza' ? requests.value.some(r => String(r.vehicle_id) === String(vehicle.id) && /hasar|kaza/i.test((r.details?.service_type || '') + ' ' + (r.description || '')) && !['Tamamlandı', 'İptal Edildi'].includes(r.status)) : vehicle.status === filters.status)
   return searchable && model && plate && contract && status
@@ -778,7 +801,11 @@ const toggleVisibleSelection = event => {
   const ids = paginatedVehicles.value.map(v => v.id)
   selectedVehicleIds.value = event.target.checked ? [...new Set([...selectedVehicleIds.value, ...ids])] : selectedVehicleIds.value.filter(id => !ids.includes(id))
 }
-const carTone = vehicle => 'tone-' + ['silver', 'blue', 'red', 'navy', 'graphite'][String(vehicle?.id || vehicle?.plate || '').split('').reduce((sum, char) => sum + char.charCodeAt(0), 0) % 5]
+const vehicleColor = color => ({
+  beyaz: '#fff', siyah: '#1e293b', gri: '#94a3b8', gümüş: '#cbd5e1',
+  mavi: '#2563eb', lacivert: '#1e3a8a', kırmızı: '#dc2626', yeşil: '#16a34a',
+  sarı: '#facc15', turuncu: '#f97316', kahverengi: '#92400e', bej: '#d6c5a1'
+}[String(color || '').trim().toLocaleLowerCase('tr-TR')] || '#c7d0d9')
 const requestTitle = request => ({ servis: 'Servis talebi', lastik: 'Lastik değişimi', yol_yardim: 'Yol yardım talebi', ikame_arac: 'İkame araç talebi' }[request.type] || 'Filo işlemi')
 const formatDateTime = value => {
   if (!value) return 'Tarih belirtilmedi'
@@ -817,8 +844,8 @@ const saveFuelRecord = async () => {
   }
 }
 const csvDownload = (rows, filename) => {
-  const headers = ['Plaka', 'Marka', 'Model', 'Renk', 'Yıl', 'Şasi No', 'Durum', 'Sözleşme Başlangıcı', 'Sözleşme Bitişi', 'Aylık Kira', 'Aylık Km Limiti', 'Kilometre', 'Yakıt']
-  const fields = ['plate', 'brand', 'model', 'color', 'year', 'chassis_no', 'status', 'contract_start_date', 'contract_end_date', 'monthly_rent', 'monthly_km_limit', 'mileage', 'fuel']
+  const headers = ['Plaka', 'Marka', 'Model', 'Versiyon', 'Renk', 'Yıl', 'Şasi No', 'Motor No', 'Durum', 'Sözleşme Başlangıcı', 'Sözleşme Bitişi', 'Aylık Kira', 'Aylık Km Limiti', 'Kilometre', 'Yakıt']
+  const fields = ['plate', 'brand', 'model', 'version', 'color', 'year', 'chassis_no', 'engine_no', 'status', 'contract_start_date', 'contract_end_date', 'monthly_rent', 'monthly_km_limit', 'mileage', 'fuel']
   const csv = '\uFEFF' + [headers, ...rows.map(row => fields.map(field => row[field] ?? ''))].map(row => row.map(value => '"' + String(value).replaceAll('"', '""') + '"').join(';')).join('\r\n')
   const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }))
   const link = document.createElement('a'); link.href = url; link.download = filename; link.click(); URL.revokeObjectURL(url)
@@ -950,24 +977,31 @@ onMounted(() => {
 .fleet-stat small { color: var(--fleet-muted); font-size: 9px; white-space: nowrap; }
 .fleet-stat strong { margin-top: 2px; font-size: 14px; }
 .fleet-stat em { margin-left: 5px; color: #1aa578; font-size: 8px; font-style: normal; font-weight: 600; }
-.fleet-workspace { display: grid; grid-template-columns: minmax(0, 1fr) minmax(265px, 30%); align-items: start; gap: 13px; }
+.fleet-workspace { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: 13px; }
 .fleet-workspace:has(.fleet-no-selection) { grid-template-columns: minmax(0, 1fr); }
 .fleet-list-column { min-width: 0; }
+.fleet-list-toolbar { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:12px; }
+.fleet-filters label { display:grid; gap:6px; flex:1 1 135px; min-width:0; color:var(--fleet-muted); font-size:12px; }
+.fleet-list-actions { display:flex; align-items:center; gap:10px; padding:14px; border:1px solid var(--fleet-line); border-radius:9px; background:#fff; }
+.fleet-list-actions button { min-height:40px; white-space:nowrap; }
 .fleet-filters {
+  flex:1 1 650px;
   min-height: 48px;
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 7px;
-  margin-bottom: 9px;
-  padding: 8px;
+  align-items: flex-end;
+  gap: 10px;
+  margin: 0;
+  padding: 14px;
   border: 1px solid var(--fleet-line);
   border-radius: 9px;
   background: white;
 }
 .fleet-filters select, .fleet-filters input {
-  min-width: 104px;
-  height: 31px;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  height: 40px;
   flex: 1 1 105px;
   border: 1px solid #eaf0f6;
   border-radius: 6px;
@@ -976,9 +1010,9 @@ onMounted(() => {
   color: #52677f;
   padding: 5px 7px;
   font: inherit;
-  font-size: 9px;
+  font-size: 12px;
 }
-.fleet-filters .fleet-filter-button, .fleet-filters .fleet-utility-button { min-height: 31px; padding: 6px 8px; }
+.fleet-filters .fleet-filter-button, .fleet-filters .fleet-utility-button { min-height: 40px; padding: 8px 14px; }
 .fleet-table-card, .fleet-detail-panel, .fleet-map-card { border: 1px solid var(--fleet-line); border-radius: 9px; background: white; overflow: hidden; }
 .fleet-table-scroll { overflow-x: auto; }
 .fleet-table { width: 100%; min-width: 1060px; border-collapse: collapse; text-align: left; }
@@ -987,22 +1021,22 @@ onMounted(() => {
   border-bottom: 1px solid var(--fleet-line);
   background: #fbfcfe;
   color: #8292a6;
-  font-size: 8px;
+  font-size: 11px;
   font-weight: 700;
   white-space: nowrap;
 }
-.fleet-table td { height: 43px; padding: 5px 6px; border-bottom: 1px solid #eff3f8; color: #425771; font-size: 8px; white-space: nowrap; }
+.fleet-table td { height: 62px; padding: 8px 6px; border-bottom: 1px solid #eff3f8; color: #425771; font-size: 11px; white-space: nowrap; }
 .fleet-table tbody tr { cursor: pointer; }
 .fleet-table tbody tr:hover td, .fleet-table tbody tr.fleet-row-selected td { background: #f5f9ff; }
 .fleet-table th:first-child, .fleet-table td:first-child { padding-left: 10px; }
 .fleet-table input[type="checkbox"] { width: 12px; height: 12px; accent-color: #1466e9; vertical-align: middle; }
 .fleet-index { color: #9ba9b8 !important; }
-.fleet-plate { text-decoration:none; padding: 4px 5px 4px 17px; border-color: #d9e1e9; background: #fafcff; color: #264365; box-shadow: none; font-size: 8px; }
+.fleet-plate { text-decoration:none; padding: 4px 5px 4px 17px; border-color: #d9e1e9; background: #fafcff; color: #264365; box-shadow: none; font-size: 11px; }
 .fleet-plate::before { width: 11px; font-size: 6px; }
 .fleet-vehicle-cell { display: flex; align-items: center; gap: 6px; }
 .fleet-vehicle-cell > span:last-child { display: grid; gap: 3px; }
-.fleet-vehicle-cell strong { color: #294563; font-size: 8px; font-weight: 700; }
-.fleet-vehicle-cell small { color: #8a9aad; font-size: 7px; }
+.fleet-vehicle-cell strong { color: #294563; font-size: 11px; font-weight: 700; }
+.fleet-vehicle-cell small { color: #708399; font-size: 10px; }
 .fleet-car-thumb { display: grid; place-items: center; width: 34px; height: 24px; border-radius: 5px; background: #f1f5fa; font-size: 16px; }
 .tone-silver { color: #8090a0; }
 .tone-blue { color: #266dd2; }
@@ -1010,10 +1044,10 @@ onMounted(() => {
 .tone-navy { color: #163b70; }
 .tone-graphite { color: #44515c; }
 .fleet-color { display: flex; align-items: center; gap: 4px; color: #708399; }
-.fleet-color i { width: 7px; height: 7px; border-radius: 50%; background: #c7d0d9; }
+.fleet-color i { width: 7px; height: 7px; border-radius: 50%; border: 1px solid #cbd5e1; background: #c7d0d9; }
 .fleet-color .tone-blue { background: #266dd2; }.fleet-color .tone-red { background: #d74346; }.fleet-color .tone-navy { background: #163b70; }.fleet-color .tone-graphite { background: #44515c; }
-.fleet-status { padding: 3px 6px; border-radius: 20px; font-size: 7px; text-transform: none; white-space: nowrap; }
-.fleet-vin { max-width: 82px; overflow: hidden; text-overflow: ellipsis; color: #697f98 !important; font-family: monospace; }
+.fleet-status { padding: 3px 6px; border-radius: 20px; font-size: 10px; text-transform: none; white-space: nowrap; }
+.fleet-vin { color: #697f98 !important; font-family: monospace; }
 .fleet-row-menu { border: 0; background: none; color: #73859a; font-size: 13px; cursor: pointer; }
 .fleet-empty { height: 86px !important; text-align: center; color: #8697aa !important; }
 .fleet-table-footer { min-height: 37px; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 10px; color: #8696a8; font-size: 8px; }
@@ -1055,7 +1089,7 @@ onMounted(() => {
 @media (max-width: 1350px) {
   .fleet-page { padding-right: 6px; padding-left: 6px; }
   .fleet-topbar { margin-left: -6px; margin-right: -6px; }
-  .fleet-workspace { grid-template-columns: minmax(0, 1fr) 260px; gap: 8px; }
+  .fleet-workspace { grid-template-columns: minmax(0, 1fr); gap: 8px; }
   .fleet-stats { gap: 6px; }
   .fleet-stat { padding: 8px 6px; gap: 6px; }
 }
@@ -1073,10 +1107,12 @@ onMounted(() => {
   .fleet-heading-actions .btn { margin-left: auto; }
   .fleet-stats { grid-template-columns: repeat(2, minmax(0,1fr)); }
   .fleet-filters { align-items: stretch; }
-  .fleet-filters > * { flex-basis: calc(50% - 6px) !important; }
+  .fleet-filters label { flex-basis: calc(50% - 7px); }
+  .fleet-filters .fleet-filter-button { width: 100%; }
   .fleet-table-footer { align-items: flex-start; flex-direction: column; }
 }
 @media (max-width: 900px) {
+  .fleet-page .fleet-table td[data-label="Şasi No"], .fleet-page .fleet-table td[data-label="Kira Başlangıcı"] { display:flex !important; }
   :global(.portal-layout:has(.fleet-page) > .portal-sidebar) { width: 100%; }
   :global(.portal-layout:has(.fleet-page) > .portal-main) { margin-left: 0; width: 100%; max-width: 100%; }
 }
