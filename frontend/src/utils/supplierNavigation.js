@@ -33,6 +33,6 @@ export const supplierNavigationGroups = [
   ]),
   entry('customers'),
   group('accounting', 'Muhasebe', '▤', ['invoices', 'accounting', 'approvals']),
-  group('reports', 'Raporlar', '▥', ['reports', 'savings', 'planning']),
+  group('reports', 'Raporlar', '▥', ['reports', 'planning']),
   group('settings', 'Ayarlar', '⚙', ['settings', 'branches', 'users']),
 ]

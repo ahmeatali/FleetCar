@@ -154,6 +154,7 @@ const customerItems = [
   { label: 'Yakıt ve Giderler', icon: '▥', to: '/dashboard/fuel' },
   { label: 'Faturalar', icon: '▤' },
   { label: 'Raporlar', icon: '▥', to: '/dashboard/reports' },
+  { label: 'Filo Kontrol & Tasarruf', icon: '◇', to: '/dashboard/savings' },
   { label: 'Belgeler', icon: '▤', to: '/dashboard/settings?tab=sirket_evraklari' },
   { label: 'Bildirimler', icon: '♧' },
   { label: 'Ayarlar', icon: '⚙', to: '/dashboard/settings' },

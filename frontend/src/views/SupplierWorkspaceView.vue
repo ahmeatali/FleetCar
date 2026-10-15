@@ -664,52 +664,6 @@
           </section>
         </template>
 
-        <template v-else-if="section === 'savings'">
-          <section class="sw-card">
-            <div class="sw-card-heading">
-              <h2>Tespitler ve Öneriler</h2>
-              <small>Eşikler: Ayarlar ekranı</small>
-            </div>
-            <UiTable class="sw-table-scroll"
-              ><table class="sw-table">
-                <thead>
-                  <tr>
-                    <th>Kategori</th>
-                    <th>Tespit</th>
-                    <th>Kanıt</th>
-                    <th>İncelenecek Tutar</th>
-                    <th>Aksiyon</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="r in findings" :key="r.id">
-                    <td>
-                      <span class="sw-status amber">{{ r.category }}</span>
-                    </td>
-                    <td>{{ r.title }}</td>
-                    <td>{{ r.evidence }}</td>
-                    <td>{{ r.amount ? money(r.amount) : '—' }}</td>
-                    <td>
-                      <router-link class="sw-button" :to="vehicleLink(r.vehicle_id)"
-                        >Araç Detayı</router-link
-                      >
-                    </td>
-                  </tr>
-                  <tr v-if="!findings.length">
-                    <td colspan="5" class="sw-empty">
-                      Kayıtlı verilerde bu eşikleri aşan tespit bulunamadı.
-                    </td>
-                  </tr>
-                </tbody>
-              </table></UiTable
-            >
-            <p class="sw-muted">
-              Bu tespitler inceleme önerisidir. Tutarlar gerçekleşmiş tasarruf değildir; AI veya dış
-              piyasa kıyaslaması kullanılmaz.
-            </p>
-          </section>
-        </template>
-
         <template v-else>
           <section v-if="section === 'planning'" class="sw-scenarios">
             <article class="sw-card">
@@ -1557,7 +1511,7 @@ import SupplierIntegrations from '../components/SupplierIntegrations.vue'
 import SupplierFleetPlanning from '../components/SupplierFleetPlanning.vue'
 import { supplierApi, downloadSupplierCsv } from '../utils/supplierApi'
 import { supplierModules, roleLabels } from '../utils/supplierModules'
-import { analyzeSupplier, detectSupplierFindings, num } from '../utils/supplierAnalytics'
+import { analyzeSupplier, num } from '../utils/supplierAnalytics'
 const route = useRoute(),
   router = useRouter(),
   data = ref(null),
@@ -1656,7 +1610,6 @@ const recordLink = (r) =>
 const analytics = computed(() =>
   analyzeSupplier(data.value || {}, section.value === 'reports' ? filters : {}),
 )
-const findings = computed(() => detectSupplierFindings(data.value || {}, analytics.value))
 const reportTabs = [
   'Genel Bakış',
   'Araç Kullanımı',
@@ -2122,14 +2075,6 @@ const kpis = computed(() => {
       })),
     ]
   }
-  if (section.value === 'savings')
-    return [
-      card('İnceleme Tespiti', findings.value.length, 'amber'),
-      card('KM Uyarısı', findings.value.filter((f) => f.category === 'KM').length, 'red'),
-      card('Düşük Kullanım', findings.value.filter((f) => f.category === 'Kullanım').length),
-      card('Yakıt İncelemesi', findings.value.filter((f) => f.category === 'Yakıt').length),
-      card('Düşük HGS', findings.value.filter((f) => f.category === 'HGS').length, 'amber'),
-    ]
   if (section.value === 'customers')
     return [
       card('Toplam Müşteri', rows.value.length),
@@ -2647,16 +2592,6 @@ function exportRows() {
   if (!data.value?.session?.capabilities?.export_report) return
   if (['home', 'reports'].includes(section.value)) {
     exportLedger()
-    return
-  }
-  if (section.value === 'savings') {
-    downloadSupplierCsv(
-      [
-        ['Kategori', 'Tespit', 'Kanıt', 'İncelenecek Tutar'],
-        ...findings.value.map((r) => [r.category, r.title, r.evidence, r.amount]),
-      ],
-      'fleetrent-tespitler.csv',
-    )
     return
   }
   downloadSupplierCsv(
