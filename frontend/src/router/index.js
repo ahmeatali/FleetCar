@@ -104,6 +104,17 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/dashboard/users',
+    name: 'CustomerTeam',
+    component: () => import('../views/TeamManagementView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/accept-invitation',
+    name: 'AcceptInvitation',
+    component: () => import('../views/AcceptInvitationView.vue'),
+  },
+  {
     path: '/dashboard/settings',
     name: 'Settings',
     component: () => import('../views/SettingsView.vue'),
@@ -163,6 +174,12 @@ const routes = [
   {
     path: '/supplier-portal/savings',
     redirect: { name: 'FleetSavings' },
+  },
+  {
+    path: '/supplier-portal/users',
+    name: 'SupplierTeam',
+    component: () => import('../views/TeamManagementView.vue'),
+    meta: { requiresSupplierAuth: true },
   },
   {
     path: '/supplier-portal/:section',

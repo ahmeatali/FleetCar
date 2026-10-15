@@ -797,3 +797,54 @@ class FleetReservation(Base):
     created_at = Column(String, nullable=False)
     updated_at = Column(String, nullable=False)
     version = Column(Integer, nullable=False, default=1)
+
+
+class TeamRole(Base):
+    __tablename__ = "team_roles"
+    __table_args__ = (UniqueConstraint("portal", "tenant_id", "name"),)
+    id = Column(Integer, primary_key=True)
+    portal = Column(String, nullable=False)
+    tenant_id = Column(Integer, nullable=False, index=True)
+    name = Column(String, nullable=False)
+    description = Column(String, nullable=False, default="")
+    base_role = Column(String, nullable=False)
+    permissions = Column(JSON, nullable=False, default=dict)
+    version = Column(Integer, nullable=False, default=1)
+
+
+class TeamMemberAccess(Base):
+    __tablename__ = "team_member_access"
+    __table_args__ = (UniqueConstraint("portal", "tenant_id", "user_id"),)
+    id = Column(Integer, primary_key=True)
+    portal = Column(String, nullable=False)
+    tenant_id = Column(Integer, nullable=False, index=True)
+    user_id = Column(Integer, nullable=False)
+    role_id = Column(Integer, ForeignKey("team_roles.id"), nullable=True)
+    permissions = Column(JSON, nullable=True)
+    department = Column(String, nullable=False, default="")
+    pending = Column(Boolean, nullable=False, default=False)
+    version = Column(Integer, nullable=False, default=1)
+
+
+class TeamInvitation(Base):
+    __tablename__ = "team_invitations"
+    id = Column(Integer, primary_key=True)
+    portal = Column(String, nullable=False)
+    tenant_id = Column(Integer, nullable=False, index=True)
+    user_id = Column(Integer, nullable=False)
+    token_hash = Column(String, nullable=False, unique=True)
+    expires_at = Column(String, nullable=False)
+    accepted_at = Column(String, nullable=True)
+    revoked_at = Column(String, nullable=True)
+    created_at = Column(String, nullable=False)
+
+
+class TeamActivity(Base):
+    __tablename__ = "team_activity"
+    id = Column(Integer, primary_key=True)
+    portal = Column(String, nullable=False)
+    tenant_id = Column(Integer, nullable=False, index=True)
+    actor = Column(String, nullable=False)
+    action = Column(String, nullable=False)
+    target = Column(String, nullable=False)
+    created_at = Column(String, nullable=False)

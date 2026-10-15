@@ -35,6 +35,8 @@ try {
     (url) => url.pathname.startsWith('/api/'),
     async (route) => {
       const path = new URL(route.request().url()).pathname
+      if (path.endsWith('/session'))
+        return route.fulfill({ json: { can_manage: true, permissions: null } })
       calls.push(path)
       assert.equal(route.request().headers().authorization, 'Bearer customer-test-token')
       if (fail)

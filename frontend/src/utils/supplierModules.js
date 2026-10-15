@@ -357,7 +357,7 @@ export const supplierModules = {
     ],
   },
   users: {
-    label: 'Kullanıcılar',
+    label: 'Kullanıcılar ve Yetkiler',
     icon: '♧',
     create: 'Yeni Kullanıcı',
     description:
