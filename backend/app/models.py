@@ -736,3 +736,64 @@ def _reserve_identity(mapper, connection, target):
 for _identity_class in (Supplier, Customer, AdminUser, SupplierPortalUser, CustomerPortalUser):
     event.listen(_identity_class, "before_insert", _reserve_identity)
     event.listen(_identity_class, "before_delete", _reserve_identity)
+
+
+class FleetBranch(Base):
+    __tablename__ = "fleet_branches"
+    __table_args__ = (UniqueConstraint("supplier_id", "name"),)
+    id = Column(Integer, primary_key=True)
+    supplier_id = Column(Integer, ForeignKey("suppliers.id"), nullable=False, index=True)
+    name = Column(String, nullable=False)
+    city = Column(String, nullable=False)
+    address = Column(String, nullable=False, default="")
+    is_active = Column(Boolean, nullable=False, default=True)
+    version = Column(Integer, nullable=False, default=1)
+
+
+class FleetVehicleLocation(Base):
+    __tablename__ = "fleet_vehicle_locations"
+    vehicle_id = Column(String, ForeignKey("vehicles.id"), primary_key=True)
+    supplier_id = Column(Integer, ForeignKey("suppliers.id"), nullable=False, index=True)
+    home_branch_id = Column(Integer, ForeignKey("fleet_branches.id"), nullable=False)
+    current_branch_id = Column(Integer, ForeignKey("fleet_branches.id"), nullable=False)
+    location_note = Column(String, nullable=False, default="")
+    updated_at = Column(String, nullable=False)
+    updated_by = Column(String, nullable=False)
+    version = Column(Integer, nullable=False, default=1)
+
+
+class FleetTask(Base):
+    __tablename__ = "fleet_tasks"
+    __table_args__ = (UniqueConstraint("supplier_id", "source_key"),)
+    id = Column(Integer, primary_key=True)
+    supplier_id = Column(Integer, ForeignKey("suppliers.id"), nullable=False, index=True)
+    source_key = Column(String, nullable=False)
+    title = Column(String, nullable=False)
+    vehicle_id = Column(String, ForeignKey("vehicles.id"))
+    branch_id = Column(Integer, ForeignKey("fleet_branches.id"))
+    assignee_id = Column(Integer, ForeignKey("supplier_portal_users.id"))
+    due_date = Column(String, nullable=False)
+    note = Column(Text, nullable=False, default="")
+    status = Column(String, nullable=False, default="Açık")
+    updated_at = Column(String, nullable=False)
+    updated_by = Column(String, nullable=False)
+    version = Column(Integer, nullable=False, default=1)
+
+
+class FleetReservation(Base):
+    __tablename__ = "fleet_reservations"
+    id = Column(Integer, primary_key=True)
+    supplier_id = Column(Integer, ForeignKey("suppliers.id"), nullable=False, index=True)
+    customer_id = Column(Integer, ForeignKey("customers.id"), nullable=False)
+    vehicle_id = Column(String, ForeignKey("vehicles.id"), nullable=False, index=True)
+    pickup_branch_id = Column(Integer, ForeignKey("fleet_branches.id"), nullable=False)
+    return_branch_id = Column(Integer, ForeignKey("fleet_branches.id"), nullable=False)
+    start_date = Column(String, nullable=False)
+    end_date = Column(String, nullable=False)
+    monthly_rent = Column(Float, nullable=False)
+    note = Column(Text, nullable=False, default="")
+    status = Column(String, nullable=False, default="Onaylandı")
+    contract_id = Column(Integer, ForeignKey("supplier_operations.id"), unique=True)
+    created_at = Column(String, nullable=False)
+    updated_at = Column(String, nullable=False)
+    version = Column(Integer, nullable=False, default=1)

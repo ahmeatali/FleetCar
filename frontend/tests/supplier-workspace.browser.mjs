@@ -154,6 +154,14 @@ try {
       await screen(section)
   }
   await visit('settings')
+  await page.getByRole('tab', { name: 'Entegrasyonlar', exact: true }).click()
+  await page.getByRole('heading', { name: 'Entegrasyon Kütüphanesi' }).waitFor()
+  assert.equal(await page.getByText('Erişim ve İşlem Sonuçlarını Gör', { exact: true }).count(), 0)
+  await page
+    .locator('article')
+    .filter({ has: page.getByRole('heading', { name: 'Arvento', exact: true }) })
+    .getByRole('button')
+    .click()
   await page.getByLabel('Cihaz Kimliği Alanı', { exact: true }).fill('Node')
   await page.getByLabel('Konum Zamanı Alanı', { exact: true }).fill('At')
   await page.getByLabel('Enlem Alanı', { exact: true }).fill('Lat')
@@ -172,6 +180,28 @@ try {
     true,
   )
   await screen('arvento-settings')
+  await page
+    .locator('article')
+    .filter({ has: page.getByRole('heading', { name: 'Shell Taşıt Tanıma', exact: true }) })
+    .getByRole('button')
+    .click()
+  await page.getByRole('heading', { name: 'Shell Taşıt Tanıma Bağlantısı', exact: true }).waitFor()
+  await page.getByRole('button', { name: 'Bağlantı Ayarlarını Kaydet', exact: true }).click()
+  await page.getByText('Shell bağlantı ayarları kaydedildi.', { exact: true }).waitFor()
+  await page.getByLabel('Shell Plakası', { exact: true }).fill('34 ABC 123')
+  const shellPanel = page
+    .locator('section.sw-settings')
+    .filter({ has: page.getByRole('heading', { name: 'Shell Taşıt Tanıma Bağlantısı' }) })
+  await shellPanel.getByLabel('Shell Aracı', { exact: true }).selectOption('car')
+  await page.getByRole('button', { name: 'Plakayı Eşle', exact: true }).click()
+  await shellPanel.getByRole('cell', { name: '34ABC123', exact: true }).waitFor()
+  assert.equal(
+    await page
+      .getByRole('button', { name: 'Shell Yakıt Alımlarını Getir', exact: true })
+      .isDisabled(),
+    true,
+  )
+  await screen('shell-settings')
   await visit('offers')
   await page.getByRole('button', { name: '＋ Yeni Teklif', exact: true }).click()
   let modal = page.locator('.sw-form-modal')
@@ -351,6 +381,10 @@ try {
   )
   const viewerLoaded = page.waitForResponse((r) => r.url().includes('/supplier-workspace/snapshot'))
   await page.getByRole('button', { name: 'Tedarikçi menüsünü aç' }).click()
+  await page
+    .locator('aside.portal-sidebar')
+    .getByRole('button', { name: 'Kiralamalar', exact: true })
+    .click()
   await page
     .locator('aside.portal-sidebar')
     .getByRole('link', { name: 'Teklifler', exact: true })

@@ -14,6 +14,21 @@ export const supplierModules = {
     description:
       'Filo operasyonlarınızın genel durumu. Süreçleri ve yaklaşan işleri tek ekrandan yönetin.',
   },
+  operations: {
+    label: 'Günlük Operasyonlar',
+    icon: '✓',
+    description: 'Günlük işleri, geciken işlemleri ve sorumlu kullanıcıları takip edin.',
+  },
+  branches: {
+    label: 'Şube ve Lokasyonlar',
+    icon: '⌖',
+    description: 'Şubelerinizi ve araçların güncel lokasyonlarını yönetin.',
+  },
+  reservations: {
+    label: 'Rezervasyonlar',
+    icon: '▣',
+    description: 'Araç müsaitliğini kontrol edin, rezervasyonları sözleşmeye dönüştürün.',
+  },
   vehicles: { label: 'Araçlar', icon: '▱' },
   rentals: {
     label: 'Kiralamalar',
