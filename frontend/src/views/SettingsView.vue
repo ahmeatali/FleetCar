@@ -1013,9 +1013,16 @@ import Sidebar from '../components/Sidebar.vue'
 
 const route = useRoute()
 const router = useRouter()
-const activeTab = ref(route.query.tab || 'kullanicilar')
+const activeTab = ref(
+  route.query.tab === 'kullanicilar' ? 'sirket_evraklari' : route.query.tab || 'sirket_evraklari',
+)
+if (route.query.tab === 'kullanicilar') router.replace('/dashboard/users')
 
 const selectTab = (tabKey) => {
+  if (tabKey === 'kullanicilar') {
+    router.push('/dashboard/users')
+    return
+  }
   activeTab.value = tabKey
   router.replace({ query: { ...route.query, tab: tabKey } })
 }

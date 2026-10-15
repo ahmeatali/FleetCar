@@ -126,6 +126,7 @@ import { UiButton } from './ui/index.js'
 import { useRoute, useRouter } from 'vue-router'
 import { supplierNavigation } from '../utils/supplierModules'
 import { supplierNavigationGroups } from '../utils/supplierNavigation.js'
+import { apiRequest } from '../api/http.js'
 import { supplierApi } from '../utils/supplierApi'
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 const props = defineProps({ supplier: Boolean })
@@ -157,14 +158,62 @@ const customerItems = [
   { label: 'Filo Kontrol & Tasarruf', icon: '◇', to: '/dashboard/savings' },
   { label: 'Belgeler', icon: '▤', to: '/dashboard/settings?tab=sirket_evraklari' },
   { label: 'Bildirimler', icon: '♧' },
+  { label: 'Kullanıcılar ve Yetkiler', icon: '♧', to: '/dashboard/users' },
   { label: 'Ayarlar', icon: '⚙', to: '/dashboard/settings' },
   { label: 'Tedarikçi İşlemleri', icon: '▤', to: '/dashboard/requests' },
   { label: 'İş Emirleri', icon: '▣', to: '/dashboard/work-orders' },
 ]
 const items = computed(() => (props.supplier ? supplierNavigation : customerItems))
-const navigationEntries = computed(() =>
-  props.supplier ? supplierNavigationGroups : customerItems,
-)
+const accessPermissions = ref(null),
+  canManageTeam = ref(true)
+const moduleForLink = (item) => {
+  const path = item.to?.split('?')[0].split('/').at(-1)
+  return {
+    vehicles: 'vehicles',
+    offers: 'offers',
+    quotes: 'offers',
+    contracts: 'contracts',
+    operations: 'operations',
+    branches: 'operations',
+    reservations: 'operations',
+    rentals: 'operations',
+    deliveries: 'operations',
+    returns: 'operations',
+    maintenance: 'service',
+    service: 'service',
+    'service-management': 'service',
+    'work-orders': 'service',
+    roadside: 'service',
+    tire: 'tires',
+    tires: 'tires',
+    damage: 'damage',
+    policies: 'policies',
+    hgs: 'tolls',
+    fines: 'tolls',
+    fuel: 'fuel',
+    invoices: 'invoices',
+    accounting: 'invoices',
+    reports: 'reports',
+    savings: 'reports',
+    planning: 'planning',
+    customers: 'customers',
+    settings: 'settings',
+    sales: 'vehicles',
+  }[path]
+}
+const visibleLink = (item) => {
+  if (item.to?.split('?')[0].endsWith('/users')) return canManageTeam.value
+  const module = moduleForLink(item)
+  return !accessPermissions.value || !module || accessPermissions.value[module]?.view
+}
+const navigationEntries = computed(() => {
+  const source = props.supplier ? supplierNavigationGroups : customerItems
+  return source
+    .map((item) =>
+      item.children ? { ...item, children: item.children.filter(visibleLink) } : item,
+    )
+    .filter((item) => (item.children ? item.children.length : visibleLink(item)))
+})
 const isSelected = (item) => {
   if (props.supplier) {
     const [path, query] = item.to.split('?')
@@ -241,7 +290,30 @@ watch(
     mobileOpen.value = false
   },
 )
+async function loadAccess() {
+  const supplierPortal = props.supplier
+  try {
+    const access = await apiRequest(
+      `/api/team/${props.supplier ? 'supplier' : 'customer'}/session`,
+      { account: props.supplier ? 'supplier' : 'customer' },
+    )
+    if (supplierPortal !== props.supplier) return
+    accessPermissions.value = access.permissions
+    canManageTeam.value = access.can_manage
+  } catch {
+    /* Existing authentication flows handle expired sessions. */
+  }
+}
+watch(
+  () => props.supplier,
+  () => {
+    accessPermissions.value = null
+    canManageTeam.value = false
+    loadAccess()
+  },
+)
 onMounted(() => {
+  loadAccess()
   media = window.matchMedia('(max-width:900px)')
   syncMobile()
   media.addEventListener('change', syncMobile)

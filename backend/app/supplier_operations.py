@@ -1038,7 +1038,7 @@ def snapshot(ctx=Depends(context), db: Session = Depends(get_db)):
         in {"Belirsiz", "Eşleştirme Bekliyor"}
         and not (r.get("kind") == "hgs" and r.get("details", {}).get("type") != "Geçiş")
     ]
-    return {
+    result = {
         "matching_queue": matching_queue,
         "rentals": rentals,
         "session": read_session(ctx),
@@ -1087,6 +1087,10 @@ def snapshot(ctx=Depends(context), db: Session = Depends(get_db)):
             .all()
         ],
     }
+
+    from app.team_permissions import filter_snapshot, policy
+
+    return filter_snapshot(result, policy(db, "supplier", ctx["id"], ctx["session"].user_id))
 
 
 @router.post("/shared/{kind}")
@@ -1282,9 +1286,20 @@ def read_vehicle_resource(
     if resource == "usage-records":
         return main.get_usage_records(vid, db)
     if resource == "business-history":
+        from app.team_permissions import KINDS, policy
         from app.vehicle_business_history import history
 
-        return history(db, vid, supplier_id=ctx["id"])
+        permissions = policy(db, "supplier", ctx["id"], ctx["session"].user_id)
+        rows = history(db, vid, supplier_id=ctx["id"])
+        return (
+            rows
+            if permissions is None
+            else [
+                row
+                for row in rows
+                if permissions.get(KINDS.get(row["kind"]), {}).get("view", False)
+            ]
+        )
     raise HTTPException(404, "Kaynak bulunamadı.")
 
 

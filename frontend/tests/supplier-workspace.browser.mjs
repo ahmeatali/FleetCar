@@ -127,7 +127,6 @@ try {
     'reports',
     'approvals',
     'planning',
-    'users',
     'settings',
   ]) {
     await visit(section)
