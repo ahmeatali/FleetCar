@@ -343,12 +343,6 @@ export const supplierModules = {
     description:
       'Limit üzerindeki işlemleri, tutar ve sürüm bilgileriyle inceleyip karara bağlayın.',
   },
-  savings: {
-    label: 'Filo Kontrol & Tasarruf',
-    icon: '◇',
-    description:
-      'Kayıtlı verilerdeki riskleri açıklanabilir kurallarla bulun ve ilgili kayda gidin.',
-  },
   planning: {
     label: 'Filo Planlama & Karar',
     icon: '◈',

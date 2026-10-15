@@ -8,7 +8,7 @@
 2. **Sunucu iş akışlarını kur:** şirket sahibi/rol doğrulaması, tedarikçi kapsamı, kayıt oluşturma/düzenleme, sürüm kontrolü, tür bazında durum geçişleri, bağlı kayıt doğrulaması, tekliften sözleşme, sözleşmeden teslimat/fatura, müşteri ataması, teslimat formu, ödeme bakiyesi, onay eşiği, olay geçmişi.
 3. **Mevcut kaynakları birleştir:** ortak Vehicle/Customer/Request/File/Expense/HGS/Tire kaynakları; yeni kaydı bulunmayan eski araç sözleşmesi/poliçesi açık “Araç kaydı” kaynağıyla görünür. Yeni aktif kayıt ortak müşteri alanlarına yansır.
 4. **Ortak ürün kabuğu:** bütün tedarikçi menüsü, ana sayfa, liste/sağ panel, filtreler, durum sekmeleri, CSV, tür bazında formlar. Mevcut ihale/talep sayfası `/supplier-portal/marketplace` altında korunur.
-5. **Modüller:** Müşteriler, Teklifler, Sözleşmeler, Kiralamalar, Teslimatlar, Servis/Bakım, Hasar/Kaza, Sigorta/Kasko, Lastik, HGS, TPC, Yakıt, Faturalar, Muhasebe; Raporlar, Onay/Yetki, Kontrol/Tasarruf, Filo Planlama, Kullanıcılar/Ayarlar.
+5. **Modüller:** Müşteriler, Teklifler, Sözleşmeler, Kiralamalar, Teslimatlar, Servis/Bakım, Hasar/Kaza, Sigorta/Kasko, Lastik, HGS, TPC, Yakıt, Faturalar, Muhasebe; Raporlar, Onay/Yetki, Filo Planlama, Kullanıcılar/Ayarlar.
 6. **Doğrula:** API uçtan uca ticari akış, rol/sahiplik izolasyonu, çakışma/yeniden oynatma, tarih/tutar doğrulaması, filtre ve maliyet çift sayım testleri; frontend derlemesi; masaüstü/mobil tarayıcı testi ve ekran görüntüsü incelemesi; mevcut müşteri/servis testleri.
 
 ## Teknik yerleşim

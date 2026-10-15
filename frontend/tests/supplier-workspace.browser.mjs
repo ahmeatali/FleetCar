@@ -126,7 +126,6 @@ try {
     'accounting',
     'reports',
     'approvals',
-    'savings',
     'planning',
     'users',
     'settings',
@@ -147,7 +146,6 @@ try {
         'hgs',
         'reports',
         'approvals',
-        'savings',
         'planning',
       ].includes(section)
     )

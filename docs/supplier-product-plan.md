@@ -19,7 +19,7 @@ Kiralama tedarikçisi kendi envanterini, müşteri ilişkilerini ve teklif → s
 | 13.39.05 (1) | Servis & Bakım | Yaklaşan bakımı planla | Vehicle.next_service_* + mevcut Request; servis firması tedarikçinin kendisinden ayrı |
 | 13.39.06 | Sigorta & Kasko | Poliçeyi kaydet, süreyi izle | Araç bağlantılı poliçe; güncel poliçe numarası ve bitiş tarihi Vehicle'a yansır |
 | 13.39.06 (1) | Sözleşmeler | Taslağı aktifleştir, sonlandır | Müşteri + araç + onaylı teklif bağlantılı sözleşme; durum geçişi denetimli |
-| 13.39.07 | Kontrol & Tasarruf | Hangi gerçek kaydı incelemeliyim? | Yakıt/km, fatura no tekrarı, kira farkı, kullanım ve bakımdan açıklanabilir kurallar |
+| Müşteri portalı | Kontrol & Tasarruf | Hangi gerçek kaydı incelemeliyim? | Yakıt/km, fatura no tekrarı, kira farkı, kullanım ve bakımdan açıklanabilir kurallar |
 | 13.39.07 (1) | Planlama & Karar | Farklı filo varsayımlarını karşılaştır | Kullanıcının kaydettiği senaryo; mevcut filoyla matematiksel maliyet karşılaştırması |
 | 13.39.08 | Teklifler | Müşteri teklifini oluştur, sözleşmeye çevir | Müşteri, araç, süre, miktar, fiyat; mevcut müşteri ihaleleri ayrı görünümde korunur |
 | 13.39.08 (1) | Teslimatlar | Kontrol ve teslimi tamamla | Sözleşme + araç + alıcı + km + kontrol listesi; tamamlanınca DeliveryForm oluşur |
@@ -106,3 +106,5 @@ SupplierOperation ortak işlem başlığını (tür, numara, sahibi, müşteri, 
 ## Entegrasyon sınırları
 
 Arvento GetVehicleStatus adaptörü ve cihaz/alan eşleme ekranı uygulandı; canlı hesap doğrulaması bekliyor. Diğer HGS, ERP, e-Fatura, sigorta, e-imza ve harici AI sağlayıcıları seçilmedi. İmza akışı şu an manuel ıslak imzalı PDF ve bağımsız hesap teyididir. Hukuken onaylı sözleşme/Ek-1/Ek-2 şablon üretimi ve nitelikli e-imza bağlantısı ayrıca geliştirme gerektirir. Güncel kanıtlar ve sınırlar: [fr-kp-001-gap-audit.md](fr-kp-001-gap-audit.md).
+
+Kontrol & Tasarruf Merkezi müşteri portalında `/dashboard/savings` adresindedir. Tespitler müşteri oturumuyla erişilen araç ve olay dönemi görünürlüğü uygulanan gider verilerinden hesaplanır. Tedarikçi menüsünde yer almaz; eski `/supplier-portal/savings` bağlantısı müşteri giriş koruması olan yeni sayfaya yönlenir.
