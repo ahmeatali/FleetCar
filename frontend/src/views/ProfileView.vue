@@ -8,14 +8,16 @@
       <header class="dashboard-header">
         <div>
           <h1>Şirket Profili</h1>
-          <p style="color: var(--text-muted); font-size: 0.95rem;">Şirketinizin kurumsal kimlik, tescil ve yetkili kullanıcı bilgilerini görüntüleyin.</p>
+          <p style="color: var(--text-muted); font-size: 0.95rem">
+            Şirketinizin kurumsal kimlik, tescil ve yetkili kullanıcı bilgilerini görüntüleyin.
+          </p>
         </div>
         <NotificationBell />
       </header>
 
-      <div v-if="loading" class="text-center" style="padding: 50px 0;">Yükleniyor...</div>
+      <div v-if="loading" class="text-center" style="padding: 50px 0">Yükleniyor...</div>
 
-      <div v-else class="grid-2" style="margin-top: 30px; gap: 30px;">
+      <div v-else class="grid-2" style="margin-top: 30px; gap: 30px">
         <!-- Left Side: Kurumsal Kimlik -->
         <div class="glass-panel profile-card">
           <div class="card-title">
@@ -23,7 +25,7 @@
             <h3>Kurumsal Kimlik & Tescil</h3>
           </div>
           <div class="divider"></div>
-          
+
           <div class="profile-details-list">
             <div class="profile-detail-row">
               <span class="label">Şirket Adı</span>
@@ -35,7 +37,9 @@
             </div>
             <div class="profile-detail-row">
               <span class="label">Kayıtlı Araç Sayısı</span>
-              <span class="value highlight-badge">{{ profile.registered_vehicles_count }} Araç</span>
+              <span class="value highlight-badge"
+                >{{ profile.registered_vehicles_count }} Araç</span
+              >
             </div>
             <div class="profile-detail-row">
               <span class="label">Müşteri Tipi</span>
@@ -51,7 +55,7 @@
             <h3>İletişim & Adres Bilgileri</h3>
           </div>
           <div class="divider"></div>
-          
+
           <div class="profile-details-list">
             <div class="profile-detail-row">
               <span class="label">E-posta Adresi</span>
@@ -63,92 +67,126 @@
             </div>
             <div class="profile-detail-row">
               <span class="label">Adres</span>
-              <span class="value" style="text-align: right; line-height: 1.4; max-width: 250px;">{{ profile.address }}</span>
+              <span class="value" style="text-align: right; line-height: 1.4; max-width: 250px">{{
+                profile.address
+              }}</span>
             </div>
           </div>
         </div>
 
         <!-- Full Width Bottom Side: Yetkili Hesap -->
-        <div class="glass-panel profile-card" style="grid-column: span 2;">
+        <div class="glass-panel profile-card" style="grid-column: span 2">
           <div class="card-title">
             <span class="card-icon">👨‍💼</span>
             <h3>Sözleşme & Yetkili Kullanıcı</h3>
           </div>
           <div class="divider"></div>
-          
-          <div class="grid-3" style="gap: 20px;">
+
+          <div class="grid-3" style="gap: 20px">
             <div class="user-info-box">
               <span class="info-label">Filo Yöneticisi</span>
               <strong class="info-val">{{ profile.company_name || 'Filo Yöneticisi' }}</strong>
             </div>
             <div class="user-info-box">
               <span class="info-label">Kullanıcı Rolü</span>
-              <strong class="info-val" style="color: var(--secondary);">Filo Yöneticisi</strong>
+              <strong class="info-val" style="color: var(--secondary)">Filo Yöneticisi</strong>
             </div>
             <div class="user-info-box">
               <span class="info-label">Sözleşme Durumu</span>
-              <strong class="info-val" style="color: #059669;">Aktif Kiralama</strong>
+              <strong class="info-val" style="color: #059669">Aktif Kiralama</strong>
             </div>
           </div>
         </div>
 
         <!-- Full Width Bottom Side: Şirket Evrakları -->
-        <div class="glass-panel profile-card" style="grid-column: span 2;">
-          <div class="card-title" style="justify-content: space-between;">
-            <div style="display: flex; align-items: center; gap: 12px;">
+        <div class="glass-panel profile-card" style="grid-column: span 2">
+          <div class="card-title" style="justify-content: space-between">
+            <div style="display: flex; align-items: center; gap: 12px">
               <span class="card-icon">📂</span>
               <h3>Kurumsal Şirket Evrakları</h3>
             </div>
-            <span v-if="profile.documents_uploaded" style="background: #dcfce7; color: #15803d; font-size: 0.82rem; font-weight: 700; padding: 4px 12px; border-radius: 20px;">
+            <span
+              v-if="profile.documents_uploaded"
+              style="
+                background: #dcfce7;
+                color: #15803d;
+                font-size: 0.82rem;
+                font-weight: 700;
+                padding: 4px 12px;
+                border-radius: 20px;
+              "
+            >
               ✓ Evraklar Onaylı
             </span>
-            <span v-else style="background: #fef3c7; color: #b45309; font-size: 0.82rem; font-weight: 700; padding: 4px 12px; border-radius: 20px;">
+            <span
+              v-else
+              style="
+                background: #fef3c7;
+                color: #b45309;
+                font-size: 0.82rem;
+                font-weight: 700;
+                padding: 4px 12px;
+                border-radius: 20px;
+              "
+            >
               ⚠️ Evrak Bekleniyor
             </span>
           </div>
           <div class="divider"></div>
 
-          <div class="grid-4" style="gap: 20px;">
+          <div class="grid-4" style="gap: 20px">
             <!-- Vergi Levhası -->
-            <div class="user-info-box" style="position: relative;">
+            <div class="user-info-box" style="position: relative">
               <span class="info-label">📄 Vergi Levhası</span>
-              <strong class="info-val" style="font-size: 0.9rem;">
+              <strong class="info-val" style="font-size: 0.9rem">
                 {{ profile.documents?.tax_plate?.file_name || 'Yüklenmedi' }}
               </strong>
-              <span style="font-size: 0.75rem; color: #64748b;" v-if="profile.documents?.tax_plate?.uploaded_at">
+              <span
+                style="font-size: 0.75rem; color: #64748b"
+                v-if="profile.documents?.tax_plate?.uploaded_at"
+              >
                 Tarih: {{ profile.documents.tax_plate.uploaded_at }}
               </span>
             </div>
 
             <!-- İmza Sirküsü -->
-            <div class="user-info-box" style="position: relative;">
+            <div class="user-info-box" style="position: relative">
               <span class="info-label">✒️ İmza Sirküsü</span>
-              <strong class="info-val" style="font-size: 0.9rem;">
+              <strong class="info-val" style="font-size: 0.9rem">
                 {{ profile.documents?.signature_circular?.file_name || 'Yüklenmedi' }}
               </strong>
-              <span style="font-size: 0.75rem; color: #64748b;" v-if="profile.documents?.signature_circular?.uploaded_at">
+              <span
+                style="font-size: 0.75rem; color: #64748b"
+                v-if="profile.documents?.signature_circular?.uploaded_at"
+              >
                 Tarih: {{ profile.documents.signature_circular.uploaded_at }}
               </span>
             </div>
 
             <!-- Faaliyet Belgesi -->
-            <div class="user-info-box" style="position: relative;">
+            <div class="user-info-box" style="position: relative">
               <span class="info-label">🏛️ Faaliyet Belgesi</span>
-              <strong class="info-val" style="font-size: 0.9rem;">
+              <strong class="info-val" style="font-size: 0.9rem">
                 {{ profile.documents?.activity_certificate?.file_name || 'Yüklenmedi' }}
               </strong>
-              <span style="font-size: 0.75rem; color: #64748b;" v-if="profile.documents?.activity_certificate?.uploaded_at">
+              <span
+                style="font-size: 0.75rem; color: #64748b"
+                v-if="profile.documents?.activity_certificate?.uploaded_at"
+              >
                 Tarih: {{ profile.documents.activity_certificate.uploaded_at }}
               </span>
             </div>
 
             <!-- Ticaret Sicil Gazetesi -->
-            <div class="user-info-box" style="position: relative;">
+            <div class="user-info-box" style="position: relative">
               <span class="info-label">📜 Ticaret Sicil Gazetesi</span>
-              <strong class="info-val" style="font-size: 0.9rem;">
+              <strong class="info-val" style="font-size: 0.9rem">
                 {{ profile.documents?.trade_registry?.file_name || 'Yüklenmedi' }}
               </strong>
-              <span style="font-size: 0.75rem; color: #64748b;" v-if="profile.documents?.trade_registry?.uploaded_at">
+              <span
+                style="font-size: 0.75rem; color: #64748b"
+                v-if="profile.documents?.trade_registry?.uploaded_at"
+              >
                 Tarih: {{ profile.documents.trade_registry.uploaded_at }}
               </span>
             </div>
@@ -170,7 +208,7 @@ const profile = ref({
   registered_vehicles_count: 0,
   email: '',
   phone: '',
-  address: ''
+  address: '',
 })
 const loading = ref(true)
 

@@ -1,949 +1,1320 @@
 <template>
-  <div class="app-bg-glow" :style="{ '--glow-color': isServiceAccount ? 'rgba(37, 99, 235, 0.08)' : 'rgba(16, 185, 129, 0.08)' }"></div>
-  
-  <div class="supplier-layout">
-    <!-- Navbar Header -->
-    <header class="supplier-header glass-panel">
-      <div class="logo-area">
-        <img class="brand-logo-image" src="/fleetrent-logo.jpeg" alt="FleetRent" />
-        <div>
-          <span class="portal-title"><span :class="isServiceAccount ? 'tag-service' : 'tag-supplier'">{{ isServiceAccount ? 'Servis Portalı' : 'Tedarikçi Portalı' }}</span></span>
-          <h2 class="supplier-name-display">{{ supplierName }}</h2>
-        </div>
-      </div>
+  <div
+    class="app-bg-glow"
+    :style="{
+      '--glow-color': isServiceAccount ? 'rgba(37, 99, 235, 0.08)' : 'rgba(16, 185, 129, 0.08)',
+    }"
+  ></div>
 
-      <div style="display: flex; gap: 15px; align-items: center;">
-        <span class="type-badge" :style="{ background: isServiceAccount ? 'rgba(37,99,235,0.1)' : 'rgba(16,185,129,0.1)', color: isServiceAccount ? '#2563eb' : '#10b981', border: isServiceAccount ? '1px solid rgba(37,99,235,0.2)' : '1px solid rgba(16,185,129,0.2)' }">
-          {{ getTypeName(supplierType) }}
-        </span>
-        <button @click="handleLogout" class="btn btn-secondary btn-danger-hover">
-          Çıkış Yap ➔
-        </button>
-      </div>
-    </header>
-
-    <!-- Supplier Profile Info Bar -->
-    <div class="glass-panel profile-bar fade-in-up" style="padding: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
-      <div style="display: flex; gap: 30px; flex-wrap: wrap; align-items: center;">
-        <div>
-          <span class="profile-meta-label">📍 İl / İlçe</span>
-          <div class="profile-meta-value" style="font-weight: 600; font-size: 1rem; color: var(--text-main); margin-top: 3px;">
-            {{ supplierCity || '-' }} / {{ supplierDistrict || '-' }}
+  <div :class="isServiceAccount ? 'supplier-layout' : 'portal-layout supplier-customer-layout'">
+    <Sidebar v-if="!isServiceAccount" supplier />
+    <div :class="isServiceAccount ? '' : 'portal-main supplier-customer-main'">
+      <!-- Navbar Header -->
+      <header
+        class="supplier-header glass-panel"
+        :class="{ 'supplier-customer-header': !isServiceAccount }"
+      >
+        <div class="logo-area">
+          <img class="brand-logo-image" src="/fleetrent-logo.jpeg" alt="FleetRent" />
+          <div>
+            <span class="portal-title"
+              ><span :class="isServiceAccount ? 'tag-service' : 'tag-supplier'">{{
+                isServiceAccount ? 'Servis Portalı' : 'Tedarikçi Portalı'
+              }}</span></span
+            >
+            <h2 class="supplier-name-display">{{ supplierName }}</h2>
           </div>
         </div>
 
-        <!-- Servis Specific Profile Meta -->
-        <template v-if="isServiceAccount">
-          <div style="border-left: 1px solid var(--border-color); padding-left: 30px;">
-            <span class="profile-meta-label">📄 Servis Tipi</span>
-            <div style="margin-top: 5px;">
-              <span class="contract-badge" :class="supplierContractType === 'Yetkili' ? 'badge-auth' : 'badge-contracted'">
-                {{ supplierContractType || '-' }} Servis
-              </span>
+        <div style="display: flex; gap: 15px; align-items: center">
+          <span
+            class="type-badge"
+            :style="{
+              background: isServiceAccount ? 'rgba(37,99,235,0.1)' : 'rgba(16,185,129,0.1)',
+              color: isServiceAccount ? '#2563eb' : '#10b981',
+              border: isServiceAccount
+                ? '1px solid rgba(37,99,235,0.2)'
+                : '1px solid rgba(16,185,129,0.2)',
+            }"
+          >
+            {{ getTypeName(supplierType) }}
+          </span>
+          <UiButton @click="handleLogout" class="btn btn-secondary btn-danger-hover">
+            Çıkış Yap ➔
+          </UiButton>
+        </div>
+      </header>
+
+      <section v-if="!isServiceAccount" class="supplier-page-heading">
+        <div>
+          <span>TEDARİKÇİ PORTALI</span>
+          <h1>
+            {{ currentTab === 'requests' ? 'Atanan Kiralama Talepleri' : 'Filo Genel Bakış' }}
+          </h1>
+          <p>Araçlarınızı, müşteri atamalarınızı ve kiralama süreçlerinizi tek yerden yönetin.</p>
+        </div>
+        <router-link to="/supplier-portal/vehicles" class="btn btn-primary"
+          >＋ Araç Ekle / Filoyu Yönet</router-link
+        >
+      </section>
+      <UiAlert
+        v-if="portalError && !isServiceAccount"
+        class="supplier-load-error"
+        as="p"
+        tone="error"
+        >{{ portalError }}
+        <UiButton class="btn btn-secondary" @click="reloadPortal">Tekrar Dene</UiButton></UiAlert
+      >
+      <!-- Supplier Profile Info Bar -->
+      <div
+        class="glass-panel profile-bar fade-in-up"
+        style="
+          padding: 20px;
+          margin-bottom: 30px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 20px;
+        "
+      >
+        <div style="display: flex; gap: 30px; flex-wrap: wrap; align-items: center">
+          <div>
+            <span class="profile-meta-label">📍 İl / İlçe</span>
+            <div
+              class="profile-meta-value"
+              style="font-weight: 600; font-size: 1rem; color: var(--text-main); margin-top: 3px"
+            >
+              {{ supplierCity || '-' }} / {{ supplierDistrict || '-' }}
             </div>
           </div>
-          <div style="border-left: 1px solid var(--border-color); padding-left: 30px;">
-            <span class="profile-meta-label">🛠️ Yapabildiği Hizmetler</span>
-            <div style="display: flex; gap: 6px; margin-top: 5px; flex-wrap: wrap;">
-              <span class="service-tag" v-for="service in supplierServices" :key="service">
-                {{ service }}
-              </span>
-              <span v-if="!supplierServices || supplierServices.length === 0" style="color: var(--text-muted); font-size: 0.85rem;">-</span>
+
+          <!-- Servis Specific Profile Meta -->
+          <template v-if="isServiceAccount">
+            <div style="border-left: 1px solid var(--border-color); padding-left: 30px">
+              <span class="profile-meta-label">📄 Servis Tipi</span>
+              <div style="margin-top: 5px">
+                <span
+                  class="contract-badge"
+                  :class="supplierContractType === 'Yetkili' ? 'badge-auth' : 'badge-contracted'"
+                >
+                  {{ supplierContractType || '-' }} Servis
+                </span>
+              </div>
+            </div>
+            <div style="border-left: 1px solid var(--border-color); padding-left: 30px">
+              <span class="profile-meta-label">🛠️ Yapabildiği Hizmetler</span>
+              <div style="display: flex; gap: 6px; margin-top: 5px; flex-wrap: wrap">
+                <span class="service-tag" v-for="service in supplierServices" :key="service">
+                  {{ service }}
+                </span>
+                <span
+                  v-if="!supplierServices || supplierServices.length === 0"
+                  style="color: var(--text-muted); font-size: 0.85rem"
+                  >-</span
+                >
+              </div>
+            </div>
+          </template>
+
+          <!-- Tedarikçi Specific Profile Meta -->
+          <template v-else>
+            <div style="border-left: 1px solid var(--border-color); padding-left: 30px">
+              <span class="profile-meta-label">🏢 Firma Türü</span>
+              <div
+                class="profile-meta-value"
+                style="font-weight: 600; font-size: 0.95rem; color: #10b981; margin-top: 3px"
+              >
+                Filo Kiralama Tedarikçisi
+              </div>
+            </div>
+            <div style="border-left: 1px solid var(--border-color); padding-left: 30px">
+              <span class="profile-meta-label">🚗 Hizmet Kapsamı</span>
+              <div style="display: flex; gap: 6px; margin-top: 5px; flex-wrap: wrap">
+                <span
+                  class="service-tag"
+                  style="
+                    background: rgba(16, 185, 129, 0.1);
+                    color: #10b981;
+                    border-color: rgba(16, 185, 129, 0.2);
+                  "
+                  >İkame Araç</span
+                >
+                <span
+                  class="service-tag"
+                  style="
+                    background: rgba(16, 185, 129, 0.1);
+                    color: #10b981;
+                    border-color: rgba(16, 185, 129, 0.2);
+                  "
+                  >Uzun Dönem Kiralama</span
+                >
+                <span
+                  class="service-tag"
+                  style="
+                    background: rgba(16, 185, 129, 0.1);
+                    color: #10b981;
+                    border-color: rgba(16, 185, 129, 0.2);
+                  "
+                  >Kısa Dönem Kiralama</span
+                >
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <div style="display: flex; gap: 20px; align-items: center">
+          <div>
+            <span class="profile-meta-label">📞 İletişim Telefonu</span>
+            <div
+              class="profile-meta-value"
+              style="
+                font-family: monospace;
+                font-weight: 600;
+                color: var(--text-main);
+                margin-top: 3px;
+              "
+            >
+              {{ supplierPhone || '-' }}
+            </div>
+          </div>
+          <div
+            v-if="supplierEmail"
+            style="border-left: 1px solid var(--border-color); padding-left: 20px"
+          >
+            <span class="profile-meta-label">✉️ Kurumsal E-Posta</span>
+            <div
+              class="profile-meta-value"
+              style="font-weight: 600; color: var(--text-main); margin-top: 3px"
+            >
+              {{ supplierEmail }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs for Servis -->
+      <div
+        v-if="isServiceAccount"
+        class="tab-header-container fade-in-up"
+        style="
+          display: flex;
+          gap: 15px;
+          margin-bottom: 25px;
+          border-bottom: 1px solid var(--border-color);
+          padding-bottom: 10px;
+        "
+      >
+        <UiButton
+          @click="currentTab = 'requests'"
+          class="tab-btn"
+          :class="{ 'active active-service': currentTab === 'requests' }"
+        >
+          📥 Gelen Bakım & Tamir Talepleri
+        </UiButton>
+        <UiButton
+          @click="currentTab = 'service_vehicles'"
+          class="tab-btn"
+          :class="{ 'active active-service': currentTab === 'service_vehicles' }"
+        >
+          🚗 Servisteki Araçlar & İş Emirleri
+        </UiButton>
+        <UiButton
+          @click="currentTab = 'service_invoices'"
+          class="tab-btn"
+          :class="{ 'active active-service': currentTab === 'service_invoices' }"
+        >
+          🧾 Fatura & Belge Yönetimi
+        </UiButton>
+        <UiButton
+          @click="currentTab = 'service_metrics'"
+          class="tab-btn"
+          :class="{ 'active active-service': currentTab === 'service_metrics' }"
+        >
+          ⏱️ Performans & Süre Analizi
+        </UiButton>
+      </div>
+
+      <main class="supplier-main fade-in-up">
+        <!-- ==================== A. TEDARİKÇİ VIEW (Kiralama Yapacak Firma) ==================== -->
+        <template v-if="!isServiceAccount">
+          <!-- 1. TEDARİKÇİ TENDERS TAB -->
+          <div v-if="currentTab === 'tenders'">
+            <!-- Tedarikçi Stats Dashboard -->
+            <div class="grid-4" style="gap: 20px; margin-bottom: 30px">
+              <div class="glass-panel stat-card-new">
+                <div class="stat-icon-wrapper quote-purple"><span>📥</span></div>
+                <div class="stat-info">
+                  <span class="stat-label">Toplam Araç</span>
+                  <div class="stat-val-new">{{ vehicles.filter((v) => v.is_active).length }}</div>
+                </div>
+              </div>
+              <div class="glass-panel stat-card-new">
+                <div class="stat-icon-wrapper quote-red"><span>⏳</span></div>
+                <div class="stat-info">
+                  <span class="stat-label">Atanmamış Araçlar</span>
+                  <div class="stat-val-new" style="color: #0064ff">
+                    {{ vehicles.filter((v) => v.is_active && !v.customer_id).length }}
+                  </div>
+                </div>
+              </div>
+              <div class="glass-panel stat-card-new">
+                <div class="stat-icon-wrapper quote-blue"><span>⚙️</span></div>
+                <div class="stat-info">
+                  <span class="stat-label">Müşteriye Atanan Araçlar</span>
+                  <div class="stat-val-new" style="color: #3b82f6">
+                    {{ myDeliveredVehicles.length }}
+                  </div>
+                </div>
+              </div>
+              <div class="glass-panel stat-card-new">
+                <div class="stat-icon-wrapper quote-green"><span>✅</span></div>
+                <div class="stat-info">
+                  <span class="stat-label">Kabul Edilen Teklifler</span>
+                  <div class="stat-val-new" style="color: #10b981">{{ acceptedBidsCount }}</div>
+                </div>
+              </div>
+            </div>
+
+            <section class="supplier-overview-panels">
+              <article class="glass-panel">
+                <h3>Müşteri Atamaları</h3>
+                <div>
+                  <span>Atanmamış araçlar</span
+                  ><strong>{{
+                    vehicles.filter((v) => v.is_active && !v.customer_id).length
+                  }}</strong>
+                </div>
+                <div>
+                  <span>Müşteriye atanmış araçlar</span
+                  ><strong>{{
+                    vehicles.filter((v) => v.is_active && v.customer_id).length
+                  }}</strong>
+                </div>
+                <div>
+                  <span>Aktif müşteriler</span
+                  ><strong>{{
+                    new Set(
+                      vehicles
+                        .filter((v) => v.is_active && v.customer_id)
+                        .map((v) => v.customer_id),
+                    ).size
+                  }}</strong>
+                </div>
+                <router-link to="/supplier-portal/vehicles"
+                  >Araçları ve Atamaları Yönet →</router-link
+                >
+              </article>
+              <article class="glass-panel">
+                <h3>Yaklaşan Sözleşme Bitişleri</h3>
+                <router-link
+                  v-for="vehicle in expiringVehicles.slice(0, 4)"
+                  :key="vehicle.id"
+                  :to="`/supplier-portal/vehicles/${encodeURIComponent(vehicle.id)}`"
+                  ><strong>{{ vehicle.plate }}</strong
+                  ><span>{{ vehicle.customer_name || 'Atanmamış' }}</span
+                  ><span>{{
+                    new Date(vehicle.contract_end_date).toLocaleDateString('tr-TR')
+                  }}</span></router-link
+                >
+                <p v-if="!expiringVehicles.length">
+                  Önümüzdeki 30 gün içinde bitecek sözleşme bulunmuyor.
+                </p>
+              </article>
+            </section>
+
+            <!-- Tenders List Table -->
+            <div class="glass-panel" style="padding: 25px">
+              <h3
+                style="
+                  margin-bottom: 10px;
+                  font-size: 1.15rem;
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                "
+              >
+                🏢 Karşı Teklif ve Kiralama İhaleleri
+              </h3>
+              <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px">
+                Müşteriler tarafından açılan aktif araç kiralama taleplerini inceleyin ve
+                şirketinize ait karşı fiyat tekliflerini gönderin.
+              </p>
+
+              <div v-if="loading" class="text-center" style="padding: 50px 0">Yükleniyor...</div>
+              <div v-else-if="openQuotes.length === 0" class="empty-state">
+                <span style="font-size: 3rem; display: block; margin-bottom: 15px">🏢</span>
+                <p style="font-size: 1.05rem; font-weight: 500">
+                  Şu an teklif toplayan aktif bir kiralama talebi bulunmuyor.
+                </p>
+              </div>
+              <div v-else class="custom-table-container">
+                <table class="custom-table">
+                  <thead>
+                    <tr>
+                      <th>Talep ID</th>
+                      <th>Segment & Tip</th>
+                      <th>Araç Adedi</th>
+                      <th>Süre & Yıllık KM Sınırı</th>
+                      <th>Müşteri Öngörülen Fiyatı</th>
+                      <th>Karşı Teklif Durumunuz</th>
+                      <th>İşlem / Teslimat</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="q in openQuotes" :key="q.id">
+                      <td>
+                        <strong style="color: #10b981">#{{ q.id }}</strong>
+                      </td>
+                      <td>
+                        <strong>{{ q.vehicle_segment }} Segment</strong> - {{ q.vehicle_type }}
+                      </td>
+                      <td>
+                        <span
+                          class="plate-badge"
+                          style="
+                            background: rgba(16, 185, 129, 0.1);
+                            color: #10b981;
+                            font-weight: bold;
+                            border: 1px solid rgba(16, 185, 129, 0.2);
+                          "
+                        >
+                          {{ q.vehicle_count }} Araç
+                        </span>
+                      </td>
+                      <td>
+                        <div>{{ q.duration_months }} Ay</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted)">
+                          {{ q.estimated_annual_mileage?.toLocaleString() }} km/yıl
+                        </div>
+                      </td>
+                      <td>
+                        <strong style="color: var(--text-muted)"
+                          >₺{{ q.monthly_price_try?.toLocaleString() }}</strong
+                        >
+                      </td>
+                      <td>
+                        <div v-if="hasSupplierBid(q.id)">
+                          <span
+                            class="badge badge-active"
+                            style="
+                              display: block;
+                              margin-bottom: 4px;
+                              font-size: 0.8rem;
+                              padding: 4px 8px;
+                            "
+                          >
+                            Karşı Teklifiniz: ₺{{ getSupplierBidAmount(q.id)?.toLocaleString() }}
+                          </span>
+                          <span
+                            class="badge"
+                            :class="getBidBadgeClassForSupplier(getSupplierBidStatus(q.id))"
+                            style="font-size: 0.7rem"
+                          >
+                            {{ getSupplierBidStatus(q.id) }}
+                          </span>
+                        </div>
+                        <span v-else class="badge badge-roadside">Karşı Teklif İletilmedi</span>
+                      </td>
+                      <td>
+                        <div style="display: flex; gap: 8px">
+                          <UiButton
+                            @click="openPlaceBidModal(q)"
+                            class="btn btn-secondary"
+                            style="
+                              padding: 6px 12px;
+                              font-size: 0.85rem;
+                              background: rgba(16, 185, 129, 0.05);
+                              color: #10b981;
+                              border-color: rgba(16, 185, 129, 0.2);
+                            "
+                          >
+                            {{
+                              hasSupplierBid(q.id)
+                                ? '✍ Karşı Teklifi Güncelle'
+                                : '➕ Karşı Teklif Ver'
+                            }}
+                          </UiButton>
+                          <UiButton
+                            v-if="
+                              q.status === 'Sözleşme İmzalandı' ||
+                              getSupplierBidStatus(q.id) === 'Kabul Edildi'
+                            "
+                            @click="openDeliveryModal(q)"
+                            class="btn btn-primary"
+                            style="
+                              padding: 6px 12px;
+                              font-size: 0.85rem;
+                              background: #7c3aed;
+                              color: #fff;
+                              border: none;
+                            "
+                          >
+                            🚚 Araç Teslim Et
+                          </UiButton>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. TEDARİKÇİ REQUESTS TAB -->
+          <div v-if="currentTab === 'requests'">
+            <div class="glass-panel" style="padding: 25px">
+              <h3
+                style="
+                  margin-bottom: 20px;
+                  font-size: 1.15rem;
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                "
+              >
+                📋 Atanan Kiralama & İkame Talepleri Listesi
+              </h3>
+
+              <div v-if="loading" class="text-center" style="padding: 50px 0">Yükleniyor...</div>
+              <div v-else-if="filteredRequests.length === 0" class="empty-state">
+                <span style="font-size: 3rem; display: block; margin-bottom: 15px">📥</span>
+                <p style="font-size: 1.05rem; font-weight: 500">
+                  Henüz adınıza atanmış aktif bir kiralama talebi bulunmuyor.
+                </p>
+              </div>
+              <div v-else class="custom-table-container">
+                <table class="custom-table">
+                  <thead>
+                    <tr>
+                      <th>Talep ID</th>
+                      <th>Araç Plaka & Detay</th>
+                      <th>İşlem Detayları & Açıklama</th>
+                      <th>Tedarikçi Firma</th>
+                      <th>Tarih</th>
+                      <th>Durum</th>
+                      <th style="width: 180px">Durum Güncelle</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="req in filteredRequests" :key="req.id">
+                      <td>
+                        <strong style="color: #10b981">#{{ req.id }}</strong>
+                      </td>
+                      <td>
+                        <span class="plate-badge">{{ req.vehicle_plate }}</span>
+                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px">
+                          {{ req.vehicle_brand_model }}
+                        </div>
+                      </td>
+                      <td>
+                        <p style="margin-bottom: 6px; font-weight: 500">{{ req.description }}</p>
+                        <div class="details-mini-box" v-if="req.details">
+                          <span v-if="req.details.vehicle_class"
+                            >🚗 <strong>Sınıf:</strong> {{ req.details.vehicle_class }}</span
+                          >
+                          <span v-if="req.details.location"
+                            >📍 <strong>Konum:</strong> {{ req.details.location }}</span
+                          >
+                        </div>
+                      </td>
+                      <td>
+                        {{
+                          req.supplier_id == null && req.type === 'yol_yardim'
+                            ? 'Üstlenilmeyi bekliyor'
+                            : getSupplierName(req.supplier_id)
+                        }}
+                      </td>
+                      <td>{{ formatDate(req.created_at) }}</td>
+                      <td>
+                        <span class="badge" :class="getStatusBadgeClass(req.status)">{{
+                          req.status
+                        }}</span>
+                      </td>
+                      <td>
+                        <select
+                          v-if="req.type === 'yol_yardim'"
+                          @change="updateStatus(req, $event.target.value)"
+                          class="form-select status-select-mini"
+                          :value="req.status"
+                          :disabled="updatingId === req.id"
+                        >
+                          <option value="Beklemede">Beklemede</option>
+                          <option value="Ekip Atandı">Ekip Atandı</option>
+                          <option value="Yola Çıktı">Yola Çıktı</option>
+                          <option value="Yolda">Yolda</option>
+                          <option value="Ekip Varış Noktasında">Ekip Varış Noktasında</option>
+                          <option value="Çözüldü">Çözüldü</option>
+                          <option value="İptal Edildi">İptal Et</option></select
+                        ><UiButton
+                          v-if="req.type === 'yol_yardim'"
+                          class="btn btn-secondary"
+                          style="margin-top: 6px; font-size: 11px"
+                          @click="openRoadsideUpdate(req)"
+                          >{{
+                            req.supplier_id == null ? 'Talebi Üstlen' : 'Ekip / Varış Bilgileri'
+                          }}</UiButton
+                        >
+                        <select
+                          v-else
+                          @change="updateStatus(req, $event.target.value)"
+                          class="form-select status-select-mini"
+                          :value="req.status"
+                          :disabled="updatingId === req.id"
+                        >
+                          <option value="Beklemede">Beklemede</option>
+                          <option value="Onaylandı">Onaylandı</option>
+                          <option value="İşlemde">İşlemde</option>
+                          <option value="Tamamlandı">Tamamlandı</option>
+                          <option value="İptal Edildi">İptal Et</option>
+                        </select>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </template>
 
-        <!-- Tedarikçi Specific Profile Meta -->
+        <!-- ==================== B. SERVİS VIEW (İlgili Servise Dair Bilgiler) ==================== -->
         <template v-else>
-          <div style="border-left: 1px solid var(--border-color); padding-left: 30px;">
-            <span class="profile-meta-label">🏢 Firma Türü</span>
-            <div class="profile-meta-value" style="font-weight: 600; font-size: 0.95rem; color: #10b981; margin-top: 3px;">
-              Filo Kiralama Tedarikçisi
-            </div>
-          </div>
-          <div style="border-left: 1px solid var(--border-color); padding-left: 30px;">
-            <span class="profile-meta-label">🚗 Hizmet Kapsamı</span>
-            <div style="display: flex; gap: 6px; margin-top: 5px; flex-wrap: wrap;">
-              <span class="service-tag" style="background: rgba(16,185,129,0.1); color: #10b981; border-color: rgba(16,185,129,0.2);">İkame Araç</span>
-              <span class="service-tag" style="background: rgba(16,185,129,0.1); color: #10b981; border-color: rgba(16,185,129,0.2);">Uzun Dönem Kiralama</span>
-              <span class="service-tag" style="background: rgba(16,185,129,0.1); color: #10b981; border-color: rgba(16,185,129,0.2);">Kısa Dönem Kiralama</span>
-            </div>
-          </div>
-        </template>
-      </div>
-
-      <div style="display: flex; gap: 20px; align-items: center;">
-        <div>
-          <span class="profile-meta-label">📞 İletişim Telefonu</span>
-          <div class="profile-meta-value" style="font-family: monospace; font-weight: 600; color: var(--text-main); margin-top: 3px;">
-            {{ supplierPhone || '-' }}
-          </div>
-        </div>
-        <div v-if="supplierEmail" style="border-left: 1px solid var(--border-color); padding-left: 20px;">
-          <span class="profile-meta-label">✉️ Kurumsal E-Posta</span>
-          <div class="profile-meta-value" style="font-weight: 600; color: var(--text-main); margin-top: 3px;">
-            {{ supplierEmail }}
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Navigation Tabs for Tedarikçi -->
-    <div v-if="!isServiceAccount" class="tab-header-container fade-in-up" style="display: flex; gap: 15px; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
-      <button @click="currentTab = 'tenders'" class="tab-btn" :class="{ 'active': currentTab === 'tenders' }">
-        🏢 Karşı Teklif & Kiralama İhaleleri
-      </button>
-      <button @click="currentTab = 'requests'" class="tab-btn" :class="{ 'active': currentTab === 'requests' }">
-        📋 Atanan Kiralama Talepleri
-      </button>
-      <button @click="currentTab = 'my_vehicles'" class="tab-btn" :class="{ 'active': currentTab === 'my_vehicles' }">
-        🚗 Teslim Edilen Araçlar
-      </button>
-    </div>
-
-    <!-- Navigation Tabs for Servis -->
-    <div v-else class="tab-header-container fade-in-up" style="display: flex; gap: 15px; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
-      <button @click="currentTab = 'requests'" class="tab-btn" :class="{ 'active active-service': currentTab === 'requests' }">
-        📥 Gelen Bakım & Tamir Talepleri
-      </button>
-      <button @click="currentTab = 'service_vehicles'" class="tab-btn" :class="{ 'active active-service': currentTab === 'service_vehicles' }">
-        🚗 Servisteki Araçlar & İş Emirleri
-      </button>
-      <button @click="currentTab = 'service_invoices'" class="tab-btn" :class="{ 'active active-service': currentTab === 'service_invoices' }">
-        🧾 Fatura & Belge Yönetimi
-      </button>
-      <button @click="currentTab = 'service_metrics'" class="tab-btn" :class="{ 'active active-service': currentTab === 'service_metrics' }">
-        ⏱️ Performans & Süre Analizi
-      </button>
-    </div>
-
-    <main class="supplier-main fade-in-up">
-
-      <!-- ==================== A. TEDARİKÇİ VIEW (Kiralama Yapacak Firma) ==================== -->
-      <template v-if="!isServiceAccount">
-        <!-- 1. TEDARİKÇİ TENDERS TAB -->
-        <div v-if="currentTab === 'tenders'">
-          <!-- Tedarikçi Stats Dashboard -->
-          <div class="grid-4" style="gap: 20px; margin-bottom: 30px;">
+          <!-- Servis Top Stats Dashboard -->
+          <div class="grid-4" style="gap: 20px; margin-bottom: 30px">
             <div class="glass-panel stat-card-new">
-              <div class="stat-icon-wrapper quote-purple"><span>📥</span></div>
+              <div class="stat-icon-wrapper quote-blue"><span>🔧</span></div>
               <div class="stat-info">
-                <span class="stat-label">Toplam Kiralama İhalesi</span>
-                <div class="stat-val-new">{{ openQuotes.length }}</div>
+                <span class="stat-label">Servisteki Araçlar</span>
+                <div class="stat-val-new" style="color: #2563eb">{{ serviceVehiclesCount }}</div>
               </div>
             </div>
             <div class="glass-panel stat-card-new">
               <div class="stat-icon-wrapper quote-red"><span>⏳</span></div>
               <div class="stat-info">
-                <span class="stat-label">Bekleyen Karşı Teklifler</span>
-                <div class="stat-val-new" style="color: #ef4444;">{{ pendingBidsCount }}</div>
+                <span class="stat-label">Bekleyen Servis Talepleri</span>
+                <div class="stat-val-new" style="color: #ef4444">{{ pendingRequestsCount }}</div>
               </div>
             </div>
             <div class="glass-panel stat-card-new">
-              <div class="stat-icon-wrapper quote-blue"><span>⚙️</span></div>
+              <div class="stat-icon-wrapper quote-purple"><span>⚙️</span></div>
               <div class="stat-info">
-                <span class="stat-label">Teslim Edilen Araçlar</span>
-                <div class="stat-val-new" style="color: #3b82f6;">{{ myDeliveredVehicles.length }}</div>
+                <span class="stat-label">Açık Servis Dosyası</span>
+                <div class="stat-val-new" style="color: #7c3aed">{{ activeRequestsCount }}</div>
               </div>
             </div>
             <div class="glass-panel stat-card-new">
               <div class="stat-icon-wrapper quote-green"><span>✅</span></div>
               <div class="stat-info">
-                <span class="stat-label">Kabul Edilen Teklifler</span>
-                <div class="stat-val-new" style="color: #10b981;">{{ acceptedBidsCount }}</div>
+                <span class="stat-label">Tamamlanan Bakım / Onarımlar</span>
+                <div class="stat-val-new" style="color: #10b981">{{ completedRequestsCount }}</div>
               </div>
             </div>
           </div>
 
-          <!-- 🏢 TEDARİKÇİ OPERASYONAL WIDGETS (Kiralamalar & Rezervasyonlar) -->
-          <div class="grid-2" style="gap: 20px; margin-bottom: 30px; grid-template-columns: 1fr 1fr; align-items: start;">
-            <!-- COLUMN 1: Kiralamalar & Açık Bakiyeler -->
-            <div class="widget-list-card">
-              <div class="widget-title-row">
-                <h3>Kiralamalar</h3>
+          <!-- 1. SERVİS REQUESTS TAB (Gelen Bakım & Tamir Talepleri) -->
+          <div v-if="currentTab === 'requests'">
+            <div class="glass-panel" style="padding: 25px">
+              <h3
+                style="
+                  margin-bottom: 10px;
+                  font-size: 1.15rem;
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                  color: #2563eb;
+                "
+              >
+                {{
+                  supplierType === 'yol_yardim'
+                    ? '📥 Gelen Yol Yardım Talepleri'
+                    : '📥 Gelen Tamir & Bakım Talepleri'
+                }}
+              </h3>
+              <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px">
+                {{
+                  supplierType === 'yol_yardim'
+                    ? 'Bekleyen yol yardım taleplerini üstlenin, ekibi atayın ve varış bilgilerini müşteriyle paylaşın.'
+                    : 'Filolardan servisinize iletilen bakım, mekanik arıza ve periyodik servis taleplerini inceleyin, randevu ve araç kabul kaydı oluşturun.'
+                }}
+              </p>
+
+              <div v-if="loading" class="text-center" style="padding: 50px 0">Yükleniyor...</div>
+              <div v-else-if="filteredRequests.length === 0" class="empty-state">
+                <span style="font-size: 3rem; display: block; margin-bottom: 15px">📥</span>
+                <p style="font-size: 1.05rem; font-weight: 500">
+                  Servisinize henüz atanmış aktif bir bakım/onarım talebi bulunmuyor.
+                </p>
               </div>
-              <div class="widget-list-items">
-                <div class="widget-item-row">
-                  <div class="widget-item-left"><div class="widget-item-icon">⬆️</div><span>Çıkış</span></div>
-                  <span class="widget-item-value">0</span>
-                </div>
-                <div class="widget-item-row">
-                  <div class="widget-item-left"><div class="widget-item-icon">⬇️</div><span>Dönüş</span></div>
-                  <span class="widget-item-value">0</span>
-                </div>
-                <div class="widget-item-row">
-                  <div class="widget-item-left"><div class="widget-item-icon" style="background: #fef2f2;">🔻</div><span>Uzun Dönem Dönüş <span style="font-size: 0.72rem; color: #94a3b8;">(Önümüzdeki 1 ay)</span></span></div>
-                  <span class="widget-item-value" style="color: #dc2626; font-weight: 800;">3</span>
-                </div>
-                <div class="widget-item-row">
-                  <div class="widget-item-left"><div class="widget-item-icon">🚗</div><span>Transfer Bekleyen</span></div>
-                  <span class="widget-item-value">0</span>
-                </div>
-                <div class="widget-item-row">
-                  <div class="widget-item-left"><div class="widget-item-icon">⏳</div><span>Dönüş Bekleyen (Bugün)</span></div>
-                  <span class="widget-item-value">0</span>
-                </div>
-                <div class="widget-item-row">
-                  <div class="widget-item-left"><div class="widget-item-icon">⏳</div><span>Dönüş Bekleyen (Yarın)</span></div>
-                  <span class="widget-item-value">0</span>
-                </div>
-                <div class="widget-item-row">
-                  <div class="widget-item-left"><div class="widget-item-icon">⏳</div><span>Bekleyen Provizyon İadeleri</span></div>
-                  <span class="widget-item-value">0</span>
-                </div>
-                <div class="widget-item-row">
-                  <div class="widget-item-left"><div class="widget-item-icon" style="background: #fef2f2;">⏰</div><span>Zamanaşımı</span></div>
-                  <span class="widget-item-value" style="color: #dc2626; font-weight: 800;">4</span>
-                </div>
-                <div class="widget-item-row">
-                  <div class="widget-item-left"><div class="widget-item-icon">ℹ️</div><span>Kabis Bildirimi Yapılmayan</span></div>
-                  <span class="widget-item-value">0</span>
-                </div>
-              </div>
-
-              <!-- Açık Bakiyeler section -->
-              <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #f1f5f9;">
-                <h4 style="font-size: 0.95rem; font-weight: 800; color: #0f172a; margin-bottom: 12px;">Açık Bakiyeler</h4>
-                <div class="widget-item-row">
-                  <div class="widget-item-left"><div class="widget-item-icon" style="background: #eff6ff; color: #2563eb;">₺</div><span>Müşteri</span></div>
-                  <span class="widget-item-value" style="color: #0f172a; font-weight: bold;">115.493,07 / 9</span>
-                </div>
-                <div class="widget-item-row">
-                  <div class="widget-item-left"><div class="widget-item-icon" style="background: #eff6ff; color: #2563eb;">₺</div><span>Firma</span></div>
-                  <span class="widget-item-value" style="color: #0f172a; font-weight: bold;">3.162.494,46 / 23</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- COLUMN 2: Rezervasyonlar & BAF & Onay Bekleyenler -->
-            <div class="widget-list-card">
-              <div class="widget-title-row">
-                <h3>Rezervasyonlar</h3>
-              </div>
-              <div class="widget-list-items">
-                <div class="widget-item-row">
-                  <div class="widget-item-left"><div class="widget-item-icon">📅</div><span>Gelecek Rezervasyonlar</span></div>
-                  <span class="widget-item-value">0</span>
-                </div>
-                <div class="widget-item-row">
-                  <div class="widget-item-left"><div class="widget-item-icon">⬆️</div><span>Çıkış Bekleyen (Bugün)</span></div>
-                  <span class="widget-item-value">0</span>
-                </div>
-                <div class="widget-item-row">
-                  <div class="widget-item-left"><div class="widget-item-icon">⬆️</div><span>Çıkış Bekleyen (Yarın)</span></div>
-                  <span class="widget-item-value">0</span>
-                </div>
-                <div class="widget-item-row">
-                  <div class="widget-item-left"><div class="widget-item-icon">📅</div><span>İptal (Bugün)</span></div>
-                  <span class="widget-item-value">0</span>
-                </div>
-                <div class="widget-item-row">
-                  <div class="widget-item-left"><div class="widget-item-icon">📅</div><span>Sözleşmede (Bugün)</span></div>
-                  <span class="widget-item-value">0</span>
-                </div>
-                <div class="widget-item-row">
-                  <div class="widget-item-left"><div class="widget-item-icon" style="background: #fefce8;">⚠️</div><span>Plakasız Rezervasyon</span></div>
-                  <span class="widget-item-value">0</span>
-                </div>
-              </div>
-
-              <!-- BAF section inside Column 2 -->
-              <div style="margin-top: 18px; padding-top: 15px; border-top: 1px solid #f1f5f9;">
-                <h4 style="font-size: 0.95rem; font-weight: 800; color: #0f172a; margin-bottom: 12px;">BAF</h4>
-                <div class="widget-item-row">
-                  <div class="widget-item-left"><div class="widget-item-icon">🚗</div><span>BAF'daki Araçlar</span></div>
-                  <span class="widget-item-value">0</span>
-                </div>
-                <div class="widget-item-row">
-                  <div class="widget-item-left"><div class="widget-item-icon">⏰</div><span>Zamanaşımı</span></div>
-                  <span class="widget-item-value">0</span>
-                </div>
-                <div class="widget-item-row">
-                  <div class="widget-item-left"><div class="widget-item-icon">🚗</div><span>Bugün Bitecek</span></div>
-                  <span class="widget-item-value">0</span>
-                </div>
-              </div>
-
-              <!-- Onay Bekleyenler section -->
-              <div style="margin-top: 18px; padding-top: 15px; border-top: 1px solid #f1f5f9;">
-                <h4 style="font-size: 0.95rem; font-weight: 800; color: #0f172a; margin-bottom: 12px;">Onay Bekleyenler</h4>
-                <div class="widget-item-row">
-                  <div class="widget-item-left"><div class="widget-item-icon">⏰</div><span>Bayi Kira</span></div>
-                  <span class="widget-item-value">0</span>
-                </div>
-                <div class="widget-item-row">
-                  <div class="widget-item-left"><div class="widget-item-icon">⏰</div><span>Kısa/Uzun Dönem Kiralamalar</span></div>
-                  <span class="widget-item-value">0</span>
-                </div>
-                <div class="widget-item-row">
-                  <div class="widget-item-left"><div class="widget-item-icon">⏰</div><span>Kısa/Uzun Dönem Rezervasyon</span></div>
-                  <span class="widget-item-value">0</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Tenders List Table -->
-          <div class="glass-panel" style="padding: 25px;">
-            <h3 style="margin-bottom: 10px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
-              🏢 Karşı Teklif ve Kiralama İhaleleri
-            </h3>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px;">
-              Müşteriler tarafından açılan aktif araç kiralama taleplerini inceleyin ve şirketinize ait karşı fiyat tekliflerini gönderin.
-            </p>
-
-            <div v-if="loading" class="text-center" style="padding: 50px 0;">Yükleniyor...</div>
-            <div v-else-if="openQuotes.length === 0" class="empty-state">
-              <span style="font-size: 3rem; display: block; margin-bottom: 15px;">🏢</span>
-              <p style="font-size: 1.05rem; font-weight: 500;">Şu an teklif toplayan aktif bir kiralama talebi bulunmuyor.</p>
-            </div>
-            <div v-else class="custom-table-container">
-              <table class="custom-table">
-                <thead>
-                  <tr>
-                    <th>Talep ID</th>
-                    <th>Segment & Tip</th>
-                    <th>Araç Adedi</th>
-                    <th>Süre & Yıllık KM Sınırı</th>
-                    <th>Müşteri Öngörülen Fiyatı</th>
-                    <th>Karşı Teklif Durumunuz</th>
-                    <th>İşlem / Teslimat</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="q in openQuotes" :key="q.id">
-                    <td><strong style="color: #10b981;">#{{ q.id }}</strong></td>
-                    <td>
-                      <strong>{{ q.vehicle_segment }} Segment</strong> - {{ q.vehicle_type }}
-                    </td>
-                    <td>
-                      <span class="plate-badge" style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-weight: bold; border: 1px solid rgba(16, 185, 129, 0.2);">
-                        {{ q.vehicle_count }} Araç
-                      </span>
-                    </td>
-                    <td>
-                      <div>{{ q.duration_months }} Ay</div>
-                      <div style="font-size: 0.75rem; color: var(--text-muted);">{{ q.estimated_annual_mileage?.toLocaleString() }} km/yıl</div>
-                    </td>
-                    <td>
-                      <strong style="color: var(--text-muted);">₺{{ q.monthly_price_try?.toLocaleString() }}</strong>
-                    </td>
-                    <td>
-                      <div v-if="hasSupplierBid(q.id)">
-                        <span class="badge badge-active" style="display: block; margin-bottom: 4px; font-size: 0.8rem; padding: 4px 8px;">
-                          Karşı Teklifiniz: ₺{{ getSupplierBidAmount(q.id)?.toLocaleString() }}
-                        </span>
-                        <span class="badge" :class="getBidBadgeClassForSupplier(getSupplierBidStatus(q.id))" style="font-size: 0.7rem;">
-                          {{ getSupplierBidStatus(q.id) }}
-                        </span>
-                      </div>
-                      <span v-else class="badge badge-roadside">Karşı Teklif İletilmedi</span>
-                    </td>
-                    <td>
-                      <div style="display: flex; gap: 8px;">
-                        <button @click="openPlaceBidModal(q)" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem; background: rgba(16, 185, 129, 0.05); color: #10b981; border-color: rgba(16, 185, 129, 0.2);">
-                          {{ hasSupplierBid(q.id) ? '✍ Karşı Teklifi Güncelle' : '➕ Karşı Teklif Ver' }}
-                        </button>
-                        <button v-if="q.status === 'Sözleşme İmzalandı' || getSupplierBidStatus(q.id) === 'Kabul Edildi'" @click="openDeliveryModal(q)" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85rem; background: #7c3aed; color: #fff; border: none;">
-                          🚚 Araç Teslim Et
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- 2. TEDARİKÇİ REQUESTS TAB -->
-        <div v-if="currentTab === 'requests'">
-          <div class="glass-panel" style="padding: 25px;">
-            <h3 style="margin-bottom: 20px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
-              📋 Atanan Kiralama & İkame Talepleri Listesi
-            </h3>
-
-            <div v-if="loading" class="text-center" style="padding: 50px 0;">Yükleniyor...</div>
-            <div v-else-if="filteredRequests.length === 0" class="empty-state">
-              <span style="font-size: 3rem; display: block; margin-bottom: 15px;">📥</span>
-              <p style="font-size: 1.05rem; font-weight: 500;">Henüz adınıza atanmış aktif bir kiralama talebi bulunmuyor.</p>
-            </div>
-            <div v-else class="custom-table-container">
-              <table class="custom-table">
-                <thead>
-                  <tr>
-                    <th>Talep ID</th>
-                    <th>Araç Plaka & Detay</th>
-                    <th>İşlem Detayları & Açıklama</th>
-                    <th>Tedarikçi Firma</th>
-                    <th>Tarih</th>
-                    <th>Durum</th>
-                    <th style="width: 180px;">Durum Güncelle</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="req in filteredRequests" :key="req.id">
-                    <td><strong style="color: #10b981;">#{{ req.id }}</strong></td>
-                    <td>
-                      <span class="plate-badge">{{ req.vehicle_plate }}</span>
-                      <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">{{ req.vehicle_brand_model }}</div>
-                    </td>
-                    <td>
-                      <p style="margin-bottom: 6px; font-weight: 500;">{{ req.description }}</p>
-                      <div class="details-mini-box" v-if="req.details">
-                        <span v-if="req.details.vehicle_class">🚗 <strong>Sınıf:</strong> {{ req.details.vehicle_class }}</span>
-                        <span v-if="req.details.location">📍 <strong>Konum:</strong> {{ req.details.location }}</span>
-                      </div>
-                    </td>
-                    <td>{{ req.supplier_id == null && req.type === 'yol_yardim' ? 'Üstlenilmeyi bekliyor' : getSupplierName(req.supplier_id) }}</td>
-                    <td>{{ formatDate(req.created_at) }}</td>
-                    <td>
-                      <span class="badge" :class="getStatusBadgeClass(req.status)">{{ req.status }}</span>
-                    </td>
-                    <td>
-                      <select v-if="req.type === 'yol_yardim'"
-                        @change="updateStatus(req, $event.target.value)"
-                        class="form-select status-select-mini" :value="req.status" :disabled="updatingId === req.id">
-                        <option value="Beklemede">Beklemede</option><option value="Ekip Atandı">Ekip Atandı</option><option value="Yola Çıktı">Yola Çıktı</option><option value="Yolda">Yolda</option><option value="Ekip Varış Noktasında">Ekip Varış Noktasında</option><option value="Çözüldü">Çözüldü</option><option value="İptal Edildi">İptal Et</option>
-                      </select><button v-if="req.type === 'yol_yardim'" class="btn btn-secondary" style="margin-top:6px;font-size:11px" @click="openRoadsideUpdate(req)">{{req.supplier_id == null ? 'Talebi Üstlen' : 'Ekip / Varış Bilgileri'}}</button>
-                      <select v-else
-                        @change="updateStatus(req, $event.target.value)"
-                        class="form-select status-select-mini"
-                        :value="req.status"
-                        :disabled="updatingId === req.id"
-                      >
-                        <option value="Beklemede">Beklemede</option>
-                        <option value="Onaylandı">Onaylandı</option>
-                        <option value="İşlemde">İşlemde</option>
-                        <option value="Tamamlandı">Tamamlandı</option>
-                        <option value="İptal Edildi">İptal Et</option>
-                      </select>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- 3. TEDARİKÇİ MY VEHICLES TAB -->
-        <div v-if="currentTab === 'my_vehicles'">
-          <div class="glass-panel" style="padding: 25px;">
-            <h3 style="margin-bottom: 10px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
-              🚗 Teslim Edilen Araçlar ve Filo Takibi
-            </h3>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px;">
-              Müşterilere teslim ettiğiniz kiralık araçları takip edin. Araçlara açılmış olan servis, muayene ve diğer talep kayıtlarını inceleyin.
-            </p>
-
-            <div v-if="loading" class="text-center" style="padding: 50px 0;">Yükleniyor...</div>
-            <div v-else-if="myDeliveredVehicles.length === 0" class="empty-state">
-              <span style="font-size: 3rem; display: block; margin-bottom: 15px;">🚗</span>
-              <p style="font-size: 1.05rem; font-weight: 500;">Henüz sisteme kayıtlı kiraladığınız bir araç bulunmuyor.</p>
-            </div>
-            <div v-else class="custom-table-container">
-              <table class="custom-table">
-                <thead>
-                  <tr>
-                    <th>Plaka</th>
-                    <th>Marka / Model</th>
-                    <th>Segment / Tip</th>
-                    <th>Kilometre</th>
-                    <th>Şasi No</th>
-                    <th>Muayene Tarihi</th>
-                    <th>Mevcut Durum</th>
-                    <th>Aksiyon</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="v in myDeliveredVehicles" :key="v.id">
-                    <td><span class="plate-badge">{{ v.plate }}</span></td>
-                    <td><strong>{{ v.brand }} {{ v.model }}</strong> ({{ v.year }})</td>
-                    <td>{{ v.vehicle_segment }} - {{ v.vehicle_type }}</td>
-                    <td>{{ v.mileage?.toLocaleString() }} km</td>
-                    <td style="font-family: monospace; font-size: 0.85rem;">{{ v.chassis_no }}</td>
-                    <td>{{ v.inspection_date }}</td>
-                    <td>
-                      <span class="badge" :class="getStatusBadgeClassForVehicle(v.status)">
-                        {{ v.status }}
-                      </span>
-                    </td>
-                    <td>
-                      <button @click="openVehicleDetails(v)" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">
-                        🔍 Detay & Servis Kayıtları
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </template>
-
-      <!-- ==================== B. SERVİS VIEW (İlgili Servise Dair Bilgiler) ==================== -->
-      <template v-else>
-        <!-- Servis Top Stats Dashboard -->
-        <div class="grid-4" style="gap: 20px; margin-bottom: 30px;">
-          <div class="glass-panel stat-card-new">
-            <div class="stat-icon-wrapper quote-blue"><span>🔧</span></div>
-            <div class="stat-info">
-              <span class="stat-label">Servisteki Araçlar</span>
-              <div class="stat-val-new" style="color: #2563eb;">{{ serviceVehiclesCount }}</div>
-            </div>
-          </div>
-          <div class="glass-panel stat-card-new">
-            <div class="stat-icon-wrapper quote-red"><span>⏳</span></div>
-            <div class="stat-info">
-              <span class="stat-label">Bekleyen Servis Talepleri</span>
-              <div class="stat-val-new" style="color: #ef4444;">{{ pendingRequestsCount }}</div>
-            </div>
-          </div>
-          <div class="glass-panel stat-card-new">
-            <div class="stat-icon-wrapper quote-purple"><span>⚙️</span></div>
-            <div class="stat-info">
-              <span class="stat-label">Açık Servis Dosyası</span>
-              <div class="stat-val-new" style="color: #7c3aed;">{{ activeRequestsCount }}</div>
-            </div>
-          </div>
-          <div class="glass-panel stat-card-new">
-            <div class="stat-icon-wrapper quote-green"><span>✅</span></div>
-            <div class="stat-info">
-              <span class="stat-label">Tamamlanan Bakım / Onarımlar</span>
-              <div class="stat-val-new" style="color: #10b981;">{{ completedRequestsCount }}</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 1. SERVİS REQUESTS TAB (Gelen Bakım & Tamir Talepleri) -->
-        <div v-if="currentTab === 'requests'">
-          <div class="glass-panel" style="padding: 25px;">
-            <h3 style="margin-bottom: 10px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px; color: #2563eb;">
-              {{ supplierType === 'yol_yardim' ? '📥 Gelen Yol Yardım Talepleri' : '📥 Gelen Tamir & Bakım Talepleri' }}
-            </h3>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px;">
-              {{ supplierType === 'yol_yardim' ? 'Bekleyen yol yardım taleplerini üstlenin, ekibi atayın ve varış bilgilerini müşteriyle paylaşın.' : 'Filolardan servisinize iletilen bakım, mekanik arıza ve periyodik servis taleplerini inceleyin, randevu ve araç kabul kaydı oluşturun.' }}
-            </p>
-
-            <div v-if="loading" class="text-center" style="padding: 50px 0;">Yükleniyor...</div>
-            <div v-else-if="filteredRequests.length === 0" class="empty-state">
-              <span style="font-size: 3rem; display: block; margin-bottom: 15px;">📥</span>
-              <p style="font-size: 1.05rem; font-weight: 500;">Servisinize henüz atanmış aktif bir bakım/onarım talebi bulunmuyor.</p>
-            </div>
-            <div v-else class="custom-table-container">
-              <table class="custom-table">
-                <thead>
-                  <tr>
-                    <th>Talep / İş Emri No</th>
-                    <th>Araç Plaka & Detay</th>
-                    <th>Servis İşlemi & Açıklama</th>
-                    <th>Talep Tipi</th>
-                    <th>Giriş / Randevu</th>
-                    <th>Servis Durumu</th>
-                    <th style="min-width: 220px;">Aksiyonlar</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="req in filteredRequests" :key="req.id">
-                    <td>
-                      <strong style="color: #2563eb;">#{{ req.id }}</strong>
-                      <div v-if="req.details?.work_order_no" style="font-family: monospace; font-size: 0.75rem; color: #475569; font-weight: bold; margin-top: 3px;">
-                        {{ req.details.work_order_no }}
-                      </div>
-                    </td>
-                    <td>
-                      <span class="plate-badge" style="background: rgba(37,99,235,0.1); color: #2563eb; border-color: rgba(37,99,235,0.2);">{{ req.vehicle_plate }}</span>
-                      <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">{{ req.vehicle_brand_model }}</div>
-                    </td>
-                    <td>
-                      <div class="req-description-cell">
-                        <p style="margin-bottom: 6px; font-weight: 500;">{{ req.description }}</p>
-                        
-                        <div class="details-mini-box" v-if="req.details">
-                          <span v-if="req.details.entry_mileage">🚗 <strong>Giriş KM:</strong> {{ req.details.entry_mileage?.toLocaleString() }} km</span>
-                          <span v-if="req.details.fuel_level">⛽ <strong>Yakıt:</strong> {{ req.details.fuel_level }}</span>
-                          <span v-if="req.details.driver_name">👤 <strong>Sürücü:</strong> {{ req.details.driver_name }}</span>
+              <div v-else class="custom-table-container">
+                <table class="custom-table">
+                  <thead>
+                    <tr>
+                      <th>Talep / İş Emri No</th>
+                      <th>Araç Plaka & Detay</th>
+                      <th>Servis İşlemi & Açıklama</th>
+                      <th>Talep Tipi</th>
+                      <th>Giriş / Randevu</th>
+                      <th>Servis Durumu</th>
+                      <th style="min-width: 220px">Aksiyonlar</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="req in filteredRequests" :key="req.id">
+                      <td>
+                        <strong style="color: #2563eb">#{{ req.id }}</strong>
+                        <div
+                          v-if="req.details?.work_order_no"
+                          style="
+                            font-family: monospace;
+                            font-size: 0.75rem;
+                            color: #475569;
+                            font-weight: bold;
+                            margin-top: 3px;
+                          "
+                        >
+                          {{ req.details.work_order_no }}
                         </div>
-                      </div>
-                    </td>
-                    <td>
-                      <span class="badge" style="background: rgba(37,99,235,0.1); color: #2563eb; font-size: 0.75rem;">
-                        {{ getTypeName(req.type) }}
-                      </span>
-                    </td>
-                    <td style="font-size: 0.85rem;">
-                      <div v-if="hasPreferredDates(req.details)">Tercih edilen aralık: {{ preferredDateRange(req.details) }}</div>
-                      <div v-if="req.details?.entry_date" style="color: #10b981; font-weight: bold;">
-                        Servise Girdi: {{ formatDate(req.details.entry_date) }}
-                      </div>
-                      <div v-else-if="req.details?.appointment_date">
-                        Randevu: {{ formatDate(req.details.appointment_date) }}
-                      </div>
-                      <div v-else style="color: var(--text-muted);">
-                        Talep: {{ formatDate(req.created_at) }}
-                      </div>
-                    </td>
-                    <td>
-                      <span class="badge" :class="getStatusBadgeClass(req.status)">{{ req.status }}</span>
-                    </td>
-                    <td>
-                      <div v-if="req.type === 'yol_yardim'" style="display:flex;flex-direction:column;gap:6px">
-                        <span v-if="req.roadside_case?.team_name" style="font-size:11px">{{req.roadside_case.team_name}} · {{req.roadside_case.eta_minutes == null ? 'Varış bekleniyor' : req.roadside_case.eta_minutes + ' dk'}}</span>
-                        <button class="btn btn-primary" style="font-size:11px" @click="openRoadsideUpdate(req)">{{req.supplier_id == null ? 'Talebi Üstlen' : 'Ekip / Varış Bilgileri'}}</button>
-                      </div>
-                      <div v-else-if="req.type === 'lastik'" style="display:flex;flex-direction:column;gap:6px">
-                        <span style="font-size:11px">{{req.details?.tire_operation || 'Lastik Servisi'}}</span>
-                        <button v-if="req.supplier_id == null" class="btn btn-primary" :disabled="updatingId === req.id" @click="updateStatus(req,'Onaylandı')">Talebi Üstlen</button>
-                        <button v-else-if="!['Tamamlandı','İptal Edildi'].includes(req.status)" class="btn btn-primary" @click="openTireCompletion(req)">Lastik İşlemini Tamamla</button>
-                        <button v-if="req.supplier_id != null && !['Tamamlandı','İptal Edildi'].includes(req.status)" class="btn btn-secondary" :disabled="updatingId === req.id" @click="updateStatus(req,'İptal Edildi')">Talebi İptal Et</button>
-                      </div>
-                      <div v-else style="display: flex; flex-direction: column; gap: 6px;">
-                        <button v-if="req.supplier_id == null" @click="updateStatus(req, 'Onaylandı')" class="btn btn-primary" :disabled="updatingId === req.id" style="font-size:11px">Talebi Üstlen</button>
-                        <button v-if="!req.details?.entry_date && req.supplier_id != null" @click="openCheckinModal(req)" class="btn btn-primary" style="padding: 4px 10px; font-size: 0.8rem; background: #2563eb; border: none;">
-                          🔑 Servise Giriş Kaydı Yap
-                        </button>
-                        <div style="display: flex; gap: 6px;">
-                          <button :disabled="req.supplier_id == null" @click="openWorkOrderModal(req)" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem; color: #2563eb; border-color: #bfdbfe;">
-                            ⚙️ İş Emri & Parçalar
-                          </button>
-                          <select 
-                            @change="updateStatus(req, $event.target.value)"
-                            class="form-select status-select-mini"
-                            :value="req.status"
-                            :disabled="updatingId === req.id"
-                            style="padding: 2px 6px; font-size: 0.75rem;"
+                      </td>
+                      <td>
+                        <span
+                          class="plate-badge"
+                          style="
+                            background: rgba(37, 99, 235, 0.1);
+                            color: #2563eb;
+                            border-color: rgba(37, 99, 235, 0.2);
+                          "
+                          >{{ req.vehicle_plate }}</span
+                        >
+                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px">
+                          {{ req.vehicle_brand_model }}
+                        </div>
+                      </td>
+                      <td>
+                        <div class="req-description-cell">
+                          <p style="margin-bottom: 6px; font-weight: 500">{{ req.description }}</p>
+
+                          <div class="details-mini-box" v-if="req.details">
+                            <span v-if="req.details.entry_mileage"
+                              >🚗 <strong>Giriş KM:</strong>
+                              {{ req.details.entry_mileage?.toLocaleString() }} km</span
+                            >
+                            <span v-if="req.details.fuel_level"
+                              >⛽ <strong>Yakıt:</strong> {{ req.details.fuel_level }}</span
+                            >
+                            <span v-if="req.details.driver_name"
+                              >👤 <strong>Sürücü:</strong> {{ req.details.driver_name }}</span
+                            >
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span
+                          class="badge"
+                          style="
+                            background: rgba(37, 99, 235, 0.1);
+                            color: #2563eb;
+                            font-size: 0.75rem;
+                          "
+                        >
+                          {{ getTypeName(req.type) }}
+                        </span>
+                      </td>
+                      <td style="font-size: 0.85rem">
+                        <div v-if="hasPreferredDates(req.details)">
+                          Tercih edilen aralık: {{ preferredDateRange(req.details) }}
+                        </div>
+                        <div
+                          v-if="req.details?.entry_date"
+                          style="color: #10b981; font-weight: bold"
+                        >
+                          Servise Girdi: {{ formatDate(req.details.entry_date) }}
+                        </div>
+                        <div v-else-if="req.details?.appointment_date">
+                          Randevu: {{ formatDate(req.details.appointment_date) }}
+                        </div>
+                        <div v-else style="color: var(--text-muted)">
+                          Talep: {{ formatDate(req.created_at) }}
+                        </div>
+                      </td>
+                      <td>
+                        <span class="badge" :class="getStatusBadgeClass(req.status)">{{
+                          req.status
+                        }}</span>
+                      </td>
+                      <td>
+                        <div
+                          v-if="req.type === 'yol_yardim'"
+                          style="display: flex; flex-direction: column; gap: 6px"
+                        >
+                          <span v-if="req.roadside_case?.team_name" style="font-size: 11px"
+                            >{{ req.roadside_case.team_name }} ·
+                            {{
+                              req.roadside_case.eta_minutes == null
+                                ? 'Varış bekleniyor'
+                                : req.roadside_case.eta_minutes + ' dk'
+                            }}</span
                           >
-                            <option value="Beklemede">Beklemede</option>
-                            <option value="Servise Girdi">Servise Girdi</option>
-                            <option value="Onay Bekliyor">Onay Bekliyor</option>
-                            <option value="Parça Bekliyor">Parça Bekliyor</option><option value="Eksper Bekliyor">Eksper Bekliyor</option><option value="Kaza">Kaza</option>
-                            <option value="Onarımda">Onarımda</option>
-                            <option value="Test & Yıkama">Test & Yıkama</option>
-                            <option value="Teslimata Hazır">Teslimata Hazır</option>
-                            <option value="Tamamlandı">Tamamlandı</option>
-                            <option value="İptal Edildi">İptal Et</option>
-                          </select>
+                          <UiButton
+                            class="btn btn-primary"
+                            style="font-size: 11px"
+                            @click="openRoadsideUpdate(req)"
+                            >{{
+                              req.supplier_id == null ? 'Talebi Üstlen' : 'Ekip / Varış Bilgileri'
+                            }}</UiButton
+                          >
                         </div>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- 2. SERVİS VEHICLES & WORK ORDERS TAB (Aktif Atölye) -->
-        <div v-if="currentTab === 'service_vehicles'">
-          <div class="glass-panel" style="padding: 25px;">
-            <h3 style="margin-bottom: 10px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px; color: #2563eb;">
-              🚗 Servisteki Araçlar & İş Emirleri (Aktif Atölye)
-            </h3>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px;">
-              Servisinizde fiziki olarak giriş yapıp işlem gören veya lifte alınan araçların iş emri detaylarını, değişen parçalarını ve durumlarını yönetin.
-            </p>
-
-            <div v-if="loading" class="text-center" style="padding: 50px 0;">Yükleniyor...</div>
-            <div v-else-if="filteredRequests.filter(r => r.status !== 'Tamamlandı' && r.status !== 'İptal Edildi').length === 0" class="empty-state">
-              <span style="font-size: 3rem; display: block; margin-bottom: 15px;">🚗</span>
-              <p style="font-size: 1.05rem; font-weight: 500;">Servisinizde şu an aktif işlem gören araç bulunmamaktadır.</p>
-            </div>
-            <div v-else class="custom-table-container">
-              <table class="custom-table">
-                <thead>
-                  <tr>
-                    <th>Plaka & Araç</th>
-                    <th>İş Emri No</th>
-                    <th>Giriş Detayları</th>
-                    <th>Arıza Tespiti & Parçalar</th>
-                    <th>Tahmini Maliyet</th>
-                    <th>Atölye Durumu</th>
-                    <th>İşlemler</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="req in filteredRequests.filter(r => r.status !== 'Tamamlandı' && r.status !== 'İptal Edildi')" :key="req.id">
-                    <td>
-                      <span class="plate-badge" style="background: rgba(37,99,235,0.1); color: #2563eb; border-color: rgba(37,99,235,0.2);">{{ req.vehicle_plate }}</span>
-                      <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">{{ req.vehicle_brand_model }}</div>
-                    </td>
-                    <td>
-                      <span style="font-family: monospace; font-weight: bold; color: #1e293b; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem;">
-                        {{ req.details?.work_order_no || `SERV-2026-${req.id}` }}
-                      </span>
-                    </td>
-                    <td>
-                      <div style="font-size: 0.82rem; line-height: 1.4;">
-                        <div><strong>Giriş KM:</strong> {{ req.details?.entry_mileage ? req.details.entry_mileage.toLocaleString() + ' km' : '-' }}</div>
-                        <div><strong>Yakıt:</strong> {{ req.details?.fuel_level || '-' }}</div>
-                        <div v-if="req.details?.driver_name"><strong>Sürücü:</strong> {{ req.details.driver_name }}</div>
-                      </div>
-                    </td>
-                    <td>
-                      <div style="max-width: 250px; font-size: 0.82rem;">
-                        <div style="font-weight: 600; color: #334155; margin-bottom: 4px;">{{ req.details?.diagnosis_notes || req.description }}</div>
-                        <div v-if="req.details?.parts_list && req.details.parts_list.length > 0" style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;">
-                          <span v-for="(p, idx) in req.details.parts_list" :key="idx" style="font-size: 0.72rem; background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-weight: 500;">
-                            {{ p.part_name }} ({{ p.quantity }}x)
-                          </span>
+                        <div
+                          v-else-if="req.type === 'lastik'"
+                          style="display: flex; flex-direction: column; gap: 6px"
+                        >
+                          <span style="font-size: 11px">{{
+                            req.details?.tire_operation || 'Lastik Servisi'
+                          }}</span>
+                          <UiButton
+                            v-if="req.supplier_id == null"
+                            class="btn btn-primary"
+                            :disabled="updatingId === req.id"
+                            @click="updateStatus(req, 'Onaylandı')"
+                            >Talebi Üstlen</UiButton
+                          >
+                          <UiButton
+                            v-else-if="!['Tamamlandı', 'İptal Edildi'].includes(req.status)"
+                            class="btn btn-primary"
+                            @click="openTireCompletion(req)"
+                            >Lastik İşlemini Tamamla</UiButton
+                          >
+                          <UiButton
+                            v-if="
+                              req.supplier_id != null &&
+                              !['Tamamlandı', 'İptal Edildi'].includes(req.status)
+                            "
+                            class="btn btn-secondary"
+                            :disabled="updatingId === req.id"
+                            @click="updateStatus(req, 'İptal Edildi')"
+                            >Talebi İptal Et</UiButton
+                          >
                         </div>
-                      </div>
-                    </td>
-                    <td>
-                      <strong style="color: #2563eb; font-size: 0.95rem;">
-                        ₺{{ (req.details?.total_estimated_cost || 0).toLocaleString() }}
-                      </strong>
-                    </td>
-                    <td>
-                      <span class="badge" :class="getStatusBadgeClass(req.status)">{{ req.status }}</span>
-                    </td>
-                    <td>
-                      <div style="display: flex; gap: 6px;">
-                        <button @click="openWorkOrderModal(req)" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.78rem;">
-                          🛠️ İş Emri Düzenle
-                        </button>
-                        <button @click="openInvoiceModal(req)" class="btn btn-primary" style="padding: 4px 8px; font-size: 0.78rem; background: #10b981; border: none;">
-                          🧾 Fatura Kes
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- 3. SERVİS INVOICES & DOCUMENTS TAB (Fatura Yönetimi) -->
-        <div v-if="currentTab === 'service_invoices'">
-          <div class="glass-panel" style="padding: 25px;">
-            <h3 style="margin-bottom: 10px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px; color: #2563eb;">
-              🧾 Fatura & Servis Belgeleri Yönetimi
-            </h3>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px;">
-              Tamamlanan veya işlemdeki araç tamirlerinin e-fatura / proforma bilgilerini girin, filodan ödeme durumunu takip edin.
-            </p>
-
-            <div v-if="loading" class="text-center" style="padding: 50px 0;">Yükleniyor...</div>
-            <div v-else-if="filteredRequests.length === 0" class="empty-state">
-              <span style="font-size: 3rem; display: block; margin-bottom: 15px;">🧾</span>
-              <p style="font-size: 1.05rem; font-weight: 500;">Servis faturası girişi yapılacak kayıt bulunmuyor.</p>
-            </div>
-            <div v-else class="custom-table-container">
-              <table class="custom-table">
-                <thead>
-                  <tr>
-                    <th>İş Emri No</th>
-                    <th>Araç Plaka</th>
-                    <th>Hizmet Tipi</th>
-                    <th>Fatura No & Tarih</th>
-                    <th>Fatura Tutarı (KDV Dahil)</th>
-                    <th>Fatura Durumu</th>
-                    <th>İşlem / Belge Yükle</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="req in filteredRequests" :key="req.id">
-                    <td>
-                      <strong style="color: #2563eb;">{{ req.details?.work_order_no || `SERV-2026-${req.id}` }}</strong>
-                    </td>
-                    <td>
-                      <span class="plate-badge" style="background: rgba(37,99,235,0.1); color: #2563eb; border-color: rgba(37,99,235,0.2);">{{ req.vehicle_plate }}</span>
-                    </td>
-                    <td>{{ getTypeName(req.type) }}</td>
-                    <td>
-                      <div v-if="req.details?.invoice_no">
-                        <strong style="font-family: monospace; color: #0f172a;">{{ req.details.invoice_no }}</strong>
-                        <div style="font-size: 0.78rem; color: var(--text-muted);">{{ req.details.invoice_date }}</div>
-                      </div>
-                      <span v-else style="color: var(--text-muted); font-style: italic;">Girilmedi</span>
-                    </td>
-                    <td>
-                      <strong v-if="req.details?.invoice_amount" style="color: #10b981; font-size: 1rem;">
-                        ₺{{ req.details.invoice_amount.toLocaleString() }}
-                      </strong>
-                      <span v-else style="color: var(--text-muted);">-</span>
-                    </td>
-                    <td>
-                      <span v-if="req.details?.invoice_status" class="badge" :class="req.details.invoice_status.includes('Onay') ? 'badge-active' : 'badge-completed'">
-                        {{ req.details.invoice_status }}
-                      </span>
-                      <span v-else class="badge" style="background: #f1f5f9; color: #64748b;">Yüklenmedi</span>
-                    </td>
-                    <td>
-                      <button @click="openInvoiceModal(req)" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.83rem; color: #2563eb; border-color: #bfdbfe; font-weight: 600;">
-                        {{ req.details?.invoice_no ? '✏️ Faturayı Güncelle' : '📤 Fatura Yükle' }}
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- 4. SERVİS METRICS TAB -->
-        <div v-if="currentTab === 'service_metrics'">
-          <div class="glass-panel" style="padding: 25px;">
-            <h3 style="margin-bottom: 10px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px; color: #2563eb;">
-              ⏱️ Servis Performans & Süre Analizi Detayları
-            </h3>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px;">
-              Servisinizin ortalama araç kabul, tamir onarım ve teslimat sürelerinin detaylı dökümü.
-            </p>
-
-            <div class="grid-3" style="gap: 20px;">
-              <div class="glass-panel" style="padding: 20px; text-align: center;">
-                <span style="font-size: 2rem; display: block; margin-bottom: 10px;">🛠️</span>
-                <h4 style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Ort. Hasar Onarım Süresi</h4>
-                <div style="font-size: 1.8rem; font-weight: 800; color: #2563eb; margin-top: 5px;">1.4 Gün</div>
-              </div>
-              <div class="glass-panel" style="padding: 20px; text-align: center;">
-                <span style="font-size: 2rem; display: block; margin-bottom: 10px;">🛢️</span>
-                <h4 style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Ort. Periyodik Bakım Süresi</h4>
-                <div style="font-size: 1.8rem; font-weight: 800; color: #10b981; margin-top: 5px;">0.5 Gün</div>
-              </div>
-              <div class="glass-panel" style="padding: 20px; text-align: center;">
-                <span style="font-size: 2rem; display: block; margin-bottom: 10px;">⏱️</span>
-                <h4 style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Ort. Serviste Kalma Süresi</h4>
-                <div style="font-size: 1.8rem; font-weight: 800; color: #7c3aed; margin-top: 5px;">1.8 Gün</div>
+                        <div v-else style="display: flex; flex-direction: column; gap: 6px">
+                          <UiButton
+                            v-if="req.supplier_id == null"
+                            @click="updateStatus(req, 'Onaylandı')"
+                            class="btn btn-primary"
+                            :disabled="updatingId === req.id"
+                            style="font-size: 11px"
+                            >Talebi Üstlen</UiButton
+                          >
+                          <UiButton
+                            v-if="!req.details?.entry_date && req.supplier_id != null"
+                            @click="openCheckinModal(req)"
+                            class="btn btn-primary"
+                            style="
+                              padding: 4px 10px;
+                              font-size: 0.8rem;
+                              background: #2563eb;
+                              border: none;
+                            "
+                          >
+                            🔑 Servise Giriş Kaydı Yap
+                          </UiButton>
+                          <div style="display: flex; gap: 6px">
+                            <UiButton
+                              :disabled="req.supplier_id == null"
+                              @click="openWorkOrderModal(req)"
+                              class="btn btn-secondary"
+                              style="
+                                padding: 4px 10px;
+                                font-size: 0.78rem;
+                                color: #2563eb;
+                                border-color: #bfdbfe;
+                              "
+                            >
+                              ⚙️ İş Emri & Parçalar
+                            </UiButton>
+                            <select
+                              @change="updateStatus(req, $event.target.value)"
+                              class="form-select status-select-mini"
+                              :value="req.status"
+                              :disabled="updatingId === req.id"
+                              style="padding: 2px 6px; font-size: 0.75rem"
+                            >
+                              <option value="Beklemede">Beklemede</option>
+                              <option value="Servise Girdi">Servise Girdi</option>
+                              <option value="Onay Bekliyor">Onay Bekliyor</option>
+                              <option value="Parça Bekliyor">Parça Bekliyor</option>
+                              <option value="Eksper Bekliyor">Eksper Bekliyor</option>
+                              <option value="Kaza">Kaza</option>
+                              <option value="Onarımda">Onarımda</option>
+                              <option value="Test & Yıkama">Test & Yıkama</option>
+                              <option value="Teslimata Hazır">Teslimata Hazır</option>
+                              <option value="Tamamlandı">Tamamlandı</option>
+                              <option value="İptal Edildi">İptal Et</option>
+                            </select>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
-        </div>
-      </template>
 
-    </main>
+          <!-- 2. SERVİS VEHICLES & WORK ORDERS TAB (Aktif Atölye) -->
+          <div v-if="currentTab === 'service_vehicles'">
+            <div class="glass-panel" style="padding: 25px">
+              <h3
+                style="
+                  margin-bottom: 10px;
+                  font-size: 1.15rem;
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                  color: #2563eb;
+                "
+              >
+                🚗 Servisteki Araçlar & İş Emirleri (Aktif Atölye)
+              </h3>
+              <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px">
+                Servisinizde fiziki olarak giriş yapıp işlem gören veya lifte alınan araçların iş
+                emri detaylarını, değişen parçalarını ve durumlarını yönetin.
+              </p>
+
+              <div v-if="loading" class="text-center" style="padding: 50px 0">Yükleniyor...</div>
+              <div
+                v-else-if="
+                  filteredRequests.filter(
+                    (r) => r.status !== 'Tamamlandı' && r.status !== 'İptal Edildi',
+                  ).length === 0
+                "
+                class="empty-state"
+              >
+                <span style="font-size: 3rem; display: block; margin-bottom: 15px">🚗</span>
+                <p style="font-size: 1.05rem; font-weight: 500">
+                  Servisinizde şu an aktif işlem gören araç bulunmamaktadır.
+                </p>
+              </div>
+              <div v-else class="custom-table-container">
+                <table class="custom-table">
+                  <thead>
+                    <tr>
+                      <th>Plaka & Araç</th>
+                      <th>İş Emri No</th>
+                      <th>Giriş Detayları</th>
+                      <th>Arıza Tespiti & Parçalar</th>
+                      <th>Tahmini Maliyet</th>
+                      <th>Atölye Durumu</th>
+                      <th>İşlemler</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="req in filteredRequests.filter(
+                        (r) => r.status !== 'Tamamlandı' && r.status !== 'İptal Edildi',
+                      )"
+                      :key="req.id"
+                    >
+                      <td>
+                        <span
+                          class="plate-badge"
+                          style="
+                            background: rgba(37, 99, 235, 0.1);
+                            color: #2563eb;
+                            border-color: rgba(37, 99, 235, 0.2);
+                          "
+                          >{{ req.vehicle_plate }}</span
+                        >
+                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px">
+                          {{ req.vehicle_brand_model }}
+                        </div>
+                      </td>
+                      <td>
+                        <span
+                          style="
+                            font-family: monospace;
+                            font-weight: bold;
+                            color: #1e293b;
+                            background: #f1f5f9;
+                            padding: 4px 8px;
+                            border-radius: 4px;
+                            font-size: 0.85rem;
+                          "
+                        >
+                          {{ req.details?.work_order_no || 'Henüz oluşturulmadı' }}
+                        </span>
+                      </td>
+                      <td>
+                        <div style="font-size: 0.82rem; line-height: 1.4">
+                          <div>
+                            <strong>Giriş KM:</strong>
+                            {{
+                              req.details?.entry_mileage
+                                ? req.details.entry_mileage.toLocaleString() + ' km'
+                                : '-'
+                            }}
+                          </div>
+                          <div><strong>Yakıt:</strong> {{ req.details?.fuel_level || '-' }}</div>
+                          <div v-if="req.details?.driver_name">
+                            <strong>Sürücü:</strong> {{ req.details.driver_name }}
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div style="max-width: 250px; font-size: 0.82rem">
+                          <div style="font-weight: 600; color: #334155; margin-bottom: 4px">
+                            {{ req.details?.diagnosis_notes || req.description }}
+                          </div>
+                          <div
+                            v-if="req.details?.parts_list && req.details.parts_list.length > 0"
+                            style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px"
+                          >
+                            <span
+                              v-for="(p, idx) in req.details.parts_list"
+                              :key="idx"
+                              style="
+                                font-size: 0.72rem;
+                                background: #e0f2fe;
+                                color: #0369a1;
+                                padding: 2px 6px;
+                                border-radius: 4px;
+                                font-weight: 500;
+                              "
+                            >
+                              {{ p.part_name }} ({{ p.quantity }}x)
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <strong style="color: #2563eb; font-size: 0.95rem">
+                          ₺{{ (req.details?.total_estimated_cost || 0).toLocaleString() }}
+                        </strong>
+                      </td>
+                      <td>
+                        <span class="badge" :class="getStatusBadgeClass(req.status)">{{
+                          req.status
+                        }}</span>
+                      </td>
+                      <td>
+                        <div style="display: flex; gap: 6px">
+                          <UiButton
+                            @click="openWorkOrderModal(req)"
+                            class="btn btn-secondary"
+                            style="padding: 4px 8px; font-size: 0.78rem"
+                          >
+                            🛠️ İş Emri Düzenle
+                          </UiButton>
+                          <UiButton
+                            @click="openInvoiceModal(req)"
+                            class="btn btn-primary"
+                            style="
+                              padding: 4px 8px;
+                              font-size: 0.78rem;
+                              background: #10b981;
+                              border: none;
+                            "
+                          >
+                            🧾 Fatura Kes
+                          </UiButton>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. SERVİS INVOICES & DOCUMENTS TAB (Fatura Yönetimi) -->
+          <div v-if="currentTab === 'service_invoices'">
+            <div class="glass-panel" style="padding: 25px">
+              <h3
+                style="
+                  margin-bottom: 10px;
+                  font-size: 1.15rem;
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                  color: #2563eb;
+                "
+              >
+                🧾 Fatura & Servis Belgeleri Yönetimi
+              </h3>
+              <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px">
+                Tamamlanan veya işlemdeki araç tamirlerinin e-fatura / proforma bilgilerini girin,
+                filodan ödeme durumunu takip edin.
+              </p>
+
+              <div v-if="loading" class="text-center" style="padding: 50px 0">Yükleniyor...</div>
+              <div v-else-if="filteredRequests.length === 0" class="empty-state">
+                <span style="font-size: 3rem; display: block; margin-bottom: 15px">🧾</span>
+                <p style="font-size: 1.05rem; font-weight: 500">
+                  Servis faturası girişi yapılacak kayıt bulunmuyor.
+                </p>
+              </div>
+              <div v-else class="custom-table-container">
+                <table class="custom-table">
+                  <thead>
+                    <tr>
+                      <th>İş Emri No</th>
+                      <th>Araç Plaka</th>
+                      <th>Hizmet Tipi</th>
+                      <th>Fatura No & Tarih</th>
+                      <th>Fatura Tutarı (KDV Dahil)</th>
+                      <th>Fatura Durumu</th>
+                      <th>İşlem / Belge Yükle</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="req in filteredRequests" :key="req.id">
+                      <td>
+                        <strong style="color: #2563eb">{{
+                          req.details?.work_order_no || 'Henüz oluşturulmadı'
+                        }}</strong>
+                      </td>
+                      <td>
+                        <span
+                          class="plate-badge"
+                          style="
+                            background: rgba(37, 99, 235, 0.1);
+                            color: #2563eb;
+                            border-color: rgba(37, 99, 235, 0.2);
+                          "
+                          >{{ req.vehicle_plate }}</span
+                        >
+                      </td>
+                      <td>{{ getTypeName(req.type) }}</td>
+                      <td>
+                        <div v-if="req.details?.invoice_no">
+                          <strong style="font-family: monospace; color: #0f172a">{{
+                            req.details.invoice_no
+                          }}</strong>
+                          <div style="font-size: 0.78rem; color: var(--text-muted)">
+                            {{ req.details.invoice_date }}
+                          </div>
+                        </div>
+                        <span v-else style="color: var(--text-muted); font-style: italic"
+                          >Girilmedi</span
+                        >
+                      </td>
+                      <td>
+                        <strong
+                          v-if="req.details?.invoice_amount"
+                          style="color: #10b981; font-size: 1rem"
+                        >
+                          ₺{{ req.details.invoice_amount.toLocaleString() }}
+                        </strong>
+                        <span v-else style="color: var(--text-muted)">-</span>
+                      </td>
+                      <td>
+                        <span
+                          v-if="req.details?.invoice_status"
+                          class="badge"
+                          :class="
+                            req.details.invoice_status.includes('Onay')
+                              ? 'badge-active'
+                              : 'badge-completed'
+                          "
+                        >
+                          {{ req.details.invoice_status }}
+                        </span>
+                        <span v-else class="badge" style="background: #f1f5f9; color: #64748b"
+                          >Yüklenmedi</span
+                        >
+                      </td>
+                      <td>
+                        <UiButton
+                          @click="openInvoiceModal(req)"
+                          class="btn btn-secondary"
+                          style="
+                            padding: 6px 12px;
+                            font-size: 0.83rem;
+                            color: #2563eb;
+                            border-color: #bfdbfe;
+                            font-weight: 600;
+                          "
+                        >
+                          {{ req.details?.invoice_no ? '✏️ Faturayı Güncelle' : '📤 Fatura Yükle' }}
+                        </UiButton>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. SERVİS METRICS TAB -->
+          <div v-if="currentTab === 'service_metrics'">
+            <div class="glass-panel" style="padding: 25px">
+              <h3
+                style="
+                  margin-bottom: 10px;
+                  font-size: 1.15rem;
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                  color: #2563eb;
+                "
+              >
+                ⏱️ Servis Performans & Süre Analizi Detayları
+              </h3>
+              <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px">
+                Süreler, servisinize atanmış tamamlanmış kayıtların araç kabul ve tamamlanma
+                zamanlarından hesaplanır. Eksik veya geçersiz zamanlar hesaba katılmaz.
+              </p>
+
+              <div class="grid-3" style="gap: 20px">
+                <div class="glass-panel" style="padding: 20px; text-align: center">
+                  <span style="font-size: 2rem; display: block; margin-bottom: 10px">🛠️</span>
+                  <h4
+                    style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase"
+                  >
+                    Ort. Hasar Onarım Süresi
+                  </h4>
+                  <div style="font-size: 1.8rem; font-weight: 800; color: #2563eb; margin-top: 5px">
+                    {{ durationLabel(measuredServiceMetrics.damage.days) }}
+                  </div>
+                  <small>{{ measuredServiceMetrics.damage.count }} tamamlanmış kayıt</small>
+                </div>
+                <div class="glass-panel" style="padding: 20px; text-align: center">
+                  <span style="font-size: 2rem; display: block; margin-bottom: 10px">🛢️</span>
+                  <h4
+                    style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase"
+                  >
+                    Ort. Periyodik Bakım Süresi
+                  </h4>
+                  <div style="font-size: 1.8rem; font-weight: 800; color: #10b981; margin-top: 5px">
+                    {{ durationLabel(measuredServiceMetrics.maintenance.days) }}
+                  </div>
+                  <small>{{ measuredServiceMetrics.maintenance.count }} tamamlanmış kayıt</small>
+                </div>
+                <div class="glass-panel" style="padding: 20px; text-align: center">
+                  <span style="font-size: 2rem; display: block; margin-bottom: 10px">⏱️</span>
+                  <h4
+                    style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase"
+                  >
+                    Ort. Serviste Kalma Süresi
+                  </h4>
+                  <div style="font-size: 1.8rem; font-weight: 800; color: #7c3aed; margin-top: 5px">
+                    {{ durationLabel(measuredServiceMetrics.total.days) }}
+                  </div>
+                  <small>{{ measuredServiceMetrics.total.count }} tamamlanmış kayıt</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+      </main>
+    </div>
   </div>
 
   <!-- Bid Placement Modal (Tedarikçi) -->
-  <div v-if="showBidModal" class="modal-overlay" @click.self="showBidModal = false">
-    <div class="glass-panel modal-content fade-in-up" style="max-width: 480px; padding: 30px;">
-      <h2 style="margin-bottom: 10px; color: #10b981; display: flex; align-items: center; gap: 10px;">
+  <UiModal v-if="showBidModal" class="modal-overlay" @close="showBidModal = false">
+    <div class="glass-panel modal-content fade-in-up" style="max-width: 480px; padding: 30px">
+      <h2
+        style="margin-bottom: 10px; color: #10b981; display: flex; align-items: center; gap: 10px"
+      >
         <span>🏢</span> Araç Kiralama Karşı Teklifi İlet
       </h2>
-      <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; margin-bottom: 20px;">
-        Talep #{{ selectedQuoteForBid?.id }} için aylık toplam karşı teklif bedelinizi giriniz. (Firma: {{ selectedQuoteForBid?.company_name }})
+      <p
+        style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; margin-bottom: 20px"
+      >
+        Talep #{{ selectedQuoteForBid?.id }} için aylık toplam karşı teklif bedelinizi giriniz.
+        (Firma: {{ selectedQuoteForBid?.company_name }})
       </p>
 
       <form @submit.prevent="submitBid">
-        <div class="form-group" style="margin-bottom: 15px;">
-          <label class="form-label">Aylık Toplam Karşı Fiyat Teklifiniz (₺)</label>
-          <input type="number" min="0" v-model.number="bidForm.monthly_price_try" required class="form-input" placeholder="Aylık toplam bedel">
+        <div class="form-group" style="margin-bottom: 15px">
+          <UiField class="form-label">Aylık Toplam Karşı Fiyat Teklifiniz (₺)</UiField>
+          <input
+            type="number"
+            min="0"
+            v-model.number="bidForm.monthly_price_try"
+            required
+            class="form-input"
+            placeholder="Aylık toplam bedel"
+          />
         </div>
 
-        <div class="form-group" style="margin-bottom: 25px;">
-          <label class="form-label">Karşı Teklif Şartları & Teslimat Notları</label>
-          <textarea v-model="bidForm.notes" rows="4" class="form-input" style="resize: none;" placeholder="Araçların teslim süreleri, lastik hizmet detayları ve kasko kapsamı gibi detayları buraya yazabilirsiniz."></textarea>
+        <div class="form-group" style="margin-bottom: 25px">
+          <UiField class="form-label">Karşı Teklif Şartları & Teslimat Notları</UiField>
+          <textarea
+            v-model="bidForm.notes"
+            rows="4"
+            class="form-input"
+            style="resize: none"
+            placeholder="Araçların teslim süreleri, lastik hizmet detayları ve kasko kapsamı gibi detayları buraya yazabilirsiniz."
+          ></textarea>
         </div>
 
-        <div style="display: flex; gap: 15px; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 15px;">
-          <button type="button" @click="showBidModal = false" class="btn btn-secondary">İptal</button>
-          <button type="submit" class="btn btn-primary" style="background: #10b981; color: #fff; border: none; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);">
+        <div
+          style="
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+          "
+        >
+          <UiButton type="button" @click="showBidModal = false" class="btn btn-secondary"
+            >İptal</UiButton
+          >
+          <UiButton
+            type="submit"
+            class="btn btn-primary"
+            style="
+              background: #10b981;
+              color: #fff;
+              border: none;
+              box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+            "
+          >
             Karşı Teklifi Gönder
-          </button>
+          </UiButton>
         </div>
       </form>
     </div>
-  </div>
-
-  <!-- Vehicle Delivery / Registration Modal (Tedarikçi) -->
-  <div v-if="showAddVehicleModal" class="modal-overlay" @click.self="showAddVehicleModal = false">
-    <div class="glass-panel modal-content fade-in-up" style="max-width: 550px; padding: 30px;">
-      <h2 style="margin-bottom: 10px; color: #7c3aed; display: flex; align-items: center; gap: 8px;">
-        <span>🚚</span> Müşteriye Araç Teslim Et / Sisteme Ekle
-      </h2>
-      <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; margin-bottom: 20px;">
-        <strong>{{ selectedQuoteForDelivery?.company_name }}</strong> firması için onaylanan kiralama sözleşmesine istinaden teslim edeceğiniz aracın plaka ve tescil bilgilerini giriniz.
-      </p>
-
-      <form @submit.prevent="submitAddVehicle">
-        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px;">
-          <div class="form-group">
-            <label class="form-label">Plaka</label>
-            <input type="text" v-model="addVehicleForm.plate" required class="form-input" placeholder="Örn: 34 ABC 123">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Şasi No / Registry No</label>
-            <input type="text" v-model="addVehicleForm.chassis_no" required class="form-input" placeholder="17 haneli şase no">
-          </div>
-        </div>
-
-        <div class="grid-3" style="gap: 15px; grid-template-columns: 1fr 1fr 1fr; margin-bottom: 15px;">
-          <div class="form-group">
-            <label class="form-label">Marka</label>
-            <input type="text" v-model="addVehicleForm.brand" required class="form-input" placeholder="Örn: Renault">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Model</label>
-            <input type="text" v-model="addVehicleForm.model" required class="form-input" placeholder="Örn: Megane">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Model Yılı</label>
-            <input type="number" min="1990" max="2027" v-model.number="addVehicleForm.year" required class="form-input">
-          </div>
-        </div>
-
-        <div class="grid-3" style="gap: 15px; grid-template-columns: 1fr 1fr 1fr; margin-bottom: 15px;">
-          <div class="form-group">
-            <label class="form-label">Yakıt Türü</label>
-            <select v-model="addVehicleForm.fuel" required class="form-select">
-              <option value="Dizel">Dizel</option>
-              <option value="Benzin">Benzin</option>
-              <option value="Hibrit">Hibrit</option>
-              <option value="Elektrik">Elektrik</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Başlangıç KM</label>
-            <input type="number" min="0" v-model.number="addVehicleForm.mileage" required class="form-input">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Ruhsat Seri No</label>
-            <input type="text" v-model="addVehicleForm.license_serial_no" required class="form-input" placeholder="AB123456">
-          </div>
-        </div>
-
-        <div class="grid-3" style="gap: 15px; grid-template-columns: 1fr 1fr 1fr; margin-bottom: 25px;">
-          <div class="form-group">
-            <label class="form-label">Araç Segmenti</label>
-            <input type="text" v-model="addVehicleForm.vehicle_segment" readonly class="form-input" style="background: rgba(255,255,255,0.05); cursor: not-allowed;">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Gövde Tipi</label>
-            <input type="text" v-model="addVehicleForm.vehicle_type" readonly class="form-input" style="background: rgba(255,255,255,0.05); cursor: not-allowed;">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Muayene Tarihi</label>
-            <input type="date" v-model="addVehicleForm.inspection_date" required class="form-input">
-          </div>
-        </div>
-
-        <div style="display: flex; gap: 15px; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 15px;">
-          <button type="button" @click="showAddVehicleModal = false" class="btn btn-secondary">İptal</button>
-          <button type="submit" class="btn btn-primary" style="background: #7c3aed; color: #fff; border: none; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.2);">
-            Aracı Teslim Et & Kaydet
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
+  </UiModal>
 
   <!-- Vehicle Details & Service History Modal -->
-  <div v-if="showVehicleDetailsModal" class="modal-overlay" @click.self="showVehicleDetailsModal = false">
-    <div class="glass-panel modal-content fade-in-up" style="max-width: 750px; padding: 30px;">
-      <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px;">
-        <h2 :style="{ color: isServiceAccount ? '#2563eb' : '#10b981' }" style="display: flex; align-items: center; gap: 8px;">
+  <UiModal
+    v-if="showVehicleDetailsModal"
+    class="modal-overlay"
+    @close="showVehicleDetailsModal = false"
+  >
+    <div class="glass-panel modal-content fade-in-up" style="max-width: 750px; padding: 30px">
+      <div
+        style="
+          border-bottom: 1px solid var(--border-color);
+          padding-bottom: 15px;
+          margin-bottom: 20px;
+        "
+      >
+        <h2
+          :style="{ color: isServiceAccount ? '#2563eb' : '#10b981' }"
+          style="display: flex; align-items: center; gap: 8px"
+        >
           <span>🔍</span> Araç Detayı & Servis Kartı
         </h2>
-        <div style="margin-top: 5px; display: flex; gap: 12px; align-items: center;">
-          <span class="plate-badge" style="font-size: 1rem;">{{ selectedVehicle?.plate }}</span>
-          <span style="font-weight: 600; font-size: 1.1rem; color: var(--text-main);">{{ selectedVehicle?.brand }} {{ selectedVehicle?.model }} ({{ selectedVehicle?.year }})</span>
+        <div style="margin-top: 5px; display: flex; gap: 12px; align-items: center">
+          <span class="plate-badge" style="font-size: 1rem">{{ selectedVehicle?.plate }}</span>
+          <span style="font-weight: 600; font-size: 1.1rem; color: var(--text-main)"
+            >{{ selectedVehicle?.brand }} {{ selectedVehicle?.model }} ({{
+              selectedVehicle?.year
+            }})</span
+          >
         </div>
       </div>
 
       <!-- Specs grid -->
-      <div class="grid-4" style="gap: 12px; margin-bottom: 20px; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));">
+      <div
+        class="grid-4"
+        style="
+          gap: 12px;
+          margin-bottom: 20px;
+          grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        "
+      >
         <div class="details-spec">
           <span class="d-label">Segment</span>
           <span class="d-val">{{ selectedVehicle?.vehicle_segment }}</span>
@@ -963,14 +1334,34 @@
       </div>
 
       <!-- Service History List -->
-      <div style="margin-top: 25px;">
-        <h4 style="margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; color: var(--text-main);">🛠️ Araç Servis Kayıtları ve Talep Geçmişi</h4>
-        
-        <div v-if="getVehicleServiceHistory(selectedVehicle?.id).length === 0" style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 0.9rem; background: rgba(0,0,0,0.02); border-radius: 8px; border: 1px solid var(--border-color);">
+      <div style="margin-top: 25px">
+        <h4
+          style="
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            color: var(--text-main);
+          "
+        >
+          🛠️ Araç Servis Kayıtları ve Talep Geçmişi
+        </h4>
+
+        <div
+          v-if="getVehicleServiceHistory(selectedVehicle?.id).length === 0"
+          style="
+            padding: 20px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            background: rgba(0, 0, 0, 0.02);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+          "
+        >
           Bu araç için henüz herhangi bir servis kaydı veya yardım talebi açılmamıştır.
         </div>
-        
-        <div v-else class="custom-table-container" style="max-height: 250px; overflow-y: auto;">
+
+        <div v-else class="custom-table-container" style="max-height: 250px; overflow-y: auto">
           <table class="custom-table">
             <thead>
               <tr>
@@ -986,15 +1377,25 @@
               <tr v-for="rec in getVehicleServiceHistory(selectedVehicle?.id)" :key="rec.id">
                 <td>#{{ rec.id }}</td>
                 <td>
-                  <span class="badge" :class="getStatusBadgeClass(rec.status)" style="font-size: 0.75rem;">
+                  <span
+                    class="badge"
+                    :class="getStatusBadgeClass(rec.status)"
+                    style="font-size: 0.75rem"
+                  >
                     {{ getTypeName(rec.type) }}
                   </span>
                 </td>
-                <td style="font-size: 0.8rem; max-width: 250px; white-space: normal;">{{ rec.description }}</td>
+                <td style="font-size: 0.8rem; max-width: 250px; white-space: normal">
+                  {{ rec.description }}
+                </td>
                 <td>{{ getSupplierName(rec.supplier_id) }}</td>
-                <td style="font-size: 0.8rem;">{{ formatDate(rec.created_at) }}</td>
+                <td style="font-size: 0.8rem">{{ formatDate(rec.created_at) }}</td>
                 <td>
-                  <span class="badge" :class="getStatusBadgeClass(rec.status)" style="font-size: 0.75rem;">
+                  <span
+                    class="badge"
+                    :class="getStatusBadgeClass(rec.status)"
+                    style="font-size: 0.75rem"
+                  >
                     {{ rec.status }}
                   </span>
                 </td>
@@ -1004,30 +1405,51 @@
         </div>
       </div>
 
-      <div style="display: flex; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 15px; margin-top: 20px;">
-        <button @click="showVehicleDetailsModal = false" class="btn btn-secondary">Kapat</button>
+      <div
+        style="
+          display: flex;
+          justify-content: flex-end;
+          border-top: 1px solid var(--border-color);
+          padding-top: 15px;
+          margin-top: 20px;
+        "
+      >
+        <UiButton @click="showVehicleDetailsModal = false" class="btn btn-secondary"
+          >Kapat</UiButton
+        >
       </div>
     </div>
-  </div>
+  </UiModal>
 
   <!-- Service Check-in Modal -->
-  <div v-if="showCheckinModal" class="modal-overlay" @click.self="showCheckinModal = false">
-    <div class="glass-panel modal-content fade-in-up" style="max-width: 520px; padding: 30px;">
-      <h2 style="margin-bottom: 10px; color: #2563eb; display: flex; align-items: center; gap: 8px;">
+  <UiModal v-if="showCheckinModal" class="modal-overlay" @close="showCheckinModal = false">
+    <div class="glass-panel modal-content fade-in-up" style="max-width: 520px; padding: 30px">
+      <h2 style="margin-bottom: 10px; color: #2563eb; display: flex; align-items: center; gap: 8px">
         <span>🔑</span> Servise Araç Girişi Kaydı (Check-In)
       </h2>
-      <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; margin-bottom: 20px;">
-        Plaka: <strong style="color: #2563eb;">{{ selectedRequestForCheckin?.vehicle_plate }}</strong> için fiziki servis kabul bilgilerini giriniz.
+      <p
+        style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; margin-bottom: 20px"
+      >
+        Plaka:
+        <strong style="color: #2563eb">{{ selectedRequestForCheckin?.vehicle_plate }}</strong> için
+        fiziki servis kabul bilgilerini giriniz.
       </p>
 
       <form @submit.prevent="submitCheckin">
-        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px;">
+        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px">
           <div class="form-group">
-            <label class="form-label">Servise Giriş KM</label>
-            <input type="number" min="0" v-model.number="checkinForm.entry_mileage" required class="form-input" placeholder="Örn: 85400">
+            <UiField class="form-label">Servise Giriş KM</UiField>
+            <input
+              type="number"
+              min="0"
+              v-model.number="checkinForm.entry_mileage"
+              required
+              class="form-input"
+              placeholder="Örn: 85400"
+            />
           </div>
           <div class="form-group">
-            <label class="form-label">Yakıt Seviyesi</label>
+            <UiField class="form-label">Yakıt Seviyesi</UiField>
             <select v-model="checkinForm.fuel_level" required class="form-select">
               <option value="%25 (Çeyrek Depo)">%25 (Çeyrek Depo)</option>
               <option value="%50 (Yarım Depo)">%50 (Yarım Depo)</option>
@@ -1038,64 +1460,150 @@
           </div>
         </div>
 
-        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px;">
+        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px">
           <div class="form-group">
-            <label class="form-label">Aracı Getiren Sürücü / Adı</label>
-            <input type="text" v-model="checkinForm.driver_name" required class="form-input" placeholder="Örn: Ahmet Yılmaz">
+            <UiField class="form-label">Aracı Getiren Sürücü / Adı</UiField>
+            <input
+              type="text"
+              v-model="checkinForm.driver_name"
+              required
+              class="form-input"
+              placeholder="Örn: Ahmet Yılmaz"
+            />
           </div>
           <div class="form-group">
-            <label class="form-label">Sürücü Telefonu</label>
-            <input type="text" v-model="checkinForm.driver_phone" class="form-input" placeholder="Örn: 0532 000 0000">
+            <UiField class="form-label">Sürücü Telefonu</UiField>
+            <input
+              type="text"
+              v-model="checkinForm.driver_phone"
+              class="form-input"
+              placeholder="Örn: 0532 000 0000"
+            />
           </div>
         </div>
 
-        <div class="form-group" style="margin-bottom: 20px;">
-          <label class="form-label">Kabul Notları & Çizik / Hasar Tespiti</label>
-          <textarea v-model="checkinForm.entry_notes" rows="3" class="form-input" placeholder="Araçta göze çarpan çizik, kırık veya özel sürücü şikayetlerini yazabilirsiniz."></textarea>
+        <div class="form-group" style="margin-bottom: 20px">
+          <UiField class="form-label">Kabul Notları & Çizik / Hasar Tespiti</UiField>
+          <textarea
+            v-model="checkinForm.entry_notes"
+            rows="3"
+            class="form-input"
+            placeholder="Araçta göze çarpan çizik, kırık veya özel sürücü şikayetlerini yazabilirsiniz."
+          ></textarea>
         </div>
 
-        <div style="display: flex; gap: 12px; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 15px;">
-          <button type="button" @click="showCheckinModal = false" class="btn btn-secondary">İptal</button>
-          <button type="submit" class="btn btn-primary" style="background: #2563eb; color: #fff; border: none;">
+        <div
+          style="
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+          "
+        >
+          <UiButton type="button" @click="showCheckinModal = false" class="btn btn-secondary"
+            >İptal</UiButton
+          >
+          <UiButton
+            type="submit"
+            class="btn btn-primary"
+            style="background: #2563eb; color: #fff; border: none"
+          >
             ✅ Giriş Kaydını Tamamla & İş Emri Aç
-          </button>
+          </UiButton>
         </div>
       </form>
     </div>
-  </div>
+  </UiModal>
 
   <!-- Service Work Order & Parts Modal -->
-  <div v-if="showWorkOrderModal" class="modal-overlay" @click.self="showWorkOrderModal = false">
-    <div class="glass-panel modal-content fade-in-up" style="max-width: 650px; padding: 30px;">
-      <h2 style="margin-bottom: 10px; color: #2563eb; display: flex; align-items: center; gap: 8px;">
+  <UiModal v-if="showWorkOrderModal" class="modal-overlay" @close="showWorkOrderModal = false">
+    <div class="glass-panel modal-content fade-in-up" style="max-width: 650px; padding: 30px">
+      <h2 style="margin-bottom: 10px; color: #2563eb; display: flex; align-items: center; gap: 8px">
         <span>⚙️</span> İş Emri, Arıza Tespiti & Parça Listesi
       </h2>
-      <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; margin-bottom: 20px;">
-        Plaka: <strong style="color: #2563eb;">{{ selectedRequestForWorkOrder?.vehicle_plate }}</strong> | İş Emri No: <strong>{{ selectedRequestForWorkOrder?.details?.work_order_no || `SERV-2026-${selectedRequestForWorkOrder?.id}` }}</strong>
+      <p
+        style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; margin-bottom: 20px"
+      >
+        Plaka:
+        <strong style="color: #2563eb">{{ selectedRequestForWorkOrder?.vehicle_plate }}</strong> |
+        İş Emri No:
+        <strong>{{
+          selectedRequestForWorkOrder?.details?.work_order_no || 'Henüz oluşturulmadı'
+        }}</strong>
       </p>
 
       <form @submit.prevent="submitWorkOrder">
-        <div class="form-group" style="margin-bottom: 15px;">
-          <label class="form-label">Arıza Tespiti & Servis İşlemleri Açıklaması</label>
-          <textarea v-model="workOrderForm.diagnosis_notes" rows="2" class="form-input" placeholder="Yapılacak bakım, tespit edilen arızalar ve usta notları..."></textarea>
+        <div class="form-group" style="margin-bottom: 15px">
+          <UiField class="form-label">Arıza Tespiti & Servis İşlemleri Açıklaması</UiField>
+          <textarea
+            v-model="workOrderForm.diagnosis_notes"
+            rows="2"
+            class="form-input"
+            placeholder="Yapılacak bakım, tespit edilen arızalar ve usta notları..."
+          ></textarea>
         </div>
 
         <!-- Spare Parts Builder -->
-        <div style="margin-bottom: 20px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px;">
-          <h4 style="font-size: 0.9rem; font-weight: bold; color: #1e293b; margin-bottom: 10px;">📦 Değişecek Parça Ekle</h4>
-          <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
-            <input type="text" v-model="newPartForm.part_name" placeholder="Parça Adı (Örn: Yağ Filtresi)" class="form-input" style="flex: 2; font-size: 0.85rem;">
-            <input type="text" v-model="newPartForm.part_code" placeholder="Kod (Örn: FLT-88)" class="form-input" style="flex: 1; font-size: 0.85rem;">
-            <input type="number" min="1" v-model.number="newPartForm.quantity" placeholder="Adet" class="form-input" style="width: 70px; font-size: 0.85rem;">
-            <input type="number" min="0" v-model.number="newPartForm.unit_price" placeholder="Birim Fiyat ₺" class="form-input" style="width: 110px; font-size: 0.85rem;">
-            <button type="button" @click="addPartToWorkOrder" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85rem; background: #0284c7; border: none;">
+        <div
+          style="
+            margin-bottom: 20px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+          "
+        >
+          <h4 style="font-size: 0.9rem; font-weight: bold; color: #1e293b; margin-bottom: 10px">
+            📦 Değişecek Parça Ekle
+          </h4>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px">
+            <input
+              type="text"
+              v-model="newPartForm.part_name"
+              placeholder="Parça Adı (Örn: Yağ Filtresi)"
+              class="form-input"
+              style="flex: 2; font-size: 0.85rem"
+            />
+            <input
+              type="text"
+              v-model="newPartForm.part_code"
+              placeholder="Kod (Örn: FLT-88)"
+              class="form-input"
+              style="flex: 1; font-size: 0.85rem"
+            />
+            <input
+              type="number"
+              min="1"
+              v-model.number="newPartForm.quantity"
+              placeholder="Adet"
+              class="form-input"
+              style="width: 70px; font-size: 0.85rem"
+            />
+            <input
+              type="number"
+              min="0"
+              v-model.number="newPartForm.unit_price"
+              placeholder="Birim Fiyat ₺"
+              class="form-input"
+              style="width: 110px; font-size: 0.85rem"
+            />
+            <UiButton
+              type="button"
+              @click="addPartToWorkOrder"
+              class="btn btn-primary"
+              style="padding: 6px 12px; font-size: 0.85rem; background: #0284c7; border: none"
+            >
               Ekle
-            </button>
+            </UiButton>
           </div>
 
           <!-- Parts Table -->
-          <div v-if="workOrderForm.parts_list.length > 0" style="max-height: 150px; overflow-y: auto;">
-            <table class="custom-table" style="font-size: 0.82rem;">
+          <div
+            v-if="workOrderForm.parts_list.length > 0"
+            style="max-height: 150px; overflow-y: auto"
+          >
+            <table class="custom-table" style="font-size: 0.82rem">
               <thead>
                 <tr>
                   <th>Parça Adı</th>
@@ -1112,9 +1620,22 @@
                   <td>{{ p.part_code || '-' }}</td>
                   <td>{{ p.quantity }}</td>
                   <td>₺{{ p.unit_price?.toLocaleString() }}</td>
-                  <td><strong>₺{{ (p.quantity * p.unit_price)?.toLocaleString() }}</strong></td>
                   <td>
-                    <button type="button" @click="removePartFromWorkOrder(idx)" style="background: none; border: none; color: #ef4444; cursor: pointer; font-weight: bold;">✕</button>
+                    <strong>₺{{ (p.quantity * p.unit_price)?.toLocaleString() }}</strong>
+                  </td>
+                  <td>
+                    <UiButton
+                      type="button"
+                      @click="removePartFromWorkOrder(idx)"
+                      style="
+                        background: none;
+                        border: none;
+                        color: #ef4444;
+                        cursor: pointer;
+                        font-weight: bold;
+                      "
+                      >✕</UiButton
+                    >
                   </td>
                 </tr>
               </tbody>
@@ -1122,116 +1643,320 @@
           </div>
         </div>
 
-        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 20px;">
+        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 20px">
           <div class="form-group">
-            <label class="form-label">İşçilik Bedeli (₺)</label>
-            <input type="number" min="0" v-model.number="workOrderForm.labor_cost" @input="calculateWorkOrderTotal" class="form-input">
+            <UiField class="form-label">İşçilik Bedeli (₺)</UiField>
+            <input
+              type="number"
+              min="0"
+              v-model.number="workOrderForm.labor_cost"
+              @input="calculateWorkOrderTotal"
+              class="form-input"
+            />
           </div>
           <div class="form-group">
-            <label class="form-label">Tahmini Toplam Tutar (₺)</label>
-            <input type="number" min="0" v-model.number="workOrderForm.total_estimated_cost" class="form-input" style="font-weight: bold; color: #2563eb;">
+            <UiField class="form-label">Tahmini Toplam Tutar (₺)</UiField>
+            <input
+              type="number"
+              min="0"
+              v-model.number="workOrderForm.total_estimated_cost"
+              class="form-input"
+              style="font-weight: bold; color: #2563eb"
+            />
           </div>
         </div>
 
-        <div style="display: flex; gap: 12px; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 15px;">
-          <button type="button" @click="showWorkOrderModal = false" class="btn btn-secondary">İptal</button>
-          <button type="submit" class="btn btn-primary" style="background: #2563eb; color: #fff; border: none;">
+        <div
+          style="
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+          "
+        >
+          <UiButton type="button" @click="showWorkOrderModal = false" class="btn btn-secondary"
+            >İptal</UiButton
+          >
+          <UiButton
+            type="submit"
+            class="btn btn-primary"
+            style="background: #2563eb; color: #fff; border: none"
+          >
             💾 İş Emrini Kaydet
-          </button>
+          </UiButton>
         </div>
       </form>
     </div>
-  </div>
+  </UiModal>
 
   <!-- Service Invoice Modal -->
-  <div v-if="showInvoiceModal" class="modal-overlay" @click.self="showInvoiceModal = false">
-    <div class="glass-panel modal-content fade-in-up" style="max-width: 500px; padding: 30px;">
-      <h2 style="margin-bottom: 10px; color: #10b981; display: flex; align-items: center; gap: 8px;">
+  <UiModal v-if="showInvoiceModal" class="modal-overlay" @close="showInvoiceModal = false">
+    <div class="glass-panel modal-content fade-in-up" style="max-width: 500px; padding: 30px">
+      <h2 style="margin-bottom: 10px; color: #10b981; display: flex; align-items: center; gap: 8px">
         <span>🧾</span> Servis Faturası & Belge Yükleme
       </h2>
-      <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; margin-bottom: 20px;">
-        Plaka: <strong style="color: #0f172a;">{{ selectedRequestForInvoice?.vehicle_plate }}</strong> | İş Emri: <strong>{{ selectedRequestForInvoice?.details?.work_order_no || `SERV-2026-${selectedRequestForInvoice?.id}` }}</strong>
+      <p
+        style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; margin-bottom: 20px"
+      >
+        Plaka:
+        <strong style="color: #0f172a">{{ selectedRequestForInvoice?.vehicle_plate }}</strong> | İş
+        Emri:
+        <strong>{{
+          selectedRequestForInvoice?.details?.work_order_no || 'Henüz oluşturulmadı'
+        }}</strong>
       </p>
 
       <form @submit.prevent="submitInvoice">
-        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px;">
+        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px">
           <div class="form-group">
-            <label class="form-label">Fatura Numarası</label>
-            <input type="text" v-model="invoiceForm.invoice_no" required class="form-input" placeholder="Örn: GİB202600000123">
+            <UiField class="form-label">Fatura Numarası</UiField>
+            <input
+              type="text"
+              v-model="invoiceForm.invoice_no"
+              required
+              class="form-input"
+              placeholder="Örn: GİB202600000123"
+            />
           </div>
           <div class="form-group">
-            <label class="form-label">Fatura Tarihi</label>
-            <input type="date" v-model="invoiceForm.invoice_date" required class="form-input">
+            <UiField class="form-label">Fatura Tarihi</UiField>
+            <input type="date" v-model="invoiceForm.invoice_date" required class="form-input" />
           </div>
         </div>
 
-        <div class="form-group" style="margin-bottom: 15px;">
-          <label class="form-label">KDV Dahil Toplam Fatura Tutarı (₺)</label>
-          <input type="number" min="0" step="0.01" v-model.number="invoiceForm.invoice_amount" required class="form-input" style="font-weight: bold; font-size: 1.1rem; color: #10b981;">
+        <div class="form-group" style="margin-bottom: 15px">
+          <UiField class="form-label">KDV Dahil Toplam Fatura Tutarı (₺)</UiField>
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            v-model.number="invoiceForm.invoice_amount"
+            required
+            class="form-input"
+            style="font-weight: bold; font-size: 1.1rem; color: #10b981"
+          />
         </div>
 
-        <div class="form-group" style="margin-bottom: 15px;">
-          <label class="form-label">E-Fatura / PDF Belgesi Seç</label>
-          <input type="file" @change="handleInvoiceFileUpload" accept=".pdf,image/*" class="form-input">
-          <div v-if="invoiceForm.file_name" style="font-size: 0.8rem; color: #10b981; margin-top: 4px; font-weight: 500;">
+        <div class="form-group" style="margin-bottom: 15px">
+          <UiField class="form-label">E-Fatura / PDF Belgesi Seç</UiField>
+          <input
+            type="file"
+            @change="handleInvoiceFileUpload"
+            accept=".pdf,image/*"
+            class="form-input"
+          />
+          <div
+            v-if="invoiceForm.file_name"
+            style="font-size: 0.8rem; color: #10b981; margin-top: 4px; font-weight: 500"
+          >
             📄 Seçilen Belge: {{ invoiceForm.file_name }}
           </div>
         </div>
 
-        <div class="form-group" style="margin-bottom: 20px;">
-          <label class="form-label">Fatura Notları & Açıklama</label>
-          <textarea v-model="invoiceForm.invoice_notes" rows="2" class="form-input" placeholder="Fatura açıklaması veya ödeme şartı notları..."></textarea>
+        <div class="form-group" style="margin-bottom: 20px">
+          <UiField class="form-label">Fatura Notları & Açıklama</UiField>
+          <textarea
+            v-model="invoiceForm.invoice_notes"
+            rows="2"
+            class="form-input"
+            placeholder="Fatura açıklaması veya ödeme şartı notları..."
+          ></textarea>
         </div>
 
-        <div style="display: flex; gap: 12px; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 15px;">
-          <button type="button" @click="showInvoiceModal = false" class="btn btn-secondary">İptal</button>
-          <button type="submit" class="btn btn-primary" style="background: #10b981; color: #fff; border: none; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);">
+        <div
+          style="
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+          "
+        >
+          <UiButton type="button" @click="showInvoiceModal = false" class="btn btn-secondary"
+            >İptal</UiButton
+          >
+          <UiButton
+            type="submit"
+            class="btn btn-primary"
+            style="
+              background: #10b981;
+              color: #fff;
+              border: none;
+              box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+            "
+          >
             📤 Faturayı Gönder & Onaya Sun
-          </button>
+          </UiButton>
         </div>
       </form>
     </div>
-  </div>
+  </UiModal>
 
-  <div v-if="roadsideRequest" class="roadside-service-overlay" @click.self="roadsideRequest = null">
+  <UiModal v-if="roadsideRequest" class="roadside-service-overlay" @close="roadsideRequest = null">
     <form class="roadside-service-dialog" @submit.prevent="saveRoadsideUpdate">
-      <h2>{{roadsideRequest.supplier_id == null ? 'Yol Yardım Talebini Üstlen' : 'Yol Yardım Ekibini Güncelle'}}</h2>
-      <p>{{roadsideRequest.vehicle_plate}} · {{roadsideRequest.description}}</p>
-      <p v-if="roadsideRequest.details?.location">⌖ {{roadsideRequest.details.location}}</p>
-      <a v-if="roadsideRequest.details?.latitude != null && roadsideRequest.details?.longitude != null" :href="`https://www.openstreetmap.org/?mlat=${roadsideRequest.details.latitude}&mlon=${roadsideRequest.details.longitude}#map=16/${roadsideRequest.details.latitude}/${roadsideRequest.details.longitude}`" target="_blank" rel="noreferrer">Müşteri Konumunu Aç ↗</a>
-      <label>Durum<select v-model="roadsideForm.status"><option>Beklemede</option><option>Ekip Atandı</option><option>Yola Çıktı</option><option>Yolda</option><option>Ekip Varış Noktasında</option><option>Çözüldü</option><option>İptal Edildi</option></select></label>
-      <label>Ekip Adı<input v-model.trim="roadsideForm.team_name" :required="roadsideForm.status !== 'Beklemede' && roadsideForm.status !== 'İptal Edildi'" /></label>
-      <label>İletişim Telefonu<input v-model.trim="roadsideForm.team_phone" type="tel" /></label>
-      <div class="roadside-service-fields"><label>Tahmini Varış (dk)<input v-model.number="roadsideForm.eta_minutes" type="number" min="0" /></label><label>Kalan Mesafe (km)<input v-model.number="roadsideForm.distance_km" type="number" min="0" step="0.1" /></label></div>
-      <p v-if="roadsideError" role="alert" class="roadside-service-error">{{roadsideError}}</p>
-      <footer><button type="button" class="btn btn-secondary" @click="roadsideRequest = null" :disabled="updatingId != null">Vazgeç</button><button class="btn btn-primary" :disabled="updatingId != null">{{updatingId != null ? 'Kaydediliyor…' : 'Kaydet'}}</button></footer>
+      <h2>
+        {{
+          roadsideRequest.supplier_id == null
+            ? 'Yol Yardım Talebini Üstlen'
+            : 'Yol Yardım Ekibini Güncelle'
+        }}
+      </h2>
+      <p>{{ roadsideRequest.vehicle_plate }} · {{ roadsideRequest.description }}</p>
+      <p v-if="roadsideRequest.details?.location">⌖ {{ roadsideRequest.details.location }}</p>
+      <a
+        v-if="
+          roadsideRequest.details?.latitude != null && roadsideRequest.details?.longitude != null
+        "
+        :href="`https://www.openstreetmap.org/?mlat=${roadsideRequest.details.latitude}&mlon=${roadsideRequest.details.longitude}#map=16/${roadsideRequest.details.latitude}/${roadsideRequest.details.longitude}`"
+        target="_blank"
+        rel="noreferrer"
+        >Müşteri Konumunu Aç ↗</a
+      >
+      <UiField
+        >Durum<select v-model="roadsideForm.status">
+          <option>Beklemede</option>
+          <option>Ekip Atandı</option>
+          <option>Yola Çıktı</option>
+          <option>Yolda</option>
+          <option>Ekip Varış Noktasında</option>
+          <option>Çözüldü</option>
+          <option>İptal Edildi</option>
+        </select></UiField
+      >
+      <UiField
+        >Ekip Adı<input
+          v-model.trim="roadsideForm.team_name"
+          :required="roadsideForm.status !== 'Beklemede' && roadsideForm.status !== 'İptal Edildi'"
+      /></UiField>
+      <UiField
+        >İletişim Telefonu<input v-model.trim="roadsideForm.team_phone" type="tel"
+      /></UiField>
+      <div class="roadside-service-fields">
+        <UiField
+          >Tahmini Varış (dk)<input
+            v-model.number="roadsideForm.eta_minutes"
+            type="number"
+            min="0" /></UiField
+        ><UiField
+          >Kalan Mesafe (km)<input
+            v-model.number="roadsideForm.distance_km"
+            type="number"
+            min="0"
+            step="0.1"
+        /></UiField>
+      </div>
+      <UiAlert v-if="roadsideError" as="p" tone="error" class="roadside-service-error">{{
+        roadsideError
+      }}</UiAlert>
+      <footer>
+        <UiButton
+          type="button"
+          class="btn btn-secondary"
+          @click="roadsideRequest = null"
+          :disabled="updatingId != null"
+          >Vazgeç</UiButton
+        ><UiButton class="btn btn-primary" :disabled="updatingId != null">{{
+          updatingId != null ? 'Kaydediliyor…' : 'Kaydet'
+        }}</UiButton>
+      </footer>
     </form>
-  </div>
+  </UiModal>
 
-<div v-if="tireRequest" class="roadside-service-overlay" @click.self="tireRequest=null">
-  <form class="roadside-service-dialog tire-service-dialog" @submit.prevent="saveTireCompletion">
-    <h2>Lastik İşlemini Tamamla</h2><p>{{tireRequest.vehicle_plate}} · {{tireRequest.description}}</p>
-    <p v-if="tireServiceLoading">Lastik kayıtları yükleniyor…</p>
-    <label>Lastik Kaydı<select v-model="tireCompletionForm.tire_id" required :disabled="Boolean(tireRequest.details?.tire_id)"><option value="" disabled>Lastik seçin</option><option v-for="tire in tireServiceRecords" :key="tire.id" :value="tire.id">{{tire.brand}} · {{tire.size}} · {{tire.set_no || tire.id}}</option></select></label>
-    <label>Yapılan İşlem<select v-model="tireCompletionForm.type"><option>Rotasyon</option><option>Lastik değişimi</option><option>Basınç kontrolü</option><option>Diş derinliği kontrolü</option><option>Balans</option></select></label>
-    <div class="roadside-service-fields"><label>İşlem Tarihi<input v-model="tireCompletionForm.date" type="date" :max="new Date().toLocaleDateString('sv-SE')" required/></label><label>Araç Kilometresi<input v-model.number="tireCompletionForm.mileage" type="number" min="0"/></label></div>
-    <div class="roadside-service-fields"><label v-if="tireCompletionForm.type==='Lastik değişimi'">Yeni Kalan Kullanım (km)<input v-model.number="tireCompletionForm.remaining_km" type="number" min="0"/></label><label>Diş Derinliği (mm)<input v-model.number="tireCompletionForm.tread_depth_mm" type="number" min="0" max="20" step="0.1"/></label></div>
-    <label>İşlem Notları<textarea v-model.trim="tireCompletionForm.description" rows="3"/></label>
-    <p v-if="tireServiceError" role="alert" class="roadside-service-error">{{tireServiceError}}</p>
-    <footer><button type="button" class="btn btn-secondary" @click="tireRequest=null" :disabled="updatingId!=null">Vazgeç</button><button class="btn btn-primary" :disabled="updatingId!=null || tireServiceLoading || !tireServiceRecords.length">{{updatingId!=null ? 'Kaydediliyor…' : 'Tamamla ve Kaydet'}}</button></footer>
-  </form>
-</div>
+  <UiModal v-if="tireRequest" class="roadside-service-overlay" @close="tireRequest = null">
+    <form class="roadside-service-dialog tire-service-dialog" @submit.prevent="saveTireCompletion">
+      <h2>Lastik İşlemini Tamamla</h2>
+      <p>{{ tireRequest.vehicle_plate }} · {{ tireRequest.description }}</p>
+      <p v-if="tireServiceLoading">Lastik kayıtları yükleniyor…</p>
+      <UiField
+        >Lastik Kaydı<select
+          v-model="tireCompletionForm.tire_id"
+          required
+          :disabled="Boolean(tireRequest.details?.tire_id)"
+        >
+          <option value="" disabled>Lastik seçin</option>
+          <option v-for="tire in tireServiceRecords" :key="tire.id" :value="tire.id">
+            {{ tire.brand }} · {{ tire.size }} · {{ tire.set_no || tire.id }}
+          </option>
+        </select></UiField
+      >
+      <UiField
+        >Yapılan İşlem<select v-model="tireCompletionForm.type">
+          <option>Rotasyon</option>
+          <option>Lastik değişimi</option>
+          <option>Basınç kontrolü</option>
+          <option>Diş derinliği kontrolü</option>
+          <option>Balans</option>
+        </select></UiField
+      >
+      <div class="roadside-service-fields">
+        <UiField
+          >İşlem Tarihi<input
+            v-model="tireCompletionForm.date"
+            type="date"
+            :max="new Date().toLocaleDateString('sv-SE')"
+            required /></UiField
+        ><UiField
+          >Araç Kilometresi<input v-model.number="tireCompletionForm.mileage" type="number" min="0"
+        /></UiField>
+      </div>
+      <div class="roadside-service-fields">
+        <UiField v-if="tireCompletionForm.type === 'Lastik değişimi'"
+          >Yeni Kalan Kullanım (km)<input
+            v-model.number="tireCompletionForm.remaining_km"
+            type="number"
+            min="0" /></UiField
+        ><UiField
+          >Diş Derinliği (mm)<input
+            v-model.number="tireCompletionForm.tread_depth_mm"
+            type="number"
+            min="0"
+            max="20"
+            step="0.1"
+        /></UiField>
+      </div>
+      <UiField
+        >İşlem Notları<textarea v-model.trim="tireCompletionForm.description" rows="3" />
+      </UiField>
+      <UiAlert v-if="tireServiceError" as="p" tone="error" class="roadside-service-error">{{
+        tireServiceError
+      }}</UiAlert>
+      <footer>
+        <UiButton
+          type="button"
+          class="btn btn-secondary"
+          @click="tireRequest = null"
+          :disabled="updatingId != null"
+          >Vazgeç</UiButton
+        ><UiButton
+          class="btn btn-primary"
+          :disabled="updatingId != null || tireServiceLoading || !tireServiceRecords.length"
+          >{{ updatingId != null ? 'Kaydediliyor…' : 'Tamamla ve Kaydet' }}</UiButton
+        >
+      </footer>
+    </form>
+  </UiModal>
 </template>
 
 <script setup>
+import { UiAlert, UiButton, UiField, UiModal } from '../components/ui/index.js'
+
 import { hasPreferredDates, preferredDateRange } from '../utils/preferredDates'
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
+import { serviceMetrics } from '../utils/serviceMetrics'
+import Sidebar from '../components/Sidebar.vue'
 import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
 const route = useRoute()
 
-const currentTab = ref('requests') // Default will be updated in onMounted
+const currentTab = ref(route.query.tab === 'requests' ? 'requests' : 'tenders') // Default will be updated in onMounted
+watch(
+  () => route.query.tab,
+  (tab) => {
+    if (!isServiceAccount.value) currentTab.value = tab === 'requests' ? 'requests' : 'tenders'
+  },
+)
 const supplierId = ref(parseInt(localStorage.getItem('fleetcar_supplier_id') || '0'))
 const supplierName = ref(localStorage.getItem('fleetcar_supplier_name') || 'Tedarikçi / Servis')
 const supplierType = ref(localStorage.getItem('fleetcar_supplier_type') || 'servis')
@@ -1239,7 +1964,13 @@ const supplierEmail = ref(localStorage.getItem('fleetcar_supplier_email') || '')
 
 const isServiceAccount = computed(() => {
   const t = supplierType.value?.toLowerCase() || ''
-  return route.path.includes('service') || t === 'servis' || t === 'oto_servis' || t === 'lastik' || t === 'yol_yardim'
+  return (
+    route.path.includes('service') ||
+    t === 'servis' ||
+    t === 'oto_servis' ||
+    t === 'lastik' ||
+    t === 'yol_yardim'
+  )
 })
 
 const supplierCity = ref('')
@@ -1249,11 +1980,15 @@ const supplierServices = ref([])
 const supplierPhone = ref('')
 
 const requests = ref([])
+const measuredServiceMetrics = computed(() => serviceMetrics(requests.value))
+const durationLabel = (value) =>
+  value == null ? 'Veri yok' : value.toLocaleString('tr-TR', { maximumFractionDigits: 1 }) + ' Gün'
 const quotes = ref([])
 const vehicles = ref([])
 const supplierBids = ref([])
 const suppliers = ref([])
 const loading = ref(true)
+const portalError = ref('')
 const updatingId = ref(null)
 
 // Bidding Modal State
@@ -1261,27 +1996,7 @@ const showBidModal = ref(false)
 const selectedQuoteForBid = ref(null)
 const bidForm = reactive({
   monthly_price_try: 0,
-  notes: ''
-})
-
-// Vehicle Delivery / Registration State
-const showAddVehicleModal = ref(false)
-const selectedQuoteForDelivery = ref(null)
-const addVehicleForm = reactive({
-  plate: '',
-  brand: '',
-  model: '',
-  year: 2024,
-  fuel: 'Hibrit',
-  mileage: 0,
-  chassis_no: '',
-  license_serial_no: '',
-  inspection_date: '',
-  vehicle_segment: 'C',
-  vehicle_type: 'Sedan',
-  tire_change_date: '',
-  last_service_date: '',
-  last_service_mileage: 0
+  notes: '',
 })
 
 // Vehicle Details & Service History State
@@ -1296,7 +2011,7 @@ const checkinForm = reactive({
   fuel_level: '%50 (Yarım Depo)',
   driver_name: '',
   driver_phone: '',
-  entry_notes: ''
+  entry_notes: '',
 })
 
 const showWorkOrderModal = ref(false)
@@ -1305,13 +2020,13 @@ const workOrderForm = reactive({
   diagnosis_notes: '',
   labor_cost: 0,
   total_estimated_cost: 0,
-  parts_list: []
+  parts_list: [],
 })
 const newPartForm = reactive({
   part_name: '',
   part_code: '',
   quantity: 1,
-  unit_price: 0
+  unit_price: 0,
 })
 
 const showInvoiceModal = ref(false)
@@ -1321,7 +2036,7 @@ const invoiceForm = reactive({
   invoice_date: '',
   invoice_amount: 0,
   invoice_notes: '',
-  file_name: ''
+  file_name: '',
 })
 const selectedInvoiceFile = ref(null)
 
@@ -1341,7 +2056,7 @@ const submitCheckin = async () => {
     const res = await fetch(`/api/requests/${selectedRequestForCheckin.value.id}/checkin`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...checkinForm, supplier_id: supplierId.value })
+      body: JSON.stringify({ ...checkinForm, supplier_id: supplierId.value }),
     })
     if (res.ok) {
       await fetchRequests()
@@ -1360,7 +2075,9 @@ const openWorkOrderModal = (req) => {
   workOrderForm.diagnosis_notes = req.details?.diagnosis_notes || ''
   workOrderForm.labor_cost = req.details?.labor_cost || 0
   workOrderForm.total_estimated_cost = req.details?.total_estimated_cost || 0
-  workOrderForm.parts_list = Array.isArray(req.details?.parts_list) ? [...req.details.parts_list] : []
+  workOrderForm.parts_list = Array.isArray(req.details?.parts_list)
+    ? [...req.details.parts_list]
+    : []
   newPartForm.part_name = ''
   newPartForm.part_code = ''
   newPartForm.quantity = 1
@@ -1374,7 +2091,7 @@ const addPartToWorkOrder = () => {
     part_name: newPartForm.part_name,
     part_code: newPartForm.part_code,
     quantity: newPartForm.quantity || 1,
-    unit_price: newPartForm.unit_price || 0
+    unit_price: newPartForm.unit_price || 0,
   })
   newPartForm.part_name = ''
   newPartForm.part_code = ''
@@ -1389,7 +2106,10 @@ const removePartFromWorkOrder = (idx) => {
 }
 
 const calculateWorkOrderTotal = () => {
-  const partsTotal = workOrderForm.parts_list.reduce((sum, p) => sum + ((p.quantity || 1) * (p.unit_price || 0)), 0)
+  const partsTotal = workOrderForm.parts_list.reduce(
+    (sum, p) => sum + (p.quantity || 1) * (p.unit_price || 0),
+    0,
+  )
   workOrderForm.total_estimated_cost = partsTotal + (workOrderForm.labor_cost || 0)
 }
 
@@ -1400,7 +2120,7 @@ const submitWorkOrder = async () => {
     const res = await fetch(`/api/requests/${selectedRequestForWorkOrder.value.id}/work-order`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...workOrderForm, supplier_id: supplierId.value })
+      body: JSON.stringify({ ...workOrderForm, supplier_id: supplierId.value }),
     })
     if (res.ok) {
       await fetchRequests()
@@ -1440,14 +2160,18 @@ const submitInvoice = async () => {
     let file_url = selectedRequestForInvoice.value.details?.invoice_file_url || null
     if (selectedInvoiceFile.value) {
       const file = selectedInvoiceFile.value
-      const uploaded = await fetch(`/api/vehicles/${encodeURIComponent(selectedRequestForInvoice.value.vehicle_id)}/files?category=document&document_type=service_invoice&original_name=${encodeURIComponent(file.name)}`, { method:'POST', headers:{'Content-Type':file.type}, body:file })
-      if (!uploaded.ok) return alert('Fatura dosyası yüklenemedi. PDF, JPEG veya PNG dosyası seçin.')
+      const uploaded = await fetch(
+        `/api/vehicles/${encodeURIComponent(selectedRequestForInvoice.value.vehicle_id)}/files?category=document&document_type=service_invoice&original_name=${encodeURIComponent(file.name)}`,
+        { method: 'POST', headers: { 'Content-Type': file.type }, body: file },
+      )
+      if (!uploaded.ok)
+        return alert('Fatura dosyası yüklenemedi. PDF, JPEG veya PNG dosyası seçin.')
       file_url = (await uploaded.json()).url
     }
     const res = await fetch(`/api/requests/${selectedRequestForInvoice.value.id}/invoice`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...invoiceForm, file_url, supplier_id: supplierId.value })
+      body: JSON.stringify({ ...invoiceForm, file_url, supplier_id: supplierId.value }),
     })
     if (res.ok) {
       await fetchRequests()
@@ -1464,10 +2188,12 @@ const submitInvoice = async () => {
 const fetchRequests = async () => {
   try {
     const res = await fetch(`/api/requests?supplier_id=${supplierId.value}`)
+    if (!res.ok) throw new Error('Portal bilgileri yüklenemedi.')
     if (res.ok) {
       requests.value = await res.json()
     }
   } catch (error) {
+    portalError.value = 'Bazı bilgiler yüklenemedi. Görüntülenen özet eksik olabilir.'
     console.error('Error fetching requests:', error)
   }
 }
@@ -1475,10 +2201,12 @@ const fetchRequests = async () => {
 const fetchQuotes = async () => {
   try {
     const res = await fetch(`/api/quotes?supplier_id=${supplierId.value}`)
+    if (!res.ok) throw new Error('Portal bilgileri yüklenemedi.')
     if (res.ok) {
       quotes.value = await res.json()
     }
   } catch (error) {
+    portalError.value = 'Bazı bilgiler yüklenemedi. Görüntülenen özet eksik olabilir.'
     console.error('Error fetching quotes:', error)
   }
 }
@@ -1486,10 +2214,12 @@ const fetchQuotes = async () => {
 const fetchSupplierBids = async () => {
   try {
     const res = await fetch(`/api/suppliers/${supplierId.value}/bids`)
+    if (!res.ok) throw new Error('Portal bilgileri yüklenemedi.')
     if (res.ok) {
       supplierBids.value = await res.json()
     }
   } catch (error) {
+    portalError.value = 'Bazı bilgiler yüklenemedi. Görüntülenen özet eksik olabilir.'
     console.error('Error fetching supplier bids:', error)
   }
 }
@@ -1497,80 +2227,106 @@ const fetchSupplierBids = async () => {
 const fetchVehicles = async () => {
   try {
     const res = await fetch(`/api/vehicles?supplier_id=${supplierId.value}`)
+    if (!res.ok) throw new Error('Portal bilgileri yüklenemedi.')
     if (res.ok) {
       vehicles.value = await res.json()
     }
   } catch (error) {
+    portalError.value = 'Bazı bilgiler yüklenemedi. Görüntülenen özet eksik olabilir.'
     console.error('Error fetching vehicles:', error)
   }
 }
 
+function loadPortalRecords() {
+  return isServiceAccount.value
+    ? fetchRequests()
+    : Promise.all([fetchRequests(), fetchQuotes(), fetchSupplierBids(), fetchVehicles()])
+}
+
+const reloadPortal = async () => {
+  portalError.value = ''
+  loading.value = true
+  await loadPortalRecords()
+  loading.value = false
+}
+
 const filteredRequests = computed(() => {
-  return requests.value.filter(r => r.supplier_id === supplierId.value || (['servis','lastik','yol_yardim'].includes(supplierType.value) && r.type === supplierType.value && r.supplier_id == null))
+  return requests.value.filter(
+    (r) =>
+      r.supplier_id === supplierId.value ||
+      (['servis', 'lastik', 'yol_yardim'].includes(supplierType.value) &&
+        r.type === supplierType.value &&
+        r.supplier_id == null),
+  )
 })
 
 const openQuotes = computed(() => {
-  return quotes.value.filter(q => {
+  return quotes.value.filter((q) => {
     if (['Teklif Verildi', 'Beklemede', 'Değerlendirmede'].includes(q.status)) return true
     if (q.status === 'Sözleşme İmzalandı') {
-      const bid = supplierBids.value.find(b => b.quote_id === q.id)
+      const bid = supplierBids.value.find((b) => b.quote_id === q.id)
       return bid && bid.status === 'Kabul Edildi'
     }
     return false
   })
 })
 
+const expiringVehicles = computed(() =>
+  vehicles.value
+    .filter((v) => {
+      if (!v.is_active || !v.customer_id || !v.contract_end_date) return false
+      const days = (new Date(v.contract_end_date) - new Date(new Date().toDateString())) / 86400000
+      return days >= 0 && days <= 30
+    })
+    .sort((a, b) => a.contract_end_date.localeCompare(b.contract_end_date)),
+)
 const myDeliveredVehicles = computed(() => {
-  return vehicles.value.filter(v => v.supplier_id === supplierId.value)
+  return vehicles.value.filter(
+    (v) => v.supplier_id === supplierId.value && v.customer_id && v.is_active,
+  )
 })
 
 const serviceVehicles = computed(() => {
-  return vehicles.value.filter(v => v.supplier_id === supplierId.value || v.status === 'Serviste')
+  return vehicles.value.filter((v) => v.supplier_id === supplierId.value || v.status === 'Serviste')
 })
 
 const serviceVehiclesCount = computed(() => {
   return serviceVehicles.value.length
 })
 
-const pendingBidsCount = computed(() => {
-  return supplierBids.value.filter(b => b.status === 'Beklemede').length
-})
-
 const acceptedBidsCount = computed(() => {
-  return supplierBids.value.filter(b => b.status === 'Kabul Edildi').length
+  return supplierBids.value.filter((b) => b.status === 'Kabul Edildi').length
 })
 
 const pendingRequestsCount = computed(() => {
-  return filteredRequests.value.filter(r => r.status === 'Beklemede').length
+  return filteredRequests.value.filter((r) => r.status === 'Beklemede').length
 })
 
 const activeRequestsCount = computed(() => {
-  return filteredRequests.value.filter(r => ['Onaylandı', 'İşlemde', 'Ekip Atandı', 'Yola Çıktı', 'Yolda', 'Ekip Varış Noktasında'].includes(r.status)).length
+  return filteredRequests.value.filter((r) =>
+    [
+      'Onaylandı',
+      'İşlemde',
+      'Ekip Atandı',
+      'Yola Çıktı',
+      'Yolda',
+      'Ekip Varış Noktasında',
+    ].includes(r.status),
+  ).length
 })
 
 const completedRequestsCount = computed(() => {
-  return filteredRequests.value.filter(r => ['Tamamlandı', 'Çözüldü'].includes(r.status)).length
-})
-
-const maintenanceRequestsCount = computed(() => {
-  return filteredRequests.value.filter(r => r.type === 'servis' || r.description?.toLowerCase().includes('bakım')).length
-})
-
-const mechanicalRequestsCount = computed(() => {
-  return filteredRequests.value.filter(r => r.type === 'arıza' || r.description?.toLowerCase().includes('arıza') || r.description?.toLowerCase().includes('mekanik')).length
-})
-
-const tireRoadsideRequestsCount = computed(() => {
-  return filteredRequests.value.filter(r => r.type === 'lastik' || r.type === 'yol_yardim').length
+  return filteredRequests.value.filter((r) => ['Tamamlandı', 'Çözüldü'].includes(r.status)).length
 })
 
 const getTypeName = (type) => {
   const map = {
-    'servis': 'Yetkili Servis Tedarikçisi',
-    'oto_servis': 'Oto Servis Sağlayıcısı',
-    'lastik': 'Lastik Tedarikçisi',
-    'yol_yardim': 'Yol Yardım & Çekici Hizmeti',
-    'ikame_arac': 'Araç Kiralama & İkame Tedarikçisi'
+    servis: 'Yetkili Servis Tedarikçisi',
+    oto_servis: 'Oto Servis Sağlayıcısı',
+    lastik: 'Lastik Tedarikçisi',
+    yol_yardim: 'Yol Yardım & Çekici Hizmeti',
+    ikame_arac: 'Araç Kiralama & İkame Tedarikçisi',
+    kiralama: 'Filo Kiralama Tedarikçisi',
   }
   return map[type] || type
 }
@@ -1581,7 +2337,7 @@ const getStatusBadgeClass = (status) => {
     'badge-service': status === 'İşlemde',
     'badge-replacement': status === 'Tamamlandı',
     'badge-roadside': status === 'Beklemede',
-    'badge-old-reason': status === 'İptal Edildi'
+    'badge-old-reason': status === 'İptal Edildi',
   }
 }
 
@@ -1589,36 +2345,27 @@ const getBidBadgeClassForSupplier = (status) => {
   return {
     'badge-active': status === 'Kabul Edildi',
     'badge-roadside': status === 'Beklemede',
-    'badge-old-reason': status === 'Reddedildi'
-  }
-}
-
-const getStatusBadgeClassForVehicle = (status) => {
-  return {
-    'badge-active': status === 'Aktif',
-    'badge-service': status === 'Serviste',
-    'badge-roadside': status === 'Yol Yardımında',
-    'badge-old-reason': status === 'İnaktif'
+    'badge-old-reason': status === 'Reddedildi',
   }
 }
 
 // Bidding Helpers
 const hasSupplierBid = (quoteId) => {
-  return supplierBids.value.some(b => b.quote_id === quoteId)
+  return supplierBids.value.some((b) => b.quote_id === quoteId)
 }
 
 const getSupplierBidAmount = (quoteId) => {
-  const bid = supplierBids.value.find(b => b.quote_id === quoteId)
+  const bid = supplierBids.value.find((b) => b.quote_id === quoteId)
   return bid ? bid.monthly_price_try : 0
 }
 
 const getSupplierBidStatus = (quoteId) => {
-  const bid = supplierBids.value.find(b => b.quote_id === quoteId)
+  const bid = supplierBids.value.find((b) => b.quote_id === quoteId)
   return bid ? bid.status : ''
 }
 
 const openPlaceBidModal = (quote) => {
-  const existing = supplierBids.value.find(b => b.quote_id === quote.id)
+  const existing = supplierBids.value.find((b) => b.quote_id === quote.id)
   bidForm.monthly_price_try = existing ? existing.monthly_price_try : quote.monthly_price_try
   bidForm.notes = existing ? existing.notes : ''
   selectedQuoteForBid.value = quote
@@ -1627,13 +2374,16 @@ const openPlaceBidModal = (quote) => {
 
 const submitBid = async () => {
   try {
-    const res = await fetch(`/api/quotes/${selectedQuoteForBid.value.id}/bids?supplier_id=${supplierId.value}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
+    const res = await fetch(
+      `/api/quotes/${selectedQuoteForBid.value.id}/bids?supplier_id=${supplierId.value}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bidForm),
       },
-      body: JSON.stringify(bidForm)
-    })
+    )
     if (res.ok) {
       await fetchSupplierBids()
       showBidModal.value = false
@@ -1645,117 +2395,153 @@ const submitBid = async () => {
   }
 }
 
-// Vehicle Delivery / Registration Helpers
+// Deliveries use the same inventory form and explicit assignment as customer-aligned fleet management.
 const openDeliveryModal = (quote) => {
-  selectedQuoteForDelivery.value = quote
-  addVehicleForm.plate = ''
-  addVehicleForm.chassis_no = ''
-  addVehicleForm.brand = ''
-  addVehicleForm.model = ''
-  addVehicleForm.year = 2024
-  addVehicleForm.fuel = 'Hibrit'
-  addVehicleForm.mileage = 0
-  addVehicleForm.license_serial_no = ''
-  addVehicleForm.inspection_date = new Date(Date.now() + 2 * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-  addVehicleForm.vehicle_segment = quote.vehicle_segment
-  addVehicleForm.vehicle_type = quote.vehicle_type
-  
-  addVehicleForm.tire_change_date = new Date().toISOString().split('T')[0]
-  addVehicleForm.last_service_date = new Date().toISOString().split('T')[0]
-  addVehicleForm.last_service_mileage = 0
-  
-  showAddVehicleModal.value = true
-}
-
-const submitAddVehicle = async () => {
-  try {
-    const payload = {
-      ...addVehicleForm,
-      supplier_id: supplierId.value
-    }
-    const res = await fetch('/api/vehicles', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload)
-    })
-    if (res.ok) {
-      await fetchVehicles()
-      showAddVehicleModal.value = false
-      alert(`${addVehicleForm.plate} plakalı araç başarıyla sisteme teslim edildi ve müşterinin filosuna kaydedildi.`);
-    } else {
-      const errData = await res.json()
-      alert('Araç kaydedilemedi: ' + (errData.detail || 'Bilinmeyen hata.'))
-    }
-  } catch (err) {
-    console.error('Error registering vehicle:', err)
-  }
+  router.push({
+    name: 'SupplierVehicles',
+    query: {
+      add: '1',
+      customer_id: quote.customer_id || '',
+      segment: quote.vehicle_segment || 'C',
+      vehicle_type: quote.vehicle_type || 'Sedan',
+    },
+  })
 }
 
 // Vehicle Details & Service History Helpers
-const openVehicleDetails = (vehicle) => {
-  selectedVehicle.value = vehicle
-  showVehicleDetailsModal.value = true
-}
 
 const getVehicleServiceHistory = (vehicleId) => {
   if (!vehicleId) return []
-  return requests.value.filter(r => r.vehicle_id === vehicleId)
+  return requests.value.filter((r) => r.vehicle_id === vehicleId)
 }
 
-const tireRequest = ref(null), tireServiceRecords = ref([]), tireServiceError = ref(''), tireServiceLoading = ref(false)
-const tireCompletionForm = reactive({tire_id:'',type:'Rotasyon',date:'',mileage:null,remaining_km:null,tread_depth_mm:null,description:''})
-const openTireCompletion = async request => {
-  tireRequest.value=request; tireServiceError.value=''; tireServiceRecords.value=[]; tireServiceLoading.value=true
-  Object.assign(tireCompletionForm,{tire_id:request.details?.tire_id || '',type:request.details?.tire_operation || 'Lastik değişimi',
-    date:new Date().toLocaleDateString('sv-SE'),mileage:request.details?.mileage ?? null,remaining_km:null,tread_depth_mm:null,description:''})
+const tireRequest = ref(null),
+  tireServiceRecords = ref([]),
+  tireServiceError = ref(''),
+  tireServiceLoading = ref(false)
+const tireCompletionForm = reactive({
+  tire_id: '',
+  type: 'Rotasyon',
+  date: '',
+  mileage: null,
+  remaining_km: null,
+  tread_depth_mm: null,
+  description: '',
+})
+const openTireCompletion = async (request) => {
+  tireRequest.value = request
+  tireServiceError.value = ''
+  tireServiceRecords.value = []
+  tireServiceLoading.value = true
+  Object.assign(tireCompletionForm, {
+    tire_id: request.details?.tire_id || '',
+    type: request.details?.tire_operation || 'Lastik değişimi',
+    date: new Date().toLocaleDateString('sv-SE'),
+    mileage: request.details?.mileage ?? null,
+    remaining_km: null,
+    tread_depth_mm: null,
+    description: '',
+  })
   try {
-    const response=await fetch(`/api/tires?vehicle_id=${encodeURIComponent(request.vehicle_id)}&supplier_id=${supplierId.value}`)
-    if(!response.ok)throw Error('Bu aracın lastik kayıtları yüklenemedi.')
-    tireServiceRecords.value=await response.json()
-    if(!tireCompletionForm.tire_id)tireCompletionForm.tire_id=tireServiceRecords.value[0]?.id || ''
-  }catch(error){tireServiceError.value=error.message}finally{tireServiceLoading.value=false}
+    const response = await fetch(
+      `/api/tires?vehicle_id=${encodeURIComponent(request.vehicle_id)}&supplier_id=${supplierId.value}`,
+    )
+    if (!response.ok) throw Error('Bu aracın lastik kayıtları yüklenemedi.')
+    tireServiceRecords.value = await response.json()
+    if (!tireCompletionForm.tire_id)
+      tireCompletionForm.tire_id = tireServiceRecords.value[0]?.id || ''
+  } catch (error) {
+    tireServiceError.value = error.message
+  } finally {
+    tireServiceLoading.value = false
+  }
 }
 const saveTireCompletion = async () => {
-  const request=tireRequest.value;updatingId.value=request.id;tireServiceError.value=''
+  const request = tireRequest.value
+  updatingId.value = request.id
+  tireServiceError.value = ''
   try {
-    const response=await fetch(`/api/requests/${request.id}/tire-operation`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-      ...tireCompletionForm,tire_id:Number(tireCompletionForm.tire_id),vehicle_id:request.vehicle_id,supplier_id:supplierId.value,
-      mileage:tireCompletionForm.mileage === '' ? null : tireCompletionForm.mileage,
-      remaining_km:tireCompletionForm.remaining_km === '' ? null : tireCompletionForm.remaining_km,
-      tread_depth_mm:tireCompletionForm.tread_depth_mm === '' ? null : tireCompletionForm.tread_depth_mm})})
-    if(!response.ok){const data=await response.json().catch(()=>({}));throw Error(typeof data.detail==='string'?data.detail:'İşlem kaydedilemedi. Alanları kontrol edin.')}
-    tireRequest.value=null;await fetchRequests()
-  }catch(error){tireServiceError.value=error.message}finally{updatingId.value=null}
+    const response = await fetch(`/api/requests/${request.id}/tire-operation`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...tireCompletionForm,
+        tire_id: Number(tireCompletionForm.tire_id),
+        vehicle_id: request.vehicle_id,
+        supplier_id: supplierId.value,
+        mileage: tireCompletionForm.mileage === '' ? null : tireCompletionForm.mileage,
+        remaining_km:
+          tireCompletionForm.remaining_km === '' ? null : tireCompletionForm.remaining_km,
+        tread_depth_mm:
+          tireCompletionForm.tread_depth_mm === '' ? null : tireCompletionForm.tread_depth_mm,
+      }),
+    })
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}))
+      throw Error(
+        typeof data.detail === 'string'
+          ? data.detail
+          : 'İşlem kaydedilemedi. Alanları kontrol edin.',
+      )
+    }
+    tireRequest.value = null
+    await fetchRequests()
+  } catch (error) {
+    tireServiceError.value = error.message
+  } finally {
+    updatingId.value = null
+  }
 }
 const roadsideRequest = ref(null)
 const roadsideError = ref('')
-const roadsideForm = reactive({ status:'', team_name:'', team_phone:'', eta_minutes:null, distance_km:null })
-const openRoadsideUpdate = request => {
+const roadsideForm = reactive({
+  status: '',
+  team_name: '',
+  team_phone: '',
+  eta_minutes: null,
+  distance_km: null,
+})
+const openRoadsideUpdate = (request) => {
   roadsideRequest.value = request
   roadsideError.value = ''
-  Object.assign(roadsideForm, {status:request.status, team_name:request.roadside_case?.team_name || '',
-    team_phone:request.roadside_case?.team_phone || '', eta_minutes:request.roadside_case?.eta_minutes ?? null,
-    distance_km:request.roadside_case?.distance_km ?? null})
+  Object.assign(roadsideForm, {
+    status: request.status,
+    team_name: request.roadside_case?.team_name || '',
+    team_phone: request.roadside_case?.team_phone || '',
+    eta_minutes: request.roadside_case?.eta_minutes ?? null,
+    distance_km: request.roadside_case?.distance_km ?? null,
+  })
 }
 const saveRoadsideUpdate = async () => {
   const request = roadsideRequest.value
   updatingId.value = request.id
   roadsideError.value = ''
   try {
-    const response = await fetch(`/api/requests/${request.id}/status`, {method:'PUT',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({...roadsideForm,supplier_id:supplierId.value,
-        eta_minutes:roadsideForm.eta_minutes === '' ? null : roadsideForm.eta_minutes,
-        distance_km:roadsideForm.distance_km === '' ? null : roadsideForm.distance_km})})
+    const response = await fetch(`/api/requests/${request.id}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...roadsideForm,
+        supplier_id: supplierId.value,
+        eta_minutes: roadsideForm.eta_minutes === '' ? null : roadsideForm.eta_minutes,
+        distance_km: roadsideForm.distance_km === '' ? null : roadsideForm.distance_km,
+      }),
+    })
     if (!response.ok) {
-      const data = await response.json().catch(()=>({}))
-      throw Error(typeof data.detail === 'string' ? data.detail : 'Bilgiler kaydedilemedi. Süre ve mesafe alanlarını kontrol edin.')
+      const data = await response.json().catch(() => ({}))
+      throw Error(
+        typeof data.detail === 'string'
+          ? data.detail
+          : 'Bilgiler kaydedilemedi. Süre ve mesafe alanlarını kontrol edin.',
+      )
     }
     roadsideRequest.value = null
     await fetchRequests()
-  } catch (error) { roadsideError.value = error.message }
-  finally { updatingId.value = null }
+  } catch (error) {
+    roadsideError.value = error.message
+  } finally {
+    updatingId.value = null
+  }
 }
 const updateStatus = async (request, newStatus) => {
   if (request.type === 'yol_yardim') {
@@ -1770,9 +2556,9 @@ const updateStatus = async (request, newStatus) => {
     const response = await fetch(`/api/requests/${requestId}/status`, {
       method: 'PUT',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(update)
+      body: JSON.stringify(update),
     })
     if (response.ok) {
       await fetchRequests()
@@ -1793,17 +2579,25 @@ const formatDate = (dateStr) => {
     const d = new Date(dateStr)
     if (isNaN(d.getTime())) return dateStr
     return d.toLocaleString('tr-TR')
-  } catch (e) {
+  } catch {
     return dateStr
   }
 }
 
 const getSupplierName = (supplierId) => {
-  const sup = suppliers.value.find(s => s.id === supplierId)
+  const sup = suppliers.value.find((s) => s.id === supplierId)
   return sup ? sup.name : '-'
 }
 
-const handleLogout = () => {
+const handleLogout = async () => {
+  try {
+    await fetch('/api/auth/logout', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${localStorage.getItem('fleetcar_supplier_token') || ''}` },
+    })
+  } catch {
+    // Clear the local account even if the server session already expired.
+  }
   localStorage.removeItem('fleetcar_supplier_token')
   localStorage.removeItem('fleetcar_supplier_id')
   localStorage.removeItem('fleetcar_supplier_name')
@@ -1816,28 +2610,35 @@ let roadsideRefreshTimer
 onUnmounted(() => clearInterval(roadsideRefreshTimer))
 onMounted(async () => {
   roadsideRefreshTimer = setInterval(() => {
-    if (isServiceAccount.value && !document.hidden && !roadsideRequest.value && !tireRequest.value && updatingId.value == null) fetchRequests()
+    if (
+      isServiceAccount.value &&
+      !document.hidden &&
+      !roadsideRequest.value &&
+      !tireRequest.value &&
+      updatingId.value == null
+    )
+      fetchRequests()
   }, 15000)
   if (!supplierId.value) {
     router.push(isServiceAccount.value ? '/service-login' : '/supplier-login')
     return
   }
-  
+
   loading.value = true
-  
+
   // Set default tab based on portal type
   if (isServiceAccount.value) {
     currentTab.value = 'requests'
   } else {
-    currentTab.value = 'tenders'
+    currentTab.value = route.query.tab === 'requests' ? 'requests' : 'tenders'
   }
-  
+
   // Load supplier details
   try {
     const res = await fetch('/api/suppliers')
     if (res.ok) {
       const suppliersList = await res.json()
-      const current = suppliersList.find(s => s.id === supplierId.value)
+      const current = suppliersList.find((s) => s.id === supplierId.value)
       if (current) {
         supplierCity.value = current.city
         supplierDistrict.value = current.district
@@ -1853,18 +2654,164 @@ onMounted(async () => {
   } catch (err) {
     console.error('Error loading supplier info:', err)
   }
-  
-  await Promise.all([
-    fetchRequests(),
-    fetchQuotes(),
-    fetchSupplierBids(),
-    fetchVehicles()
-  ])
+
+  await loadPortalRecords()
   loading.value = false
 })
 </script>
 
 <style scoped>
+.supplier-load-error {
+  background: #fff1e7;
+  color: #a14c20;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 12px;
+}
+.supplier-load-error button {
+  margin-left: 12px;
+}
+
+.supplier-customer-main {
+  background: #eef7fd !important;
+  padding: 0 20px 24px !important;
+  min-width: 0;
+}
+.supplier-customer-header {
+  padding: 14px 0 !important;
+  border: 0 !important;
+  border-bottom: 1px solid #dfeaf4 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  margin-bottom: 20px !important;
+}
+.supplier-customer-header .brand-logo-image {
+  display: none;
+}
+.supplier-customer-header .supplier-name-display {
+  font-size: 14px;
+}
+.supplier-customer-header .portal-title {
+  font-size: 10px;
+}
+.supplier-customer-header .type-badge {
+  font-size: 11px;
+  background: #e5f1fc !important;
+  color: #0064ff !important;
+  border-color: #d5e7f9 !important;
+}
+.supplier-page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+.supplier-page-heading > div > span {
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: #6c80a1;
+}
+.supplier-page-heading h1 {
+  font-size: 25px;
+  color: #071b63;
+  margin: 5px 0;
+}
+.supplier-page-heading p {
+  font-size: 12px;
+  color: #6b7b9a;
+}
+.supplier-page-heading .btn {
+  font-size: 12px;
+}
+.supplier-customer-main .profile-bar {
+  font-size: 12px;
+  padding: 16px !important;
+  margin-bottom: 20px !important;
+}
+.supplier-customer-main .profile-meta-value {
+  font-size: 12px !important;
+}
+.supplier-customer-main .profile-meta-label {
+  font-size: 10px;
+}
+.supplier-customer-main .stat-card-new {
+  padding: 18px 14px;
+}
+.supplier-customer-main .stat-label {
+  font-size: 11px;
+}
+.supplier-customer-main .stat-val-new {
+  font-size: 24px;
+}
+.supplier-customer-main .stat-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  font-size: 22px;
+}
+.supplier-overview-panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.supplier-overview-panels article {
+  padding: 20px;
+}
+.supplier-overview-panels h3 {
+  font-size: 14px;
+  color: #102d6f;
+  margin-bottom: 18px;
+}
+.supplier-overview-panels article > div,
+.supplier-overview-panels article > a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #edf2f8;
+  color: #526785;
+  font-size: 12px;
+  text-decoration: none;
+}
+.supplier-overview-panels article > p {
+  font-size: 12px;
+  color: #7c8ba4;
+}
+.supplier-overview-panels article > a {
+  color: #0064ff;
+}
+.supplier-customer-main .custom-table th {
+  font-size: 11px;
+}
+.supplier-customer-main .custom-table td {
+  font-size: 12px;
+}
+@media (max-width: 600px) {
+  .supplier-page-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .supplier-overview-panels {
+    grid-template-columns: 1fr;
+  }
+  .supplier-customer-header {
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .supplier-customer-main {
+    padding: 0 12px 20px !important;
+  }
+  .supplier-customer-main .profile-bar > div {
+    flex-wrap: wrap;
+  }
+  .supplier-customer-main .grid-4 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 .supplier-layout {
   min-height: 100vh;
   padding: 30px;
@@ -2087,7 +3034,7 @@ onMounted(async () => {
   border-radius: 16px;
   border: 1px solid var(--border-color);
   padding: 20px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
 }
 
 .widget-title-row {
@@ -2189,6 +3136,69 @@ onMounted(async () => {
   width: 100%;
 }
 
-.roadside-service-overlay{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:20px;background:#04192b99}.roadside-service-dialog{background:white;padding:24px;border-radius:12px;width:min(520px,100%);max-height:90vh;overflow:auto;color:#234269}.roadside-service-dialog h2{font-size:20px}.roadside-service-dialog p{font-size:12px;color:#637b96;margin:10px 0}.roadside-service-dialog label{display:flex;flex-direction:column;gap:6px;margin:12px 0;font-size:12px}.roadside-service-dialog input,.roadside-service-dialog select{padding:10px;border:1px solid #d5e3f0;border-radius:5px;font:inherit;width:100%;box-sizing:border-box}.roadside-service-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.roadside-service-dialog footer{display:flex;gap:10px;justify-content:flex-end}.roadside-service-dialog .roadside-service-error{color:#ba3232;background:#fff0f0;padding:10px}
-.tire-service-dialog textarea{width:100%;box-sizing:border-box;padding:10px;border:1px solid #d5e3f0;border-radius:5px;font:inherit}
+.roadside-service-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: #04192b99;
+}
+.roadside-service-dialog {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  width: min(520px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  color: #234269;
+}
+.roadside-service-dialog h2 {
+  font-size: 20px;
+}
+.roadside-service-dialog p {
+  font-size: 12px;
+  color: #637b96;
+  margin: 10px 0;
+}
+.roadside-service-dialog label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 12px 0;
+  font-size: 12px;
+}
+.roadside-service-dialog input,
+.roadside-service-dialog select {
+  padding: 10px;
+  border: 1px solid #d5e3f0;
+  border-radius: 5px;
+  font: inherit;
+  width: 100%;
+  box-sizing: border-box;
+}
+.roadside-service-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.roadside-service-dialog footer {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+.roadside-service-dialog .roadside-service-error {
+  color: #ba3232;
+  background: #fff0f0;
+  padding: 10px;
+}
+.tire-service-dialog textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  border: 1px solid #d5e3f0;
+  border-radius: 5px;
+  font: inherit;
+}
 </style>

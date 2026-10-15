@@ -2,82 +2,145 @@
   <div class="app-bg-glow"></div>
   <div class="auth-container">
     <div class="glass-panel auth-card fade-in-up">
-      <router-link to="/" class="nav-logo" style="justify-content: center; margin-bottom: 30px;">
+      <router-link to="/" class="nav-logo" style="justify-content: center; margin-bottom: 30px">
         <img class="brand-logo-image" src="/fleetrent-logo.jpeg" alt="FleetRent" />
         <span class="brand-logo-role">Yönetici</span>
       </router-link>
 
-      <h2 style="font-size: 1.5rem; text-align: center; margin-bottom: 8px;">Yönetici Girişi</h2>
-      <p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; margin-bottom: 25px;">
+      <h2 style="font-size: 1.5rem; text-align: center; margin-bottom: 8px">Yönetici Girişi</h2>
+      <p
+        style="
+          color: var(--text-muted);
+          font-size: 0.85rem;
+          text-align: center;
+          margin-bottom: 25px;
+        "
+      >
         Filo taleplerini ve kiralama tekliflerini yönetmek için giriş yapın.
       </p>
 
-        <div v-if="!showForgot">
-          <form @submit.prevent="handleLogin">
-            <div class="form-group">
-              <label for="admin-email" class="form-label">Yönetici E-posta Adresi</label>
-              <input 
-                id="admin-email"
-                name="email"
-                type="email" 
-                v-model="email" 
-                autocomplete="username"
-                required 
-                class="form-input" 
-                placeholder="admin@fleetrent.com"
+      <div v-if="!showForgot">
+        <form @submit.prevent="handleLogin">
+          <div class="form-group">
+            <UiField for="admin-email" class="form-label">Yönetici E-posta Adresi</UiField>
+            <input
+              id="admin-email"
+              name="email"
+              type="email"
+              v-model="email"
+              autocomplete="username"
+              required
+              class="form-input"
+              placeholder="admin@fleetrent.com"
+            />
+          </div>
+
+          <div class="form-group" style="margin-bottom: 25px">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 6px;
+              "
+            >
+              <UiField for="admin-password" class="form-label" style="margin: 0">Şifre</UiField>
+              <a
+                href="#"
+                @click.prevent="showForgot = true"
+                style="font-size: 0.8rem; color: #7c3aed; text-decoration: none; font-weight: 600"
+                >Şifremi Unuttum?</a
               >
             </div>
+            <input
+              id="admin-password"
+              name="password"
+              type="password"
+              v-model="password"
+              autocomplete="current-password"
+              required
+              class="form-input"
+              placeholder="••••••••"
+            />
+          </div>
 
-            <div class="form-group" style="margin-bottom: 25px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                <label for="admin-password" class="form-label" style="margin: 0;">Şifre</label>
-                <a href="#" @click.prevent="showForgot = true" style="font-size: 0.8rem; color: #7c3aed; text-decoration: none; font-weight: 600;">Şifremi Unuttum?</a>
-              </div>
-              <input 
-                id="admin-password"
-                name="password"
-                type="password" 
-                v-model="password" 
-                autocomplete="current-password"
-                required 
-                class="form-input" 
-                placeholder="••••••••"
-              >
-            </div>
+          <UiButton
+            type="submit"
+            class="btn btn-accent btn-block"
+            :disabled="loading"
+            style="
+              background: linear-gradient(135deg, #7c3aed, #db2777);
+              border: none;
+              box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+              width: 100%;
+            "
+          >
+            {{ loading ? 'Giriş Yapılıyor...' : 'Yönetici Paneline Giriş Yap' }}
+          </UiButton>
+        </form>
+      </div>
 
-            <button type="submit" class="btn btn-accent btn-block" :disabled="loading" style="background: linear-gradient(135deg, #7c3aed, #db2777); border: none; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3); width: 100%;">
-              {{ loading ? 'Giriş Yapılıyor...' : 'Yönetici Paneline Giriş Yap' }}
-            </button>
-          </form>
+      <div v-else>
+        <div
+          v-if="forgotSuccess"
+          style="
+            padding: 14px;
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            border-radius: 12px;
+            color: #065f46;
+            font-size: 0.88rem;
+            margin-bottom: 20px;
+          "
+        >
+          ✅ {{ forgotSuccess }}
         </div>
 
-        <div v-else>
-          <div v-if="forgotSuccess" style="padding: 14px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 12px; color: #065f46; font-size: 0.88rem; margin-bottom: 20px;">
-            ✅ {{ forgotSuccess }}
+        <form v-else @submit.prevent="handleForgotPassword">
+          <div class="form-group" style="margin-bottom: 25px">
+            <UiField class="form-label">Yönetici E-posta Adresi *</UiField>
+            <input
+              type="email"
+              v-model="forgotEmail"
+              required
+              class="form-input"
+              placeholder="admin@fleetrent.com"
+            />
           </div>
 
-          <form v-else @submit.prevent="handleForgotPassword">
-            <div class="form-group" style="margin-bottom: 25px;">
-              <label class="form-label">Yönetici E-posta Adresi *</label>
-              <input type="email" v-model="forgotEmail" required class="form-input" placeholder="admin@fleetrent.com">
-            </div>
+          <UiButton
+            type="submit"
+            class="btn btn-accent btn-block"
+            style="background: linear-gradient(135deg, #7c3aed, #db2777); border: none; width: 100%"
+            :disabled="forgotLoading"
+          >
+            {{ forgotLoading ? 'Gönderiliyor...' : 'Şifre Sıfırlama Bağlantısı Gönder' }}
+          </UiButton>
+        </form>
 
-            <button type="submit" class="btn btn-accent btn-block" style="background: linear-gradient(135deg, #7c3aed, #db2777); border: none; width: 100%;" :disabled="forgotLoading">
-              {{ forgotLoading ? 'Gönderiliyor...' : 'Şifre Sıfırlama Bağlantısı Gönder' }}
-            </button>
-          </form>
-
-          <div style="margin-top: 20px; text-align: center;">
-            <button @click="showForgot = false" style="background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 0.88rem; font-weight: 600;">
-              ← Giriş Ekranına Dön
-            </button>
-          </div>
+        <div style="margin-top: 20px; text-align: center">
+          <UiButton
+            @click="showForgot = false"
+            style="
+              background: none;
+              border: none;
+              cursor: pointer;
+              color: var(--text-muted);
+              font-size: 0.88rem;
+              font-weight: 600;
+            "
+          >
+            ← Giriş Ekranına Dön
+          </UiButton>
         </div>
       </div>
     </div>
+  </div>
 </template>
 
 <script setup>
+import { UiButton, UiField } from '../components/ui/index.js'
+
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -100,12 +163,13 @@ const handleForgotPassword = async () => {
     const res = await fetch('/api/auth/forgot-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: forgotEmail.value })
+      body: JSON.stringify({ email: forgotEmail.value }),
     })
 
     const data = await res.json()
     if (res.ok) {
-      forgotSuccess.value = data.message || 'Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.'
+      forgotSuccess.value =
+        data.message || 'Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.'
     } else {
       alert(data.detail || 'Bir hata oluştu.')
     }
@@ -119,7 +183,7 @@ const handleForgotPassword = async () => {
 
 const handleLogin = async () => {
   if (!email.value || !password.value) return
-  
+
   loading.value = true
   try {
     const res = await fetch('/api/admin/login', {
@@ -127,8 +191,8 @@ const handleLogin = async () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         email: email.value,
-        password: password.value
-      })
+        password: password.value,
+      }),
     })
 
     if (res.ok) {
@@ -138,7 +202,10 @@ const handleLogin = async () => {
       router.push('/admin-portal')
     } else {
       const errData = await res.json().catch(() => ({}))
-      alert(errData.detail || `Giriş yapılamadı (Hata Kodu: ${res.status}). Lütfen kullanıcı bilgilerinizi ve sunucu durumunu kontrol edin.`)
+      alert(
+        errData.detail ||
+          `Giriş yapılamadı (Hata Kodu: ${res.status}). Lütfen kullanıcı bilgilerinizi ve sunucu durumunu kontrol edin.`,
+      )
     }
   } catch (err) {
     console.error('Admin login error:', err)

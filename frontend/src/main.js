@@ -3,4 +3,7 @@ import './style.css'
 import App from './App.vue'
 import router from './router'
 
+import { installPortalFetch } from './utils/portalFetch'
+installPortalFetch()
+
 createApp(App).use(router).mount('#app')

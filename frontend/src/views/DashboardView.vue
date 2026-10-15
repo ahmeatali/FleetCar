@@ -1,70 +1,1139 @@
 <template>
-  <div class="portal-layout fleet-dashboard"><Sidebar />
+  <div class="portal-layout fleet-dashboard">
+    <Sidebar />
     <main class="portal-main overview-main">
-      <div class="overview-topbar"><form class="overview-search" @submit.prevent="searchVehicles"><span>⌕</span><input v-model="search" placeholder="Plaka, marka veya model ara…" aria-label="Araç ara" /></form><span class="date-chip">▦ &nbsp;{{ currentDate }}</span><div class="customer-header-actions"><NotificationBell /><router-link to="/profile" class="overview-account"><span class="account-avatar">{{ initials }}</span><span><strong>{{ customerName }}</strong><small>Filo Yöneticisi</small></span></router-link></div></div>
-      <div class="overview-heading"><div><h1>Merhaba {{ customerName }},</h1><p>Filo operasyonlarınızın güncel durumu.</p></div><router-link to="/dashboard/requests" class="primary-action">＋ Yeni Talep Oluştur</router-link></div>
-      <div v-if="error" class="overview-alert" role="alert">{{ error }} <button @click="load">Tekrar Dene</button></div>
-      <p v-if="loading" role="status">Dashboard verileri yükleniyor…</p>
-      <section class="overview-stats" aria-label="Filo özeti"><router-link v-for="card in cards" :key="card.label" :to="card.to" class="overview-stat"><span class="stat-symbol">{{ card.icon }}</span><div><span>{{ card.label }}</span><strong>{{ loading ? '—' : card.value }}</strong><small>{{ card.description }}</small></div></router-link></section>
-      <section class="overview-grid">
-        <article class="overview-panel locations-panel"><div class="panel-title"><h2>⌖ Araçların Konumu</h2><router-link to="/dashboard/reports?tab=location">Tümünü Gör ↗</router-link></div>
-          <div class="location-preview"><template v-if="locatedVehicles.length"><iframe class="dashboard-map" :src="mapUrl" title="Filodaki ilk aracın kayıtlı GPS konumu" loading="lazy" /><router-link v-for="vehicle in locatedVehicles.slice(0, 5)" :key="vehicle.id" :to="vehicleLink(vehicle, 'locations')" class="location-row"><span class="location-pin">⌖</span><span><strong>{{ vehicle.plate }}</strong><small>{{ vehicle.gps_location_label || `${vehicle.gps_latitude}, ${vehicle.gps_longitude}` }}</small></span><span>↗</span></router-link><p class="location-note">Kayıtlı son GPS konumları</p></template><div v-else class="panel-empty">⌖<p>Henüz kayıtlı araç konumu yok.</p><small>GPS verileri geldikçe burada görüntülenir.</small></div></div>
-          <div class="vehicle-status"><router-link v-for="status in vehicleStatuses" :key="status.label" to="/dashboard/vehicles"><i :style="{background:status.color}"></i>{{ status.label }} <strong>{{ status.count }}</strong></router-link></div>
-        </article>
-        <article class="overview-panel"><div class="panel-title"><h2>⚙ Filo Dağılımı</h2><router-link to="/dashboard/reports?tab=cost">Detaylı Rapor</router-link></div><div class="distribution"><router-link to="/dashboard/vehicles" class="fleet-donut" :style="{background:donutGradient}"><div><strong>{{ vehicles.length }}</strong><small>Araç</small></div></router-link><div class="distribution-legend"><router-link v-for="(group,index) in groups" :key="group.label" to="/dashboard/vehicles"><i :style="{background:colors[index % colors.length]}"></i><span>{{ group.label }}</span><strong>{{ group.count }}</strong><small>%{{ Math.round(group.count / vehicles.length * 100) }}</small></router-link><p v-if="!groups.length" class="muted">Filo kaydı bulunamadı.</p></div></div></article>
-        <article class="overview-panel"><div class="panel-title"><h2>◈ Aylık Maliyet Özeti</h2><select v-model="monthCount" aria-label="Maliyet dönemi"><option :value="6">Son 6 Ay</option><option :value="3">Son 3 Ay</option></select></div><router-link to="/dashboard/reports?tab=cost" class="cost-chart"><div v-for="month in monthlyCosts" :key="month.key" class="cost-column"><span class="cost-value">{{ money(month.total) }}</span><div class="cost-bar" :style="{height: `${month.total / maxCost * 125}px`}"><i v-for="(amount,index) in month.parts" :key="index" :style="{height:`${month.total ? amount / month.total * 100 : 0}%`,background:colors[index]}" /></div><small>{{ month.label }}</small></div></router-link><div class="cost-legend"><span v-for="(kind,index) in costKinds" :key="kind"><i :style="{background:colors[index]}"></i>{{ kind }}</span></div><div class="cost-total"><span>Kayıtlı gider toplamı</span><strong>{{ money(monthlyCosts.reduce((sum,m)=>sum+m.total,0)) }}</strong></div></article>
-        <article class="overview-panel"><div class="panel-title"><h2>▣ Sözleşme Durumu</h2><router-link to="/dashboard/vehicles">Araç Detayları</router-link></div><div class="contract-bar"><i v-for="(status,index) in contractStatuses" :key="status.label" :style="{width:`${vehicles.length ? status.count / vehicles.length * 100 : 0}%`,background:colors[index]}" /></div><router-link v-for="(status,index) in contractStatuses" :key="status.label" to="/dashboard/vehicles" class="contract-row"><i :style="{background:colors[index]}"></i><span>{{ status.label }}</span><strong>{{ status.count }}</strong></router-link></article>
-        <article class="overview-panel"><div class="panel-title"><h2>▦ Yaklaşan Önemli Tarihler</h2><router-link to="/dashboard/vehicles">Tümünü Gör</router-link></div><router-link v-for="event in upcoming.slice(0,4)" :key="event.key" :to="vehicleLink(event.vehicle,event.tab)" class="event-row"><span class="event-icon">▦</span><span><strong>{{ event.label }}</strong><small>{{ event.vehicle.plate }} · {{ event.vehicle.brand }} {{ event.vehicle.model }}</small></span><small>{{ date(event.date) }}</small><span class="day-badge">{{ event.days }} gün kaldı</span></router-link><p v-if="!upcoming.length" class="empty-copy">Önümüzdeki 60 gün içinde kayıtlı tarih yok.</p></article>
+      <div class="overview-topbar">
+        <form class="overview-search" @submit.prevent="searchVehicles">
+          <span>⌕</span
+          ><input
+            v-model="search"
+            placeholder="Plaka, marka veya model ara…"
+            aria-label="Araç ara"
+          />
+        </form>
+        <span class="date-chip">▦ &nbsp;{{ currentDate }}</span>
+        <div class="customer-header-actions">
+          <NotificationBell /><router-link to="/profile" class="overview-account"
+            ><span class="account-avatar">{{ initials }}</span
+            ><span
+              ><strong>{{ customerName }}</strong
+              ><small>Filo Yöneticisi</small></span
+            ></router-link
+          >
+        </div>
+      </div>
+      <div class="overview-heading">
+        <div>
+          <h1>Merhaba {{ customerName }},</h1>
+          <p>Filo operasyonlarınızın güncel durumu.</p>
+        </div>
+        <router-link to="/dashboard/requests" class="primary-action"
+          >＋ Yeni Talep Oluştur</router-link
+        >
+      </div>
+      <UiAlert v-if="error" class="overview-alert" as="div" tone="error"
+        >{{ error }} <UiButton @click="load">Tekrar Dene</UiButton></UiAlert
+      >
+      <UiAlert v-if="loading" as="p" tone="info">Dashboard verileri yükleniyor…</UiAlert>
+      <section class="overview-stats" aria-label="Filo özeti">
+        <router-link v-for="card in cards" :key="card.label" :to="card.to" class="overview-stat"
+          ><span class="stat-symbol">{{ card.icon }}</span>
+          <div>
+            <span>{{ card.label }}</span
+            ><strong>{{ loading ? '—' : card.value }}</strong
+            ><small>{{ card.description }}</small>
+          </div></router-link
+        >
       </section>
-      <section class="overview-bottom"><article v-for="list in activityLists" :key="list.title" class="overview-panel"><div class="panel-title"><h2>{{ list.icon }} {{ list.title }}</h2><router-link :to="list.to">Tümünü Gör</router-link></div><router-link v-for="item in list.items.slice(0,4)" :key="item.id" :to="item.to" class="activity-row"><span><strong>{{ item.title }}</strong><small>{{ item.description }}</small></span><span class="activity-right"><b v-if="item.status" class="status-tag">{{ item.status }}</b><small>{{ date(item.date) }}</small></span></router-link><p v-if="!list.items.length" class="empty-copy">{{ loading ? 'Yükleniyor…' : list.empty }}</p></article></section>
+      <section class="overview-grid">
+        <article class="overview-panel locations-panel">
+          <div class="panel-title">
+            <h2>⌖ Araçların Konumu</h2>
+            <router-link to="/dashboard/reports?tab=location">Tümünü Gör ↗</router-link>
+          </div>
+          <div class="location-preview">
+            <template v-if="locatedVehicles.length"
+              ><iframe
+                class="dashboard-map"
+                :src="mapUrl"
+                title="Filodaki ilk aracın kayıtlı GPS konumu"
+                loading="lazy"
+              /><router-link
+                v-for="vehicle in locatedVehicles.slice(0, 5)"
+                :key="vehicle.id"
+                :to="vehicleLink(vehicle, 'locations')"
+                class="location-row"
+                ><span class="location-pin">⌖</span
+                ><span
+                  ><strong>{{ vehicle.plate }}</strong
+                  ><small>{{
+                    vehicle.gps_location_label ||
+                    `${vehicle.gps_latitude}, ${vehicle.gps_longitude}`
+                  }}</small></span
+                ><span>↗</span></router-link
+              >
+              <p class="location-note">Kayıtlı son GPS konumları</p></template
+            >
+            <div v-else class="panel-empty">
+              ⌖
+              <p>Henüz kayıtlı araç konumu yok.</p>
+              <small>GPS verileri geldikçe burada görüntülenir.</small>
+            </div>
+          </div>
+          <div class="vehicle-status">
+            <router-link
+              v-for="status in vehicleStatuses"
+              :key="status.label"
+              to="/dashboard/vehicles"
+              ><i :style="{ background: status.color }"></i>{{ status.label }}
+              <strong>{{ status.count }}</strong></router-link
+            >
+          </div>
+        </article>
+        <article class="overview-panel">
+          <div class="panel-title">
+            <h2>⚙ Filo Dağılımı</h2>
+            <router-link to="/dashboard/reports?tab=cost">Detaylı Rapor</router-link>
+          </div>
+          <div class="distribution">
+            <router-link
+              to="/dashboard/vehicles"
+              class="fleet-donut"
+              :style="{ background: donutGradient }"
+              ><div>
+                <strong>{{ vehicles.length }}</strong
+                ><small>Araç</small>
+              </div></router-link
+            >
+            <div class="distribution-legend">
+              <router-link
+                v-for="(group, index) in groups"
+                :key="group.label"
+                to="/dashboard/vehicles"
+                ><i :style="{ background: colors[index % colors.length] }"></i
+                ><span>{{ group.label }}</span
+                ><strong>{{ group.count }}</strong
+                ><small
+                  >%{{ Math.round((group.count / vehicles.length) * 100) }}</small
+                ></router-link
+              >
+              <p v-if="!groups.length" class="muted">Filo kaydı bulunamadı.</p>
+            </div>
+          </div>
+        </article>
+        <article class="overview-panel">
+          <div class="panel-title">
+            <h2>◈ Aylık Maliyet Özeti</h2>
+            <select v-model="monthCount" aria-label="Maliyet dönemi">
+              <option :value="6">Son 6 Ay</option>
+              <option :value="3">Son 3 Ay</option>
+            </select>
+          </div>
+          <router-link to="/dashboard/reports?tab=cost" class="cost-chart"
+            ><div v-for="month in monthlyCosts" :key="month.key" class="cost-column">
+              <span class="cost-value">{{ money(month.total) }}</span>
+              <div class="cost-bar" :style="{ height: `${(month.total / maxCost) * 125}px` }">
+                <i
+                  v-for="(amount, index) in month.parts"
+                  :key="index"
+                  :style="{
+                    height: `${month.total ? (amount / month.total) * 100 : 0}%`,
+                    background: colors[index],
+                  }"
+                />
+              </div>
+              <small>{{ month.label }}</small>
+            </div></router-link
+          >
+          <div class="cost-legend">
+            <span v-for="(kind, index) in costKinds" :key="kind"
+              ><i :style="{ background: colors[index] }"></i>{{ kind }}</span
+            >
+          </div>
+          <div class="cost-total">
+            <span>Kayıtlı gider toplamı</span
+            ><strong>{{ money(monthlyCosts.reduce((sum, m) => sum + m.total, 0)) }}</strong>
+          </div>
+        </article>
+        <article class="overview-panel">
+          <div class="panel-title">
+            <h2>▣ Sözleşme Durumu</h2>
+            <router-link to="/dashboard/vehicles">Araç Detayları</router-link>
+          </div>
+          <div class="contract-bar">
+            <i
+              v-for="(status, index) in contractStatuses"
+              :key="status.label"
+              :style="{
+                width: `${vehicles.length ? (status.count / vehicles.length) * 100 : 0}%`,
+                background: colors[index],
+              }"
+            />
+          </div>
+          <router-link
+            v-for="(status, index) in contractStatuses"
+            :key="status.label"
+            to="/dashboard/vehicles"
+            class="contract-row"
+            ><i :style="{ background: colors[index] }"></i><span>{{ status.label }}</span
+            ><strong>{{ status.count }}</strong></router-link
+          >
+        </article>
+        <article class="overview-panel">
+          <div class="panel-title">
+            <h2>▦ Yaklaşan Önemli Tarihler</h2>
+            <router-link to="/dashboard/vehicles">Tümünü Gör</router-link>
+          </div>
+          <router-link
+            v-for="event in upcoming.slice(0, 4)"
+            :key="event.key"
+            :to="vehicleLink(event.vehicle, event.tab)"
+            class="event-row"
+            ><span class="event-icon">▦</span
+            ><span
+              ><strong>{{ event.label }}</strong
+              ><small
+                >{{ event.vehicle.plate }} · {{ event.vehicle.brand }}
+                {{ event.vehicle.model }}</small
+              ></span
+            ><small>{{ date(event.date) }}</small
+            ><span class="day-badge">{{ event.days }} gün kaldı</span></router-link
+          >
+          <p v-if="!upcoming.length" class="empty-copy">
+            Önümüzdeki 60 gün içinde kayıtlı tarih yok.
+          </p>
+        </article>
+      </section>
+      <section class="overview-bottom">
+        <article v-for="list in activityLists" :key="list.title" class="overview-panel">
+          <div class="panel-title">
+            <h2>{{ list.icon }} {{ list.title }}</h2>
+            <router-link :to="list.to">Tümünü Gör</router-link>
+          </div>
+          <router-link
+            v-for="item in list.items.slice(0, 4)"
+            :key="item.id"
+            :to="item.to"
+            class="activity-row"
+            ><span
+              ><strong>{{ item.title }}</strong
+              ><small>{{ item.description }}</small></span
+            ><span class="activity-right"
+              ><b v-if="item.status" class="status-tag">{{ item.status }}</b
+              ><small>{{ date(item.date) }}</small></span
+            ></router-link
+          >
+          <p v-if="!list.items.length" class="empty-copy">
+            {{ loading ? 'Yükleniyor…' : list.empty }}
+          </p>
+        </article>
+      </section>
     </main>
   </div>
 </template>
 <script setup>
+import { UiAlert, UiButton } from '../components/ui/index.js'
+
 import NotificationBell from '../components/NotificationBell.vue'
 import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'
-const router=useRouter(), vehicles=ref([]), requests=ref([]), expenses=ref([]), loading=ref(true), error=ref(''), search=ref(''), monthCount=ref(6)
-const customerName=localStorage.getItem('fleetcar_customer_name') || 'Filo Yöneticisi'
-const initials=customerName.split(' ').slice(0,2).map(s=>s[0]).join('').toUpperCase()
-const now=new Date(), today=new Date(now.getFullYear(),now.getMonth(),now.getDate())
-const currentDate=now.toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'})
-const colors=['#0064ff','#39a0ee','#8ec9f4','#ffbf69','#a2adc4']
-const money=n=>Number(n).toLocaleString('tr-TR',{style:'currency',currency:'TRY',maximumFractionDigits:0})
-const date=value=>{const d=parseDate(value);return d ? d.toLocaleDateString('tr-TR') : '—'}
-function parseDate(value){if(!value)return null; const match=String(value).match(/^(\d{2})[./](\d{2})[./](\d{4})/);const d=match?new Date(+match[3],+match[2]-1,+match[1]):new Date(value);return Number.isNaN(d.getTime())?null:d}
-const vehicleLink=(v,tab='general')=>`/dashboard/vehicles/${encodeURIComponent(v.id)}?tab=${tab}`
-const requestLink=r=>`/dashboard/requests?type=list&request_id=${r.id}&vehicle_id=${encodeURIComponent(r.vehicle_id)}`
-const sortedRequests=computed(()=>[...requests.value].sort((a,b)=>(parseDate(b.created_at)?.getTime()||0)-(parseDate(a.created_at)?.getTime()||0)))
-const invoices=computed(()=>sortedRequests.value.filter(r=>r.details?.invoice_amount != null))
-const inMonth=value=>{const d=parseDate(value);return d && d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear()}
-const vehicleStatuses=computed(()=>[{label:'Çalışıyor',color:'#12b886',count:vehicles.value.filter(v=>v.status==='Aktif').length},{label:'Serviste',color:'#ffa600',count:vehicles.value.filter(v=>['Servis','Serviste'].includes(v.status)).length},{label:'Diğer',color:'#8c9bb1',count:vehicles.value.filter(v=>!['Aktif','Servis','Serviste'].includes(v.status)).length}])
-const locatedVehicles=computed(()=>vehicles.value.filter(v=>v.gps_latitude!=null && v.gps_longitude!=null))
-const mapUrl=computed(()=>{const v=locatedVehicles.value[0];if(!v)return '';const lat=Number(v.gps_latitude),lon=Number(v.gps_longitude);return `https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent([lon-.04,lat-.025,lon+.04,lat+.025].join(','))}&layer=mapnik&marker=${lat},${lon}`})
-const daysUntil=value=>{const d=parseDate(value);return d ? Math.ceil((new Date(d.getFullYear(),d.getMonth(),d.getDate())-today)/86400000):null}
-const contractStatuses=computed(()=>[{label:'Aktif',count:vehicles.value.filter(v=>v.contract_no && (daysUntil(v.contract_end_date)>30 || !v.contract_end_date)).length},{label:'Sona Erecek (30 gün)',count:vehicles.value.filter(v=>v.contract_no && daysUntil(v.contract_end_date)!=null && daysUntil(v.contract_end_date)>=0 && daysUntil(v.contract_end_date)<=30).length},{label:'Süresi Doldu',count:vehicles.value.filter(v=>v.contract_no && daysUntil(v.contract_end_date)!=null && daysUntil(v.contract_end_date)<0).length},{label:'Sözleşme kaydı yok',count:vehicles.value.filter(v=>!v.contract_no).length}])
-const cards=computed(()=>[
-{label:'Toplam Araç',icon:'▱',value:vehicles.value.length,description:`${vehicleStatuses.value[0].count} aktif · ${vehicleStatuses.value[1].count} serviste`,to:'/dashboard/vehicles'},
-{label:'Aktif Sözleşme',icon:'▣',value:contractStatuses.value[0].count+contractStatuses.value[1].count,description:'Araçlara kayıtlı sözleşmeler',to:'/dashboard/vehicles'},
-{label:'Toplam KM (Aylık)',icon:'≋',value:vehicles.value.some(v=>v.current_month_km!=null)?`${vehicles.value.reduce((s,v)=>s+Number(v.current_month_km||0),0).toLocaleString('tr-TR')} km`:'Veri yok',description:'Kayıtlı aylık kilometre',to:'/dashboard/reports?tab=km'},
-{label:'Yakıt Gideri (Aylık)',icon:'▥',value:money(expenses.value.filter(e=>e.kind==='Yakıt' && inMonth(e.date)).reduce((s,e)=>s+Number(e.amount||0),0)),description:'Bu ayın kayıtlı yakıt giderleri',to:'/dashboard/fuel'},
-{label:'Toplam Fatura (Aylık)',icon:'▤',value:money(invoices.value.filter(r=>inMonth(r.details.invoice_date)).reduce((s,r)=>s+Number(r.details.invoice_amount||0),0)),description:'Kayıtlı servis faturaları',to:'/dashboard/service-management'}])
-const groups=computed(()=>Object.entries(vehicles.value.reduce((acc,v)=>{const key=v.vehicle_group||'Belirtilmemiş';acc[key]=(acc[key]||0)+1;return acc},{})).map(([label,count])=>({label,count})))
-const donutGradient=computed(()=>{let offset=0;return groups.value.length?`conic-gradient(${groups.value.map((g,i)=>{const start=offset;offset+=g.count/vehicles.value.length*100;return `${colors[i%colors.length]} ${start}% ${offset}%`}).join(',')})`:'#e8f0f8'})
-const costKinds=['Yakıt','Servis faturası','Diğer']
-const monthlyCosts=computed(()=>Array.from({length:monthCount.value},(_,i)=>{const d=new Date(now.getFullYear(),now.getMonth()-monthCount.value+1+i,1);const matches=value=>{const stamp=parseDate(value);return stamp && stamp.getMonth()===d.getMonth() && stamp.getFullYear()===d.getFullYear()};const parts=[expenses.value.filter(e=>e.kind==='Yakıt' && matches(e.date)).reduce((s,e)=>s+Number(e.amount||0),0),invoices.value.filter(r=>matches(r.details.invoice_date)).reduce((s,r)=>s+Number(r.details.invoice_amount||0),0),expenses.value.filter(e=>e.kind!=='Yakıt' && matches(e.date)).reduce((s,e)=>s+Number(e.amount||0),0)];return {key:d.toISOString(),label:d.toLocaleDateString('tr-TR',{month:'short'}),parts,total:parts.reduce((s,n)=>s+n,0)}}))
-const maxCost=computed(()=>Math.max(1,...monthlyCosts.value.map(m=>m.total)))
-const upcoming=computed(()=>vehicles.value.flatMap(vehicle=>[['contract_end_date','Sözleşme bitişi','general'],['next_service_due_date','Bakım zamanı','service'],['traffic_insurance_expiry_date','Trafik sigortası','general'],['casco_insurance_expiry_date','Kasko yenileme','general']].map(([field,label,tab])=>({key:`${vehicle.id}-${field}`,vehicle,label,tab,date:vehicle[field],days:daysUntil(vehicle[field])}))).filter(e=>e.days!=null && e.days>=0 && e.days<=60).sort((a,b)=>a.days-b.days))
-const activityLists=computed(()=>[
-{title:'Son Talepler',icon:'▤',to:'/dashboard/requests?type=list',empty:'Henüz talep bulunmuyor.',items:sortedRequests.value.map(r=>({id:r.id,title:`TA-${r.id}`,description:r.description||r.vehicle_plate,status:r.status,date:r.created_at,to:requestLink(r)}))},
-{title:'Devam Eden Operasyonlar',icon:'▣',to:'/dashboard/service-management',empty:'Devam eden operasyon yok.',items:sortedRequests.value.filter(r=>['Beklemede','Onaylandı','İşlemde'].includes(r.status)).map(r=>({id:r.id,title:({servis:'Servis',lastik:'Lastik',yol_yardim:'Yol Yardım',ikame_arac:'İkame Araç'})[r.type]||r.type,description:`${r.vehicle_plate||''} · ${r.description||''}`,status:r.status,date:r.created_at,to:requestLink(r)}))},
-{title:'Son Faturalar',icon:'▤',to:'/dashboard/service-management',empty:'Kayıtlı servis faturası yok.',items:[...invoices.value].sort((a,b)=>(parseDate(b.details.invoice_date)?.getTime()||0)-(parseDate(a.details.invoice_date)?.getTime()||0)).map(r=>({id:r.id,title:r.details.invoice_no||`Fatura #${r.id}`,description:money(r.details.invoice_amount),status:r.details.invoice_status,date:r.details.invoice_date,to:requestLink(r)}))},
-{title:'Hatırlatmalar',icon:'♧',to:'/dashboard/vehicles',empty:'Yaklaşan hatırlatma yok.',items:upcoming.value.map(e=>({id:e.key,title:e.label,description:`${e.vehicle.plate} için ${e.days} gün kaldı`,date:e.date,to:vehicleLink(e.vehicle,e.tab)}))}])
-function searchVehicles(){router.push({path:'/dashboard/vehicles',query:{search:search.value.trim()}})}
-async function load(){loading.value=true;error.value='';const customerId=localStorage.getItem('fleetcar_customer_id')||localStorage.getItem('customer_id');if(!customerId){error.value='Müşteri bilgisi bulunamadı. Lütfen tekrar giriş yapın.';loading.value=false;return}const query=`?customer_id=${encodeURIComponent(customerId)}`;const targets=[['/api/vehicles',vehicles],['/api/requests',requests],['/api/vehicle-expenses',expenses]];await Promise.all(targets.map(async([url,target])=>{try{const response=await fetch(url+query);if(!response.ok)throw Error();const data=await response.json();target.value=url==='/api/vehicles'?data.filter(v=>v.is_active!==false):data}catch{target.value=[];error.value='Bazı veriler yüklenemedi. Görüntülenen özet eksik olabilir.'}}));loading.value=false}
+const router = useRouter(),
+  vehicles = ref([]),
+  requests = ref([]),
+  expenses = ref([]),
+  loading = ref(true),
+  error = ref(''),
+  search = ref(''),
+  monthCount = ref(6)
+const customerName = localStorage.getItem('fleetcar_customer_name') || 'Filo Yöneticisi'
+const initials = customerName
+  .split(' ')
+  .slice(0, 2)
+  .map((s) => s[0])
+  .join('')
+  .toUpperCase()
+const now = new Date(),
+  today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+const currentDate = now.toLocaleDateString('tr-TR', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+})
+const colors = ['#0064ff', '#39a0ee', '#8ec9f4', '#ffbf69', '#a2adc4']
+const money = (n) =>
+  Number(n).toLocaleString('tr-TR', {
+    style: 'currency',
+    currency: 'TRY',
+    maximumFractionDigits: 0,
+  })
+const date = (value) => {
+  const d = parseDate(value)
+  return d ? d.toLocaleDateString('tr-TR') : '—'
+}
+function parseDate(value) {
+  if (!value) return null
+  const match = String(value).match(/^(\d{2})[./](\d{2})[./](\d{4})/)
+  const d = match ? new Date(+match[3], +match[2] - 1, +match[1]) : new Date(value)
+  return Number.isNaN(d.getTime()) ? null : d
+}
+const vehicleLink = (v, tab = 'general') =>
+  `/dashboard/vehicles/${encodeURIComponent(v.id)}?tab=${tab}`
+const requestLink = (r) =>
+  `/dashboard/requests?type=list&request_id=${r.id}&vehicle_id=${encodeURIComponent(r.vehicle_id)}`
+const sortedRequests = computed(() =>
+  [...requests.value].sort(
+    (a, b) => (parseDate(b.created_at)?.getTime() || 0) - (parseDate(a.created_at)?.getTime() || 0),
+  ),
+)
+const invoices = computed(() =>
+  sortedRequests.value.filter((r) => r.details?.invoice_amount != null),
+)
+const inMonth = (value) => {
+  const d = parseDate(value)
+  return d && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
+}
+const vehicleStatuses = computed(() => [
+  {
+    label: 'Çalışıyor',
+    color: '#12b886',
+    count: vehicles.value.filter((v) => v.status === 'Aktif').length,
+  },
+  {
+    label: 'Serviste',
+    color: '#ffa600',
+    count: vehicles.value.filter((v) => ['Servis', 'Serviste'].includes(v.status)).length,
+  },
+  {
+    label: 'Diğer',
+    color: '#8c9bb1',
+    count: vehicles.value.filter((v) => !['Aktif', 'Servis', 'Serviste'].includes(v.status)).length,
+  },
+])
+const locatedVehicles = computed(() =>
+  vehicles.value.filter((v) => v.gps_latitude != null && v.gps_longitude != null),
+)
+const mapUrl = computed(() => {
+  const v = locatedVehicles.value[0]
+  if (!v) return ''
+  const lat = Number(v.gps_latitude),
+    lon = Number(v.gps_longitude)
+  return `https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent([lon - 0.04, lat - 0.025, lon + 0.04, lat + 0.025].join(','))}&layer=mapnik&marker=${lat},${lon}`
+})
+const daysUntil = (value) => {
+  const d = parseDate(value)
+  return d
+    ? Math.ceil((new Date(d.getFullYear(), d.getMonth(), d.getDate()) - today) / 86400000)
+    : null
+}
+const contractStatuses = computed(() => [
+  {
+    label: 'Aktif',
+    count: vehicles.value.filter(
+      (v) => v.contract_no && (daysUntil(v.contract_end_date) > 30 || !v.contract_end_date),
+    ).length,
+  },
+  {
+    label: 'Sona Erecek (30 gün)',
+    count: vehicles.value.filter(
+      (v) =>
+        v.contract_no &&
+        daysUntil(v.contract_end_date) != null &&
+        daysUntil(v.contract_end_date) >= 0 &&
+        daysUntil(v.contract_end_date) <= 30,
+    ).length,
+  },
+  {
+    label: 'Süresi Doldu',
+    count: vehicles.value.filter(
+      (v) =>
+        v.contract_no &&
+        daysUntil(v.contract_end_date) != null &&
+        daysUntil(v.contract_end_date) < 0,
+    ).length,
+  },
+  { label: 'Sözleşme kaydı yok', count: vehicles.value.filter((v) => !v.contract_no).length },
+])
+const cards = computed(() => [
+  {
+    label: 'Toplam Araç',
+    icon: '▱',
+    value: vehicles.value.length,
+    description: `${vehicleStatuses.value[0].count} aktif · ${vehicleStatuses.value[1].count} serviste`,
+    to: '/dashboard/vehicles',
+  },
+  {
+    label: 'Aktif Sözleşme',
+    icon: '▣',
+    value: contractStatuses.value[0].count + contractStatuses.value[1].count,
+    description: 'Araçlara kayıtlı sözleşmeler',
+    to: '/dashboard/vehicles',
+  },
+  {
+    label: 'Toplam KM (Aylık)',
+    icon: '≋',
+    value: vehicles.value.some((v) => v.current_month_km != null)
+      ? `${vehicles.value.reduce((s, v) => s + Number(v.current_month_km || 0), 0).toLocaleString('tr-TR')} km`
+      : 'Veri yok',
+    description: 'Kayıtlı aylık kilometre',
+    to: '/dashboard/reports?tab=km',
+  },
+  {
+    label: 'Yakıt Gideri (Aylık)',
+    icon: '▥',
+    value: money(
+      expenses.value
+        .filter((e) => e.kind === 'Yakıt' && inMonth(e.date))
+        .reduce((s, e) => s + Number(e.amount || 0), 0),
+    ),
+    description: 'Bu ayın kayıtlı yakıt giderleri',
+    to: '/dashboard/fuel',
+  },
+  {
+    label: 'Toplam Fatura (Aylık)',
+    icon: '▤',
+    value: money(
+      invoices.value
+        .filter((r) => inMonth(r.details.invoice_date))
+        .reduce((s, r) => s + Number(r.details.invoice_amount || 0), 0),
+    ),
+    description: 'Kayıtlı servis faturaları',
+    to: '/dashboard/service-management',
+  },
+])
+const groups = computed(() =>
+  Object.entries(
+    vehicles.value.reduce((acc, v) => {
+      const key = v.vehicle_group || 'Belirtilmemiş'
+      acc[key] = (acc[key] || 0) + 1
+      return acc
+    }, {}),
+  ).map(([label, count]) => ({ label, count })),
+)
+const donutGradient = computed(() => {
+  let offset = 0
+  return groups.value.length
+    ? `conic-gradient(${groups.value
+        .map((g, i) => {
+          const start = offset
+          offset += (g.count / vehicles.value.length) * 100
+          return `${colors[i % colors.length]} ${start}% ${offset}%`
+        })
+        .join(',')})`
+    : '#e8f0f8'
+})
+const costKinds = ['Yakıt', 'Servis faturası', 'Diğer']
+const monthlyCosts = computed(() =>
+  Array.from({ length: monthCount.value }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - monthCount.value + 1 + i, 1)
+    const matches = (value) => {
+      const stamp = parseDate(value)
+      return stamp && stamp.getMonth() === d.getMonth() && stamp.getFullYear() === d.getFullYear()
+    }
+    const parts = [
+      expenses.value
+        .filter((e) => e.kind === 'Yakıt' && matches(e.date))
+        .reduce((s, e) => s + Number(e.amount || 0), 0),
+      invoices.value
+        .filter((r) => matches(r.details.invoice_date))
+        .reduce((s, r) => s + Number(r.details.invoice_amount || 0), 0),
+      expenses.value
+        .filter((e) => e.kind !== 'Yakıt' && matches(e.date))
+        .reduce((s, e) => s + Number(e.amount || 0), 0),
+    ]
+    return {
+      key: d.toISOString(),
+      label: d.toLocaleDateString('tr-TR', { month: 'short' }),
+      parts,
+      total: parts.reduce((s, n) => s + n, 0),
+    }
+  }),
+)
+const maxCost = computed(() => Math.max(1, ...monthlyCosts.value.map((m) => m.total)))
+const upcoming = computed(() =>
+  vehicles.value
+    .flatMap((vehicle) =>
+      [
+        ['contract_end_date', 'Sözleşme bitişi', 'general'],
+        ['next_service_due_date', 'Bakım zamanı', 'service'],
+        ['traffic_insurance_expiry_date', 'Trafik sigortası', 'general'],
+        ['casco_insurance_expiry_date', 'Kasko yenileme', 'general'],
+      ].map(([field, label, tab]) => ({
+        key: `${vehicle.id}-${field}`,
+        vehicle,
+        label,
+        tab,
+        date: vehicle[field],
+        days: daysUntil(vehicle[field]),
+      })),
+    )
+    .filter((e) => e.days != null && e.days >= 0 && e.days <= 60)
+    .sort((a, b) => a.days - b.days),
+)
+const activityLists = computed(() => [
+  {
+    title: 'Son Talepler',
+    icon: '▤',
+    to: '/dashboard/requests?type=list',
+    empty: 'Henüz talep bulunmuyor.',
+    items: sortedRequests.value.map((r) => ({
+      id: r.id,
+      title: `TA-${r.id}`,
+      description: r.description || r.vehicle_plate,
+      status: r.status,
+      date: r.created_at,
+      to: requestLink(r),
+    })),
+  },
+  {
+    title: 'Devam Eden Operasyonlar',
+    icon: '▣',
+    to: '/dashboard/service-management',
+    empty: 'Devam eden operasyon yok.',
+    items: sortedRequests.value
+      .filter((r) => ['Beklemede', 'Onaylandı', 'İşlemde'].includes(r.status))
+      .map((r) => ({
+        id: r.id,
+        title:
+          {
+            servis: 'Servis',
+            lastik: 'Lastik',
+            yol_yardim: 'Yol Yardım',
+            ikame_arac: 'İkame Araç',
+          }[r.type] || r.type,
+        description: `${r.vehicle_plate || ''} · ${r.description || ''}`,
+        status: r.status,
+        date: r.created_at,
+        to: requestLink(r),
+      })),
+  },
+  {
+    title: 'Son Faturalar',
+    icon: '▤',
+    to: '/dashboard/service-management',
+    empty: 'Kayıtlı servis faturası yok.',
+    items: [...invoices.value]
+      .sort(
+        (a, b) =>
+          (parseDate(b.details.invoice_date)?.getTime() || 0) -
+          (parseDate(a.details.invoice_date)?.getTime() || 0),
+      )
+      .map((r) => ({
+        id: r.id,
+        title: r.details.invoice_no || `Fatura #${r.id}`,
+        description: money(r.details.invoice_amount),
+        status: r.details.invoice_status,
+        date: r.details.invoice_date,
+        to: requestLink(r),
+      })),
+  },
+  {
+    title: 'Hatırlatmalar',
+    icon: '♧',
+    to: '/dashboard/vehicles',
+    empty: 'Yaklaşan hatırlatma yok.',
+    items: upcoming.value.map((e) => ({
+      id: e.key,
+      title: e.label,
+      description: `${e.vehicle.plate} için ${e.days} gün kaldı`,
+      date: e.date,
+      to: vehicleLink(e.vehicle, e.tab),
+    })),
+  },
+])
+function searchVehicles() {
+  router.push({ path: '/dashboard/vehicles', query: { search: search.value.trim() } })
+}
+async function load() {
+  loading.value = true
+  error.value = ''
+  const customerId =
+    localStorage.getItem('fleetcar_customer_id') || localStorage.getItem('customer_id')
+  if (!customerId) {
+    error.value = 'Müşteri bilgisi bulunamadı. Lütfen tekrar giriş yapın.'
+    loading.value = false
+    return
+  }
+  const query = `?customer_id=${encodeURIComponent(customerId)}`
+  const targets = [
+    ['/api/vehicles', vehicles],
+    ['/api/requests', requests],
+    ['/api/vehicle-expenses', expenses],
+  ]
+  await Promise.all(
+    targets.map(async ([url, target]) => {
+      try {
+        const response = await fetch(url + query)
+        if (!response.ok) throw Error()
+        const data = await response.json()
+        target.value = url === '/api/vehicles' ? data.filter((v) => v.is_active !== false) : data
+      } catch {
+        target.value = []
+        error.value = 'Bazı veriler yüklenemedi. Görüntülenen özet eksik olabilir.'
+      }
+    }),
+  )
+  loading.value = false
+}
 onMounted(load)
 </script>
 <style scoped>
-.overview-main{padding:0 20px 24px!important;background:#eef7fd!important;color:#10254c}.overview-topbar{display:flex;align-items:center;gap:24px;padding:12px 0;border-bottom:1px solid #dfeaf4;margin-bottom:18px}.overview-search{display:flex;align-items:center;gap:10px;background:#e4f1fc;border:1px solid #dcebf8;border-radius:6px;padding:7px 12px;max-width:440px;flex:1;color:#0064ff}.overview-search input{background:none;border:0;outline:none;width:100%;font-size:12px;color:#244268}.overview-account{display:flex;align-items:center;gap:10px;text-decoration:none;color:#10254c;font-size:12px}.overview-account small{display:block;font-size:10px;color:#7282a0}.account-avatar{background:#0064ff;color:white;padding:10px;border-radius:50%}.date-chip{margin-left:auto;background:white;border:1px solid #e5edf4;border-radius:4px;padding:8px;font-size:11px;white-space:nowrap}.overview-heading{display:flex;justify-content:space-between;align-items:center;margin:0 0 18px}.overview-heading h1{font-size:25px;margin:0 0 4px;color:#071b63}.overview-heading p{margin:0;color:#6b7b9a;font-size:12px}.primary-action{padding:10px 15px;background:#0064ff;color:white;text-decoration:none;border-radius:5px;font-size:12px}.overview-stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:14px}.overview-stat{display:flex;gap:14px;align-items:flex-start;background:white;border-radius:7px;padding:18px 14px;text-decoration:none;color:#10254c;border:1px solid #edf2f8}.stat-symbol{font-size:29px;color:#0064ff;background:#edf7ff;border-radius:50%;width:40px;text-align:center}.overview-stat span:not(.stat-symbol){font-size:11px}.overview-stat strong{display:block;font-size:20px;margin:5px 0}.overview-stat small{font-size:10px;color:#7c8aa5}.overview-grid{display:grid;grid-template-columns:1.05fr .9fr 1.1fr;gap:14px;margin-bottom:14px}.overview-panel{background:white;border:1px solid #eaf1f8;border-radius:7px;padding:14px;min-width:0}.panel-title{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:18px}.panel-title h2{font-size:13px;letter-spacing:-.3px;margin:0;color:#102d6f}.panel-title a,.panel-title select{color:#0064ff;background:#fff;border:1px solid #e1ebf6;border-radius:4px;padding:4px 8px;text-decoration:none;font-size:10px;white-space:nowrap}.locations-panel{grid-row:span 2}.location-preview{background:linear-gradient(135deg,#e7f4f0,#e0efff);border-radius:5px;min-height:285px;padding:10px}.dashboard-map{width:100%;height:190px;border:0;border-radius:4px}.location-row{display:flex;align-items:center;gap:10px;padding:14px 8px;border-bottom:1px solid #cbdde7;text-decoration:none;color:#23476c;font-size:12px}.location-row>span:last-child{margin-left:auto}.location-row small{display:block;margin-top:4px;color:#617f93;font-size:10px}.location-pin{background:#14ad79;color:white;font-size:25px;border-radius:50%;padding:4px}.location-note{text-align:center;font-size:10px;color:#70889d}.vehicle-status{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;font-size:10px}.vehicle-status a{display:flex;gap:5px;align-items:center;color:#55617c;text-decoration:none}i{display:inline-block;width:8px;height:8px;border-radius:50%;flex-shrink:0}.distribution{display:flex;align-items:center;gap:16px;min-height:150px}.fleet-donut{width:142px;height:142px;flex-shrink:0;border-radius:50%;display:grid;place-items:center;text-decoration:none}.fleet-donut>div{width:90px;height:90px;background:white;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#09266a}.fleet-donut strong{font-size:25px}.fleet-donut small{font-size:10px}.distribution-legend{flex:1;min-width:0}.distribution-legend a{display:flex;gap:7px;align-items:center;text-decoration:none;color:#34476a;font-size:11px;margin:12px 0}.distribution-legend strong{margin-left:auto}.distribution-legend small{color:#8190a9}.cost-chart{display:flex;gap:8px;align-items:flex-end;height:160px;text-decoration:none;justify-content:space-around;border-bottom:1px solid #e8eff5}.cost-column{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;flex:1;height:100%;min-width:0}.cost-value{font-size:8px;color:#7d8ba3;margin-bottom:4px}.cost-bar{display:flex;flex-direction:column-reverse;width:25px;min-height:1px;border-radius:3px 3px 0 0;overflow:hidden}.cost-bar i{width:100%;border-radius:0;flex-shrink:1}.cost-column small{font-size:9px;color:#697b9c;margin:7px 0}.cost-legend{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;font-size:9px;color:#71819a}.cost-legend span{display:flex;gap:5px;align-items:center}.cost-total{display:flex;justify-content:space-between;font-size:10px;margin-top:12px}.contract-bar{display:flex;height:14px;overflow:hidden;border-radius:4px;background:#edf4fa;margin-bottom:12px}.contract-bar i{height:100%;border-radius:0}.contract-row{display:flex;align-items:center;gap:8px;text-decoration:none;color:#536386;font-size:11px;padding:5px 0}.contract-row strong{margin-left:auto}.event-row{display:flex;align-items:center;gap:8px;padding:8px 0;text-decoration:none;color:#284272;font-size:11px}.event-row>span:nth-child(2){flex:1}.event-row small{display:block;color:#8390a6;font-size:9px;margin-top:3px}.event-icon{color:#ff9248;font-size:20px}.day-badge{font-size:9px;color:#d08538;background:#fff2df;padding:4px;border-radius:3px;white-space:nowrap}.overview-bottom{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.overview-bottom .panel-title h2{font-size:12px}.activity-row{display:flex;justify-content:space-between;gap:8px;text-decoration:none;color:#28406d;font-size:10px;padding:9px 0;border-bottom:1px solid #f0f4f8}.activity-row strong{font-weight:600}.activity-row small{display:block;color:#8290a6;font-size:9px;margin-top:4px}.activity-row>span:first-child{min-width:0}.activity-row>span:first-child small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:145px}.activity-right{text-align:right;flex-shrink:0}.status-tag{font-weight:500;color:#248465;background:#e5f8ef;border-radius:3px;padding:3px 5px;font-size:9px}.empty-copy,.muted{font-size:11px;color:#8190a9;padding:18px 0}.panel-empty{text-align:center;padding:75px 8px;color:#7b97aa;font-size:28px}.panel-empty p{font-size:12px;margin:12px 0}.panel-empty small{font-size:10px}.overview-alert{display:block;background:#fff3dd;color:#916627;border-radius:5px;padding:12px;margin-bottom:15px;font-size:12px;text-decoration:none}.overview-alert button{margin-left:8px;cursor:pointer}.overview-stat:hover,.activity-row:hover,.event-row:hover{background:#f5faff}@media(min-width:1500px){.overview-grid{gap:20px}.overview-panel{padding:20px}.location-preview{min-height:340px}}@media(max-width:1200px){.overview-stats{grid-template-columns:repeat(3,1fr)}.overview-grid{grid-template-columns:1fr 1fr}.locations-panel{grid-row:span 2}.overview-bottom{grid-template-columns:1fr 1fr}.distribution{flex-wrap:wrap}}@media(max-width:600px){.overview-main{padding:0 12px 20px!important}.overview-topbar{flex-wrap:wrap;gap:10px}.overview-search{max-width:none;flex-basis:100%}.date-chip{margin-left:0}.overview-account{margin-left:auto}.overview-heading{align-items:flex-start;gap:12px}.overview-heading h1{font-size:20px}.primary-action{font-size:10px;white-space:nowrap}.overview-stats{grid-template-columns:1fr 1fr}.overview-stat{padding:12px 8px;gap:8px}.overview-stat strong{font-size:17px}.overview-grid,.overview-bottom{grid-template-columns:1fr}.locations-panel{grid-row:auto}.distribution{flex-wrap:nowrap}.overview-topbar{margin-top:10px}}
+.overview-main {
+  padding: 0 20px 24px !important;
+  background: #eef7fd !important;
+  color: #10254c;
+}
+.overview-topbar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 12px 0;
+  border-bottom: 1px solid #dfeaf4;
+  margin-bottom: 18px;
+}
+.overview-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #e4f1fc;
+  border: 1px solid #dcebf8;
+  border-radius: 6px;
+  padding: 7px 12px;
+  max-width: 440px;
+  flex: 1;
+  color: #0064ff;
+}
+.overview-search input {
+  background: none;
+  border: 0;
+  outline: none;
+  width: 100%;
+  font-size: 12px;
+  color: #244268;
+}
+.overview-account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: #10254c;
+  font-size: 12px;
+}
+.overview-account small {
+  display: block;
+  font-size: 10px;
+  color: #7282a0;
+}
+.account-avatar {
+  background: #0064ff;
+  color: white;
+  padding: 10px;
+  border-radius: 50%;
+}
+.date-chip {
+  margin-left: auto;
+  background: white;
+  border: 1px solid #e5edf4;
+  border-radius: 4px;
+  padding: 8px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.overview-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 0 18px;
+}
+.overview-heading h1 {
+  font-size: 25px;
+  margin: 0 0 4px;
+  color: #071b63;
+}
+.overview-heading p {
+  margin: 0;
+  color: #6b7b9a;
+  font-size: 12px;
+}
+.primary-action {
+  padding: 10px 15px;
+  background: #0064ff;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  font-size: 12px;
+}
+.overview-stats {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.overview-stat {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  background: white;
+  border-radius: 7px;
+  padding: 18px 14px;
+  text-decoration: none;
+  color: #10254c;
+  border: 1px solid #edf2f8;
+}
+.stat-symbol {
+  font-size: 29px;
+  color: #0064ff;
+  background: #edf7ff;
+  border-radius: 50%;
+  width: 40px;
+  text-align: center;
+}
+.overview-stat span:not(.stat-symbol) {
+  font-size: 11px;
+}
+.overview-stat strong {
+  display: block;
+  font-size: 20px;
+  margin: 5px 0;
+}
+.overview-stat small {
+  font-size: 10px;
+  color: #7c8aa5;
+}
+.overview-grid {
+  display: grid;
+  grid-template-columns: 1.05fr 0.9fr 1.1fr;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.overview-panel {
+  background: white;
+  border: 1px solid #eaf1f8;
+  border-radius: 7px;
+  padding: 14px;
+  min-width: 0;
+}
+.panel-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.panel-title h2 {
+  font-size: 13px;
+  letter-spacing: -0.3px;
+  margin: 0;
+  color: #102d6f;
+}
+.panel-title a,
+.panel-title select {
+  color: #0064ff;
+  background: #fff;
+  border: 1px solid #e1ebf6;
+  border-radius: 4px;
+  padding: 4px 8px;
+  text-decoration: none;
+  font-size: 10px;
+  white-space: nowrap;
+}
+.locations-panel {
+  grid-row: span 2;
+}
+.location-preview {
+  background: linear-gradient(135deg, #e7f4f0, #e0efff);
+  border-radius: 5px;
+  min-height: 285px;
+  padding: 10px;
+}
+.dashboard-map {
+  width: 100%;
+  height: 190px;
+  border: 0;
+  border-radius: 4px;
+}
+.location-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 8px;
+  border-bottom: 1px solid #cbdde7;
+  text-decoration: none;
+  color: #23476c;
+  font-size: 12px;
+}
+.location-row > span:last-child {
+  margin-left: auto;
+}
+.location-row small {
+  display: block;
+  margin-top: 4px;
+  color: #617f93;
+  font-size: 10px;
+}
+.location-pin {
+  background: #14ad79;
+  color: white;
+  font-size: 25px;
+  border-radius: 50%;
+  padding: 4px;
+}
+.location-note {
+  text-align: center;
+  font-size: 10px;
+  color: #70889d;
+}
+.vehicle-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 14px;
+  font-size: 10px;
+}
+.vehicle-status a {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  color: #55617c;
+  text-decoration: none;
+}
+i {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.distribution {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 150px;
+}
+.fleet-donut {
+  width: 142px;
+  height: 142px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  text-decoration: none;
+}
+.fleet-donut > div {
+  width: 90px;
+  height: 90px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #09266a;
+}
+.fleet-donut strong {
+  font-size: 25px;
+}
+.fleet-donut small {
+  font-size: 10px;
+}
+.distribution-legend {
+  flex: 1;
+  min-width: 0;
+}
+.distribution-legend a {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  text-decoration: none;
+  color: #34476a;
+  font-size: 11px;
+  margin: 12px 0;
+}
+.distribution-legend strong {
+  margin-left: auto;
+}
+.distribution-legend small {
+  color: #8190a9;
+}
+.cost-chart {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  height: 160px;
+  text-decoration: none;
+  justify-content: space-around;
+  border-bottom: 1px solid #e8eff5;
+}
+.cost-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 1;
+  height: 100%;
+  min-width: 0;
+}
+.cost-value {
+  font-size: 8px;
+  color: #7d8ba3;
+  margin-bottom: 4px;
+}
+.cost-bar {
+  display: flex;
+  flex-direction: column-reverse;
+  width: 25px;
+  min-height: 1px;
+  border-radius: 3px 3px 0 0;
+  overflow: hidden;
+}
+.cost-bar i {
+  width: 100%;
+  border-radius: 0;
+  flex-shrink: 1;
+}
+.cost-column small {
+  font-size: 9px;
+  color: #697b9c;
+  margin: 7px 0;
+}
+.cost-legend {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+  font-size: 9px;
+  color: #71819a;
+}
+.cost-legend span {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+.cost-total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  margin-top: 12px;
+}
+.contract-bar {
+  display: flex;
+  height: 14px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #edf4fa;
+  margin-bottom: 12px;
+}
+.contract-bar i {
+  height: 100%;
+  border-radius: 0;
+}
+.contract-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: #536386;
+  font-size: 11px;
+  padding: 5px 0;
+}
+.contract-row strong {
+  margin-left: auto;
+}
+.event-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  text-decoration: none;
+  color: #284272;
+  font-size: 11px;
+}
+.event-row > span:nth-child(2) {
+  flex: 1;
+}
+.event-row small {
+  display: block;
+  color: #8390a6;
+  font-size: 9px;
+  margin-top: 3px;
+}
+.event-icon {
+  color: #ff9248;
+  font-size: 20px;
+}
+.day-badge {
+  font-size: 9px;
+  color: #d08538;
+  background: #fff2df;
+  padding: 4px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+.overview-bottom {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.overview-bottom .panel-title h2 {
+  font-size: 12px;
+}
+.activity-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  text-decoration: none;
+  color: #28406d;
+  font-size: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid #f0f4f8;
+}
+.activity-row strong {
+  font-weight: 600;
+}
+.activity-row small {
+  display: block;
+  color: #8290a6;
+  font-size: 9px;
+  margin-top: 4px;
+}
+.activity-row > span:first-child {
+  min-width: 0;
+}
+.activity-row > span:first-child small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 145px;
+}
+.activity-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+.status-tag {
+  font-weight: 500;
+  color: #248465;
+  background: #e5f8ef;
+  border-radius: 3px;
+  padding: 3px 5px;
+  font-size: 9px;
+}
+.empty-copy,
+.muted {
+  font-size: 11px;
+  color: #8190a9;
+  padding: 18px 0;
+}
+.panel-empty {
+  text-align: center;
+  padding: 75px 8px;
+  color: #7b97aa;
+  font-size: 28px;
+}
+.panel-empty p {
+  font-size: 12px;
+  margin: 12px 0;
+}
+.panel-empty small {
+  font-size: 10px;
+}
+.overview-alert {
+  display: block;
+  background: #fff3dd;
+  color: #916627;
+  border-radius: 5px;
+  padding: 12px;
+  margin-bottom: 15px;
+  font-size: 12px;
+  text-decoration: none;
+}
+.overview-alert button {
+  margin-left: 8px;
+  cursor: pointer;
+}
+.overview-stat:hover,
+.activity-row:hover,
+.event-row:hover {
+  background: #f5faff;
+}
+@media (min-width: 1500px) {
+  .overview-grid {
+    gap: 20px;
+  }
+  .overview-panel {
+    padding: 20px;
+  }
+  .location-preview {
+    min-height: 340px;
+  }
+}
+@media (max-width: 1200px) {
+  .overview-stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .overview-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .locations-panel {
+    grid-row: span 2;
+  }
+  .overview-bottom {
+    grid-template-columns: 1fr 1fr;
+  }
+  .distribution {
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 600px) {
+  .overview-main {
+    padding: 0 12px 20px !important;
+  }
+  .overview-topbar {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .overview-search {
+    max-width: none;
+    flex-basis: 100%;
+  }
+  .date-chip {
+    margin-left: 0;
+  }
+  .overview-account {
+    margin-left: auto;
+  }
+  .overview-heading {
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .overview-heading h1 {
+    font-size: 20px;
+  }
+  .primary-action {
+    font-size: 10px;
+    white-space: nowrap;
+  }
+  .overview-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+  .overview-stat {
+    padding: 12px 8px;
+    gap: 8px;
+  }
+  .overview-stat strong {
+    font-size: 17px;
+  }
+  .overview-grid,
+  .overview-bottom {
+    grid-template-columns: 1fr;
+  }
+  .locations-panel {
+    grid-row: auto;
+  }
+  .distribution {
+    flex-wrap: nowrap;
+  }
+  .overview-topbar {
+    margin-top: 10px;
+  }
+}
 </style>

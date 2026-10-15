@@ -1,95 +1,250 @@
 <template>
-  <div style="min-height: 100vh; background: #f8fafc; display: flex; flex-direction: column;">
+  <div style="min-height: 100vh; background: #f8fafc; display: flex; flex-direction: column">
     <!-- Header -->
-    <header class="hero-dark-bg" style="padding: 16px 8%; text-align: left; height: 60px; display: flex; align-items: center;">
-      <router-link to="/" class="nav-logo" style="text-decoration: none;">
-        <img class="brand-logo-image brand-logo-image--dark" src="/fleetrent-logo.jpeg" alt="FleetRent" />
+    <header
+      class="hero-dark-bg"
+      style="padding: 16px 8%; text-align: left; height: 60px; display: flex; align-items: center"
+    >
+      <router-link to="/" class="nav-logo" style="text-decoration: none">
+        <img
+          class="brand-logo-image brand-logo-image--dark"
+          src="/fleetrent-logo.jpeg"
+          alt="FleetRent"
+        />
         <span class="brand-logo-role">Tedarikçi & Servis Portalı</span>
       </router-link>
     </header>
 
     <!-- Main Content -->
-    <main style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 20px;">
+    <main
+      style="
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+      "
+    >
       <!-- Loading State -->
-      <div v-if="verifying" class="glass-panel auth-card fade-in-up text-center" style="max-width: 480px; width: 100%; padding: 40px; background: #ffffff; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.06);">
-        <div style="font-size: 2.5rem; margin-bottom: 15px;">⏳</div>
-        <h3 style="color: #0f172a; margin-bottom: 8px;">Davetiye Kontrol Ediliyor...</h3>
-        <p style="color: #64748b; font-size: 0.9rem;">Lütfen bekleyin, davet bağlantınız doğrulanıyor.</p>
+      <div
+        v-if="verifying"
+        class="glass-panel auth-card fade-in-up text-center"
+        style="
+          max-width: 480px;
+          width: 100%;
+          padding: 40px;
+          background: #ffffff;
+          border-radius: 20px;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+        "
+      >
+        <div style="font-size: 2.5rem; margin-bottom: 15px">⏳</div>
+        <h3 style="color: #0f172a; margin-bottom: 8px">Davetiye Kontrol Ediliyor...</h3>
+        <p style="color: #64748b; font-size: 0.9rem">
+          Lütfen bekleyin, davet bağlantınız doğrulanıyor.
+        </p>
       </div>
 
       <!-- Invalid Token / Error State -->
-      <div v-else-if="tokenError" class="glass-panel auth-card fade-in-up text-center" style="max-width: 480px; width: 100%; padding: 40px; background: #ffffff; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.06); border-top: 4px solid #ef4444;">
-        <div style="font-size: 3rem; margin-bottom: 15px;">❌</div>
-        <h2 style="font-size: 1.4rem; color: #0f172a; font-weight: 800; margin-bottom: 10px;">Geçersiz Davet Bağlantısı</h2>
-        <p style="color: #64748b; font-size: 0.95rem; line-height: 1.5; margin-bottom: 25px;">
+      <div
+        v-else-if="tokenError"
+        class="glass-panel auth-card fade-in-up text-center"
+        style="
+          max-width: 480px;
+          width: 100%;
+          padding: 40px;
+          background: #ffffff;
+          border-radius: 20px;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+          border-top: 4px solid #ef4444;
+        "
+      >
+        <div style="font-size: 3rem; margin-bottom: 15px">❌</div>
+        <h2 style="font-size: 1.4rem; color: #0f172a; font-weight: 800; margin-bottom: 10px">
+          Geçersiz Davet Bağlantısı
+        </h2>
+        <p style="color: #64748b; font-size: 0.95rem; line-height: 1.5; margin-bottom: 25px">
           {{ tokenError }}
         </p>
-        <router-link :to="loginPath" class="btn btn-block" style="background: linear-gradient(135deg, #7c3aed, #db2777); color: #fff; padding: 12px; text-decoration: none; border-radius: 10px; font-weight: 700; display: inline-block;">
+        <router-link
+          :to="loginPath"
+          class="btn btn-block"
+          style="
+            background: linear-gradient(135deg, #7c3aed, #db2777);
+            color: #fff;
+            padding: 12px;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 700;
+            display: inline-block;
+          "
+        >
           {{ accountLabel }} Giriş Sayfasına Git
         </router-link>
       </div>
 
       <!-- Success State -->
-      <div v-else-if="success" class="glass-panel auth-card fade-in-up text-center" style="max-width: 480px; width: 100%; padding: 40px; background: #ffffff; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.06); border-top: 4px solid #10b981;">
-        <div style="font-size: 3.5rem; margin-bottom: 15px;">🎉</div>
-        <h2 style="font-size: 1.5rem; color: #0f172a; font-weight: 800; margin-bottom: 10px;">Şifreniz Başarıyla Oluşturuldu!</h2>
-        <p style="color: #64748b; font-size: 0.95rem; line-height: 1.5; margin-bottom: 25px;">
-          {{ accountLabel }} hesabınızın e-posta adresi doğrulandı. Belirlediğiniz şifre ile giriş yapabilirsiniz.
+      <div
+        v-else-if="success"
+        class="glass-panel auth-card fade-in-up text-center"
+        style="
+          max-width: 480px;
+          width: 100%;
+          padding: 40px;
+          background: #ffffff;
+          border-radius: 20px;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+          border-top: 4px solid #10b981;
+        "
+      >
+        <div style="font-size: 3.5rem; margin-bottom: 15px">🎉</div>
+        <h2 style="font-size: 1.5rem; color: #0f172a; font-weight: 800; margin-bottom: 10px">
+          Şifreniz Başarıyla Oluşturuldu!
+        </h2>
+        <p style="color: #64748b; font-size: 0.95rem; line-height: 1.5; margin-bottom: 25px">
+          {{ accountLabel }} hesabınızın e-posta adresi doğrulandı. Belirlediğiniz şifre ile giriş
+          yapabilirsiniz.
         </p>
-        <router-link :to="loginPath" class="btn btn-block" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; padding: 14px; text-decoration: none; border-radius: 10px; font-weight: 700; display: block; text-align: center;">{{ accountLabel }} girişi yap ➔</router-link>
+        <router-link
+          :to="loginPath"
+          class="btn btn-block"
+          style="
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #fff;
+            padding: 14px;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 700;
+            display: block;
+            text-align: center;
+          "
+          >{{ accountLabel }} girişi yap ➔</router-link
+        >
       </div>
 
       <!-- Form Setup State -->
-      <div v-else class="glass-panel auth-card fade-in-up" style="max-width: 480px; width: 100%; padding: 40px; background: #ffffff; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
-        <div class="nav-logo" style="justify-content: center; margin-bottom: 20px;">
+      <div
+        v-else
+        class="glass-panel auth-card fade-in-up"
+        style="
+          max-width: 480px;
+          width: 100%;
+          padding: 40px;
+          background: #ffffff;
+          border-radius: 20px;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+          border: 1px solid #e2e8f0;
+        "
+      >
+        <div class="nav-logo" style="justify-content: center; margin-bottom: 20px">
           <img class="brand-logo-image" src="/fleetrent-logo.jpeg" alt="FleetRent" />
         </div>
 
-        <div style="background: rgba(124, 58, 237, 0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(124, 58, 237, 0.15); margin-bottom: 25px; text-align: center;">
-          <div style="font-size: 0.8rem; color: #7c3aed; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Davetli Firma</div>
-          <h3 style="font-size: 1.2rem; color: #0f172a; margin: 0; font-weight: 800;">{{ supplierName }}</h3>
-          <div style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">✉️ {{ supplierEmail }}</div>
+        <div
+          style="
+            background: rgba(124, 58, 237, 0.05);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(124, 58, 237, 0.15);
+            margin-bottom: 25px;
+            text-align: center;
+          "
+        >
+          <div
+            style="
+              font-size: 0.8rem;
+              color: #7c3aed;
+              font-weight: 700;
+              text-transform: uppercase;
+              letter-spacing: 0.05em;
+              margin-bottom: 4px;
+            "
+          >
+            Davetli Firma
+          </div>
+          <h3 style="font-size: 1.2rem; color: #0f172a; margin: 0; font-weight: 800">
+            {{ supplierName }}
+          </h3>
+          <div style="font-size: 0.85rem; color: #64748b; margin-top: 4px">
+            ✉️ {{ supplierEmail }}
+          </div>
         </div>
 
-        <h2 style="font-size: 1.4rem; text-align: center; margin-bottom: 6px; color: #0f172a; font-weight: 800;">Şifrenizi Oluşturun</h2>
-        <p style="color: #64748b; font-size: 0.88rem; text-align: center; margin-bottom: 25px;">
+        <h2
+          style="
+            font-size: 1.4rem;
+            text-align: center;
+            margin-bottom: 6px;
+            color: #0f172a;
+            font-weight: 800;
+          "
+        >
+          Şifrenizi Oluşturun
+        </h2>
+        <p style="color: #64748b; font-size: 0.88rem; text-align: center; margin-bottom: 25px">
           Portala güvenle giriş yapabilmek için lütfen yeni bir şifre belirleyin.
         </p>
 
         <form @submit.prevent="handleSetPassword">
-          <div class="form-group" style="margin-bottom: 18px;">
-            <label for="new-password" class="form-label" style="font-weight: 600; color: #334155; font-size: 0.88rem;">Yeni Şifre *</label>
-            <input 
+          <div class="form-group" style="margin-bottom: 18px">
+            <UiField
+              for="new-password"
+              class="form-label"
+              style="font-weight: 600; color: #334155; font-size: 0.88rem"
+              >Yeni Şifre *</UiField
+            >
+            <input
               id="new-password"
               name="new-password"
-              type="password" 
-              v-model="password" 
-              required 
+              type="password"
+              v-model="password"
+              required
               minlength="6"
-              class="form-input" 
+              class="form-input"
               placeholder="En az 6 karakter"
-              style="height: 48px;"
-            >
+              style="height: 48px"
+            />
           </div>
 
-          <div class="form-group" style="margin-bottom: 25px;">
-            <label for="confirm-password" class="form-label" style="font-weight: 600; color: #334155; font-size: 0.88rem;">Şifre Tekrarı *</label>
-            <input 
+          <div class="form-group" style="margin-bottom: 25px">
+            <UiField
+              for="confirm-password"
+              class="form-label"
+              style="font-weight: 600; color: #334155; font-size: 0.88rem"
+              >Şifre Tekrarı *</UiField
+            >
+            <input
               id="confirm-password"
               name="confirm-password"
-              type="password" 
-              v-model="confirmPassword" 
-              required 
+              type="password"
+              v-model="confirmPassword"
+              required
               minlength="6"
-              class="form-input" 
+              class="form-input"
               placeholder="Şifrenizi tekrar girin"
-              style="height: 48px;"
-            >
+              style="height: 48px"
+            />
           </div>
 
-          <button type="submit" class="btn btn-block" :disabled="submitting" style="background: linear-gradient(135deg, #7c3aed, #db2777); color: #ffffff; padding: 14px; font-size: 1rem; font-weight: 700; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3); width: 100%;">
+          <UiButton
+            type="submit"
+            class="btn btn-block"
+            :disabled="submitting"
+            style="
+              background: linear-gradient(135deg, #7c3aed, #db2777);
+              color: #ffffff;
+              padding: 14px;
+              font-size: 1rem;
+              font-weight: 700;
+              border: none;
+              border-radius: 10px;
+              cursor: pointer;
+              box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+              width: 100%;
+            "
+          >
             {{ submitting ? 'Şifre Kaydediliyor...' : 'Şifreyi Kaydet ve Aktifleştir ➔' }}
-          </button>
+          </UiButton>
         </form>
       </div>
     </main>
@@ -97,6 +252,8 @@
 </template>
 
 <script setup>
+import { UiButton, UiField } from '../components/ui/index.js'
+
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -108,8 +265,20 @@ const tokenError = ref('')
 const supplierName = ref('')
 const supplierEmail = ref('')
 const accountType = ref('supplier')
-const accountLabel = computed(() => accountType.value === 'customer' ? 'Müşteri' : accountType.value === 'service' ? 'Servis' : 'Tedarikçi')
-const loginPath = computed(() => accountType.value === 'customer' ? '/login' : accountType.value === 'service' ? '/service-login' : '/supplier-login')
+const accountLabel = computed(() =>
+  accountType.value === 'customer'
+    ? 'Müşteri'
+    : accountType.value === 'service'
+      ? 'Servis'
+      : 'Tedarikçi',
+)
+const loginPath = computed(() =>
+  accountType.value === 'customer'
+    ? '/login'
+    : accountType.value === 'service'
+      ? '/service-login'
+      : '/supplier-login',
+)
 
 const password = ref('')
 const confirmPassword = ref('')
@@ -160,8 +329,8 @@ const handleSetPassword = async () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         token: token.value,
-        password: password.value
-      })
+        password: password.value,
+      }),
     })
 
     if (res.ok) {

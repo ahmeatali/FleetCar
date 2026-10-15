@@ -3,132 +3,2065 @@
     <Sidebar />
     <main class="tire-main">
       <header class="tire-topbar">
-        <label class="top-search">⌕ <input v-model="search" placeholder="Plaka, marka, model, lastik seri no. ile arama yapın..." /></label>
-        <div class="customer-header-actions"><NotificationBell /><div class="top-user"><span class="avatar">{{ initials }}</span><span><b>{{ customerName }}</b><small>Filo Yöneticisi</small></span><router-link to="/profile" class="profile-link">Profilim</router-link></div></div>
+        <UiField class="top-search"
+          >⌕
+          <input
+            v-model="search"
+            placeholder="Plaka, marka, model, lastik seri no. ile arama yapın..."
+        /></UiField>
+        <div class="customer-header-actions">
+          <NotificationBell />
+          <div class="top-user">
+            <span class="avatar">{{ initials }}</span
+            ><span
+              ><b>{{ customerName }}</b
+              ><small>Filo Yöneticisi</small></span
+            ><router-link to="/profile" class="profile-link">Profilim</router-link>
+          </div>
+        </div>
       </header>
-      <div v-if="loadError" class="tire-alert" role="alert">{{loadError}} <button @click="loadData">Tekrar Dene</button></div><div v-if="notice" class="tire-alert" role="status">{{notice}}</div><div class="tire-content" :aria-busy="loading">
+      <UiAlert v-if="loadError" class="tire-alert" as="div" tone="error"
+        >{{ loadError }} <UiButton @click="loadData">Tekrar Dene</UiButton></UiAlert
+      ><UiAlert v-if="notice" class="tire-alert" as="div" tone="info">{{ notice }}</UiAlert>
+      <div class="tire-content" :aria-busy="loading">
         <div class="page-heading">
-          <div><div class="title-line"><span class="wheel-icon">◉</span><h1>Lastik Yönetimi</h1></div><p>Araçlarınızdaki lastiklerin durumunu takip edin, değişim ve rotasyon planlarını yönetin.</p></div>
-          <button class="primary-btn" @click="openCreate">＋ Yeni Lastik Kaydı</button>
+          <div>
+            <div class="title-line">
+              <span class="wheel-icon">◉</span>
+              <h1>Lastik Yönetimi</h1>
+            </div>
+            <p>
+              Araçlarınızdaki lastiklerin durumunu takip edin, değişim ve rotasyon planlarını
+              yönetin.
+            </p>
+          </div>
+          <UiButton class="primary-btn" @click="openCreate">＋ Yeni Lastik Kaydı</UiButton>
         </div>
         <div class="overview-grid">
-          <article class="metric-card"><span class="metric-icon blue">◉</span><div><small>Toplam Lastik</small><strong>{{ summary.total || 0 }}</strong></div><em>Filonuza bağlı</em></article>
-          <article class="metric-card"><span class="metric-icon red">⚠</span><div><small>Değişim Bekleyen</small><strong>{{ summary.change_pending || 0 }}</strong></div><em>Durum takibi</em></article>
-          <article class="metric-card"><span class="metric-icon blue">⟳</span><div><small>Rotasyon Bekleyen</small><strong>{{ summary.rotation_due || 0 }}</strong></div><em>Son rotasyona göre</em></article>
-          <article class="metric-card"><span class="metric-icon red">⚠</span><div><small>Mücbir Durum</small><strong>{{ summary.critical || 0 }}</strong></div><em>Kontrol gerekli</em></article>
+          <article class="metric-card">
+            <span class="metric-icon blue">◉</span>
+            <div>
+              <small>Toplam Lastik</small><strong>{{ summary.total || 0 }}</strong>
+            </div>
+            <em>Filonuza bağlı</em>
+          </article>
+          <article class="metric-card">
+            <span class="metric-icon red">⚠</span>
+            <div>
+              <small>Değişim Bekleyen</small><strong>{{ summary.change_pending || 0 }}</strong>
+            </div>
+            <em>Durum takibi</em>
+          </article>
+          <article class="metric-card">
+            <span class="metric-icon blue">⟳</span>
+            <div>
+              <small>Rotasyon Bekleyen</small><strong>{{ summary.rotation_due || 0 }}</strong>
+            </div>
+            <em>Son rotasyona göre</em>
+          </article>
+          <article class="metric-card">
+            <span class="metric-icon red">⚠</span>
+            <div>
+              <small>Mücbir Durum</small><strong>{{ summary.critical || 0 }}</strong>
+            </div>
+            <em>Kontrol gerekli</em>
+          </article>
         </div>
         <div class="dashboard-grid">
           <section class="left-column">
-            <button class="mobile-filter-toggle" :aria-expanded="filtersExpanded" aria-controls="page-filters" @click="filtersExpanded=!filtersExpanded">{{filtersExpanded ? 'Filtreleri Gizle' : 'Filtreleri Aç'}} <span>⌄</span></button><div id="page-filters" class="filter-bar" :class="{'mobile-expanded':filtersExpanded}">
-              <label class="filter-search">⌕ <input v-model="search" placeholder="Plaka, marka, model, lastik seri no. ile arama..." /></label>
-              <label><small>Araç Grubu</small><select v-model="vehicleFilter"><option value="all">Tümü</option><option v-for="group in vehicleGroups" :key="group">{{ group }}</option></select></label>
-              <label><small>Lastik Durumu</small><select v-model="statusFilter"><option value="all">Tümü</option><option value="upcoming">Yaklaşan İşlemler</option><option>İyi</option><option>Yaklaşan</option><option>Değişim Gerekli</option><option>Mücbir Durum</option></select></label>
-              <label><small>Mevsim</small><select v-model="seasonFilter"><option value="all">Tümü</option><option>Yaz</option><option>Kış</option><option>Dört Mevsim</option></select></label>
-              <label class="date-range"><small>Kontrol Başlangıcı</small><input v-model="fromDate" type="date" /></label><label class="date-range"><small>Kontrol Bitişi</small><input v-model="toDate" type="date" :min="fromDate" /></label>
-              <button class="filter-btn" @click="page = 1">☷ Filtrele</button>
+            <UiButton
+              class="mobile-filter-toggle"
+              :aria-expanded="filtersExpanded"
+              aria-controls="page-filters"
+              @click="filtersExpanded = !filtersExpanded"
+              >{{ filtersExpanded ? 'Filtreleri Gizle' : 'Filtreleri Aç' }} <span>⌄</span></UiButton
+            >
+            <div
+              id="page-filters"
+              class="filter-bar"
+              :class="{ 'mobile-expanded': filtersExpanded }"
+            >
+              <UiField class="filter-search"
+                >⌕
+                <input
+                  v-model="search"
+                  placeholder="Plaka, marka, model, lastik seri no. ile arama..."
+              /></UiField>
+              <UiField
+                ><small>Araç Grubu</small
+                ><select v-model="vehicleFilter">
+                  <option value="all">Tümü</option>
+                  <option v-for="group in vehicleGroups" :key="group">{{ group }}</option>
+                </select></UiField
+              >
+              <UiField
+                ><small>Lastik Durumu</small
+                ><select v-model="statusFilter">
+                  <option value="all">Tümü</option>
+                  <option value="upcoming">Yaklaşan İşlemler</option>
+                  <option>İyi</option>
+                  <option>Yaklaşan</option>
+                  <option>Değişim Gerekli</option>
+                  <option>Mücbir Durum</option>
+                </select></UiField
+              >
+              <UiField
+                ><small>Mevsim</small
+                ><select v-model="seasonFilter">
+                  <option value="all">Tümü</option>
+                  <option>Yaz</option>
+                  <option>Kış</option>
+                  <option>Dört Mevsim</option>
+                </select></UiField
+              >
+              <UiField class="date-range"
+                ><small>Kontrol Başlangıcı</small><input v-model="fromDate" type="date" /></UiField
+              ><UiField class="date-range"
+                ><small>Kontrol Bitişi</small><input v-model="toDate" type="date" :min="fromDate"
+              /></UiField>
+              <UiButton class="filter-btn" @click="page = 1">☷ Filtrele</UiButton>
             </div>
             <section class="panel">
-              <div class="panel-title"><h2><span>◉</span> Lastik Listesi</h2><div class="table-actions"><button :disabled="!selectedIds.length || saving" @click="rotateSelected">⟳ Rotasyon Talebi Oluştur</button><button @click="exportCsv">↓ Dışa Aktar</button></div></div>
-              <div class="table-scroll"><table>
-                <thead><tr><th><input type="checkbox" aria-label="Görünen lastikleri seç" :checked="allVisibleSelected" @change="toggleVisible" /></th><th>Plaka</th><th>Araç / Model</th><th>Lastik Markası</th><th>Ebat</th><th>Takım No</th><th>Üretim Tarihi</th><th>Değişim Tarihi</th><th>Durum</th><th>Kalan Km / Süre</th><th>İşlemler</th></tr></thead>
-                <tbody>
-                  <tr v-for="t in paginatedTires" :key="t.id">
-                    <td data-label="Seç"><input type="checkbox" :aria-label="t.plate+' '+t.brand+' lastiğini seç'" :disabled="Boolean(t.pending_request)" :checked="selectedIds.includes(t.id)" @change="toggleSelected(t.id)" /></td>
-                    <td data-label="Plaka"><button class="plate-link" @click="goToVehicle(t.vehicle_id)">{{ t.plate }}</button></td>
-                    <td data-label="Araç"><div class="car-cell"><img v-if="t.photo_url" class="tire-vehicle-photo" :src="t.photo_url" alt=""/><span v-else class="mini-car">▱</span><span>{{ t.vehicle_brand }} {{ t.vehicle_model }}<small>{{ t.vehicle_year }} · {{ t.size }}</small></span></div></td>
-                    <td data-label="Marka">{{ t.brand }}</td><td data-label="Ebat">{{ t.size }}</td><td data-label="Takım No">{{ t.set_no || '—' }}</td><td data-label="Üretim">{{ month(t.production_date) }}</td><td data-label="Değişim">{{ month(t.changed_at || t.installed_at) }}</td>
-                    <td data-label="Durum"><span class="status-pill" :class="statusClass(t)"><i></i>{{ tireStatus(t) }}</span></td><td data-label="Kalan Kullanım">{{ t.remaining_km == null ? '—' : number(t.remaining_km) + ' km' }}<small v-if="t.rotation_due">Rotasyon bekliyor</small><small v-if="t.pending_request">Talep: {{t.pending_request.status}}</small></td>
-                    <td data-label="İşlem"><div class="row-actions"><button :title="t.pending_request ? 'Mevcut talebi aç' : 'Servis işlemi talep et'" :aria-label="t.plate+' için işlem talebi'" @click="openOperation(t)">⟳ <span class="mobile-action-label">{{t.pending_request ? 'Talebi Gör' : 'Servis Talebi'}}</span></button><button title="Düzenle" :aria-label="t.plate+' lastik kaydını düzenle'" @click="editTire(t)"><span class="desktop-action-label">•••</span><span class="mobile-action-label">Düzenle</span></button></div></td>
-                  </tr>
-                  <tr v-if="loading && !tires.length"><td colspan="11" class="empty-state">Lastikler yükleniyor…</td></tr><tr v-if="!loading && !paginatedTires.length"><td colspan="11" class="empty-state"><b>Filtrelere uygun lastik kaydı yok</b><small>Yeni lastik kaydı ekleyerek aracınızla eşleştirin.</small></td></tr>
-                </tbody>
-              </table></div>
-              <footer class="table-footer"><span>Toplam {{ filteredTires.length }} lastik kaydından {{ pageStart }}–{{ pageEnd }} görüntüleniyor</span><div class="pagination"><button :disabled="page <= 1" @click="page--">‹</button><button v-for="p in totalPages" :key="p" :class="{ current: p === page }" @click="page = p">{{ p }}</button><button :disabled="page >= totalPages" @click="page++">›</button></div></footer>
+              <div class="panel-title">
+                <h2><span>◉</span> Lastik Listesi</h2>
+                <div class="table-actions">
+                  <UiButton :disabled="!selectedIds.length || saving" @click="rotateSelected"
+                    >⟳ Rotasyon Talebi Oluştur</UiButton
+                  ><UiButton @click="exportCsv">↓ Dışa Aktar</UiButton>
+                </div>
+              </div>
+              <UiTable class="table-scroll"
+                ><table>
+                  <thead>
+                    <tr>
+                      <th>
+                        <input
+                          type="checkbox"
+                          aria-label="Görünen lastikleri seç"
+                          :checked="allVisibleSelected"
+                          @change="toggleVisible"
+                        />
+                      </th>
+                      <th>Plaka</th>
+                      <th>Araç / Model</th>
+                      <th>Lastik Markası</th>
+                      <th>Ebat</th>
+                      <th>Takım No</th>
+                      <th>Üretim Tarihi</th>
+                      <th>Değişim Tarihi</th>
+                      <th>Durum</th>
+                      <th>Kalan Km / Süre</th>
+                      <th>İşlemler</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="t in paginatedTires" :key="t.id">
+                      <td data-label="Seç">
+                        <input
+                          type="checkbox"
+                          :aria-label="t.plate + ' ' + t.brand + ' lastiğini seç'"
+                          :disabled="Boolean(t.pending_request)"
+                          :checked="selectedIds.includes(t.id)"
+                          @change="toggleSelected(t.id)"
+                        />
+                      </td>
+                      <td data-label="Plaka">
+                        <UiButton class="plate-link" @click="goToVehicle(t.vehicle_id)">{{
+                          t.plate
+                        }}</UiButton>
+                      </td>
+                      <td data-label="Araç">
+                        <div class="car-cell">
+                          <img
+                            v-if="t.photo_url"
+                            class="tire-vehicle-photo"
+                            :src="t.photo_url"
+                            alt=""
+                          /><span v-else class="mini-car">▱</span
+                          ><span
+                            >{{ t.vehicle_brand }} {{ t.vehicle_model
+                            }}<small>{{ t.vehicle_year }} · {{ t.size }}</small></span
+                          >
+                        </div>
+                      </td>
+                      <td data-label="Marka">{{ t.brand }}</td>
+                      <td data-label="Ebat">{{ t.size }}</td>
+                      <td data-label="Takım No">{{ t.set_no || '—' }}</td>
+                      <td data-label="Üretim">{{ month(t.production_date) }}</td>
+                      <td data-label="Değişim">{{ month(t.changed_at || t.installed_at) }}</td>
+                      <td data-label="Durum">
+                        <span class="status-pill" :class="statusClass(t)"
+                          ><i></i>{{ tireStatus(t) }}</span
+                        >
+                      </td>
+                      <td data-label="Kalan Kullanım">
+                        {{ t.remaining_km == null ? '—' : number(t.remaining_km) + ' km'
+                        }}<small v-if="t.rotation_due">Rotasyon bekliyor</small
+                        ><small v-if="t.pending_request"
+                          >Talep: {{ t.pending_request.status }}</small
+                        >
+                      </td>
+                      <td data-label="İşlem">
+                        <div class="row-actions">
+                          <UiButton
+                            :title="
+                              t.pending_request ? 'Mevcut talebi aç' : 'Servis işlemi talep et'
+                            "
+                            :aria-label="t.plate + ' için işlem talebi'"
+                            @click="openOperation(t)"
+                            >⟳
+                            <span class="mobile-action-label">{{
+                              t.pending_request ? 'Talebi Gör' : 'Servis Talebi'
+                            }}</span></UiButton
+                          ><UiButton
+                            title="Düzenle"
+                            :aria-label="t.plate + ' lastik kaydını düzenle'"
+                            @click="editTire(t)"
+                            ><span class="desktop-action-label">•••</span
+                            ><span class="mobile-action-label">Düzenle</span></UiButton
+                          >
+                        </div>
+                      </td>
+                    </tr>
+                    <tr v-if="loading && !tires.length">
+                      <td colspan="11" class="empty-state">Lastikler yükleniyor…</td>
+                    </tr>
+                    <tr v-if="!loading && !paginatedTires.length">
+                      <td colspan="11" class="empty-state">
+                        <b>Filtrelere uygun lastik kaydı yok</b
+                        ><small>Yeni lastik kaydı ekleyerek aracınızla eşleştirin.</small>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table></UiTable
+              >
+              <footer class="table-footer">
+                <span
+                  >Toplam {{ filteredTires.length }} lastik kaydından {{ pageStart }}–{{
+                    pageEnd
+                  }}
+                  görüntüleniyor</span
+                >
+                <div class="pagination">
+                  <UiButton :disabled="page <= 1" @click="page--">‹</UiButton
+                  ><UiButton
+                    v-for="p in totalPages"
+                    :key="p"
+                    :class="{ current: p === page }"
+                    @click="page = p"
+                    >{{ p }}</UiButton
+                  ><UiButton :disabled="page >= totalPages" @click="page++">›</UiButton>
+                </div>
+              </footer>
             </section>
             <div class="lower-grid">
-              <section class="panel"><div class="panel-title"><h2><span>◉</span> Lastik Markaları</h2></div><div class="brand-list"><div v-for="b in brandStats" :key="b.name" class="brand-row"><span>{{ b.name }}</span><div class="bar"><i :style="{ width: b.percent + '%', background: b.color }"></i></div><small>%{{b.percent}}</small><b>{{ b.count }}</b></div><p v-if="!brandStats.length" class="muted-empty">Henüz kayıtlı lastik markası yok.</p></div></section>
-              <section class="panel"><div class="panel-title"><h2><span>◉</span> Mevsimsel Dağılım</h2></div><div class="season-cards"><div v-for="s in seasonStats" :key="s.name" class="season-item"><span>{{ s.icon }}</span><b>{{ s.count }}</b><small>{{ s.name }}</small><em>%{{ s.percent }}</em></div></div></section>
-              <section class="tip-card"><div>ⓘ</div><section><b>Öneri</b><p>{{guidance}}</p><button @click="showGuide = !showGuide">Detaylı Rehber →</button><p v-if="showGuide">{{guide}}</p></section></section>
+              <section class="panel">
+                <div class="panel-title">
+                  <h2><span>◉</span> Lastik Markaları</h2>
+                </div>
+                <div class="brand-list">
+                  <div v-for="b in brandStats" :key="b.name" class="brand-row">
+                    <span>{{ b.name }}</span>
+                    <div class="bar">
+                      <i :style="{ width: b.percent + '%', background: b.color }"></i>
+                    </div>
+                    <small>%{{ b.percent }}</small
+                    ><b>{{ b.count }}</b>
+                  </div>
+                  <p v-if="!brandStats.length" class="muted-empty">
+                    Henüz kayıtlı lastik markası yok.
+                  </p>
+                </div>
+              </section>
+              <section class="panel">
+                <div class="panel-title">
+                  <h2><span>◉</span> Mevsimsel Dağılım</h2>
+                </div>
+                <div class="season-cards">
+                  <div v-for="s in seasonStats" :key="s.name" class="season-item">
+                    <span>{{ s.icon }}</span
+                    ><b>{{ s.count }}</b
+                    ><small>{{ s.name }}</small
+                    ><em>%{{ s.percent }}</em>
+                  </div>
+                </div>
+              </section>
+              <section class="tip-card">
+                <div>ⓘ</div>
+                <section>
+                  <b>Öneri</b>
+                  <p>{{ guidance }}</p>
+                  <UiButton @click="showGuide = !showGuide">Detaylı Rehber →</UiButton>
+                  <p v-if="showGuide">{{ guide }}</p>
+                </section>
+              </section>
             </div>
           </section>
           <aside class="right-column">
-            <section class="panel summary-panel"><div class="panel-title"><h2><span>♧</span> Lastik Durum Özeti</h2></div><div class="summary-body"><div class="donut" :style="donutStyle"><div><b>{{ summary.total || 0 }}</b><small>Toplam Lastik</small></div></div><div class="legend"><div v-for="(state,index) in statusStats" :key="state.name"><i :style="{background:statusColors[index]}"></i><span>{{state.name}}</span><b>{{state.count}}</b><small>{{state.percent}}%</small></div></div></div></section>
-            <section class="panel"><div class="panel-title"><h2><span>▦</span> Yaklaşan İşlemler</h2></div><ol class="timeline"><li v-for="t in upcomingTires.slice(0,3)" :key="'up'+t.id" :class="statusClass(t)"><i></i><div><b>{{ t.plate }}</b><span class="timeline-badge" :class="statusClass(t)">{{ t.rotation_due && t.status==='İyi' ? 'Rotasyon' : tireStatus(t) }}</span><small>{{ t.remaining_km == null ? 'Kontrol planlaması gerekli' : number(t.remaining_km) + ' km kaldı' }}</small><p>{{t.brand}} · {{t.size}} · {{t.rotation_due ? 'Rotasyon kontrolü gerekli' : 'Lastik kontrolü gerekli'}}</p></div></li><li v-if="!upcomingTires.length" class="no-timeline">Yaklaşan lastik işlemi yok.</li></ol><button class="outline-wide" @click="statusFilter = 'upcoming';page=1">Tüm İşlemleri Görüntüle</button></section>
-            <section class="panel"><div class="panel-title"><h2><span>⚒</span> Son Bakım İşlemleri</h2></div><ol class="timeline"><li v-for="op in operations.slice(0,3)" :key="op.id" class="done"><i></i><div><b>{{ op.plate }}</b><span class="timeline-badge completed">✓ {{ op.status }}</span><small>{{ op.type }} yapıldı</small><p>{{ dateLabel(op.date) }}<template v-if="op.mileage != null"> · {{ number(op.mileage) }} km</template></p></div></li><li v-if="!operations.length" class="no-timeline">Henüz bakım işlemi kaydı yok.</li></ol><button class="outline-wide" @click="showHistory = true">Tüm Bakım Kayıtlarını Görüntüle</button></section>
+            <section class="panel summary-panel">
+              <div class="panel-title">
+                <h2><span>♧</span> Lastik Durum Özeti</h2>
+              </div>
+              <div class="summary-body">
+                <div class="donut" :style="donutStyle">
+                  <div>
+                    <b>{{ summary.total || 0 }}</b
+                    ><small>Toplam Lastik</small>
+                  </div>
+                </div>
+                <div class="legend">
+                  <div v-for="(state, index) in statusStats" :key="state.name">
+                    <i :style="{ background: statusColors[index] }"></i><span>{{ state.name }}</span
+                    ><b>{{ state.count }}</b
+                    ><small>{{ state.percent }}%</small>
+                  </div>
+                </div>
+              </div>
+            </section>
+            <section class="panel">
+              <div class="panel-title">
+                <h2><span>▦</span> Yaklaşan İşlemler</h2>
+              </div>
+              <ol class="timeline">
+                <li
+                  v-for="t in upcomingTires.slice(0, 3)"
+                  :key="'up' + t.id"
+                  :class="statusClass(t)"
+                >
+                  <i></i>
+                  <div>
+                    <b>{{ t.plate }}</b
+                    ><span class="timeline-badge" :class="statusClass(t)">{{
+                      t.rotation_due && t.status === 'İyi' ? 'Rotasyon' : tireStatus(t)
+                    }}</span
+                    ><small>{{
+                      t.remaining_km == null
+                        ? 'Kontrol planlaması gerekli'
+                        : number(t.remaining_km) + ' km kaldı'
+                    }}</small>
+                    <p>
+                      {{ t.brand }} · {{ t.size }} ·
+                      {{ t.rotation_due ? 'Rotasyon kontrolü gerekli' : 'Lastik kontrolü gerekli' }}
+                    </p>
+                  </div>
+                </li>
+                <li v-if="!upcomingTires.length" class="no-timeline">
+                  Yaklaşan lastik işlemi yok.
+                </li>
+              </ol>
+              <UiButton class="outline-wide" @click="showUpcomingTires"
+                >Tüm İşlemleri Görüntüle</UiButton
+              >
+            </section>
+            <section class="panel">
+              <div class="panel-title">
+                <h2><span>⚒</span> Son Bakım İşlemleri</h2>
+              </div>
+              <ol class="timeline">
+                <li v-for="op in operations.slice(0, 3)" :key="op.id" class="done">
+                  <i></i>
+                  <div>
+                    <b>{{ op.plate }}</b
+                    ><span class="timeline-badge completed">✓ {{ op.status }}</span
+                    ><small>{{ op.type }} yapıldı</small>
+                    <p>
+                      {{ dateLabel(op.date)
+                      }}<template v-if="op.mileage != null">
+                        · {{ number(op.mileage) }} km</template
+                      >
+                    </p>
+                  </div>
+                </li>
+                <li v-if="!operations.length" class="no-timeline">Henüz bakım işlemi kaydı yok.</li>
+              </ol>
+              <UiButton class="outline-wide" @click="showHistory = true"
+                >Tüm Bakım Kayıtlarını Görüntüle</UiButton
+              >
+            </section>
           </aside>
         </div>
       </div>
     </main>
-    <div v-if="modal" class="modal-backdrop" @click.self="modal = ''"><section class="modal-card"><header><div><small>LASTİK YÖNETİMİ</small><h2>{{ modal === 'operation' ? 'Lastik servis talebi' : editingId ? 'Lastik kaydını düzenle' : 'Yeni lastik kaydı' }}</h2></div><button class="close-btn" @click="modal = ''">×</button></header>
-      <form v-if="modal === 'tire'" @submit.prevent="saveTire">
-        <label>Araç<select v-model="form.vehicle_id" required><option value="" disabled>Araç seçin</option><option v-for="v in vehicles.filter(v=>v.is_active!==false)" :key="v.id" :value="v.id">{{ v.plate }} · {{ v.brand }} {{ v.model }}</option></select></label>
-        <div class="form-grid"><label>Lastik Markası<input v-model.trim="form.brand" required placeholder="Michelin" /></label><label>Lastik Ebatı<input v-model.trim="form.size" required placeholder="205/55 R16" /></label><label>Takım No<input v-model.trim="form.set_no" placeholder="ML-00123" /></label><label>Mevsim<select v-model="form.season"><option>Yaz</option><option>Kış</option><option>Dört Mevsim</option></select></label><label>Üretim Tarihi<input v-model="form.production_date" type="month" /></label><label>Takılma / Değişim Tarihi<input v-model="form.changed_at" type="date" /></label><label>Son Kontrol Tarihi<input v-model="form.inspected_at" type="date" /></label><label>Diş Derinliği (mm)<input v-model.number="form.tread_depth_mm" min="0" max="20" step="0.1" type="number" /></label><label>Durum<select v-model="form.status"><option>İyi</option><option>Yaklaşan</option><option>Değişim Gerekli</option><option>Mücbir Durum</option></select></label><label>Kalan kullanım (km)<input v-model.number="form.remaining_km" min="0" type="number" /></label></div>
-        <label>Notlar<textarea v-model.trim="form.notes" rows="3" placeholder="Lastiklerle ilgili not..." /></label><p v-if="formError" class="form-error">{{ formError }}</p><footer><button type="button" class="cancel-btn" @click="modal = ''">Vazgeç</button><button class="primary-btn" :disabled="saving">{{ saving ? 'Kaydediliyor…' : 'Kaydet' }}</button></footer>
-      </form>
-      <form v-else-if="modal === 'operation'" @submit.prevent="saveOperation"><div class="operation-car"><span>🚘</span><b>{{ operationTire?.plate }} · {{ operationTire?.vehicle_brand }} {{ operationTire?.vehicle_model }}</b></div><label>İşlem türü<select v-model="operationForm.type"><option>Rotasyon</option><option>Lastik değişimi</option><option>Basınç kontrolü</option><option>Diş derinliği kontrolü</option><option>Balans</option></select></label><div class="form-grid"><label>Tercih Edilen Aralık — Başlangıç<input v-model="operationForm.preferred_date_start" type="date" :max="operationForm.preferred_date_end || undefined" required /></label><label>Tercih Edilen Aralık — Bitiş<input v-model="operationForm.preferred_date_end" type="date" :min="operationForm.preferred_date_start || undefined" required /></label><label>Araç kilometresi<input v-model.number="operationForm.mileage" min="0" type="number" /></label></div><label>Açıklama<textarea v-model.trim="operationForm.description" rows="3" placeholder="İşlem notu" /></label><p v-if="formError" class="form-error">{{ formError }}</p><footer><button type="button" class="cancel-btn" @click="modal = ''">Vazgeç</button><button class="primary-btn" :disabled="saving">Talebi Gönder</button></footer></form>
-    </section></div>
-    <div v-if="showHistory" class="modal-backdrop" @click.self="showHistory = false"><section class="modal-card history-modal"><header><div><small>ARAÇ BAKIM GEÇMİŞİ</small><h2>Lastik işlem kayıtları</h2></div><button class="close-btn" @click="showHistory = false">×</button></header><div v-if="operations.length" class="history-list"><article v-for="op in operations" :key="op.id"><span>⟳</span><div><b>{{ op.plate }} · {{ op.type }}</b><small>{{ dateLabel(op.date) }}<template v-if="op.mileage != null"> · {{ number(op.mileage) }} km</template></small><p>{{ op.description || 'İşlem tamamlandı.' }}</p></div><em>{{ op.status }}</em></article></div><p v-else class="muted-empty">Henüz lastik işlem kaydı yok.</p></section></div>
+    <UiModal v-if="modal" class="modal-backdrop" @close="modal = ''"
+      ><section class="modal-card">
+        <header>
+          <div>
+            <small>LASTİK YÖNETİMİ</small>
+            <h2>
+              {{
+                modal === 'operation'
+                  ? 'Lastik servis talebi'
+                  : editingId
+                    ? 'Lastik kaydını düzenle'
+                    : 'Yeni lastik kaydı'
+              }}
+            </h2>
+          </div>
+          <UiButton class="close-btn" @click="modal = ''">×</UiButton>
+        </header>
+        <form v-if="modal === 'tire'" @submit.prevent="saveTire">
+          <UiField
+            >Araç<select v-model="form.vehicle_id" required>
+              <option value="" disabled>Araç seçin</option>
+              <option
+                v-for="v in vehicles.filter((v) => v.is_active !== false)"
+                :key="v.id"
+                :value="v.id"
+              >
+                {{ v.plate }} · {{ v.brand }} {{ v.model }}
+              </option>
+            </select></UiField
+          >
+          <div class="form-grid">
+            <UiField
+              >Lastik Markası<input
+                v-model.trim="form.brand"
+                required
+                placeholder="Michelin" /></UiField
+            ><UiField
+              >Lastik Ebatı<input
+                v-model.trim="form.size"
+                required
+                placeholder="205/55 R16" /></UiField
+            ><UiField>Takım No<input v-model.trim="form.set_no" placeholder="ML-00123" /></UiField
+            ><UiField
+              >Mevsim<select v-model="form.season">
+                <option>Yaz</option>
+                <option>Kış</option>
+                <option>Dört Mevsim</option>
+              </select></UiField
+            ><UiField>Üretim Tarihi<input v-model="form.production_date" type="month" /></UiField
+            ><UiField
+              >Takılma / Değişim Tarihi<input v-model="form.changed_at" type="date" /></UiField
+            ><UiField>Son Kontrol Tarihi<input v-model="form.inspected_at" type="date" /></UiField
+            ><UiField
+              >Diş Derinliği (mm)<input
+                v-model.number="form.tread_depth_mm"
+                min="0"
+                max="20"
+                step="0.1"
+                type="number" /></UiField
+            ><UiField
+              >Durum<select v-model="form.status">
+                <option>İyi</option>
+                <option>Yaklaşan</option>
+                <option>Değişim Gerekli</option>
+                <option>Mücbir Durum</option>
+              </select></UiField
+            ><UiField
+              >Kalan kullanım (km)<input v-model.number="form.remaining_km" min="0" type="number"
+            /></UiField>
+          </div>
+          <UiField
+            >Notlar<textarea
+              v-model.trim="form.notes"
+              rows="3"
+              placeholder="Lastiklerle ilgili not..."
+            />
+          </UiField>
+          <p v-if="formError" class="form-error">{{ formError }}</p>
+          <footer>
+            <UiButton type="button" class="cancel-btn" @click="modal = ''">Vazgeç</UiButton
+            ><UiButton class="primary-btn" :disabled="saving">{{
+              saving ? 'Kaydediliyor…' : 'Kaydet'
+            }}</UiButton>
+          </footer>
+        </form>
+        <form v-else-if="modal === 'operation'" @submit.prevent="saveOperation">
+          <div class="operation-car">
+            <span>🚘</span
+            ><b
+              >{{ operationTire?.plate }} · {{ operationTire?.vehicle_brand }}
+              {{ operationTire?.vehicle_model }}</b
+            >
+          </div>
+          <UiField
+            >İşlem türü<select v-model="operationForm.type">
+              <option>Rotasyon</option>
+              <option>Lastik değişimi</option>
+              <option>Basınç kontrolü</option>
+              <option>Diş derinliği kontrolü</option>
+              <option>Balans</option>
+            </select></UiField
+          >
+          <div class="form-grid">
+            <UiField
+              >Tercih Edilen Aralık — Başlangıç<input
+                v-model="operationForm.preferred_date_start"
+                type="date"
+                :max="operationForm.preferred_date_end || undefined"
+                required /></UiField
+            ><UiField
+              >Tercih Edilen Aralık — Bitiş<input
+                v-model="operationForm.preferred_date_end"
+                type="date"
+                :min="operationForm.preferred_date_start || undefined"
+                required /></UiField
+            ><UiField
+              >Araç kilometresi<input v-model.number="operationForm.mileage" min="0" type="number"
+            /></UiField>
+          </div>
+          <UiField
+            >Açıklama<textarea
+              v-model.trim="operationForm.description"
+              rows="3"
+              placeholder="İşlem notu"
+            />
+          </UiField>
+          <p v-if="formError" class="form-error">{{ formError }}</p>
+          <footer>
+            <UiButton type="button" class="cancel-btn" @click="modal = ''">Vazgeç</UiButton
+            ><UiButton class="primary-btn" :disabled="saving">Talebi Gönder</UiButton>
+          </footer>
+        </form>
+      </section></UiModal
+    >
+    <UiModal v-if="showHistory" class="modal-backdrop" @close="showHistory = false"
+      ><section class="modal-card history-modal">
+        <header>
+          <div>
+            <small>ARAÇ BAKIM GEÇMİŞİ</small>
+            <h2>Lastik işlem kayıtları</h2>
+          </div>
+          <UiButton class="close-btn" @click="showHistory = false">×</UiButton>
+        </header>
+        <div v-if="operations.length" class="history-list">
+          <article v-for="op in operations" :key="op.id">
+            <span>⟳</span>
+            <div>
+              <b>{{ op.plate }} · {{ op.type }}</b
+              ><small
+                >{{ dateLabel(op.date)
+                }}<template v-if="op.mileage != null">
+                  · {{ number(op.mileage) }} km</template
+                ></small
+              >
+              <p>{{ op.description || 'İşlem tamamlandı.' }}</p>
+            </div>
+            <em>{{ op.status }}</em>
+          </article>
+        </div>
+        <p v-else class="muted-empty">Henüz lastik işlem kaydı yok.</p>
+      </section></UiModal
+    >
   </div>
 </template>
 
 <script setup>
+import { usePagination } from '../composables/usePagination.js'
+
+import { portalClient as json } from '../api/clients.js'
+import { downloadCsv } from '../utils/downloads.js'
+
+import { UiAlert, UiButton, UiField, UiModal, UiTable } from '../components/ui/index.js'
+
 import NotificationBell from '../components/NotificationBell.vue'
 import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'
-const filtersExpanded=ref(false)
-const router=useRouter(),customerId=localStorage.getItem('fleetcar_customer_id')||localStorage.getItem('customer_id')
-const customerName=localStorage.getItem('fleetcar_customer_name')||'Filo Yöneticisi'
-const initials=customerName.split(/\s+/).slice(0,2).map(word=>word[0]).join('').toLocaleUpperCase('tr-TR')
-const tires=ref([]),vehicles=ref([]),operations=ref([]),summary=ref({}),statusStats=ref([]),brandStats=ref([]),seasonStats=ref([]),vehicleGroups=ref([]),upcomingTires=ref([]),guidance=ref(''),guide=ref('')
-const search=ref(''),statusFilter=ref('all'),seasonFilter=ref('all'),vehicleFilter=ref('all'),fromDate=ref(''),toDate=ref(''),page=ref(1),selectedIds=ref([]),modal=ref(''),showHistory=ref(false),showGuide=ref(false),saving=ref(false),formError=ref(''),editingId=ref(null),operationTire=ref(null),loading=ref(false),loadError=ref(''),notice=ref('')
-const today=new Date().toLocaleDateString('sv-SE')
-const emptyForm=()=>({vehicle_id:'',brand:'',size:'',set_no:'',season:'Dört Mevsim',production_date:'',installed_at:'',changed_at:today,inspected_at:'',tread_depth_mm:null,status:'İyi',remaining_km:null,position:'',notes:''})
-const form=reactive(emptyForm()),operationForm=reactive({type:'Rotasyon',preferred_date_start:today,preferred_date_end:today,mileage:null,description:''})
-const statusColors=['#13a66b','#f2b51c','#e94b55','#56647d']
-const filteredTires=computed(()=>tires.value.filter(t=>{
-  const query=search.value.trim().toLocaleLowerCase('tr-TR'),haystack=[t.plate,t.vehicle_brand,t.vehicle_model,t.brand,t.size,t.set_no].join(' ').toLocaleLowerCase('tr-TR')
-  return (!query||haystack.includes(query)) && (statusFilter.value==='all'||(statusFilter.value==='upcoming'?upcomingTires.value.some(item=>item.id===t.id):t.status===statusFilter.value)) && (seasonFilter.value==='all'||t.season===seasonFilter.value) && (vehicleFilter.value==='all'||t.vehicle_group===vehicleFilter.value) && (!fromDate.value||t.inspected_at && t.inspected_at>=fromDate.value) && (!toDate.value||t.inspected_at && t.inspected_at.slice(0,10)<=toDate.value)
-}))
-const totalPages=computed(()=>Math.max(1,Math.ceil(filteredTires.value.length/10))),paginatedTires=computed(()=>filteredTires.value.slice((page.value-1)*10,page.value*10)),pageStart=computed(()=>filteredTires.value.length?(page.value-1)*10+1:0),pageEnd=computed(()=>Math.min(page.value*10,filteredTires.value.length))
-const selectable=computed(()=>paginatedTires.value.filter(t=>!t.pending_request))
-const allVisibleSelected=computed(()=>selectable.value.length>0 && selectable.value.every(t=>selectedIds.value.includes(t.id)))
-const donutStyle=computed(()=>{let cursor=0;const total=summary.value.total;if(!total)return {background:'#e8eef5'};const stops=statusStats.value.map((state,index)=>{const start=cursor;cursor+=state.count/total*100;return `${statusColors[index]} ${start}% ${cursor}%`});return {background:`conic-gradient(${stops.join(',')})`}})
-watch([search,statusFilter,seasonFilter,vehicleFilter,fromDate,toDate],()=>page.value=1)
-watch(totalPages,count=>{if(page.value>count)page.value=count})
-function tireStatus(t){return t.status || 'Veri yok'}
-function number(value){return value==null?'—':Number(value).toLocaleString('tr-TR')}
-function month(value){if(!value)return '—';const d=new Date(value.length===7?value+'-01':value);return Number.isNaN(d.getTime())?value:d.toLocaleDateString('tr-TR',{year:'numeric',month:'2-digit'})}
-function dateLabel(value){if(!value)return '—';const d=new Date(value);return Number.isNaN(d.getTime())?value:d.toLocaleDateString('tr-TR')}
-function statusClass(t){return ({İyi:'good',Yaklaşan:'soon','Değişim Gerekli':'change','Mücbir Durum':'critical'})[t.status]||'critical'}
-function toggleSelected(id){selectedIds.value=selectedIds.value.includes(id)?selectedIds.value.filter(item=>item!==id):[...selectedIds.value,id]}
-function toggleVisible(event){const ids=selectable.value.map(t=>t.id);selectedIds.value=event.target.checked?[...new Set([...selectedIds.value,...ids])]:selectedIds.value.filter(id=>!ids.includes(id))}
-function goToVehicle(id){router.push('/dashboard/vehicles/'+encodeURIComponent(id)+'?tab=service')}
-async function json(url,options){const response=await fetch(url,options);if(!response.ok){const data=await response.json().catch(()=>({}));throw Error(typeof data.detail==='string'?data.detail:'İşlem tamamlanamadı. Lütfen alanları kontrol edip tekrar deneyin.')}return response.json()}
+const filtersExpanded = ref(false)
+const router = useRouter(),
+  customerId = localStorage.getItem('fleetcar_customer_id') || localStorage.getItem('customer_id')
+const customerName = localStorage.getItem('fleetcar_customer_name') || 'Filo Yöneticisi'
+const initials = customerName
+  .split(/\s+/)
+  .slice(0, 2)
+  .map((word) => word[0])
+  .join('')
+  .toLocaleUpperCase('tr-TR')
+const tires = ref([]),
+  vehicles = ref([]),
+  operations = ref([]),
+  summary = ref({}),
+  statusStats = ref([]),
+  brandStats = ref([]),
+  seasonStats = ref([]),
+  vehicleGroups = ref([]),
+  upcomingTires = ref([]),
+  guidance = ref(''),
+  guide = ref('')
+const search = ref(''),
+  statusFilter = ref('all'),
+  seasonFilter = ref('all'),
+  vehicleFilter = ref('all'),
+  fromDate = ref(''),
+  toDate = ref(''),
+  page = ref(1),
+  selectedIds = ref([]),
+  modal = ref(''),
+  showHistory = ref(false),
+  showGuide = ref(false),
+  saving = ref(false),
+  formError = ref(''),
+  editingId = ref(null),
+  operationTire = ref(null),
+  loading = ref(false),
+  loadError = ref(''),
+  notice = ref('')
+const today = new Date().toLocaleDateString('sv-SE')
+const emptyForm = () => ({
+  vehicle_id: '',
+  brand: '',
+  size: '',
+  set_no: '',
+  season: 'Dört Mevsim',
+  production_date: '',
+  installed_at: '',
+  changed_at: today,
+  inspected_at: '',
+  tread_depth_mm: null,
+  status: 'İyi',
+  remaining_km: null,
+  position: '',
+  notes: '',
+})
+const form = reactive(emptyForm()),
+  operationForm = reactive({
+    type: 'Rotasyon',
+    preferred_date_start: today,
+    preferred_date_end: today,
+    mileage: null,
+    description: '',
+  })
+const statusColors = ['#13a66b', '#f2b51c', '#e94b55', '#56647d']
+const filteredTires = computed(() =>
+  tires.value.filter((t) => {
+    const query = search.value.trim().toLocaleLowerCase('tr-TR'),
+      haystack = [t.plate, t.vehicle_brand, t.vehicle_model, t.brand, t.size, t.set_no]
+        .join(' ')
+        .toLocaleLowerCase('tr-TR')
+    return (
+      (!query || haystack.includes(query)) &&
+      (statusFilter.value === 'all' ||
+        (statusFilter.value === 'upcoming'
+          ? upcomingTires.value.some((item) => item.id === t.id)
+          : t.status === statusFilter.value)) &&
+      (seasonFilter.value === 'all' || t.season === seasonFilter.value) &&
+      (vehicleFilter.value === 'all' || t.vehicle_group === vehicleFilter.value) &&
+      (!fromDate.value || (t.inspected_at && t.inspected_at >= fromDate.value)) &&
+      (!toDate.value || (t.inspected_at && t.inspected_at.slice(0, 10) <= toDate.value))
+    )
+  }),
+)
+const {
+  totalPages,
+  pageItems: paginatedTires,
+  start: pageStart,
+  end: pageEnd,
+} = usePagination(filteredTires, { page })
+const selectable = computed(() => paginatedTires.value.filter((t) => !t.pending_request))
+const allVisibleSelected = computed(
+  () =>
+    selectable.value.length > 0 && selectable.value.every((t) => selectedIds.value.includes(t.id)),
+)
+const donutStyle = computed(() => {
+  let cursor = 0
+  const total = summary.value.total
+  if (!total) return { background: '#e8eef5' }
+  const stops = statusStats.value.map((state, index) => {
+    const start = cursor
+    cursor += (state.count / total) * 100
+    return `${statusColors[index]} ${start}% ${cursor}%`
+  })
+  return { background: `conic-gradient(${stops.join(',')})` }
+})
+watch([search, statusFilter, seasonFilter, vehicleFilter, fromDate, toDate], () => (page.value = 1))
+function showUpcomingTires() {
+  statusFilter.value = 'upcoming'
+  page.value = 1
+}
+
+function tireStatus(t) {
+  return t.status || 'Veri yok'
+}
+function number(value) {
+  return value == null ? '—' : Number(value).toLocaleString('tr-TR')
+}
+function month(value) {
+  if (!value) return '—'
+  const d = new Date(value.length === 7 ? value + '-01' : value)
+  return Number.isNaN(d.getTime())
+    ? value
+    : d.toLocaleDateString('tr-TR', { year: 'numeric', month: '2-digit' })
+}
+function dateLabel(value) {
+  if (!value) return '—'
+  const d = new Date(value)
+  return Number.isNaN(d.getTime()) ? value : d.toLocaleDateString('tr-TR')
+}
+function statusClass(t) {
+  return (
+    { İyi: 'good', Yaklaşan: 'soon', 'Değişim Gerekli': 'change', 'Mücbir Durum': 'critical' }[
+      t.status
+    ] || 'critical'
+  )
+}
+function toggleSelected(id) {
+  selectedIds.value = selectedIds.value.includes(id)
+    ? selectedIds.value.filter((item) => item !== id)
+    : [...selectedIds.value, id]
+}
+function toggleVisible(event) {
+  const ids = selectable.value.map((t) => t.id)
+  selectedIds.value = event.target.checked
+    ? [...new Set([...selectedIds.value, ...ids])]
+    : selectedIds.value.filter((id) => !ids.includes(id))
+}
+function goToVehicle(id) {
+  router.push('/dashboard/vehicles/' + encodeURIComponent(id) + '?tab=service')
+}
 let refreshTimer
-async function loadData(){if(loading.value)return;if(!customerId){loadError.value='Müşteri bilgisi bulunamadı. Lütfen yeniden giriş yapın.';return}loading.value=true;try{const data=await json('/api/tire-overview?customer_id='+encodeURIComponent(customerId));tires.value=data.tires;vehicles.value=data.vehicles;operations.value=data.operations;summary.value=data.summary;statusStats.value=data.status_counts;brandStats.value=data.brands.map((item,index)=>({...item,color:['#1672ef','#f1a721','#18a86d','#8b5ad9','#3290b7'][index%5]}));seasonStats.value=data.seasons.map((item,index)=>({...item,icon:['☀','❄','◉','◌'][index]}));vehicleGroups.value=data.groups;upcomingTires.value=data.upcoming;guidance.value=data.guidance;guide.value=data.guide;selectedIds.value=selectedIds.value.filter(id=>tires.value.some(t=>t.id===id&&!t.pending_request));loadError.value=''}catch(error){loadError.value=error.message}finally{loading.value=false}}
-function openCreate(){editingId.value=null;Object.assign(form,emptyForm());form.vehicle_id=vehicles.value.find(v=>v.is_active!==false)?.id||'';formError.value='';modal.value='tire'}
-function editTire(t){editingId.value=t.id;Object.assign(form,{...emptyForm(),...t});formError.value='';modal.value='tire'}
-async function saveTire(){saving.value=true;formError.value='';try{const payload={...form,remaining_km:form.remaining_km===''?null:form.remaining_km,tread_depth_mm:form.tread_depth_mm===''?null:form.tread_depth_mm};await json(editingId.value?'/api/tires/'+editingId.value:'/api/tires',{method:editingId.value?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});modal.value='';await loadData()}catch(error){formError.value=error.message}finally{saving.value=false}}
-function openOperation(t){if(t.pending_request){router.push(`/dashboard/requests?type=list&request_id=${t.pending_request.id}`);return}operationTire.value=t;Object.assign(operationForm,{type:t.rotation_due?'Rotasyon':t.status==='İyi'?'Basınç kontrolü':'Lastik değişimi',preferred_date_start:today,preferred_date_end:today,mileage:t.vehicle_mileage??null,description:''});formError.value='';modal.value='operation'}
-async function requestOperation(t,operation){return json('/api/requests',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({vehicle_id:t.vehicle_id,type:'lastik',supplier_id:null,description:operation.description||`${t.brand} ${t.size} · ${operation.type} talebi`,details:{tire_id:t.id,tire_operation:operation.type,preferred_date_start:operation.preferred_date_start,preferred_date_end:operation.preferred_date_end,mileage:operation.mileage}})})}
-async function saveOperation(){if(!operationTire.value)return;if(!operationForm.preferred_date_start || !operationForm.preferred_date_end || operationForm.preferred_date_end < operationForm.preferred_date_start){formError.value='Geçerli bir başlangıç ve bitiş tarihi seçin.';return}saving.value=true;formError.value='';try{await requestOperation(operationTire.value,operationForm);modal.value='';notice.value='Talep lastik servislerine iletildi. Servis tamamladığında bakım geçmişine yansıyacak.';await loadData()}catch(error){formError.value=error.message}finally{saving.value=false}}
-async function rotateSelected(){const selected=tires.value.filter(t=>selectedIds.value.includes(t.id)&&!t.pending_request);if(!selected.length)return;saving.value=true;let completed=0;const failures=[];for(const tire of selected){try{await requestOperation(tire,{type:'Rotasyon',preferred_date_start:today,preferred_date_end:today,mileage:tire.vehicle_mileage,description:`${tire.brand} ${tire.size} için rotasyon talebi`});completed++}catch(error){failures.push(error.message)}}saving.value=false;notice.value=`${completed} rotasyon talebi oluşturuldu.`+(failures.length?' '+failures.join(' '):'');await loadData()}
-function exportCsv(){const cols=['Plaka','Araç','Lastik Markası','Ebat','Takım No','Üretim Tarihi','Değişim Tarihi','Mevsim','Durum','Kalan Km'];const rows=filteredTires.value.map(t=>[t.plate,[t.vehicle_brand,t.vehicle_model].join(' '),t.brand,t.size,t.set_no,t.production_date,t.changed_at||t.installed_at,t.season,t.status,t.remaining_km]);const csv=[cols,...rows].map(row=>row.map(value=>'"'+String(value??'').replaceAll('"','""')+'"').join(';')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff',csv],{type:'text/csv;charset=utf-8'}));a.download='fleetrent-lastik-listesi.csv';a.click();URL.revokeObjectURL(a.href)}
-onMounted(()=>{loadData();refreshTimer=setInterval(()=>{if(!document.hidden && !modal.value && !saving.value)loadData()},15000)})
-onUnmounted(()=>clearInterval(refreshTimer))
+async function loadData() {
+  if (loading.value) return
+  if (!customerId) {
+    loadError.value = 'Müşteri bilgisi bulunamadı. Lütfen yeniden giriş yapın.'
+    return
+  }
+  loading.value = true
+  try {
+    const data = await json('/api/tire-overview?customer_id=' + encodeURIComponent(customerId))
+    tires.value = data.tires
+    vehicles.value = data.vehicles
+    operations.value = data.operations
+    summary.value = data.summary
+    statusStats.value = data.status_counts
+    brandStats.value = data.brands.map((item, index) => ({
+      ...item,
+      color: ['#1672ef', '#f1a721', '#18a86d', '#8b5ad9', '#3290b7'][index % 5],
+    }))
+    seasonStats.value = data.seasons.map((item, index) => ({
+      ...item,
+      icon: ['☀', '❄', '◉', '◌'][index],
+    }))
+    vehicleGroups.value = data.groups
+    upcomingTires.value = data.upcoming
+    guidance.value = data.guidance
+    guide.value = data.guide
+    selectedIds.value = selectedIds.value.filter((id) =>
+      tires.value.some((t) => t.id === id && !t.pending_request),
+    )
+    loadError.value = ''
+  } catch (error) {
+    loadError.value = error.message
+  } finally {
+    loading.value = false
+  }
+}
+function openCreate() {
+  editingId.value = null
+  Object.assign(form, emptyForm())
+  form.vehicle_id = vehicles.value.find((v) => v.is_active !== false)?.id || ''
+  formError.value = ''
+  modal.value = 'tire'
+}
+function editTire(t) {
+  editingId.value = t.id
+  Object.assign(form, { ...emptyForm(), ...t })
+  formError.value = ''
+  modal.value = 'tire'
+}
+async function saveTire() {
+  saving.value = true
+  formError.value = ''
+  try {
+    const payload = {
+      ...form,
+      remaining_km: form.remaining_km === '' ? null : form.remaining_km,
+      tread_depth_mm: form.tread_depth_mm === '' ? null : form.tread_depth_mm,
+    }
+    await json(editingId.value ? '/api/tires/' + editingId.value : '/api/tires', {
+      method: editingId.value ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    modal.value = ''
+    await loadData()
+  } catch (error) {
+    formError.value = error.message
+  } finally {
+    saving.value = false
+  }
+}
+function openOperation(t) {
+  if (t.pending_request) {
+    router.push(`/dashboard/requests?type=list&request_id=${t.pending_request.id}`)
+    return
+  }
+  operationTire.value = t
+  Object.assign(operationForm, {
+    type: t.rotation_due ? 'Rotasyon' : t.status === 'İyi' ? 'Basınç kontrolü' : 'Lastik değişimi',
+    preferred_date_start: today,
+    preferred_date_end: today,
+    mileage: t.vehicle_mileage ?? null,
+    description: '',
+  })
+  formError.value = ''
+  modal.value = 'operation'
+}
+async function requestOperation(t, operation) {
+  return json('/api/requests', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      vehicle_id: t.vehicle_id,
+      type: 'lastik',
+      supplier_id: null,
+      description: operation.description || `${t.brand} ${t.size} · ${operation.type} talebi`,
+      details: {
+        tire_id: t.id,
+        tire_operation: operation.type,
+        preferred_date_start: operation.preferred_date_start,
+        preferred_date_end: operation.preferred_date_end,
+        mileage: operation.mileage,
+      },
+    }),
+  })
+}
+async function saveOperation() {
+  if (!operationTire.value) return
+  if (
+    !operationForm.preferred_date_start ||
+    !operationForm.preferred_date_end ||
+    operationForm.preferred_date_end < operationForm.preferred_date_start
+  ) {
+    formError.value = 'Geçerli bir başlangıç ve bitiş tarihi seçin.'
+    return
+  }
+  saving.value = true
+  formError.value = ''
+  try {
+    await requestOperation(operationTire.value, operationForm)
+    modal.value = ''
+    notice.value =
+      'Talep lastik servislerine iletildi. Servis tamamladığında bakım geçmişine yansıyacak.'
+    await loadData()
+  } catch (error) {
+    formError.value = error.message
+  } finally {
+    saving.value = false
+  }
+}
+async function rotateSelected() {
+  const selected = tires.value.filter((t) => selectedIds.value.includes(t.id) && !t.pending_request)
+  if (!selected.length) return
+  saving.value = true
+  let completed = 0
+  const failures = []
+  for (const tire of selected) {
+    try {
+      await requestOperation(tire, {
+        type: 'Rotasyon',
+        preferred_date_start: today,
+        preferred_date_end: today,
+        mileage: tire.vehicle_mileage,
+        description: `${tire.brand} ${tire.size} için rotasyon talebi`,
+      })
+      completed++
+    } catch (error) {
+      failures.push(error.message)
+    }
+  }
+  saving.value = false
+  notice.value =
+    `${completed} rotasyon talebi oluşturuldu.` + (failures.length ? ' ' + failures.join(' ') : '')
+  await loadData()
+}
+function exportCsv() {
+  const cols = [
+    'Plaka',
+    'Araç',
+    'Lastik Markası',
+    'Ebat',
+    'Takım No',
+    'Üretim Tarihi',
+    'Değişim Tarihi',
+    'Mevsim',
+    'Durum',
+    'Kalan Km',
+  ]
+  const rows = filteredTires.value.map((t) => [
+    t.plate,
+    [t.vehicle_brand, t.vehicle_model].join(' '),
+    t.brand,
+    t.size,
+    t.set_no,
+    t.production_date,
+    t.changed_at || t.installed_at,
+    t.season,
+    t.status,
+    t.remaining_km,
+  ])
+  downloadCsv([cols, ...rows], 'fleetrent-lastik-listesi.csv')
+}
+onMounted(() => {
+  loadData()
+  refreshTimer = setInterval(() => {
+    if (!document.hidden && !modal.value && !saving.value) loadData()
+  }, 15000)
+})
+onUnmounted(() => clearInterval(refreshTimer))
 </script>
 
 <style scoped>
-.tire-app{min-height:100vh;background:#f4f8fd;color:#12294c;display:flex;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.tire-main{min-width:0;flex:1}.tire-topbar{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 25px;background:#fbfdff;border-bottom:1px solid #e6edf6}.top-search{display:flex;align-items:center;gap:10px;background:#f0f6fd;border:1px solid #e6eef7;border-radius:8px;width:min(440px,50%);padding:8px 12px;color:#5d7ba7}.top-search input,.filter-search input{border:0;outline:0;background:transparent;width:100%;font-size:11px;color:#244165}.top-user{display:flex;align-items:center;gap:11px;font-size:11px;color:#16345d}.top-user b,.top-user small{display:block}.top-user small{font-size:9px;color:#8392a8;margin-top:2px}.avatar{width:29px;height:29px;border-radius:50%;display:grid;place-items:center;background:#1681df;color:white;font-weight:700}.bell{font-size:18px;position:relative}.bell i{position:absolute;right:-5px;top:-2px;background:#ec3445;color:#fff;font-size:8px;font-style:normal;border-radius:12px;padding:2px 4px}.tire-content{padding:18px 22px 24px;max-width:1680px;margin:auto}.page-heading{display:flex;align-items:center;justify-content:space-between;margin:0 0 16px}.title-line{display:flex;align-items:center;gap:10px}.wheel-icon{font-size:23px;color:#154db8}.page-heading h1{font-size:20px;margin:0;font-weight:750;color:#10284d}.page-heading p{margin:3px 0 0 34px;font-size:10px;color:#74859e}.primary-btn{background:#1167e8;color:#fff;border:0;border-radius:5px;padding:10px 14px;font-weight:650;font-size:11px;cursor:pointer}.primary-btn:disabled{opacity:.6}.overview-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}.metric-card,.panel,.filter-bar{background:#fff;border:1px solid #e6edf5;border-radius:8px;box-shadow:0 2px 7px #173d6810}.metric-card{display:flex;align-items:center;gap:11px;padding:12px 14px;min-height:58px}.metric-icon{width:29px;height:29px;display:grid;place-items:center;border-radius:50%;font-weight:800;font-size:17px}.metric-icon.blue{color:#1765d7;background:#eaf2ff}.metric-icon.red{color:#e4454e;background:#fff0f0}.metric-card small,.metric-card strong{display:block}.metric-card small{font-size:10px;color:#49617e}.metric-card strong{font-size:18px;line-height:1.2;color:#112b52}.metric-card em{margin-left:auto;font-style:normal;color:#7589a3;font-size:9px;white-space:nowrap}.dashboard-grid{display:grid;grid-template-columns:minmax(0,1fr) 263px;gap:12px}.left-column,.right-column{min-width:0;display:flex;flex-direction:column;gap:12px}.filter-bar{display:flex;align-items:end;gap:8px;padding:10px}.filter-search{height:33px;display:flex;align-items:center;gap:8px;border:1px solid #e0e8f1;border-radius:5px;padding:0 8px;flex:1.35;min-width:145px;color:#8092aa}.filter-bar label:not(.filter-search){display:flex;flex-direction:column;gap:3px;min-width:75px;flex:.65}.filter-bar label small{font-size:8px;color:#70829a}.filter-bar select,.filter-bar input[type=date]{height:31px;border:1px solid #dce5ef;border-radius:5px;background:#fff;color:#425a78;font-size:9px;padding:0 6px;min-width:0}.date-range{min-width:120px!important}.filter-btn{height:31px;padding:0 10px;background:#fff;border:1px solid #dfe8f2;border-radius:5px;color:#155eca;font-size:10px;cursor:pointer}.panel{overflow:hidden}.panel-title{min-height:39px;padding:0 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #edf1f6}.panel-title h2{font-size:11px;margin:0;font-weight:730;display:flex;align-items:center;gap:8px}.panel-title h2 span{font-size:14px;color:#174eaa}.table-actions{display:flex;gap:7px}.table-actions button{background:#fff;border:1px solid #dce7f5;color:#2365bc;border-radius:4px;padding:5px 8px;font-size:9px;cursor:pointer}.table-actions button:disabled{opacity:.45}table{width:100%;border-collapse:collapse;min-width:900px}.table-scroll{overflow:auto}th,td{text-align:left;padding:9px 7px;border-bottom:1px solid #eef2f7;white-space:nowrap;font-size:9px;color:#314b6f}th{font-size:8px;color:#6d809b;font-weight:600;background:#fbfcfe}th:first-child,td:first-child{padding-left:12px;width:29px}td{height:41px}.car-cell{display:flex;align-items:center;gap:7px;min-width:116px}.mini-car{font-size:18px}.car-cell span:last-child{font-size:9px}.car-cell small{display:block;font-size:8px;color:#8190a4;margin-top:2px}.plate-link{padding:0;border:0;background:none;color:#235db0;font-weight:700;font-size:9px;cursor:pointer}.status-pill{display:inline-flex;align-items:center;gap:4px;border-radius:12px;padding:4px 7px;font-size:8px;font-weight:650}.status-pill i,.legend i{width:6px;height:6px;border-radius:50%;background:currentColor}.good{color:#08895b!important;background:#def7ed!important}.soon{color:#ae7c00!important;background:#fff3ce!important}.change{color:#cb343c!important;background:#ffe2e3!important}.critical{color:#59657b!important;background:#edf0f5!important}.row-actions{display:flex;gap:3px}.row-actions button{background:#fff;border:1px solid #e7edf4;border-radius:4px;color:#42638f;width:25px;height:23px;cursor:pointer}.empty-state{height:155px;text-align:center!important;color:#8392a7!important}.empty-state b,.empty-state small{display:block;margin:5px}.table-footer{height:37px;display:flex;align-items:center;justify-content:space-between;padding:0 11px;color:#788ba4;font-size:8px}.pagination{display:flex;gap:3px}.pagination button{min-width:20px;height:22px;border:0;border-radius:4px;background:#fff;color:#647c9a;font-size:9px;cursor:pointer}.pagination button.current{background:#1767e8;color:#fff}.pagination button:disabled{opacity:.4}.lower-grid{display:grid;grid-template-columns:1.05fr 1.1fr .8fr;gap:10px}.brand-list{padding:9px 12px}.brand-row{display:grid;grid-template-columns:70px 1fr 23px;align-items:center;gap:7px;margin:7px 0;font-size:8px;color:#4e6481}.brand-row b{text-align:right;color:#6b7f9b;font-weight:500}.bar{height:5px;background:#edf2f8;border-radius:5px;overflow:hidden}.bar i{display:block;height:100%;border-radius:5px}.season-cards{padding:14px 8px;display:flex;justify-content:space-around}.season-item{width:53px;height:70px;border:1px solid #edf1f6;border-radius:30px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}.season-item span{font-size:13px;color:#edb43d}.season-item b{font-size:12px}.season-item small,.season-item em{font-size:7px;color:#8090a4}.season-item em{font-style:normal;color:#17a270}.tip-card{display:flex;gap:8px;padding:12px;background:#eaf5ff;border:1px solid #d4eaff;border-radius:7px;color:#1c548f;font-size:9px;min-height:100px}.tip-card p{font-size:8px;line-height:1.5;margin:6px 0;color:#54728f}.tip-card button{background:#fff;border:1px solid #bbd5f2;border-radius:4px;color:#2364b5;padding:5px 8px;font-size:8px;cursor:pointer}.summary-body{display:flex;align-items:center;justify-content:space-around;padding:12px 8px;gap:9px}.donut{height:104px;width:104px;border-radius:50%;display:grid;place-items:center;flex:none;position:relative}.donut:before{content:'';position:absolute;width:80px;height:80px;background:white;border-radius:50%}.donut>div{position:relative;display:flex;flex-direction:column;align-items:center}.donut b{font-size:18px;color:#193961}.donut small{font-size:7px;color:#8292a7}.legend{flex:1}.legend>div{display:grid;grid-template-columns:8px 1fr auto auto;align-items:center;gap:5px;margin:8px 0;font-size:8px;color:#4e6480}.legend i{width:6px;height:6px}.legend i.green{background:#13a66b}.legend i.amber{background:#f2b51c}.legend i.red{background:#e94b55}.legend i.slate{background:#56647d}.legend b{font-size:8px;color:#233f65}.legend small{font-size:7px;color:#8795a8}.timeline{list-style:none;padding:7px 13px 4px;margin:0}.timeline li{position:relative;display:flex;gap:9px;padding:5px 0 9px 13px;border-left:1px solid #e2eaf3;min-height:51px}.timeline li>i{position:absolute;left:-5px;top:8px;width:9px;height:9px;border:2px solid currentColor;background:white;border-radius:50%}.timeline li>div{width:100%}.timeline li b{font-size:9px;color:#263f62}.timeline li small,.timeline li p{display:block;font-size:8px;color:#7386a0;margin:3px 0 0}.timeline li p{font-size:7px}.timeline-badge{float:right;padding:3px 7px;border-radius:10px;font-size:7px}.timeline .no-timeline{border:0;min-height:38px;color:#8090a5;font-size:9px}.outline-wide{display:block;width:calc(100% - 24px);height:27px;margin:0 12px 11px;background:#fff;border:1px solid #dce6f1;border-radius:5px;color:#2767b4;font-size:8px;cursor:pointer}.completed{background:#dff6ec;color:#168158}.muted-empty{padding:15px;color:#8392a7;font-size:9px}.modal-backdrop{position:fixed;inset:0;background:#091a2eb3;z-index:1000;display:grid;place-items:center;padding:18px}.modal-card{width:min(540px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:12px;box-shadow:0 20px 70px #061a3380;padding:22px;color:#1a3356}.modal-card>header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px}.modal-card header small{font-size:9px;color:#2875d8;letter-spacing:.1em;font-weight:700}.modal-card header h2{font-size:19px;margin:4px 0}.close-btn{width:29px;height:29px;border:0;background:#f1f5f9;border-radius:50%;font-size:20px;color:#657890;cursor:pointer}.modal-card form>label,.form-grid label{display:flex;flex-direction:column;gap:6px;margin:10px 0;font-size:10px;font-weight:650;color:#455a76}.modal-card input,.modal-card select,.modal-card textarea{width:100%;box-sizing:border-box;border:1px solid #dce5ef;border-radius:6px;padding:9px;font:inherit;color:#28415f;background:#fff;outline-color:#79aaf3}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}.modal-card form>footer{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}.cancel-btn{background:#fff;border:1px solid #dce5ef;border-radius:5px;padding:9px 14px;color:#526780;cursor:pointer}.form-error{padding:9px;background:#fff1f1;border-radius:5px;color:#bf313b;font-size:10px}.operation-car{display:flex;align-items:center;gap:9px;padding:10px;background:#f4f8fd;border-radius:6px;font-size:11px}.operation-car span{font-size:21px}.history-modal{width:min(630px,100%)}.history-list article{display:flex;gap:10px;padding:12px 0;border-bottom:1px solid #edf1f6}.history-list article>span{width:27px;height:27px;display:grid;place-items:center;background:#eaf2ff;border-radius:50%;color:#1a69d2}.history-list article div{flex:1}.history-list article b,.history-list article small{display:block;font-size:10px}.history-list article small,.history-list article p{color:#71839a;font-size:9px;margin:4px 0}.history-list article em{font-size:9px;font-style:normal;color:#13885d}
-@media(max-width:1200px){.dashboard-grid{grid-template-columns:minmax(0,1fr) 235px}.lower-grid{grid-template-columns:1fr 1fr}.tip-card{grid-column:1/-1}.filter-bar{flex-wrap:wrap}.filter-search{flex-basis:30%}}
-@media(max-width:900px){.tire-content{padding:14px}.dashboard-grid{grid-template-columns:1fr}.right-column{display:grid;grid-template-columns:1fr 1fr}.summary-panel{grid-column:1/-1}.overview-grid{grid-template-columns:1fr 1fr}.filter-bar label:not(.filter-search){flex:1}.filter-search{flex:1 1 100%}}
-@media(max-width:600px){.tire-topbar{padding:0 12px}.top-search{width:55%}.top-user>span:nth-child(2),.top-user>span:nth-child(3){display:none}.page-heading{align-items:flex-start;gap:10px}.page-heading h1{font-size:17px}.page-heading p{font-size:9px;line-height:1.5}.page-heading>.primary-btn{padding:9px;font-size:9px;white-space:nowrap}.dashboard-grid,.right-column{display:flex;flex-direction:column}.lower-grid{grid-template-columns:1fr}.tip-card{grid-column:auto}.filter-bar label:not(.filter-search){min-width:calc(50% - 10px);flex:1}.date-range{min-width:calc(50% - 10px)!important}.filter-btn{flex:1}.summary-body{justify-content:flex-start;gap:22px}.form-grid{grid-template-columns:1fr}}
-.tire-main{margin-left:260px;width:calc(100% - 260px)}
-@media(max-width:900px){.tire-app{display:block}.tire-app :deep(.portal-sidebar){width:100%;position:relative;height:auto;max-height:none;border-right:0;border-bottom:1px solid #e2e8f0;padding:16px 20px;top:auto;bottom:auto;left:auto;overflow:visible}.tire-main{margin-left:0;width:100%}}
+.tire-app {
+  min-height: 100vh;
+  background: #f4f8fd;
+  color: #12294c;
+  display: flex;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+}
+.tire-main {
+  min-width: 0;
+  flex: 1;
+}
+.tire-topbar {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 25px;
+  background: #fbfdff;
+  border-bottom: 1px solid #e6edf6;
+}
+.top-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f0f6fd;
+  border: 1px solid #e6eef7;
+  border-radius: 8px;
+  width: min(440px, 50%);
+  padding: 8px 12px;
+  color: #5d7ba7;
+}
+.top-search input,
+.filter-search input {
+  border: 0;
+  outline: 0;
+  background: transparent;
+  width: 100%;
+  font-size: 11px;
+  color: #244165;
+}
+.top-user {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-size: 11px;
+  color: #16345d;
+}
+.top-user b,
+.top-user small {
+  display: block;
+}
+.top-user small {
+  font-size: 9px;
+  color: #8392a8;
+  margin-top: 2px;
+}
+.avatar {
+  width: 29px;
+  height: 29px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #1681df;
+  color: white;
+  font-weight: 700;
+}
+.bell {
+  font-size: 18px;
+  position: relative;
+}
+.bell i {
+  position: absolute;
+  right: -5px;
+  top: -2px;
+  background: #ec3445;
+  color: #fff;
+  font-size: 8px;
+  font-style: normal;
+  border-radius: 12px;
+  padding: 2px 4px;
+}
+.tire-content {
+  padding: 18px 22px 24px;
+  max-width: 1680px;
+  margin: auto;
+}
+.page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 16px;
+}
+.title-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.wheel-icon {
+  font-size: 23px;
+  color: #154db8;
+}
+.page-heading h1 {
+  font-size: 20px;
+  margin: 0;
+  font-weight: 750;
+  color: #10284d;
+}
+.page-heading p {
+  margin: 3px 0 0 34px;
+  font-size: 10px;
+  color: #74859e;
+}
+.primary-btn {
+  background: #1167e8;
+  color: #fff;
+  border: 0;
+  border-radius: 5px;
+  padding: 10px 14px;
+  font-weight: 650;
+  font-size: 11px;
+  cursor: pointer;
+}
+.primary-btn:disabled {
+  opacity: 0.6;
+}
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.metric-card,
+.panel,
+.filter-bar {
+  background: #fff;
+  border: 1px solid #e6edf5;
+  border-radius: 8px;
+  box-shadow: 0 2px 7px #173d6810;
+}
+.metric-card {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px 14px;
+  min-height: 58px;
+}
+.metric-icon {
+  width: 29px;
+  height: 29px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 17px;
+}
+.metric-icon.blue {
+  color: #1765d7;
+  background: #eaf2ff;
+}
+.metric-icon.red {
+  color: #e4454e;
+  background: #fff0f0;
+}
+.metric-card small,
+.metric-card strong {
+  display: block;
+}
+.metric-card small {
+  font-size: 10px;
+  color: #49617e;
+}
+.metric-card strong {
+  font-size: 18px;
+  line-height: 1.2;
+  color: #112b52;
+}
+.metric-card em {
+  margin-left: auto;
+  font-style: normal;
+  color: #7589a3;
+  font-size: 9px;
+  white-space: nowrap;
+}
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 263px;
+  gap: 12px;
+}
+.left-column,
+.right-column {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.filter-bar {
+  display: flex;
+  align-items: end;
+  gap: 8px;
+  padding: 10px;
+}
+.filter-search {
+  height: 33px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #e0e8f1;
+  border-radius: 5px;
+  padding: 0 8px;
+  flex: 1.35;
+  min-width: 145px;
+  color: #8092aa;
+}
+.filter-bar label:not(.filter-search) {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 75px;
+  flex: 0.65;
+}
+.filter-bar label small {
+  font-size: 8px;
+  color: #70829a;
+}
+.filter-bar select,
+.filter-bar input[type='date'] {
+  height: 31px;
+  border: 1px solid #dce5ef;
+  border-radius: 5px;
+  background: #fff;
+  color: #425a78;
+  font-size: 9px;
+  padding: 0 6px;
+  min-width: 0;
+}
+.date-range {
+  min-width: 120px !important;
+}
+.filter-btn {
+  height: 31px;
+  padding: 0 10px;
+  background: #fff;
+  border: 1px solid #dfe8f2;
+  border-radius: 5px;
+  color: #155eca;
+  font-size: 10px;
+  cursor: pointer;
+}
+.panel {
+  overflow: hidden;
+}
+.panel-title {
+  min-height: 39px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #edf1f6;
+}
+.panel-title h2 {
+  font-size: 11px;
+  margin: 0;
+  font-weight: 730;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.panel-title h2 span {
+  font-size: 14px;
+  color: #174eaa;
+}
+.table-actions {
+  display: flex;
+  gap: 7px;
+}
+.table-actions button {
+  background: #fff;
+  border: 1px solid #dce7f5;
+  color: #2365bc;
+  border-radius: 4px;
+  padding: 5px 8px;
+  font-size: 9px;
+  cursor: pointer;
+}
+.table-actions button:disabled {
+  opacity: 0.45;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px;
+}
+.table-scroll {
+  overflow: auto;
+}
+th,
+td {
+  text-align: left;
+  padding: 9px 7px;
+  border-bottom: 1px solid #eef2f7;
+  white-space: nowrap;
+  font-size: 9px;
+  color: #314b6f;
+}
+th {
+  font-size: 8px;
+  color: #6d809b;
+  font-weight: 600;
+  background: #fbfcfe;
+}
+th:first-child,
+td:first-child {
+  padding-left: 12px;
+  width: 29px;
+}
+td {
+  height: 41px;
+}
+.car-cell {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 116px;
+}
+.mini-car {
+  font-size: 18px;
+}
+.car-cell span:last-child {
+  font-size: 9px;
+}
+.car-cell small {
+  display: block;
+  font-size: 8px;
+  color: #8190a4;
+  margin-top: 2px;
+}
+.plate-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #235db0;
+  font-weight: 700;
+  font-size: 9px;
+  cursor: pointer;
+}
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 12px;
+  padding: 4px 7px;
+  font-size: 8px;
+  font-weight: 650;
+}
+.status-pill i,
+.legend i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.good {
+  color: #08895b !important;
+  background: #def7ed !important;
+}
+.soon {
+  color: #ae7c00 !important;
+  background: #fff3ce !important;
+}
+.change {
+  color: #cb343c !important;
+  background: #ffe2e3 !important;
+}
+.critical {
+  color: #59657b !important;
+  background: #edf0f5 !important;
+}
+.row-actions {
+  display: flex;
+  gap: 3px;
+}
+.row-actions button {
+  background: #fff;
+  border: 1px solid #e7edf4;
+  border-radius: 4px;
+  color: #42638f;
+  width: 25px;
+  height: 23px;
+  cursor: pointer;
+}
+.empty-state {
+  height: 155px;
+  text-align: center !important;
+  color: #8392a7 !important;
+}
+.empty-state b,
+.empty-state small {
+  display: block;
+  margin: 5px;
+}
+.table-footer {
+  height: 37px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 11px;
+  color: #788ba4;
+  font-size: 8px;
+}
+.pagination {
+  display: flex;
+  gap: 3px;
+}
+.pagination button {
+  min-width: 20px;
+  height: 22px;
+  border: 0;
+  border-radius: 4px;
+  background: #fff;
+  color: #647c9a;
+  font-size: 9px;
+  cursor: pointer;
+}
+.pagination button.current {
+  background: #1767e8;
+  color: #fff;
+}
+.pagination button:disabled {
+  opacity: 0.4;
+}
+.lower-grid {
+  display: grid;
+  grid-template-columns: 1.05fr 1.1fr 0.8fr;
+  gap: 10px;
+}
+.brand-list {
+  padding: 9px 12px;
+}
+.brand-row {
+  display: grid;
+  grid-template-columns: 70px 1fr 23px;
+  align-items: center;
+  gap: 7px;
+  margin: 7px 0;
+  font-size: 8px;
+  color: #4e6481;
+}
+.brand-row b {
+  text-align: right;
+  color: #6b7f9b;
+  font-weight: 500;
+}
+.bar {
+  height: 5px;
+  background: #edf2f8;
+  border-radius: 5px;
+  overflow: hidden;
+}
+.bar i {
+  display: block;
+  height: 100%;
+  border-radius: 5px;
+}
+.season-cards {
+  padding: 14px 8px;
+  display: flex;
+  justify-content: space-around;
+}
+.season-item {
+  width: 53px;
+  height: 70px;
+  border: 1px solid #edf1f6;
+  border-radius: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}
+.season-item span {
+  font-size: 13px;
+  color: #edb43d;
+}
+.season-item b {
+  font-size: 12px;
+}
+.season-item small,
+.season-item em {
+  font-size: 7px;
+  color: #8090a4;
+}
+.season-item em {
+  font-style: normal;
+  color: #17a270;
+}
+.tip-card {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  background: #eaf5ff;
+  border: 1px solid #d4eaff;
+  border-radius: 7px;
+  color: #1c548f;
+  font-size: 9px;
+  min-height: 100px;
+}
+.tip-card p {
+  font-size: 8px;
+  line-height: 1.5;
+  margin: 6px 0;
+  color: #54728f;
+}
+.tip-card button {
+  background: #fff;
+  border: 1px solid #bbd5f2;
+  border-radius: 4px;
+  color: #2364b5;
+  padding: 5px 8px;
+  font-size: 8px;
+  cursor: pointer;
+}
+.summary-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 12px 8px;
+  gap: 9px;
+}
+.donut {
+  height: 104px;
+  width: 104px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex: none;
+  position: relative;
+}
+.donut:before {
+  content: '';
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  background: white;
+  border-radius: 50%;
+}
+.donut > div {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.donut b {
+  font-size: 18px;
+  color: #193961;
+}
+.donut small {
+  font-size: 7px;
+  color: #8292a7;
+}
+.legend {
+  flex: 1;
+}
+.legend > div {
+  display: grid;
+  grid-template-columns: 8px 1fr auto auto;
+  align-items: center;
+  gap: 5px;
+  margin: 8px 0;
+  font-size: 8px;
+  color: #4e6480;
+}
+.legend i {
+  width: 6px;
+  height: 6px;
+}
+.legend i.green {
+  background: #13a66b;
+}
+.legend i.amber {
+  background: #f2b51c;
+}
+.legend i.red {
+  background: #e94b55;
+}
+.legend i.slate {
+  background: #56647d;
+}
+.legend b {
+  font-size: 8px;
+  color: #233f65;
+}
+.legend small {
+  font-size: 7px;
+  color: #8795a8;
+}
+.timeline {
+  list-style: none;
+  padding: 7px 13px 4px;
+  margin: 0;
+}
+.timeline li {
+  position: relative;
+  display: flex;
+  gap: 9px;
+  padding: 5px 0 9px 13px;
+  border-left: 1px solid #e2eaf3;
+  min-height: 51px;
+}
+.timeline li > i {
+  position: absolute;
+  left: -5px;
+  top: 8px;
+  width: 9px;
+  height: 9px;
+  border: 2px solid currentColor;
+  background: white;
+  border-radius: 50%;
+}
+.timeline li > div {
+  width: 100%;
+}
+.timeline li b {
+  font-size: 9px;
+  color: #263f62;
+}
+.timeline li small,
+.timeline li p {
+  display: block;
+  font-size: 8px;
+  color: #7386a0;
+  margin: 3px 0 0;
+}
+.timeline li p {
+  font-size: 7px;
+}
+.timeline-badge {
+  float: right;
+  padding: 3px 7px;
+  border-radius: 10px;
+  font-size: 7px;
+}
+.timeline .no-timeline {
+  border: 0;
+  min-height: 38px;
+  color: #8090a5;
+  font-size: 9px;
+}
+.outline-wide {
+  display: block;
+  width: calc(100% - 24px);
+  height: 27px;
+  margin: 0 12px 11px;
+  background: #fff;
+  border: 1px solid #dce6f1;
+  border-radius: 5px;
+  color: #2767b4;
+  font-size: 8px;
+  cursor: pointer;
+}
+.completed {
+  background: #dff6ec;
+  color: #168158;
+}
+.muted-empty {
+  padding: 15px;
+  color: #8392a7;
+  font-size: 9px;
+}
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: #091a2eb3;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+.modal-card {
+  width: min(540px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 20px 70px #061a3380;
+  padding: 22px;
+  color: #1a3356;
+}
+.modal-card > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+.modal-card header small {
+  font-size: 9px;
+  color: #2875d8;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+}
+.modal-card header h2 {
+  font-size: 19px;
+  margin: 4px 0;
+}
+.close-btn {
+  width: 29px;
+  height: 29px;
+  border: 0;
+  background: #f1f5f9;
+  border-radius: 50%;
+  font-size: 20px;
+  color: #657890;
+  cursor: pointer;
+}
+.modal-card form > label,
+.form-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 0;
+  font-size: 10px;
+  font-weight: 650;
+  color: #455a76;
+}
+.modal-card input,
+.modal-card select,
+.modal-card textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #dce5ef;
+  border-radius: 6px;
+  padding: 9px;
+  font: inherit;
+  color: #28415f;
+  background: #fff;
+  outline-color: #79aaf3;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 12px;
+}
+.modal-card form > footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 18px;
+}
+.cancel-btn {
+  background: #fff;
+  border: 1px solid #dce5ef;
+  border-radius: 5px;
+  padding: 9px 14px;
+  color: #526780;
+  cursor: pointer;
+}
+.form-error {
+  padding: 9px;
+  background: #fff1f1;
+  border-radius: 5px;
+  color: #bf313b;
+  font-size: 10px;
+}
+.operation-car {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px;
+  background: #f4f8fd;
+  border-radius: 6px;
+  font-size: 11px;
+}
+.operation-car span {
+  font-size: 21px;
+}
+.history-modal {
+  width: min(630px, 100%);
+}
+.history-list article {
+  display: flex;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid #edf1f6;
+}
+.history-list article > span {
+  width: 27px;
+  height: 27px;
+  display: grid;
+  place-items: center;
+  background: #eaf2ff;
+  border-radius: 50%;
+  color: #1a69d2;
+}
+.history-list article div {
+  flex: 1;
+}
+.history-list article b,
+.history-list article small {
+  display: block;
+  font-size: 10px;
+}
+.history-list article small,
+.history-list article p {
+  color: #71839a;
+  font-size: 9px;
+  margin: 4px 0;
+}
+.history-list article em {
+  font-size: 9px;
+  font-style: normal;
+  color: #13885d;
+}
+@media (max-width: 1200px) {
+  .dashboard-grid {
+    grid-template-columns: minmax(0, 1fr) 235px;
+  }
+  .lower-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .tip-card {
+    grid-column: 1/-1;
+  }
+  .filter-bar {
+    flex-wrap: wrap;
+  }
+  .filter-search {
+    flex-basis: 30%;
+  }
+}
+@media (max-width: 900px) {
+  .tire-content {
+    padding: 14px;
+  }
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  .right-column {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .summary-panel {
+    grid-column: 1/-1;
+  }
+  .overview-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .filter-bar label:not(.filter-search) {
+    flex: 1;
+  }
+  .filter-search {
+    flex: 1 1 100%;
+  }
+}
+@media (max-width: 600px) {
+  .tire-topbar {
+    padding: 0 12px;
+  }
+  .top-search {
+    width: 55%;
+  }
+  .top-user > span:nth-child(2),
+  .top-user > span:nth-child(3) {
+    display: none;
+  }
+  .page-heading {
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .page-heading h1 {
+    font-size: 17px;
+  }
+  .page-heading p {
+    font-size: 9px;
+    line-height: 1.5;
+  }
+  .page-heading > .primary-btn {
+    padding: 9px;
+    font-size: 9px;
+    white-space: nowrap;
+  }
+  .dashboard-grid,
+  .right-column {
+    display: flex;
+    flex-direction: column;
+  }
+  .lower-grid {
+    grid-template-columns: 1fr;
+  }
+  .tip-card {
+    grid-column: auto;
+  }
+  .filter-bar label:not(.filter-search) {
+    min-width: calc(50% - 10px);
+    flex: 1;
+  }
+  .date-range {
+    min-width: calc(50% - 10px) !important;
+  }
+  .filter-btn {
+    flex: 1;
+  }
+  .summary-body {
+    justify-content: flex-start;
+    gap: 22px;
+  }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.tire-main {
+  margin-left: 260px;
+  width: calc(100% - 260px);
+}
+@media (max-width: 900px) {
+  .tire-app {
+    display: block;
+  }
+  .tire-app :deep(.portal-sidebar) {
+    width: 100%;
+    position: relative;
+    height: auto;
+    max-height: none;
+    border-right: 0;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 16px 20px;
+    top: auto;
+    bottom: auto;
+    left: auto;
+    overflow: visible;
+  }
+  .tire-main {
+    margin-left: 0;
+    width: 100%;
+  }
+}
 
-.tire-content{display:grid;grid-template-columns:minmax(0,1fr) 290px;grid-template-rows:max-content max-content 1fr;gap:12px;align-items:start}.page-heading,.overview-grid{grid-column:1;margin:0}.dashboard-grid{display:contents}.left-column{grid-column:1}.right-column{grid-column:2;grid-row:1 / span 3}.tire-main{background:#edf7fe}.profile-link{color:#1766bb;text-decoration:none;font-size:10px}.tire-alert{padding:12px 20px;background:#fff3df;color:#986529;font-size:12px}.tire-alert button{cursor:pointer}.metric-card{padding:14px 10px;min-height:50px;gap:8px}.metric-card em{display:none}.metric-card strong{font-size:23px}.filter-bar{flex-wrap:wrap}.filter-search{flex:1 1 180px}.panel-title h2{font-size:12px}.filter-bar select,.filter-bar input[type=date]{font-size:10px}.filter-bar label small{font-size:9px}.filter-btn{background:#0064ff;color:white}.tire-vehicle-photo{width:34px;height:28px;object-fit:contain}.mini-car{font-size:25px;color:#6493bb}.brand-row{grid-template-columns:65px 1fr 30px 25px;font-size:9px}.brand-row small{font-size:8px;color:#6e819a}.timeline li{background:transparent!important}.timeline li p{font-size:9px}.timeline li small,.timeline li b{font-size:10px}.timeline-badge{font-size:8px}.legend>div{font-size:9px}.legend b{font-size:9px}.table-actions{flex-wrap:wrap;justify-content:flex-end}.table-actions button{font-size:9px}.row-actions button{width:27px;height:27px}.status-pill{font-size:9px}.modal-card form>label,.form-grid label{font-size:12px}.tip-card p{font-size:10px}.tip-card button{font-size:10px}.outline-wide{font-size:10px}.table-footer{font-size:9px}td small{display:block;font-size:8px;color:#7b8da6;margin-top:3px}table{min-width:880px}.page-heading h1{font-size:23px}.page-heading p{font-size:10px}.summary-body{padding:18px 12px}.season-cards{gap:4px;flex-wrap:wrap}.top-user .avatar{display:grid!important}.top-user>span:nth-child(2){display:block!important}
-@media(max-width:1200px){.tire-content{grid-template-columns:minmax(0,1fr) 260px}.overview-grid{grid-template-columns:1fr 1fr}}
-@media(max-width:900px){.tire-content{display:block}.page-heading,.overview-grid{margin-bottom:12px}.dashboard-grid{display:grid;grid-template-columns:1fr}.right-column{grid-column:auto;grid-row:auto}}
-@media(max-width:600px){.right-column{display:flex}.page-heading h1{font-size:19px}.top-user{gap:5px}.top-user b{font-size:9px}.metric-card strong{font-size:19px}.lower-grid{grid-template-columns:1fr}.page-heading p{margin-left:0}.summary-body{gap:15px}.table-actions button{font-size:8px}.top-search{width:52%}}
+.tire-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 290px;
+  grid-template-rows: max-content max-content 1fr;
+  gap: 12px;
+  align-items: start;
+}
+.page-heading,
+.overview-grid {
+  grid-column: 1;
+  margin: 0;
+}
+.dashboard-grid {
+  display: contents;
+}
+.left-column {
+  grid-column: 1;
+}
+.right-column {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+}
+.tire-main {
+  background: #edf7fe;
+}
+.profile-link {
+  color: #1766bb;
+  text-decoration: none;
+  font-size: 10px;
+}
+.tire-alert {
+  padding: 12px 20px;
+  background: #fff3df;
+  color: #986529;
+  font-size: 12px;
+}
+.tire-alert button {
+  cursor: pointer;
+}
+.metric-card {
+  padding: 14px 10px;
+  min-height: 50px;
+  gap: 8px;
+}
+.metric-card em {
+  display: none;
+}
+.metric-card strong {
+  font-size: 23px;
+}
+.filter-bar {
+  flex-wrap: wrap;
+}
+.filter-search {
+  flex: 1 1 180px;
+}
+.panel-title h2 {
+  font-size: 12px;
+}
+.filter-bar select,
+.filter-bar input[type='date'] {
+  font-size: 10px;
+}
+.filter-bar label small {
+  font-size: 9px;
+}
+.filter-btn {
+  background: #0064ff;
+  color: white;
+}
+.tire-vehicle-photo {
+  width: 34px;
+  height: 28px;
+  object-fit: contain;
+}
+.mini-car {
+  font-size: 25px;
+  color: #6493bb;
+}
+.brand-row {
+  grid-template-columns: 65px 1fr 30px 25px;
+  font-size: 9px;
+}
+.brand-row small {
+  font-size: 8px;
+  color: #6e819a;
+}
+.timeline li {
+  background: transparent !important;
+}
+.timeline li p {
+  font-size: 9px;
+}
+.timeline li small,
+.timeline li b {
+  font-size: 10px;
+}
+.timeline-badge {
+  font-size: 8px;
+}
+.legend > div {
+  font-size: 9px;
+}
+.legend b {
+  font-size: 9px;
+}
+.table-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.table-actions button {
+  font-size: 9px;
+}
+.row-actions button {
+  width: 27px;
+  height: 27px;
+}
+.status-pill {
+  font-size: 9px;
+}
+.modal-card form > label,
+.form-grid label {
+  font-size: 12px;
+}
+.tip-card p {
+  font-size: 10px;
+}
+.tip-card button {
+  font-size: 10px;
+}
+.outline-wide {
+  font-size: 10px;
+}
+.table-footer {
+  font-size: 9px;
+}
+td small {
+  display: block;
+  font-size: 8px;
+  color: #7b8da6;
+  margin-top: 3px;
+}
+table {
+  min-width: 880px;
+}
+.page-heading h1 {
+  font-size: 23px;
+}
+.page-heading p {
+  font-size: 10px;
+}
+.summary-body {
+  padding: 18px 12px;
+}
+.season-cards {
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.top-user .avatar {
+  display: grid !important;
+}
+.top-user > span:nth-child(2) {
+  display: block !important;
+}
+@media (max-width: 1200px) {
+  .tire-content {
+    grid-template-columns: minmax(0, 1fr) 260px;
+  }
+  .overview-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 900px) {
+  .tire-content {
+    display: block;
+  }
+  .page-heading,
+  .overview-grid {
+    margin-bottom: 12px;
+  }
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .right-column {
+    grid-column: auto;
+    grid-row: auto;
+  }
+}
+@media (max-width: 600px) {
+  .right-column {
+    display: flex;
+  }
+  .page-heading h1 {
+    font-size: 19px;
+  }
+  .top-user {
+    gap: 5px;
+  }
+  .top-user b {
+    font-size: 9px;
+  }
+  .metric-card strong {
+    font-size: 19px;
+  }
+  .lower-grid {
+    grid-template-columns: 1fr;
+  }
+  .page-heading p {
+    margin-left: 0;
+  }
+  .summary-body {
+    gap: 15px;
+  }
+  .table-actions button {
+    font-size: 8px;
+  }
+  .top-search {
+    width: 52%;
+  }
+}
 </style>

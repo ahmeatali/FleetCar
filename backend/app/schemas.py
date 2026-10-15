@@ -1,27 +1,31 @@
 import re
+from typing import Any, Dict, List, Literal, Optional
+
 from pydantic import BaseModel, Field, field_validator
-from typing import Optional, Dict, Any, List, Literal
+
 
 class QuoteItemCreate(BaseModel):
     vehicle_segment: str
     vehicle_type: str
-    vehicle_count: int
-    duration_months: int
+    vehicle_count: int = Field(gt=0, le=10000)
+    duration_months: int = Field(gt=0, le=120)
     estimated_annual_mileage: int
     monthly_price_try: Optional[int] = None
     details: Optional[Dict[str, Any]] = None
+
 
 class QuoteCreate(BaseModel):
     company_name: str
     email: str
     phone: str
-    vehicle_count: Optional[int] = 1
-    duration_months: Optional[int] = 12
+    vehicle_count: Optional[int] = Field(default=1, gt=0, le=10000)
+    duration_months: Optional[int] = Field(default=12, gt=0, le=120)
     vehicle_segment: Optional[str] = "C"
     vehicle_type: Optional[str] = "Sedan"
     estimated_annual_mileage: Optional[int] = 20000
     items: Optional[List[QuoteItemCreate]] = None
     details: Optional[Dict[str, Any]] = None
+
 
 class QuoteResponse(BaseModel):
     id: int
@@ -30,7 +34,7 @@ class QuoteResponse(BaseModel):
     company_name: str
     email: str
     phone: str
-    vehicle_count: int
+    vehicle_count: int = Field(gt=0, le=10000)
     duration_months: Optional[int] = None
     vehicle_segment: Optional[str] = None
     vehicle_type: Optional[str] = None
@@ -43,17 +47,24 @@ class QuoteResponse(BaseModel):
     bids: Optional[List[Dict[str, Any]]] = None
     details: Optional[Dict[str, Any]] = None
 
+
 class QuoteUpdate(BaseModel):
     company_name: str
     email: str
     phone: str
-    vehicle_count: int
-    duration_months: int
+    vehicle_count: int = Field(gt=0, le=10000)
+    duration_months: int = Field(gt=0, le=120)
     vehicle_segment: str
     vehicle_type: str
     estimated_annual_mileage: int
     monthly_price_try: int
     status: str
+
+
+class SupplierVehicleAssignment(BaseModel):
+    customer_id: Optional[int] = Field(..., gt=0)
+    expected_customer_id: Optional[int] = Field(..., gt=0)
+
 
 class VehicleCreate(BaseModel):
     plate: str
@@ -116,6 +127,7 @@ class VehicleCreate(BaseModel):
     customer_id: Optional[int] = None
     gps_device_id: Optional[str] = None
     utts_code: Optional[str] = None
+
 
 class VehicleResponse(BaseModel):
     id: str
@@ -186,8 +198,10 @@ class VehicleResponse(BaseModel):
     gps_device_id: Optional[str] = None
     utts_code: Optional[str] = None
 
+
 class VehicleRemoval(BaseModel):
     reason: str
+
 
 class VehicleUpdate(BaseModel):
     plate: Optional[str] = None
@@ -249,6 +263,7 @@ class VehicleUpdate(BaseModel):
     gps_device_id: Optional[str] = None
     utts_code: Optional[str] = None
 
+
 class VehicleExpenseCreate(BaseModel):
     vehicle_id: str
     kind: str
@@ -264,6 +279,7 @@ class VehicleExpenseCreate(BaseModel):
     longitude: Optional[float] = Field(default=None, ge=-180, le=180, allow_inf_nan=False)
     full_tank: bool = False
 
+
 class VehicleExpenseResponse(VehicleExpenseCreate):
     id: int
     # Legacy stored records may predate the stricter input validation.
@@ -271,27 +287,32 @@ class VehicleExpenseResponse(VehicleExpenseCreate):
     liters: Optional[float] = None
     mileage: int
 
+
 class HgsTransactionCreate(BaseModel):
     type: str
     amount: float
     date: str
     description: Optional[str] = None
 
+
 class HgsTransactionResponse(HgsTransactionCreate):
     id: int
     vehicle_id: str
     balance: float
+
 
 class VehicleLocationCreate(BaseModel):
     latitude: float
     longitude: float
     label: Optional[str] = None
 
+
 class VehicleLocationResponse(VehicleLocationCreate):
     id: int
     vehicle_id: str
     source: str
     recorded_at: str
+
 
 class VehicleFileResponse(BaseModel):
     id: int
@@ -316,7 +337,7 @@ class TireRecordCreate(BaseModel):
     installed_at: Optional[str] = None
     changed_at: Optional[str] = None
     inspected_at: Optional[str] = None
-    tread_depth_mm: Optional[float] = Field(default=None, ge=0)
+    tread_depth_mm: Optional[float] = Field(allow_inf_nan=False, default=None, ge=0)
     status: str = "İyi"
     remaining_km: Optional[int] = Field(default=None, ge=0)
     position: Optional[str] = None
@@ -333,7 +354,7 @@ class TireRecordUpdate(BaseModel):
     installed_at: Optional[str] = None
     changed_at: Optional[str] = None
     inspected_at: Optional[str] = None
-    tread_depth_mm: Optional[float] = Field(default=None, ge=0)
+    tread_depth_mm: Optional[float] = Field(allow_inf_nan=False, default=None, ge=0)
     status: Optional[str] = None
     remaining_km: Optional[int] = Field(default=None, ge=0)
     position: Optional[str] = None
@@ -354,7 +375,7 @@ class TireOperationCreate(BaseModel):
     request_id: Optional[int] = None
     supplier_id: Optional[int] = None
     remaining_km: Optional[int] = Field(default=None, ge=0)
-    tread_depth_mm: Optional[float] = Field(default=None, ge=0)
+    tread_depth_mm: Optional[float] = Field(allow_inf_nan=False, default=None, ge=0)
     vehicle_id: str
     tire_id: Optional[int] = None
     type: str
@@ -368,12 +389,14 @@ class TireOperationResponse(TireOperationCreate):
     id: int
     plate: Optional[str] = None
 
+
 class RequestCreate(BaseModel):
     vehicle_id: str
     supplier_id: Optional[int] = None
     type: str
     description: str
     details: Dict[str, Any]
+
 
 class RequestResponse(BaseModel):
     id: int
@@ -386,6 +409,7 @@ class RequestResponse(BaseModel):
     completed_at: Optional[str] = None
     details: Dict[str, Any]
 
+
 class SupplierCreate(BaseModel):
     name: str
     type: str
@@ -396,6 +420,7 @@ class SupplierCreate(BaseModel):
     contract_type: str
     email: Optional[str] = None
     send_invite: Optional[bool] = False
+
 
 class SupplierResponse(BaseModel):
     id: int
@@ -410,9 +435,11 @@ class SupplierResponse(BaseModel):
     email: Optional[str] = None
     invitation_status: Optional[str] = "Davet Edilmedi"
 
+
 class SetPasswordRequest(BaseModel):
     token: str
     password: str
+
 
 class StatusUpdate(BaseModel):
     supplier_id: Optional[int] = None
@@ -421,7 +448,8 @@ class StatusUpdate(BaseModel):
     team_name: Optional[str] = None
     team_phone: Optional[str] = None
     eta_minutes: Optional[int] = Field(default=None, ge=0)
-    distance_km: Optional[float] = Field(default=None, ge=0)
+    distance_km: Optional[float] = Field(allow_inf_nan=False, default=None, ge=0)
+
 
 class CustomerCreate(BaseModel):
     company_name: str
@@ -433,6 +461,7 @@ class CustomerCreate(BaseModel):
     contract_amount: float
     send_invite: Optional[bool] = False
 
+
 class CustomerUpdate(BaseModel):
     company_name: str
     legal_title: str
@@ -442,23 +471,27 @@ class CustomerUpdate(BaseModel):
     registered_vehicles_count: int
     contract_amount: float
 
+
 class BidCreate(BaseModel):
-    monthly_price_try: int
+    monthly_price_try: int = Field(gt=0)
     notes: str
+
 
 class BidResponse(BaseModel):
     id: int
     quote_id: int
     supplier_id: int
     supplier_name: str
-    monthly_price_try: int
+    monthly_price_try: int = Field(gt=0)
     notes: str
     created_at: str
     status: str
 
+
 class AdminLoginRequest(BaseModel):
     email: str
     password: str
+
 
 class ServiceCheckIn(BaseModel):
     supplier_id: Optional[int] = None
@@ -468,6 +501,7 @@ class ServiceCheckIn(BaseModel):
     driver_phone: Optional[str] = None
     entry_notes: Optional[str] = None
 
+
 class ServiceWorkOrder(BaseModel):
     supplier_id: Optional[int] = None
     service_type: Optional[str] = None
@@ -475,16 +509,17 @@ class ServiceWorkOrder(BaseModel):
     work_order_no: Optional[str] = None
     diagnosis_notes: Optional[str] = None
     parts_list: Optional[List[Dict[str, Any]]] = None
-    labor_cost: Optional[float] = Field(default=None, ge=0)
-    parts_cost: Optional[float] = Field(default=None, ge=0)
-    total_estimated_cost: Optional[float] = Field(default=None, ge=0)
+    labor_cost: Optional[float] = Field(allow_inf_nan=False, default=None, ge=0)
+    parts_cost: Optional[float] = Field(allow_inf_nan=False, default=None, ge=0)
+    total_estimated_cost: Optional[float] = Field(allow_inf_nan=False, default=None, ge=0)
     notes: Optional[str] = None
+
 
 class ServiceInvoice(BaseModel):
     supplier_id: Optional[int] = None
     invoice_no: str
     invoice_date: str
-    invoice_amount: float = Field(ge=0)
+    invoice_amount: float = Field(allow_inf_nan=False, ge=0)
     invoice_notes: Optional[str] = None
     file_name: Optional[str] = None
     file_url: Optional[str] = None
@@ -556,7 +591,7 @@ class RoadsideCaseUpdate(BaseModel):
     team_name: Optional[str] = None
     team_phone: Optional[str] = None
     eta_minutes: Optional[int] = Field(default=None, ge=0)
-    distance_km: Optional[float] = Field(default=None, ge=0)
+    distance_km: Optional[float] = Field(allow_inf_nan=False, default=None, ge=0)
     description: Optional[str] = None
 
 
@@ -565,7 +600,7 @@ class RoadsideEventCreate(BaseModel):
     title: str
     description: Optional[str] = None
     eta_minutes: Optional[int] = Field(default=None, ge=0)
-    distance_km: Optional[float] = Field(default=None, ge=0)
+    distance_km: Optional[float] = Field(allow_inf_nan=False, default=None, ge=0)
 
 
 class RoadsideEventResponse(RoadsideEventCreate):
@@ -595,7 +630,7 @@ class RoadsideCaseResponse(RoadsideCaseCreate):
     team_phone: Optional[str] = None
     dispatched_at: Optional[str] = None
     eta_minutes: Optional[int] = Field(default=None, ge=0)
-    distance_km: Optional[float] = Field(default=None, ge=0)
+    distance_km: Optional[float] = Field(allow_inf_nan=False, default=None, ge=0)
     arrived_at: Optional[str] = None
     resolved_at: Optional[str] = None
     response_minutes: Optional[int] = None

@@ -1,10 +1,10 @@
 import json
 import os
+import sys
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app import email_utils  # noqa: E402
@@ -26,15 +26,18 @@ class _Response:
 
 class GmailApiDeliveryTests(unittest.TestCase):
     def setUp(self):
-        self.env = patch.dict(os.environ, {
-            "GMAIL_API_CLIENT_ID": "client-id",
-            "GMAIL_API_CLIENT_SECRET": "client-secret",
-            "GMAIL_API_REFRESH_TOKEN": "refresh-token",
-            "GMAIL_API_SENDER": "fleet@example.com",
-            "SMTP_HOST": "",
-            "SMTP_USER": "",
-            "SMTP_PASS": "",
-        })
+        self.env = patch.dict(
+            os.environ,
+            {
+                "GMAIL_API_CLIENT_ID": "client-id",
+                "GMAIL_API_CLIENT_SECRET": "client-secret",
+                "GMAIL_API_REFRESH_TOKEN": "refresh-token",
+                "GMAIL_API_SENDER": "fleet@example.com",
+                "SMTP_HOST": "",
+                "SMTP_USER": "",
+                "SMTP_PASS": "",
+            },
+        )
         self.env.start()
         self.load_env = patch.object(email_utils, "_load_env_file")
         self.load_env.start()
@@ -62,7 +65,9 @@ class GmailApiDeliveryTests(unittest.TestCase):
             send_request.full_url,
             "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
         )
-        self.assertEqual(send_request.get_header("Authorization"), "Bearer short-lived-access-token")
+        self.assertEqual(
+            send_request.get_header("Authorization"), "Bearer short-lived-access-token"
+        )
 
 
 if __name__ == "__main__":

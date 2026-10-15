@@ -17,155 +17,206 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    component: HomeView
+    component: HomeView,
   },
   {
     path: '/login',
     name: 'Login',
-    component: LoginView
+    component: LoginView,
   },
   {
     path: '/register/:accountType',
     name: 'Register',
     component: RegistrationView,
-    beforeEnter: to => ['service', 'supplier'].includes(to.params.accountType) || { name: 'NotFound' }
+    beforeEnter: (to) =>
+      ['service', 'supplier'].includes(to.params.accountType) || { name: 'NotFound' },
   },
   {
     path: '/dashboard',
     name: 'Dashboard',
     component: DashboardView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true },
   },
   {
     path: '/dashboard/fuel',
     name: 'FuelExpenses',
     component: () => import('../views/FuelExpensesView.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true },
   },
   {
     path: '/dashboard/vehicles',
     name: 'Vehicles',
     component: VehiclesView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true },
   },
   {
     path: '/dashboard/vehicles/:vehicleId',
     name: 'VehicleDetails',
     component: VehicleDetailsView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true },
   },
   {
     path: '/dashboard/tires',
     name: 'TireManagement',
     component: TireManagementView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true },
   },
   {
     path: '/dashboard/service-management',
     name: 'ServiceManagement',
     component: ServiceManagementView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true },
   },
   {
     path: '/dashboard/work-orders',
     name: 'WorkOrders',
     component: ServiceManagementView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true },
   },
   {
     path: '/dashboard/roadside',
     name: 'RoadsideAssistance',
     component: RoadsideAssistanceView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true },
   },
   {
     path: '/dashboard/requests',
     name: 'Requests',
     component: RequestsView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true },
   },
   {
     path: '/dashboard/quotes',
     name: 'Quotes',
     component: () => import('../views/QuotesView.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true },
   },
   {
     path: '/dashboard/reports',
     name: 'Reports',
     component: () => import('../views/ReportsView.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true },
   },
   {
     path: '/dashboard/settings',
     name: 'Settings',
     component: () => import('../views/SettingsView.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true },
   },
   {
     path: '/profile',
     name: 'Profile',
     component: ProfileView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true },
   },
   {
     path: '/admin-login',
     name: 'AdminLogin',
-    component: AdminLoginView
+    component: AdminLoginView,
   },
   {
     path: '/admin-portal',
     name: 'AdminPortal',
     component: AdminPortalView,
-    meta: { requiresAdminAuth: true }
+    meta: { requiresAdminAuth: true },
   },
   {
     path: '/supplier-login',
     name: 'SupplierLogin',
-    component: () => import('../views/SupplierLoginView.vue')
+    component: () => import('../views/SupplierLoginView.vue'),
   },
   {
     path: '/service-login',
     name: 'ServiceLogin',
-    component: () => import('../views/ServiceLoginView.vue')
+    component: () => import('../views/ServiceLoginView.vue'),
   },
   {
     path: '/supplier-portal',
     name: 'SupplierPortal',
+    component: () => import('../views/SupplierWorkspaceView.vue'),
+    meta: { requiresSupplierAuth: true },
+  },
+  {
+    path: '/supplier-portal/vehicles',
+    name: 'SupplierVehicles',
+    component: VehiclesView,
+    meta: { requiresSupplierAuth: true, supplierFleet: true },
+  },
+  {
+    path: '/supplier-portal/vehicles/:vehicleId',
+    name: 'SupplierVehicleDetails',
+    component: VehicleDetailsView,
+    meta: { requiresSupplierAuth: true, supplierFleet: true },
+  },
+  {
+    path: '/supplier-portal/marketplace',
+    name: 'SupplierMarketplace',
     component: () => import('../views/SupplierPortalView.vue'),
-    meta: { requiresSupplierAuth: true }
+    meta: { requiresSupplierAuth: true },
+  },
+  {
+    path: '/supplier-portal/:section',
+    name: 'SupplierWorkspace',
+    component: () => import('../views/SupplierWorkspaceView.vue'),
+    meta: { requiresSupplierAuth: true },
+    beforeEnter: (to) =>
+      [
+        'maintenance',
+        'sales',
+        'rentals',
+        'returns',
+        'customers',
+        'offers',
+        'contracts',
+        'deliveries',
+        'service',
+        'damage',
+        'policies',
+        'tire',
+        'hgs',
+        'fines',
+        'fuel',
+        'invoices',
+        'accounting',
+        'reports',
+        'approvals',
+        'savings',
+        'planning',
+        'users',
+        'settings',
+      ].includes(to.params.section) || { name: 'NotFound' },
   },
   {
     path: '/service-portal',
     name: 'ServicePortal',
     component: () => import('../views/SupplierPortalView.vue'),
-    meta: { requiresSupplierAuth: true }
+    meta: { requiresSupplierAuth: true },
   },
   {
     path: '/setup-password',
     name: 'SupplierSetupPassword',
-    component: () => import('../views/SupplierSetupPasswordView.vue')
+    component: () => import('../views/SupplierSetupPasswordView.vue'),
   },
   {
     path: '/reset-password',
     name: 'ResetPassword',
-    component: () => import('../views/ResetPasswordView.vue')
+    component: () => import('../views/ResetPasswordView.vue'),
   },
   {
     path: '/verify-email',
     name: 'VerifyEmail',
-    component: () => import('../views/VerifyEmailView.vue')
+    component: () => import('../views/VerifyEmailView.vue'),
   },
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
-    component: () => import('../views/NotFoundView.vue')
-  }
+    component: () => import('../views/NotFoundView.vue'),
+  },
 ]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
 })
 
 // Simple navigation guard
@@ -173,20 +224,20 @@ router.beforeEach((to, from, next) => {
   const isAuthenticated = Boolean(localStorage.getItem('fleetcar_token'))
   const isAdminAuthenticated = Boolean(localStorage.getItem('fleetcar_admin_token'))
   const isSupplierAuthenticated = Boolean(localStorage.getItem('fleetcar_supplier_token'))
-  
-  if (to.matched.some(record => record.meta.requiresAuth)) {
+
+  if (to.matched.some((record) => record.meta.requiresAuth)) {
     if (!isAuthenticated) {
       next({ name: 'Login' })
     } else {
       next()
     }
-  } else if (to.matched.some(record => record.meta.requiresAdminAuth)) {
+  } else if (to.matched.some((record) => record.meta.requiresAdminAuth)) {
     if (!isAdminAuthenticated) {
       next({ name: 'AdminLogin' })
     } else {
       next()
     }
-  } else if (to.matched.some(record => record.meta.requiresSupplierAuth)) {
+  } else if (to.matched.some((record) => record.meta.requiresSupplierAuth)) {
     if (!isSupplierAuthenticated) {
       next({ name: 'SupplierLogin' })
     } else {

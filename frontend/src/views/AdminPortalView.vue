@@ -3,7 +3,7 @@
   <div class="portal-layout">
     <!-- Admin Sidebar -->
     <aside class="portal-sidebar admin-sidebar">
-      <router-link to="/admin-portal" class="nav-logo" style="margin-bottom: 25px;">
+      <router-link to="/admin-portal" class="nav-logo" style="margin-bottom: 25px">
         <img class="brand-logo-image" src="/fleetrent-logo.jpeg" alt="FleetRent" />
         <span class="brand-logo-role">Yönetici</span>
       </router-link>
@@ -11,43 +11,76 @@
       <div class="admin-profile">
         <div class="avatar">⚙️</div>
         <div>
-          <h4 style="font-size: 0.85rem; font-weight: 600;">Yönetici Paneli</h4>
-          <span style="font-size: 0.7rem; color: #34d399; font-weight: 600;">✓ Tam Yetkili Yönetici</span>
+          <h4 style="font-size: 0.85rem; font-weight: 600">Yönetici Paneli</h4>
+          <span style="font-size: 0.7rem; color: #34d399; font-weight: 600"
+            >✓ Tam Yetkili Yönetici</span
+          >
         </div>
       </div>
 
       <ul class="sidebar-menu">
         <li>
-          <a href="#" @click.prevent="activeTab = 'quotes'" class="sidebar-link" :class="{ 'active-admin': activeTab === 'quotes' }">
+          <a
+            href="#"
+            @click.prevent="activeTab = 'quotes'"
+            class="sidebar-link"
+            :class="{ 'active-admin': activeTab === 'quotes' }"
+          >
             <span class="icon">📑</span>
             <span>Gelen Teklifler</span>
           </a>
         </li>
         <li>
-          <a href="#" @click.prevent="activeTab = 'customers'" class="sidebar-link" :class="{ 'active-admin': activeTab === 'customers' }">
+          <a
+            href="#"
+            @click.prevent="activeTab = 'customers'"
+            class="sidebar-link"
+            :class="{ 'active-admin': activeTab === 'customers' }"
+          >
             <span class="icon">👥</span>
             <span>Aktif Müşteriler</span>
           </a>
         </li>
         <li>
-          <a href="#" @click.prevent="activeTab = 'vehicles'" class="sidebar-link" :class="{ 'active-admin': activeTab === 'vehicles' }">
+          <a
+            href="#"
+            @click.prevent="activeTab = 'vehicles'"
+            class="sidebar-link"
+            :class="{ 'active-admin': activeTab === 'vehicles' }"
+          >
             <span class="icon">🚗</span>
             <span>Araçlar</span>
           </a>
         </li>
         <li>
-          <a href="#" @click.prevent="activeTab = 'suppliers'" class="sidebar-link" :class="{ 'active-admin': activeTab === 'suppliers' }">
+          <a
+            href="#"
+            @click.prevent="activeTab = 'suppliers'"
+            class="sidebar-link"
+            :class="{ 'active-admin': activeTab === 'suppliers' }"
+          >
             <span class="icon">🏢</span>
             <span>Tedarikçiler</span>
           </a>
         </li>
       </ul>
 
-      <div style="margin-top: auto;">
-        <button @click="logout" class="sidebar-link" style="width: 100%; border: none; background: transparent; cursor: pointer; text-align: left; color: #fecdd3;">
+      <div style="margin-top: auto">
+        <UiButton
+          @click="logout"
+          class="sidebar-link"
+          style="
+            width: 100%;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            text-align: left;
+            color: #fecdd3;
+          "
+        >
           <span class="icon">🚪</span>
           <span>Çıkış Yap</span>
-        </button>
+        </UiButton>
       </div>
     </aside>
 
@@ -58,15 +91,29 @@
         <header class="dashboard-header">
           <div>
             <h1>Müşteri Kiralama Teklifleri</h1>
-            <p style="color: var(--text-muted); font-size: 0.95rem;">Anasayfadan gelen dinamik teklif taleplerini inceleyin veya manuel yeni talep oluşturun.</p>
+            <p style="color: var(--text-muted); font-size: 0.95rem">
+              Anasayfadan gelen dinamik teklif taleplerini inceleyin veya manuel yeni talep
+              oluşturun.
+            </p>
           </div>
-          <button @click="showAddQuoteModal = true" class="btn btn-primary" style="background: linear-gradient(135deg, #7c3aed, #db2777); border: none; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.2);">
+          <UiButton
+            @click="showAddQuoteModal = true"
+            class="btn btn-primary"
+            style="
+              background: linear-gradient(135deg, #7c3aed, #db2777);
+              border: none;
+              box-shadow: 0 4px 15px rgba(124, 58, 237, 0.2);
+            "
+          >
             ➕ Yeni Teklif Talebi Ekle
-          </button>
+          </UiButton>
         </header>
 
         <!-- Stats Summary cards -->
-        <div class="grid-4" style="margin-top: 25px; gap: 15px; grid-template-columns: repeat(5, 1fr);">
+        <div
+          class="grid-4"
+          style="margin-top: 25px; gap: 15px; grid-template-columns: repeat(5, 1fr)"
+        >
           <div class="glass-panel stat-card-new">
             <div class="stat-icon-wrapper quote-purple">
               <span>📄</span>
@@ -82,7 +129,9 @@
             </div>
             <div class="stat-info">
               <span class="stat-label">Gelen Tedarikçi Teklifi</span>
-              <div class="stat-val-new" style="color: #2563eb;">{{ totalSupplierBidsCount }} Adet</div>
+              <div class="stat-val-new" style="color: #2563eb">
+                {{ totalSupplierBidsCount }} Adet
+              </div>
             </div>
           </div>
           <div class="glass-panel stat-card-new">
@@ -91,61 +140,87 @@
             </div>
             <div class="stat-info">
               <span class="stat-label">Kabul / İmzalandı</span>
-              <div class="stat-val-new" style="color: #10b981;">{{ acceptedQuotesCount }} Adet</div>
+              <div class="stat-val-new" style="color: #10b981">{{ acceptedQuotesCount }} Adet</div>
             </div>
           </div>
           <div class="glass-panel stat-card-new">
-            <div class="stat-icon-wrapper" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+            <div
+              class="stat-icon-wrapper"
+              style="background: rgba(239, 68, 68, 0.1); color: #ef4444"
+            >
               <span>❌</span>
             </div>
             <div class="stat-info">
               <span class="stat-label">Reddedilen Teklif</span>
-              <div class="stat-val-new" style="color: #ef4444;">{{ rejectedQuotesCount }} Adet</div>
+              <div class="stat-val-new" style="color: #ef4444">{{ rejectedQuotesCount }} Adet</div>
             </div>
           </div>
           <div class="glass-panel stat-card-new">
-            <div class="stat-icon-wrapper" style="background: rgba(100, 116, 139, 0.1); color: #64748b;">
+            <div
+              class="stat-icon-wrapper"
+              style="background: rgba(100, 116, 139, 0.1); color: #64748b"
+            >
               <span>🗑️</span>
             </div>
             <div class="stat-info">
               <span class="stat-label">Silinen Talepler</span>
-              <div class="stat-val-new" style="color: #64748b;">{{ deletedQuotesCount }} Adet</div>
+              <div class="stat-val-new" style="color: #64748b">{{ deletedQuotesCount }} Adet</div>
             </div>
           </div>
         </div>
 
         <!-- Quotes Filter Bar -->
-        <div class="filter-bar glass-panel" style="margin-top: 20px;">
+        <div class="filter-bar glass-panel" style="margin-top: 20px">
           <div class="filter-bar-inner">
             <div class="filter-group">
               <span class="filter-label">🔍</span>
-              <input v-model="quoteFilter.search" class="filter-input" placeholder="Şirket adı veya e-posta ara...">
+              <input
+                v-model="quoteFilter.search"
+                class="filter-input"
+                placeholder="Şirket adı veya e-posta ara..."
+              />
             </div>
             <div class="filter-group">
               <span class="filter-label">📊 Durum</span>
-              <div class="filter-pills" style="flex-wrap: wrap; gap: 4px;">
-                <button v-for="s in ['Tümü', 'Teklif Bekleniyor', 'Teklif Geldi', 'Sözleşme Yapıldı', 'Silinen']" :key="s"
+              <div class="filter-pills" style="flex-wrap: wrap; gap: 4px">
+                <UiButton
+                  v-for="s in [
+                    'Tümü',
+                    'Teklif Bekleniyor',
+                    'Teklif Geldi',
+                    'Sözleşme Yapıldı',
+                    'Silinen',
+                  ]"
+                  :key="s"
                   :class="['filter-pill', { 'filter-pill-active': quoteFilter.status === s }]"
-                  @click="quoteFilter.status = s">{{ s }}</button>
+                  @click="quoteFilter.status = s"
+                  >{{ s }}</UiButton
+                >
               </div>
             </div>
             <div class="filter-group">
               <span class="filter-label">🚗 Segment</span>
               <div class="filter-pills">
-                <button v-for="seg in ['Tümü','A','B','C','D','E']" :key="seg"
+                <UiButton
+                  v-for="seg in ['Tümü', 'A', 'B', 'C', 'D', 'E']"
+                  :key="seg"
                   :class="['filter-pill', { 'filter-pill-active': quoteFilter.segment === seg }]"
-                  @click="quoteFilter.segment = seg">{{ seg }}</button>
+                  @click="quoteFilter.segment = seg"
+                  >{{ seg }}</UiButton
+                >
               </div>
             </div>
-            <div class="filter-group" style="margin-left:auto;">
-              <span class="filter-result-count">{{ filteredQuotes.length }} / {{ quotes.length }} teklif</span>
+            <div class="filter-group" style="margin-left: auto">
+              <span class="filter-result-count"
+                >{{ filteredQuotes.length }} / {{ quotes.length }} teklif</span
+              >
             </div>
           </div>
         </div>
 
         <!-- Proposals Table -->
-        <div class="glass-panel" style="margin-top: 20px; padding: 15px;">
-          <div v-if="loading" class="text-center" style="padding: 40px 0;">Yükleniyor...</div>
+        <div class="glass-panel" style="margin-top: 20px; padding: 15px">
+          <div v-if="loading" class="text-center" style="padding: 40px 0">Yükleniyor...</div>
           <div v-else-if="filteredQuotes.length === 0" class="empty-state">
             <p>Kriterlere uygun teklif bulunamadı.</p>
           </div>
@@ -165,41 +240,82 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="quote in filteredQuotes" :key="quote.id" :style="{ opacity: (quote.status === 'İstek Silindi' || quote.status === 'Silindi') ? 0.7 : 1 }">
+                <tr
+                  v-for="quote in filteredQuotes"
+                  :key="quote.id"
+                  :style="{
+                    opacity:
+                      quote.status === 'İstek Silindi' || quote.status === 'Silindi' ? 0.7 : 1,
+                  }"
+                >
                   <td>
                     <strong>#{{ quote.id }}</strong>
-                    <div v-if="quote.status === 'İstek Silindi' || quote.status === 'Silindi'" style="font-size: 0.7rem; color: #ef4444; font-weight: 700; margin-top: 2px;">
+                    <div
+                      v-if="quote.status === 'İstek Silindi' || quote.status === 'Silindi'"
+                      style="font-size: 0.7rem; color: #ef4444; font-weight: 700; margin-top: 2px"
+                    >
                       🗑️ Silindi
                     </div>
                   </td>
-                  <td><strong>{{ quote.company_name }}</strong></td>
                   <td>
-                    <div style="font-size: 0.85rem; font-weight: 500;">{{ quote.email }}</div>
-                    <div style="font-size: 0.75rem; color: var(--text-dark);">{{ quote.phone }}</div>
+                    <strong>{{ quote.company_name }}</strong>
                   </td>
-                  <td><span class="plate-badge" style="background: rgba(124, 58, 237, 0.1); color: #7c3aed; font-weight: bold; border: 1px solid rgba(124, 58, 237, 0.2);">{{ quote.vehicle_count }} Araç</span></td>
                   <td>
-                    <span style="font-weight: 700;">{{ quote.vehicle_segment }}</span> - {{ quote.vehicle_type }}
+                    <div style="font-size: 0.85rem; font-weight: 500">{{ quote.email }}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-dark)">{{ quote.phone }}</div>
+                  </td>
+                  <td>
+                    <span
+                      class="plate-badge"
+                      style="
+                        background: rgba(124, 58, 237, 0.1);
+                        color: #7c3aed;
+                        font-weight: bold;
+                        border: 1px solid rgba(124, 58, 237, 0.2);
+                      "
+                      >{{ quote.vehicle_count }} Araç</span
+                    >
+                  </td>
+                  <td>
+                    <span style="font-weight: 700">{{ quote.vehicle_segment }}</span> -
+                    {{ quote.vehicle_type }}
                   </td>
                   <td>
                     <div>{{ quote.duration_months }} Ay</div>
-                    <div style="font-size: 0.75rem; color: var(--text-dark);">{{ quote.estimated_annual_mileage?.toLocaleString() }} km/yıl</div>
+                    <div style="font-size: 0.75rem; color: var(--text-dark)">
+                      {{ quote.estimated_annual_mileage?.toLocaleString() }} km/yıl
+                    </div>
                   </td>
                   <td>
-                    <strong style="color: #7c3aed;">₺{{ quote.monthly_price_try?.toLocaleString() }}</strong>
-                    <div v-if="quote.bids && quote.bids.length > 0" style="margin-top: 4px;">
-                      <span style="background: rgba(16, 185, 129, 0.1); color: #059669; border: 1px solid rgba(16, 185, 129, 0.25); font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 12px; display: inline-flex; align-items: center; gap: 4px;">
+                    <strong style="color: #7c3aed"
+                      >₺{{ quote.monthly_price_try?.toLocaleString() }}</strong
+                    >
+                    <div v-if="quote.bids && quote.bids.length > 0" style="margin-top: 4px">
+                      <span
+                        style="
+                          background: rgba(16, 185, 129, 0.1);
+                          color: #059669;
+                          border: 1px solid rgba(16, 185, 129, 0.25);
+                          font-size: 0.72rem;
+                          font-weight: 700;
+                          padding: 2px 8px;
+                          border-radius: 12px;
+                          display: inline-flex;
+                          align-items: center;
+                          gap: 4px;
+                        "
+                      >
                         🏢 {{ quote.bids.length }} Tedarikçi Teklifi Verildi
                       </span>
                     </div>
-                    <div v-else style="font-size: 0.72rem; color: #94a3b8; margin-top: 4px;">
+                    <div v-else style="font-size: 0.72rem; color: #94a3b8; margin-top: 4px">
                       ⏳ Tedarikçi Teklifi Yok
                     </div>
                   </td>
                   <td>
-                    <select 
-                      v-model="quote.status" 
-                      @change="onStatusChange(quote.id, quote.status)" 
+                    <select
+                      v-model="quote.status"
+                      @change="onStatusChange(quote.id, quote.status)"
                       class="form-select status-select"
                       :class="getStatusClass(quote.status)"
                     >
@@ -213,13 +329,28 @@
                     </select>
                   </td>
                   <td>
-                    <div style="display: flex; gap: 8px;">
-                      <button @click="openEditQuoteModal(quote)" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">
+                    <div style="display: flex; gap: 8px">
+                      <UiButton
+                        @click="openEditQuoteModal(quote)"
+                        class="btn btn-secondary"
+                        style="padding: 6px 12px; font-size: 0.8rem"
+                      >
                         ⚙️ Düzenle
-                      </button>
-                      <button @click="openQuoteBidsModal(quote)" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; background: rgba(124, 58, 237, 0.08); color: #6d28d9; border-color: rgba(124, 58, 237, 0.25); font-weight: 700;">
+                      </UiButton>
+                      <UiButton
+                        @click="openQuoteBidsModal(quote)"
+                        class="btn btn-secondary"
+                        style="
+                          padding: 6px 12px;
+                          font-size: 0.8rem;
+                          background: rgba(124, 58, 237, 0.08);
+                          color: #6d28d9;
+                          border-color: rgba(124, 58, 237, 0.25);
+                          font-weight: 700;
+                        "
+                      >
                         🏢 Tedarikçi Teklifleri ({{ quote.bids ? quote.bids.length : 0 }})
-                      </button>
+                      </UiButton>
                     </div>
                   </td>
                 </tr>
@@ -234,15 +365,25 @@
         <header class="dashboard-header">
           <div>
             <h1>Aktif Müşteriler (Sözleşmeli Portföy)</h1>
-            <p style="color: var(--text-muted); font-size: 0.95rem;">Sadece kiralama sözleşmesi imzalanmış ve onaylanmış aktif kurumsal müşteriler.</p>
+            <p style="color: var(--text-muted); font-size: 0.95rem">
+              Sadece kiralama sözleşmesi imzalanmış ve onaylanmış aktif kurumsal müşteriler.
+            </p>
           </div>
-          <button @click="showAddCustomerModal = true" class="btn btn-primary" style="background: linear-gradient(135deg, #10b981, #059669); border: none; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25);">
+          <UiButton
+            @click="showAddCustomerModal = true"
+            class="btn btn-primary"
+            style="
+              background: linear-gradient(135deg, #10b981, #059669);
+              border: none;
+              box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25);
+            "
+          >
             ➕ Yeni Müşteri Ekle
-          </button>
+          </UiButton>
         </header>
 
         <!-- Stats cards for customers -->
-        <div class="grid-3" style="margin-top: 25px; gap: 20px;">
+        <div class="grid-3" style="margin-top: 25px; gap: 20px">
           <div class="glass-panel stat-card-new">
             <div class="stat-icon-wrapper quote-purple">
               <span>🏢</span>
@@ -267,36 +408,50 @@
             </div>
             <div class="stat-info">
               <span class="stat-label">Toplam Aktif Ciro</span>
-              <div class="stat-val-new" style="color: #10b981;">₺{{ totalCustomerRevenue.toLocaleString('tr-TR') }}</div>
+              <div class="stat-val-new" style="color: #10b981">
+                ₺{{ totalCustomerRevenue.toLocaleString('tr-TR') }}
+              </div>
             </div>
           </div>
         </div>
 
-
         <!-- Customer Filter Bar -->
-        <div class="filter-bar glass-panel" style="margin-top: 20px;">
+        <div class="filter-bar glass-panel" style="margin-top: 20px">
           <div class="filter-bar-inner">
             <div class="filter-group">
               <span class="filter-label">🔍</span>
-              <input v-model="customerFilter.search" class="filter-input" placeholder="Şirket adı, e-posta veya telefon...">
+              <input
+                v-model="customerFilter.search"
+                class="filter-input"
+                placeholder="Şirket adı, e-posta veya telefon..."
+              />
             </div>
             <div class="filter-group">
               <span class="filter-label">📦 Filo</span>
               <div class="filter-pills">
-                <button v-for="f in ['Tümü','Eksikli','Tam']" :key="f"
-                  :class="['filter-pill', { 'filter-pill-active': customerFilter.fleetStatus === f }]"
-                  @click="customerFilter.fleetStatus = f">{{ f }}</button>
+                <UiButton
+                  v-for="f in ['Tümü', 'Eksikli', 'Tam']"
+                  :key="f"
+                  :class="[
+                    'filter-pill',
+                    { 'filter-pill-active': customerFilter.fleetStatus === f },
+                  ]"
+                  @click="customerFilter.fleetStatus = f"
+                  >{{ f }}</UiButton
+                >
               </div>
             </div>
-            <div class="filter-group" style="margin-left:auto;">
-              <span class="filter-result-count">{{ filteredCustomers.length }} / {{ customers.length }} müşteri</span>
+            <div class="filter-group" style="margin-left: auto">
+              <span class="filter-result-count"
+                >{{ filteredCustomers.length }} / {{ customers.length }} müşteri</span
+              >
             </div>
           </div>
         </div>
 
         <!-- Customers Table -->
-        <div class="glass-panel" style="margin-top: 20px; padding: 15px;">
-          <div v-if="loading" class="text-center" style="padding: 40px 0;">Yükleniyor...</div>
+        <div class="glass-panel" style="margin-top: 20px; padding: 15px">
+          <div v-if="loading" class="text-center" style="padding: 40px 0">Yükleniyor...</div>
           <div v-else-if="filteredCustomers.length === 0" class="empty-state">
             <p>Kriterlere uygun müşteri bulunamadı.</p>
           </div>
@@ -312,84 +467,198 @@
                   <th>Sözleşme Bedeli (Aylık)</th>
                   <th>İmza Tarihi</th>
                   <th>Portal Davet Durumu</th>
-                  <th style="width: 220px; text-align: right;">İşlemler</th>
+                  <th style="width: 220px; text-align: right">İşlemler</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="c in filteredCustomers" :key="c.id" class="customer-row" @click="openCustomerDetails(c)" style="cursor: pointer;">
+                <tr
+                  v-for="c in filteredCustomers"
+                  :key="c.id"
+                  class="customer-row"
+                  @click="openCustomerDetails(c)"
+                  style="cursor: pointer"
+                >
                   <td>#{{ c.id }}</td>
                   <td>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                      <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #10b981, #059669); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 700; color: #fff; flex-shrink: 0;">
+                    <div style="display: flex; align-items: center; gap: 10px">
+                      <div
+                        style="
+                          width: 36px;
+                          height: 36px;
+                          border-radius: 50%;
+                          background: linear-gradient(135deg, #10b981, #059669);
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                          font-size: 0.9rem;
+                          font-weight: 700;
+                          color: #fff;
+                          flex-shrink: 0;
+                        "
+                      >
                         {{ c.company_name?.charAt(0) }}
                       </div>
                       <div>
-                        <div style="font-weight: 700; color: var(--text-primary);">{{ c.company_name }}</div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted);">Detayları gör →</div>
+                        <div style="font-weight: 700; color: var(--text-primary)">
+                          {{ c.company_name }}
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted)">
+                          Detayları gör →
+                        </div>
                       </div>
                     </div>
                   </td>
-                  <td style="font-size: 0.85rem; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  <td
+                    style="
+                      font-size: 0.85rem;
+                      max-width: 150px;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                      white-space: nowrap;
+                    "
+                  >
                     {{ c.legal_title }}
                   </td>
                   <td>
-                    <div style="font-size: 0.85rem; font-weight: 500;">{{ c.email }}</div>
-                    <div style="font-size: 0.75rem; color: var(--text-dark);">{{ c.phone }}</div>
+                    <div style="font-size: 0.85rem; font-weight: 500">{{ c.email }}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-dark)">{{ c.phone }}</div>
                   </td>
                   <td>
-                    <div style="display: flex; flex-direction: column; gap: 4px; min-width: 140px;">
-                      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem;">
-                        <span style="color: var(--text-muted);">Sözleşme</span>
-                        <span style="font-weight: 700; color: var(--text-primary);">{{ c.registered_vehicles_count }} araç</span>
+                    <div style="display: flex; flex-direction: column; gap: 4px; min-width: 140px">
+                      <div
+                        style="
+                          display: flex;
+                          justify-content: space-between;
+                          align-items: center;
+                          font-size: 0.8rem;
+                        "
+                      >
+                        <span style="color: var(--text-muted)">Sözleşme</span>
+                        <span style="font-weight: 700; color: var(--text-primary)"
+                          >{{ c.registered_vehicles_count }} araç</span
+                        >
                       </div>
-                      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem;">
-                        <span style="color: var(--text-muted);">Tanımlı</span>
-                        <span style="font-weight: 700; color: #10b981;">{{ c.actual_vehicle_count }} araç</span>
+                      <div
+                        style="
+                          display: flex;
+                          justify-content: space-between;
+                          align-items: center;
+                          font-size: 0.8rem;
+                        "
+                      >
+                        <span style="color: var(--text-muted)">Tanımlı</span>
+                        <span style="font-weight: 700; color: #10b981"
+                          >{{ c.actual_vehicle_count }} araç</span
+                        >
                       </div>
-                      <div v-if="c.vehicle_deficit > 0" style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; background: rgba(239,68,68,0.08); border-radius: 6px; padding: 2px 6px;">
-                        <span style="color: #f87171;">Eksik</span>
-                        <span style="font-weight: 700; color: #f87171;">{{ c.vehicle_deficit }} araç</span>
+                      <div
+                        v-if="c.vehicle_deficit > 0"
+                        style="
+                          display: flex;
+                          justify-content: space-between;
+                          align-items: center;
+                          font-size: 0.8rem;
+                          background: rgba(239, 68, 68, 0.08);
+                          border-radius: 6px;
+                          padding: 2px 6px;
+                        "
+                      >
+                        <span style="color: #f87171">Eksik</span>
+                        <span style="font-weight: 700; color: #f87171"
+                          >{{ c.vehicle_deficit }} araç</span
+                        >
                       </div>
-                      <div v-else style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; background: rgba(16,185,129,0.08); border-radius: 6px; padding: 2px 6px;">
-                        <span style="color: #10b981;">✓ Tam</span>
-                        <span style="font-weight: 700; color: #10b981;">Eksiksiz</span>
+                      <div
+                        v-else
+                        style="
+                          display: flex;
+                          justify-content: space-between;
+                          align-items: center;
+                          font-size: 0.8rem;
+                          background: rgba(16, 185, 129, 0.08);
+                          border-radius: 6px;
+                          padding: 2px 6px;
+                        "
+                      >
+                        <span style="color: #10b981">✓ Tam</span>
+                        <span style="font-weight: 700; color: #10b981">Eksiksiz</span>
                       </div>
                     </div>
                   </td>
                   <td>
-                    <strong style="color: #10b981;">₺{{ c.contract_amount?.toLocaleString() }}</strong>
+                    <strong style="color: #10b981"
+                      >₺{{ c.contract_amount?.toLocaleString() }}</strong
+                    >
                   </td>
                   <td>{{ formatDate(c.signed_at) }}</td>
                   <td>
-                    <span v-if="c.invitation_status === 'Aktif'" class="badge badge-active" style="font-size: 0.78rem;">
+                    <span
+                      v-if="c.invitation_status === 'Aktif'"
+                      class="badge badge-active"
+                      style="font-size: 0.78rem"
+                    >
                       ✓ Aktif (Şifre Koydu)
                     </span>
-                    <span v-else-if="c.invitation_status === 'Davet Gönderildi'" class="badge badge-roadside" style="font-size: 0.78rem;">
+                    <span
+                      v-else-if="c.invitation_status === 'Davet Gönderildi'"
+                      class="badge badge-roadside"
+                      style="font-size: 0.78rem"
+                    >
                       📧 Davet Edildi
                     </span>
-                    <span v-else class="badge" style="background: rgba(148, 163, 184, 0.1); color: #64748b; font-size: 0.78rem;">
+                    <span
+                      v-else
+                      class="badge"
+                      style="
+                        background: rgba(148, 163, 184, 0.1);
+                        color: #64748b;
+                        font-size: 0.78rem;
+                      "
+                    >
                       Davet Edilmedi
                     </span>
                   </td>
-                  <td style="text-align: right;">
-                    <div style="display: flex; gap: 6px; justify-content: flex-end;">
-                      <button 
-                        @click.stop="sendCustomerInvite(c)" 
-                        class="btn btn-secondary" 
-                        style="padding: 6px 10px; font-size: 0.78rem; border-color: rgba(124, 58, 237, 0.3); color: #7c3aed; background: rgba(124, 58, 237, 0.06); font-weight: 600;"
+                  <td style="text-align: right">
+                    <div style="display: flex; gap: 6px; justify-content: flex-end">
+                      <UiButton
+                        @click.stop="sendCustomerInvite(c)"
+                        class="btn btn-secondary"
+                        style="
+                          padding: 6px 10px;
+                          font-size: 0.78rem;
+                          border-color: rgba(124, 58, 237, 0.3);
+                          color: #7c3aed;
+                          background: rgba(124, 58, 237, 0.06);
+                          font-weight: 600;
+                        "
                       >
-                        {{ c.invitation_status === 'Davet Gönderildi' ? '🔄 Yeniden Davet Et' : '✉️ Davet Et' }}
-                      </button>
-                      <button @click.stop="openEditCustomerModal(c)" class="btn btn-secondary" style="padding: 6px 10px; font-size: 0.78rem;">
+                        {{
+                          c.invitation_status === 'Davet Gönderildi'
+                            ? '🔄 Yeniden Davet Et'
+                            : '✉️ Davet Et'
+                        }}
+                      </UiButton>
+                      <UiButton
+                        @click.stop="openEditCustomerModal(c)"
+                        class="btn btn-secondary"
+                        style="padding: 6px 10px; font-size: 0.78rem"
+                      >
                         ⚙️ Düzenle
-                      </button>
-                      <button 
-                        @click.stop="deleteCustomer(c)" 
-                        class="btn btn-secondary" 
-                        style="padding: 6px 10px; font-size: 0.78rem; border-color: rgba(239, 68, 68, 0.3); color: #ef4444; background: rgba(239, 68, 68, 0.06); font-weight: 600;"
+                      </UiButton>
+                      <UiButton
+                        @click.stop="deleteCustomer(c)"
+                        class="btn btn-secondary"
+                        style="
+                          padding: 6px 10px;
+                          font-size: 0.78rem;
+                          border-color: rgba(239, 68, 68, 0.3);
+                          color: #ef4444;
+                          background: rgba(239, 68, 68, 0.06);
+                          font-weight: 600;
+                        "
                       >
                         🗑️ Sil
-                      </button>
+                      </UiButton>
                     </div>
                   </td>
                 </tr>
@@ -400,16 +669,23 @@
       </div>
 
       <!-- CUSTOMER DETAIL DASHBOARD (fullscreen panel) -->
-      <div v-if="showCustomerDetailsModal && selectedCustomerDetails" class="customer-detail-dashboard fade-in-up">
+      <div
+        v-if="showCustomerDetailsModal && selectedCustomerDetails"
+        class="customer-detail-dashboard fade-in-up"
+      >
         <!-- Back Header -->
         <div class="cd-topbar">
-          <button @click="closeCustomerDetails" class="cd-back-btn">
+          <UiButton @click="closeCustomerDetails" class="cd-back-btn">
             ← Müşteri Listesine Dön
-          </button>
+          </UiButton>
           <div class="cd-topbar-actions">
-            <button @click.stop="openEditCustomerModal(selectedCustomerDetails)" class="btn btn-secondary" style="font-size: 0.85rem;">
+            <UiButton
+              @click.stop="openEditCustomerModal(selectedCustomerDetails)"
+              class="btn btn-secondary"
+              style="font-size: 0.85rem"
+            >
               ⚙️ Müşteri Düzenle
-            </button>
+            </UiButton>
           </div>
         </div>
 
@@ -422,7 +698,9 @@
             <div class="cd-contact-row">
               <span>✉️ {{ selectedCustomerDetails.email }}</span>
               <span>📞 {{ selectedCustomerDetails.phone }}</span>
-              <span v-if="selectedCustomerDetails.address">📍 {{ selectedCustomerDetails.address }}</span>
+              <span v-if="selectedCustomerDetails.address"
+                >📍 {{ selectedCustomerDetails.address }}</span
+              >
             </div>
           </div>
           <div class="cd-hero-badges">
@@ -432,7 +710,9 @@
             </div>
             <div class="cd-hero-badge cd-badge-purple">
               <div class="cd-badge-label">Aylık Sözleşme</div>
-              <div class="cd-badge-value">₺{{ selectedCustomerDetails.contract_amount?.toLocaleString('tr-TR') }}</div>
+              <div class="cd-badge-value">
+                ₺{{ selectedCustomerDetails.contract_amount?.toLocaleString('tr-TR') }}
+              </div>
             </div>
             <div class="cd-hero-badge cd-badge-blue">
               <div class="cd-badge-label">İmza Tarihi</div>
@@ -447,12 +727,18 @@
 
         <!-- Tabs -->
         <div class="cd-tabs">
-          <button :class="['cd-tab', { 'cd-tab-active': detailTab === 'vehicles' }]" @click="detailTab = 'vehicles'">
+          <UiButton
+            :class="['cd-tab', { 'cd-tab-active': detailTab === 'vehicles' }]"
+            @click="detailTab = 'vehicles'"
+          >
             🚗 Araçlar ({{ customerVehicles.length }})
-          </button>
-          <button :class="['cd-tab', { 'cd-tab-active': detailTab === 'services' }]" @click="detailTab = 'services'">
+          </UiButton>
+          <UiButton
+            :class="['cd-tab', { 'cd-tab-active': detailTab === 'services' }]"
+            @click="detailTab = 'services'"
+          >
             🔧 Servis Geçmişi ({{ customerServices.length }})
-          </button>
+          </UiButton>
         </div>
 
         <!-- VEHICLES TAB -->
@@ -464,7 +750,18 @@
             <div v-for="v in customerVehicles" :key="v.id" class="cd-vehicle-card glass-panel">
               <div class="cd-vehicle-header">
                 <div class="cd-plate">{{ v.plate }}</div>
-                <span class="badge" :class="v.status === 'Aktif' ? 'badge-active' : v.status === 'Serviste' ? 'badge-service' : 'badge-roadside'" style="font-size: 0.75rem;">{{ v.status }}</span>
+                <span
+                  class="badge"
+                  :class="
+                    v.status === 'Aktif'
+                      ? 'badge-active'
+                      : v.status === 'Serviste'
+                        ? 'badge-service'
+                        : 'badge-roadside'
+                  "
+                  style="font-size: 0.75rem"
+                  >{{ v.status }}</span
+                >
               </div>
               <div class="cd-vehicle-title">{{ v.brand }} {{ v.model }} ({{ v.year }})</div>
               <div class="cd-vehicle-details">
@@ -478,7 +775,9 @@
                 </div>
                 <div class="cd-vehicle-row">
                   <span class="cd-vd-label">Kilometre</span>
-                  <span class="cd-vd-val" style="color: #7c3aed; font-weight: 700;">{{ v.mileage?.toLocaleString('tr-TR') }} km</span>
+                  <span class="cd-vd-val" style="color: #7c3aed; font-weight: 700"
+                    >{{ v.mileage?.toLocaleString('tr-TR') }} km</span
+                  >
                 </div>
                 <div class="cd-vehicle-row">
                   <span class="cd-vd-label">Muayene Tarihi</span>
@@ -490,7 +789,9 @@
                 </div>
                 <div class="cd-vehicle-row">
                   <span class="cd-vd-label">Şase No</span>
-                  <span class="cd-vd-val" style="font-family: monospace; font-size: 0.78rem;">{{ v.chassis_no }}</span>
+                  <span class="cd-vd-val" style="font-family: monospace; font-size: 0.78rem">{{
+                    v.chassis_no
+                  }}</span>
                 </div>
               </div>
             </div>
@@ -517,26 +818,51 @@
               </thead>
               <tbody>
                 <tr v-for="s in customerServices" :key="s.id">
-                  <td style="color: var(--text-muted);">#{{ s.id }}</td>
+                  <td style="color: var(--text-muted)">#{{ s.id }}</td>
                   <td>
-                    <div style="font-weight: 600;">{{ s.vehicle_plate }}</div>
-                    <div style="font-size: 0.78rem; color: var(--text-muted);">{{ s.vehicle_brand_model }}</div>
+                    <div style="font-weight: 600">{{ s.vehicle_plate }}</div>
+                    <div style="font-size: 0.78rem; color: var(--text-muted)">
+                      {{ s.vehicle_brand_model }}
+                    </div>
                   </td>
                   <td>
-                    <div style="font-weight: 600;">{{ s.supplier_name }}</div>
+                    <div style="font-weight: 600">{{ s.supplier_name }}</div>
                   </td>
                   <td>
-                    <span class="badge" :class="getCategoryBadgeClass(s.type)" style="font-size: 0.78rem; padding: 4px 10px;">
+                    <span
+                      class="badge"
+                      :class="getCategoryBadgeClass(s.type)"
+                      style="font-size: 0.78rem; padding: 4px 10px"
+                    >
                       {{ getTypeName(s.type) }}
                     </span>
                   </td>
-                  <td style="font-size: 0.85rem; max-width: 220px; white-space: normal; line-height: 1.4;">{{ s.description }}</td>
+                  <td
+                    style="
+                      font-size: 0.85rem;
+                      max-width: 220px;
+                      white-space: normal;
+                      line-height: 1.4;
+                    "
+                  >
+                    {{ s.description }}
+                  </td>
                   <td>
-                    <span class="badge" :class="s.status === 'Tamamlandı' ? 'badge-active' : s.status === 'Beklemede' ? 'badge-roadside' : 'badge-service'" style="font-size: 0.75rem;">
+                    <span
+                      class="badge"
+                      :class="
+                        s.status === 'Tamamlandı'
+                          ? 'badge-active'
+                          : s.status === 'Beklemede'
+                            ? 'badge-roadside'
+                            : 'badge-service'
+                      "
+                      style="font-size: 0.75rem"
+                    >
                       {{ s.status }}
                     </span>
                   </td>
-                  <td style="font-size: 0.82rem;">{{ s.created_at }}</td>
+                  <td style="font-size: 0.82rem">{{ s.created_at }}</td>
                 </tr>
               </tbody>
             </table>
@@ -549,12 +875,14 @@
         <header class="dashboard-header">
           <div>
             <h1>Sistemdeki Tüm Araçlar</h1>
-            <p style="color: var(--text-muted); font-size: 0.95rem;">Filodaki araçların güncel konum, kiralama, servis ve kullanım bilgileri.</p>
+            <p style="color: var(--text-muted); font-size: 0.95rem">
+              Filodaki araçların güncel konum, kiralama, servis ve kullanım bilgileri.
+            </p>
           </div>
         </header>
 
         <!-- Stats cards for vehicles -->
-        <div class="grid-3" style="margin-top: 25px; gap: 20px;">
+        <div class="grid-3" style="margin-top: 25px; gap: 20px">
           <div class="glass-panel stat-card-new">
             <div class="stat-icon-wrapper quote-purple">
               <span>🚗</span>
@@ -570,7 +898,7 @@
             </div>
             <div class="stat-info">
               <span class="stat-label">Aktif Kullanımda</span>
-              <div class="stat-val-new" style="color: #10b981;">{{ activeVehiclesCount }} Adet</div>
+              <div class="stat-val-new" style="color: #10b981">{{ activeVehiclesCount }} Adet</div>
             </div>
           </div>
           <div class="glass-panel stat-card-new">
@@ -579,43 +907,63 @@
             </div>
             <div class="stat-info">
               <span class="stat-label">Serviste / Bakımda</span>
-              <div class="stat-val-new" style="color: #3b82f6;">{{ serviceVehiclesCount }} Adet</div>
+              <div class="stat-val-new" style="color: #3b82f6">{{ serviceVehiclesCount }} Adet</div>
             </div>
           </div>
         </div>
 
         <!-- Vehicles Filter Bar -->
-        <div class="filter-bar glass-panel" style="margin-top: 20px;">
+        <div class="filter-bar glass-panel" style="margin-top: 20px">
           <div class="filter-bar-inner">
             <div class="filter-group">
               <span class="filter-label">🔍</span>
-              <input v-model="vehicleFilter.search" class="filter-input" placeholder="Plaka, marka veya model ara...">
+              <input
+                v-model="vehicleFilter.search"
+                class="filter-input"
+                placeholder="Plaka, marka veya model ara..."
+              />
             </div>
             <div class="filter-group">
               <span class="filter-label">📊 Durum</span>
               <div class="filter-pills">
-                <button v-for="st in ['Tümü','Aktif','Serviste','Lastik Değişiminde','Yol Yardımında']" :key="st"
+                <UiButton
+                  v-for="st in [
+                    'Tümü',
+                    'Aktif',
+                    'Serviste',
+                    'Lastik Değişiminde',
+                    'Yol Yardımında',
+                  ]"
+                  :key="st"
                   :class="['filter-pill', { 'filter-pill-active': vehicleFilter.status === st }]"
-                  @click="vehicleFilter.status = st">{{ st }}</button>
+                  @click="vehicleFilter.status = st"
+                  >{{ st }}</UiButton
+                >
               </div>
             </div>
             <div class="filter-group">
               <span class="filter-label">⚡ Yakıt</span>
               <div class="filter-pills">
-                <button v-for="f in ['Tümü','Elektrik','Hibrit','Dizel','Benzin']" :key="f"
+                <UiButton
+                  v-for="f in ['Tümü', 'Elektrik', 'Hibrit', 'Dizel', 'Benzin']"
+                  :key="f"
                   :class="['filter-pill', { 'filter-pill-active': vehicleFilter.fuel === f }]"
-                  @click="vehicleFilter.fuel = f">{{ f }}</button>
+                  @click="vehicleFilter.fuel = f"
+                  >{{ f }}</UiButton
+                >
               </div>
             </div>
-            <div class="filter-group" style="margin-left:auto;">
-              <span class="filter-result-count">{{ filteredVehicles.length }} / {{ vehicles.length }} araç</span>
+            <div class="filter-group" style="margin-left: auto">
+              <span class="filter-result-count"
+                >{{ filteredVehicles.length }} / {{ vehicles.length }} araç</span
+              >
             </div>
           </div>
         </div>
 
         <!-- Vehicles Table -->
-        <div class="glass-panel" style="margin-top: 20px; padding: 15px;">
-          <div v-if="loading" class="text-center" style="padding: 40px 0;">Yükleniyor...</div>
+        <div class="glass-panel" style="margin-top: 20px; padding: 15px">
+          <div v-if="loading" class="text-center" style="padding: 40px 0">Yükleniyor...</div>
           <div v-else-if="filteredVehicles.length === 0" class="empty-state">
             <p>Kriterlere uygun araç bulunamadı.</p>
           </div>
@@ -633,33 +981,71 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="v in filteredVehicles" :key="v.id" @click="openVehicleDetails(v)" style="cursor: pointer;">
+                <tr
+                  v-for="v in filteredVehicles"
+                  :key="v.id"
+                  @click="openVehicleDetails(v)"
+                  style="cursor: pointer"
+                >
                   <td>
-                    <span class="plate-badge" style="font-size: 0.9rem; font-family: monospace; font-weight: bold; background: #0f172a; color: #fff; border: 2px solid #334155; border-radius: 6px; padding: 4px 10px; display: inline-block;">
+                    <span
+                      class="plate-badge"
+                      style="
+                        font-size: 0.9rem;
+                        font-family: monospace;
+                        font-weight: bold;
+                        background: #0f172a;
+                        color: #fff;
+                        border: 2px solid #334155;
+                        border-radius: 6px;
+                        padding: 4px 10px;
+                        display: inline-block;
+                      "
+                    >
                       {{ v.plate }}
                     </span>
                   </td>
                   <td>
                     <strong>{{ v.brand }} {{ v.model }}</strong>
-                    <div style="font-size: 0.78rem; color: var(--text-muted);">Yıl: {{ v.year }} · Şase: {{ v.chassis_no }}</div>
+                    <div style="font-size: 0.78rem; color: var(--text-muted)">
+                      Yıl: {{ v.year }} · Şase: {{ v.chassis_no }}
+                    </div>
                   </td>
                   <td>
-                    <span v-if="v.customer_name" style="font-weight: 600; color: #7c3aed;">🏢 {{ v.customer_name }}</span>
-                    <span v-else style="color: var(--text-muted); font-size: 0.85rem;">-</span>
+                    <span v-if="v.customer_name" style="font-weight: 600; color: #7c3aed"
+                      >🏢 {{ v.customer_name }}</span
+                    >
+                    <span v-else style="color: var(--text-muted); font-size: 0.85rem">-</span>
                   </td>
                   <td>
-                    <span v-if="v.supplier_name" style="font-weight: 500;">🤝 {{ v.supplier_name }}</span>
-                    <span v-else style="color: var(--text-muted); font-size: 0.85rem;">-</span>
+                    <span v-if="v.supplier_name" style="font-weight: 500"
+                      >🤝 {{ v.supplier_name }}</span
+                    >
+                    <span v-else style="color: var(--text-muted); font-size: 0.85rem">-</span>
                   </td>
                   <td>
-                    <strong style="color: var(--text-primary);">{{ v.mileage?.toLocaleString('tr-TR') }} km</strong>
+                    <strong style="color: var(--text-primary)"
+                      >{{ v.mileage?.toLocaleString('tr-TR') }} km</strong
+                    >
                   </td>
                   <td>
-                    <div style="font-size: 0.85rem;">{{ v.vehicle_segment }} Segment</div>
-                    <div style="font-size: 0.78rem; color: var(--text-muted);">{{ v.fuel }}</div>
+                    <div style="font-size: 0.85rem">{{ v.vehicle_segment }} Segment</div>
+                    <div style="font-size: 0.78rem; color: var(--text-muted)">{{ v.fuel }}</div>
                   </td>
                   <td>
-                    <span class="badge" :class="v.status === 'Aktif' ? 'badge-active' : v.status === 'Serviste' ? 'badge-service' : v.status === 'Lastik Değişiminde' ? 'badge-tire' : 'badge-roadside'" style="font-size: 0.75rem;">
+                    <span
+                      class="badge"
+                      :class="
+                        v.status === 'Aktif'
+                          ? 'badge-active'
+                          : v.status === 'Serviste'
+                            ? 'badge-service'
+                            : v.status === 'Lastik Değişiminde'
+                              ? 'badge-tire'
+                              : 'badge-roadside'
+                      "
+                      style="font-size: 0.75rem"
+                    >
                       {{ v.status }}
                     </span>
                   </td>
@@ -671,90 +1057,184 @@
       </div>
 
       <!-- VEHICLE DETAIL MODAL -->
-      <div v-if="showVehicleDetailsModal && selectedVehicleDetails" class="customer-detail-dashboard fade-in-up">
+      <div
+        v-if="showVehicleDetailsModal && selectedVehicleDetails"
+        class="customer-detail-dashboard fade-in-up"
+      >
         <div class="cd-topbar">
-          <button @click="closeVehicleDetails" class="cd-back-btn">
+          <UiButton @click="closeVehicleDetails" class="cd-back-btn">
             ← Araç Listesine Dön
-          </button>
+          </UiButton>
         </div>
 
-        <div class="cd-hero glass-panel" style="border-top-color: #3b82f6 !important; background: linear-gradient(135deg, rgba(59,130,246,0.05) 0%, rgba(124,58,237,0.05) 100%);">
-          <div class="cd-hero-avatar" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); font-size: 1.5rem; width: 64px; height: 64px;">🚗</div>
+        <div
+          class="cd-hero glass-panel"
+          style="
+            border-top-color: #3b82f6 !important;
+            background: linear-gradient(
+              135deg,
+              rgba(59, 130, 246, 0.05) 0%,
+              rgba(124, 58, 237, 0.05) 100%
+            );
+          "
+        >
+          <div
+            class="cd-hero-avatar"
+            style="
+              background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+              font-size: 1.5rem;
+              width: 64px;
+              height: 64px;
+            "
+          >
+            🚗
+          </div>
           <div class="cd-hero-info">
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
-              <span class="plate-badge" style="font-family: monospace; font-size: 1.15rem; font-weight: 800; background: #0f172a; color: #fff; border: 2px solid #334155; border-radius: 6px; padding: 4px 12px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px">
+              <span
+                class="plate-badge"
+                style="
+                  font-family: monospace;
+                  font-size: 1.15rem;
+                  font-weight: 800;
+                  background: #0f172a;
+                  color: #fff;
+                  border: 2px solid #334155;
+                  border-radius: 6px;
+                  padding: 4px 12px;
+                "
+              >
                 {{ selectedVehicleDetails.plate }}
               </span>
-              <span class="badge" :class="selectedVehicleDetails.status === 'Aktif' ? 'badge-active' : selectedVehicleDetails.status === 'Serviste' ? 'badge-service' : 'badge-roadside'" style="font-size: 0.75rem;">
+              <span
+                class="badge"
+                :class="
+                  selectedVehicleDetails.status === 'Aktif'
+                    ? 'badge-active'
+                    : selectedVehicleDetails.status === 'Serviste'
+                      ? 'badge-service'
+                      : 'badge-roadside'
+                "
+                style="font-size: 0.75rem"
+              >
                 {{ selectedVehicleDetails.status }}
               </span>
             </div>
-            <h2 class="cd-company-name" style="font-size: 1.4rem;">{{ selectedVehicleDetails.brand }} {{ selectedVehicleDetails.model }}</h2>
-            <p class="cd-legal-title" style="margin-bottom: 0;">Şase No: <span style="font-family: monospace;">{{ selectedVehicleDetails.chassis_no }}</span> · Yıl: {{ selectedVehicleDetails.year }}</p>
+            <h2 class="cd-company-name" style="font-size: 1.4rem">
+              {{ selectedVehicleDetails.brand }} {{ selectedVehicleDetails.model }}
+            </h2>
+            <p class="cd-legal-title" style="margin-bottom: 0">
+              Şase No:
+              <span style="font-family: monospace">{{ selectedVehicleDetails.chassis_no }}</span> ·
+              Yıl: {{ selectedVehicleDetails.year }}
+            </p>
           </div>
           <div class="cd-hero-badges">
             <div class="cd-hero-badge cd-badge-purple">
               <div class="cd-badge-label">Mevcut Kilometre</div>
-              <div class="cd-badge-value">{{ selectedVehicleDetails.mileage?.toLocaleString('tr-TR') }} km</div>
+              <div class="cd-badge-value">
+                {{ selectedVehicleDetails.mileage?.toLocaleString('tr-TR') }} km
+              </div>
             </div>
             <div class="cd-hero-badge cd-badge-green">
               <div class="cd-badge-label">Yakıt / Segment</div>
-              <div class="cd-badge-value" style="font-size: 1rem; color: #10b981;">{{ selectedVehicleDetails.fuel }} / {{ selectedVehicleDetails.vehicle_segment }}</div>
+              <div class="cd-badge-value" style="font-size: 1rem; color: #10b981">
+                {{ selectedVehicleDetails.fuel }} / {{ selectedVehicleDetails.vehicle_segment }}
+              </div>
             </div>
             <div class="cd-hero-badge cd-badge-blue">
               <div class="cd-badge-label">Muayene Tarihi</div>
-              <div class="cd-badge-value" style="font-size: 0.95rem; color: #3b82f6;">{{ selectedVehicleDetails.inspection_date || 'Belirtilmemiş' }}</div>
+              <div class="cd-badge-value" style="font-size: 0.95rem; color: #3b82f6">
+                {{ selectedVehicleDetails.inspection_date || 'Belirtilmemiş' }}
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="grid-2" style="gap: 20px; margin-bottom: 25px;">
+        <div class="grid-2" style="gap: 20px; margin-bottom: 25px">
           <!-- Kiralama & Tedarik Bilgileri -->
-          <div class="glass-panel" style="padding: 20px;">
-            <h3 style="font-size: 1rem; margin-bottom: 15px; color: #7c3aed; display: flex; align-items: center; gap: 8px;">
+          <div class="glass-panel" style="padding: 20px">
+            <h3
+              style="
+                font-size: 1rem;
+                margin-bottom: 15px;
+                color: #7c3aed;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+              "
+            >
               🏢 Kiralama & Sözleşme Bilgisi
             </h3>
             <div v-if="selectedVehicleDetails.customer_name" class="cd-vehicle-details">
               <div class="cd-vehicle-row">
                 <span class="cd-vd-label">Kiracı Müşteri</span>
-                <span class="cd-vd-val" style="font-weight: 700;">{{ selectedVehicleDetails.customer_name }}</span>
+                <span class="cd-vd-val" style="font-weight: 700">{{
+                  selectedVehicleDetails.customer_name
+                }}</span>
               </div>
               <div class="cd-vehicle-row">
                 <span class="cd-vd-label">Kiralama Durumu</span>
-                <span class="cd-vd-val" style="color: #10b981; font-weight: 600;">Aktif Sözleşmeli Kiralama</span>
+                <span class="cd-vd-val" style="color: #10b981; font-weight: 600"
+                  >Aktif Sözleşmeli Kiralama</span
+                >
               </div>
             </div>
-            <div v-else class="text-center" style="padding: 20px 0; color: var(--text-muted);">
+            <div v-else class="text-center" style="padding: 20px 0; color: var(--text-muted)">
               Bu araç şu anda herhangi bir müşteriye kiralanmamış.
             </div>
           </div>
 
-          <div class="glass-panel" style="padding: 20px;">
-            <h3 style="font-size: 1rem; margin-bottom: 15px; color: #3b82f6; display: flex; align-items: center; gap: 8px;">
+          <div class="glass-panel" style="padding: 20px">
+            <h3
+              style="
+                font-size: 1rem;
+                margin-bottom: 15px;
+                color: #3b82f6;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+              "
+            >
               🤝 Tedarik & Servis Sağlayıcı
             </h3>
             <div v-if="selectedVehicleDetails.supplier_name" class="cd-vehicle-details">
               <div class="cd-vehicle-row">
                 <span class="cd-vd-label">Tedarikçi Firma</span>
-                <span class="cd-vd-val" style="font-weight: 700;">{{ selectedVehicleDetails.supplier_name }}</span>
+                <span class="cd-vd-val" style="font-weight: 700">{{
+                  selectedVehicleDetails.supplier_name
+                }}</span>
               </div>
               <div class="cd-vehicle-row">
                 <span class="cd-vd-label">Temin Türü</span>
                 <span class="cd-vd-val">Tedarikçi Ortaklığı</span>
               </div>
             </div>
-            <div v-else class="text-center" style="padding: 20px 0; color: var(--text-muted);">
+            <div v-else class="text-center" style="padding: 20px 0; color: var(--text-muted)">
               Bu araç için atanmış harici bir tedarikçi bulunmuyor.
             </div>
           </div>
         </div>
 
         <!-- Servis Geçmişi Tablosu -->
-        <div class="glass-panel" style="padding: 20px;">
-          <h3 style="font-size: 1rem; margin-bottom: 15px; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+        <div class="glass-panel" style="padding: 20px">
+          <h3
+            style="
+              font-size: 1rem;
+              margin-bottom: 15px;
+              color: var(--text-main);
+              display: flex;
+              align-items: center;
+              gap: 8px;
+            "
+          >
             🔧 Aracın Servis ve Hizmet Geçmişi
           </h3>
-          <div v-if="vehicleServices.length === 0" class="text-center" style="padding: 40px 0; color: var(--text-muted);">
+          <div
+            v-if="vehicleServices.length === 0"
+            class="text-center"
+            style="padding: 40px 0; color: var(--text-muted)"
+          >
             Araca ait herhangi bir servis arıza veya bakım kaydı bulunamadı.
           </div>
           <div v-else class="custom-table-container">
@@ -772,16 +1252,32 @@
               <tbody>
                 <tr v-for="s in vehicleServices" :key="s.id">
                   <td>#{{ s.id }}</td>
-                  <td><strong>{{ s.supplier_name }}</strong></td>
                   <td>
-                    <span class="badge" :class="getCategoryBadgeClass(s.type)" style="font-size: 0.78rem;">
+                    <strong>{{ s.supplier_name }}</strong>
+                  </td>
+                  <td>
+                    <span
+                      class="badge"
+                      :class="getCategoryBadgeClass(s.type)"
+                      style="font-size: 0.78rem"
+                    >
                       {{ getTypeName(s.type) }}
                     </span>
                   </td>
                   <td>{{ s.description }}</td>
                   <td>{{ formatDate(s.created_at) }}</td>
                   <td>
-                    <span class="badge" :class="s.status === 'Tamamlandı' ? 'badge-active' : s.status === 'Beklemede' ? 'badge-roadside' : 'badge-service'" style="font-size: 0.75rem;">
+                    <span
+                      class="badge"
+                      :class="
+                        s.status === 'Tamamlandı'
+                          ? 'badge-active'
+                          : s.status === 'Beklemede'
+                            ? 'badge-roadside'
+                            : 'badge-service'
+                      "
+                      style="font-size: 0.75rem"
+                    >
                       {{ s.status }}
                     </span>
                   </td>
@@ -797,15 +1293,26 @@
         <header class="dashboard-header">
           <div>
             <h1>Entegre Tedarikçiler Listesi</h1>
-            <p style="color: var(--text-muted); font-size: 0.95rem;">Sistemde entegre çalışan yetkili/anlaşmalı servis, lastik, yol yardım ve ikame araç sağlayıcıları.</p>
+            <p style="color: var(--text-muted); font-size: 0.95rem">
+              Sistemde entegre çalışan yetkili/anlaşmalı servis, lastik, yol yardım ve ikame araç
+              sağlayıcıları.
+            </p>
           </div>
-          <button @click="showAddSupplierModal = true" class="btn btn-primary" style="background: linear-gradient(135deg, #7c3aed, #3b82f6); border: none; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.25);">
+          <UiButton
+            @click="showAddSupplierModal = true"
+            class="btn btn-primary"
+            style="
+              background: linear-gradient(135deg, #7c3aed, #3b82f6);
+              border: none;
+              box-shadow: 0 4px 15px rgba(124, 58, 237, 0.25);
+            "
+          >
             ➕ Yeni Tedarikçi Ekle
-          </button>
+          </UiButton>
         </header>
 
         <!-- Stats cards for suppliers -->
-        <div class="grid-3" style="margin-top: 25px; gap: 20px;">
+        <div class="grid-3" style="margin-top: 25px; gap: 20px">
           <div class="glass-panel stat-card-new">
             <div class="stat-icon-wrapper quote-purple">
               <span>🏢</span>
@@ -821,7 +1328,9 @@
             </div>
             <div class="stat-info">
               <span class="stat-label">Yetkili Servisler</span>
-              <div class="stat-val-new" style="color: #10b981;">{{ authorizedSuppliersCount }} Adet</div>
+              <div class="stat-val-new" style="color: #10b981">
+                {{ authorizedSuppliersCount }} Adet
+              </div>
             </div>
           </div>
           <div class="glass-panel stat-card-new">
@@ -830,44 +1339,68 @@
             </div>
             <div class="stat-info">
               <span class="stat-label">Anlaşmalı Servisler</span>
-              <div class="stat-val-new" style="color: #3b82f6;">{{ contractedSuppliersCount }} Adet</div>
+              <div class="stat-val-new" style="color: #3b82f6">
+                {{ contractedSuppliersCount }} Adet
+              </div>
             </div>
           </div>
         </div>
 
-
         <!-- Supplier Filter Bar -->
-        <div class="filter-bar glass-panel" style="margin-top: 20px;">
+        <div class="filter-bar glass-panel" style="margin-top: 20px">
           <div class="filter-bar-inner">
             <div class="filter-group">
               <span class="filter-label">🔍</span>
-              <input v-model="supplierFilter.search" class="filter-input" placeholder="Tedarikçi adı, il veya ilçe...">
+              <input
+                v-model="supplierFilter.search"
+                class="filter-input"
+                placeholder="Tedarikçi adı, il veya ilçe..."
+              />
             </div>
             <div class="filter-group">
               <span class="filter-label">🏷️ Kategori</span>
               <div class="filter-pills">
-                <button v-for="t in [{k:'Tümü',l:'Tümü'},{k:'servis',l:'🔧 Servis'},{k:'lastik',l:'🛞 Lastik'},{k:'yol_yardim',l:'🚨 Yol Yardım'},{k:'ikame_arac',l:'🚗 İkame Araç'}]" :key="t.k"
+                <UiButton
+                  v-for="t in [
+                    { k: 'Tümü', l: 'Tümü' },
+                    { k: 'servis', l: '🔧 Servis' },
+                    { k: 'lastik', l: '🛞 Lastik' },
+                    { k: 'yol_yardim', l: '🚨 Yol Yardım' },
+                    { k: 'ikame_arac', l: '🚗 İkame Araç' },
+                  ]"
+                  :key="t.k"
                   :class="['filter-pill', { 'filter-pill-active': supplierFilter.type === t.k }]"
-                  @click="supplierFilter.type = t.k">{{ t.l }}</button>
+                  @click="supplierFilter.type = t.k"
+                  >{{ t.l }}</UiButton
+                >
               </div>
             </div>
             <div class="filter-group">
               <span class="filter-label">🤝 Sözleşme</span>
               <div class="filter-pills">
-                <button v-for="ct in ['Tümü','Yetkili','Anlaşmalı']" :key="ct"
-                  :class="['filter-pill', { 'filter-pill-active': supplierFilter.contractType === ct }]"
-                  @click="supplierFilter.contractType = ct">{{ ct }}</button>
+                <UiButton
+                  v-for="ct in ['Tümü', 'Yetkili', 'Anlaşmalı']"
+                  :key="ct"
+                  :class="[
+                    'filter-pill',
+                    { 'filter-pill-active': supplierFilter.contractType === ct },
+                  ]"
+                  @click="supplierFilter.contractType = ct"
+                  >{{ ct }}</UiButton
+                >
               </div>
             </div>
-            <div class="filter-group" style="margin-left:auto;">
-              <span class="filter-result-count">{{ filteredSuppliers.length }} / {{ suppliers.length }} tedarikçi</span>
+            <div class="filter-group" style="margin-left: auto">
+              <span class="filter-result-count"
+                >{{ filteredSuppliers.length }} / {{ suppliers.length }} tedarikçi</span
+              >
             </div>
           </div>
         </div>
 
         <!-- Suppliers Table -->
-        <div class="glass-panel" style="margin-top: 20px; padding: 15px;">
-          <div v-if="loading" class="text-center" style="padding: 40px 0;">Yükleniyor...</div>
+        <div class="glass-panel" style="margin-top: 20px; padding: 15px">
+          <div v-if="loading" class="text-center" style="padding: 40px 0">Yükleniyor...</div>
           <div v-else-if="filteredSuppliers.length === 0" class="empty-state">
             <p>Kriterlere uygun tedarikçi bulunamadı.</p>
           </div>
@@ -883,66 +1416,113 @@
                   <th>İletişim & E-posta</th>
                   <th>Portal Davet Durumu</th>
                   <th>Hizmetler</th>
-                  <th style="width: 140px; text-align: right;">Aksiyon</th>
+                  <th style="width: 140px; text-align: right">Aksiyon</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="s in filteredSuppliers" :key="s.id">
                   <td>#{{ s.id }}</td>
-                  <td><strong>{{ s.name }}</strong></td>
                   <td>
-                    <span class="badge" :class="getCategoryBadgeClass(s.type)" style="font-size: 0.8rem; padding: 5px 10px;">
+                    <strong>{{ s.name }}</strong>
+                  </td>
+                  <td>
+                    <span
+                      class="badge"
+                      :class="getCategoryBadgeClass(s.type)"
+                      style="font-size: 0.8rem; padding: 5px 10px"
+                    >
                       {{ getTypeName(s.type) }}
                     </span>
                   </td>
                   <td>
-                    <span class="badge" :class="s.contract_type === 'Yetkili' ? 'badge-auth' : 'badge-contracted'">
+                    <span
+                      class="badge"
+                      :class="s.contract_type === 'Yetkili' ? 'badge-auth' : 'badge-contracted'"
+                    >
                       {{ s.contract_type }} Servis
                     </span>
                   </td>
-                  <td style="font-size: 0.85rem; font-weight: 500;">
+                  <td style="font-size: 0.85rem; font-weight: 500">
                     {{ s.city }} / {{ s.district }}
                   </td>
-                  <td style="font-size: 0.85rem;">
-                    <div style="font-family: monospace;">{{ s.phone }}</div>
-                    <div v-if="s.email" style="color: #7c3aed; font-size: 0.8rem; font-weight: 500;">✉️ {{ s.email }}</div>
-                    <div v-else style="color: var(--text-muted); font-size: 0.78rem;">(E-posta yok)</div>
+                  <td style="font-size: 0.85rem">
+                    <div style="font-family: monospace">{{ s.phone }}</div>
+                    <div v-if="s.email" style="color: #7c3aed; font-size: 0.8rem; font-weight: 500">
+                      ✉️ {{ s.email }}
+                    </div>
+                    <div v-else style="color: var(--text-muted); font-size: 0.78rem">
+                      (E-posta yok)
+                    </div>
                   </td>
                   <td>
-                    <span v-if="s.invitation_status === 'Aktif'" class="badge badge-active" style="font-size: 0.78rem;">
+                    <span
+                      v-if="s.invitation_status === 'Aktif'"
+                      class="badge badge-active"
+                      style="font-size: 0.78rem"
+                    >
                       ✓ Aktif (Şifre Koydu)
                     </span>
-                    <span v-else-if="s.invitation_status === 'Davet Gönderildi'" class="badge badge-roadside" style="font-size: 0.78rem;">
+                    <span
+                      v-else-if="s.invitation_status === 'Davet Gönderildi'"
+                      class="badge badge-roadside"
+                      style="font-size: 0.78rem"
+                    >
                       📧 Davet Edildi
                     </span>
-                    <span v-else class="badge" style="background: rgba(148, 163, 184, 0.1); color: #64748b; font-size: 0.78rem;">
+                    <span
+                      v-else
+                      class="badge"
+                      style="
+                        background: rgba(148, 163, 184, 0.1);
+                        color: #64748b;
+                        font-size: 0.78rem;
+                      "
+                    >
                       Davet Edilmedi
                     </span>
                   </td>
                   <td>
-                    <div style="display: flex; gap: 4px; flex-wrap: wrap; max-width: 250px;">
+                    <div style="display: flex; gap: 4px; flex-wrap: wrap; max-width: 250px">
                       <span class="service-tag" v-for="serv in s.services" :key="serv">
                         {{ serv }}
                       </span>
                     </div>
                   </td>
-                  <td style="text-align: right;">
-                    <div style="display: flex; gap: 6px; justify-content: flex-end;">
-                      <button 
-                        @click="sendSupplierInvite(s)" 
-                        class="btn btn-secondary" 
-                        style="padding: 6px 10px; font-size: 0.78rem; border-color: rgba(124, 58, 237, 0.3); color: #7c3aed; background: rgba(124, 58, 237, 0.06); font-weight: 600;"
+                  <td style="text-align: right">
+                    <div style="display: flex; gap: 6px; justify-content: flex-end">
+                      <UiButton
+                        @click="sendSupplierInvite(s)"
+                        class="btn btn-secondary"
+                        style="
+                          padding: 6px 10px;
+                          font-size: 0.78rem;
+                          border-color: rgba(124, 58, 237, 0.3);
+                          color: #7c3aed;
+                          background: rgba(124, 58, 237, 0.06);
+                          font-weight: 600;
+                        "
                       >
-                        {{ s.invitation_status === 'Davet Gönderildi' ? '🔄 Yeniden Davet Et' : '📧 Davetiye Gönder' }}
-                      </button>
-                      <button 
-                        @click="deleteSupplier(s)" 
-                        class="btn btn-secondary" 
-                        style="padding: 6px 10px; font-size: 0.78rem; border-color: rgba(239, 68, 68, 0.3); color: #ef4444; background: rgba(239, 68, 68, 0.06); font-weight: 600;"
+                        {{
+                          s.invitation_status === 'Davet Gönderildi'
+                            ? '🔄 Yeniden Davet Et'
+                            : '📧 Davetiye Gönder'
+                        }}
+                      </UiButton>
+                      <UiButton
+                        @click="deleteSupplier(s)"
+                        class="btn btn-secondary"
+                        style="
+                          padding: 6px 10px;
+                          font-size: 0.78rem;
+                          border-color: rgba(239, 68, 68, 0.3);
+                          color: #ef4444;
+                          background: rgba(239, 68, 68, 0.06);
+                          font-weight: 600;
+                        "
                         title="Tedarikçiyi Sil"
                       >
                         🗑️ Sil
-                      </button>
+                      </UiButton>
                     </div>
                   </td>
                 </tr>
@@ -951,38 +1531,66 @@
           </div>
         </div>
       </div>
+      <ManualSignatureInbox account="admin" />
     </main>
   </div>
 
   <!-- Add Quote Modal -->
-  <div v-if="showAddQuoteModal" class="modal-overlay" @click.self="showAddQuoteModal = false">
-    <div class="glass-panel modal-content fade-in-up" style="max-width: 550px; padding: 30px;">
-      <h2 style="margin-bottom: 20px; color: #7c3aed;">➕ Yeni Teklif Talebi Oluştur</h2>
+  <UiModal v-if="showAddQuoteModal" class="modal-overlay" @close="showAddQuoteModal = false">
+    <div class="glass-panel modal-content fade-in-up" style="max-width: 550px; padding: 30px">
+      <h2 style="margin-bottom: 20px; color: #7c3aed">➕ Yeni Teklif Talebi Oluştur</h2>
 
       <form @submit.prevent="addQuote">
-        <div class="form-group" style="margin-bottom: 15px;">
-          <label class="form-label">Şirket Adı</label>
-          <input type="text" v-model="newQuoteForm.company_name" required class="form-input" placeholder="Örn: Beta Lojistik Ltd.">
+        <div class="form-group" style="margin-bottom: 15px">
+          <UiField class="form-label">Şirket Adı</UiField>
+          <input
+            type="text"
+            v-model="newQuoteForm.company_name"
+            required
+            class="form-input"
+            placeholder="Örn: Beta Lojistik Ltd."
+          />
         </div>
 
-        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px;">
+        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px">
           <div class="form-group">
-            <label class="form-label">E-posta</label>
-            <input type="email" v-model="newQuoteForm.email" required class="form-input" placeholder="info@betalojistik.com">
+            <UiField class="form-label">E-posta</UiField>
+            <input
+              type="email"
+              v-model="newQuoteForm.email"
+              required
+              class="form-input"
+              placeholder="info@betalojistik.com"
+            />
           </div>
           <div class="form-group">
-            <label class="form-label">Telefon</label>
-            <input type="text" v-model="newQuoteForm.phone" required class="form-input" placeholder="+90 216 444 0222">
+            <UiField class="form-label">Telefon</UiField>
+            <input
+              type="text"
+              v-model="newQuoteForm.phone"
+              required
+              class="form-input"
+              placeholder="+90 216 444 0222"
+            />
           </div>
         </div>
 
-        <div class="grid-3" style="gap: 15px; grid-template-columns: 1fr 1fr 1fr; margin-bottom: 15px;">
+        <div
+          class="grid-3"
+          style="gap: 15px; grid-template-columns: 1fr 1fr 1fr; margin-bottom: 15px"
+        >
           <div class="form-group">
-            <label class="form-label">Araç Sayısı</label>
-            <input type="number" min="1" v-model.number="newQuoteForm.vehicle_count" required class="form-input">
+            <UiField class="form-label">Araç Sayısı</UiField>
+            <input
+              type="number"
+              min="1"
+              v-model.number="newQuoteForm.vehicle_count"
+              required
+              class="form-input"
+            />
           </div>
           <div class="form-group">
-            <label class="form-label">Kiralama Süresi (Ay)</label>
+            <UiField class="form-label">Kiralama Süresi (Ay)</UiField>
             <select v-model.number="newQuoteForm.duration_months" required class="form-select">
               <option :value="12">12 Ay</option>
               <option :value="24">24 Ay</option>
@@ -991,8 +1599,12 @@
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label">Yıllık KM Sınırı</label>
-            <select v-model.number="newQuoteForm.estimated_annual_mileage" required class="form-select">
+            <UiField class="form-label">Yıllık KM Sınırı</UiField>
+            <select
+              v-model.number="newQuoteForm.estimated_annual_mileage"
+              required
+              class="form-select"
+            >
               <option :value="10000">10,000 km</option>
               <option :value="20000">20,000 km</option>
               <option :value="30000">30,000 km</option>
@@ -1001,9 +1613,9 @@
           </div>
         </div>
 
-        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 25px;">
+        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 25px">
           <div class="form-group">
-            <label class="form-label">Araç Segmenti</label>
+            <UiField class="form-label">Araç Segmenti</UiField>
             <select v-model="newQuoteForm.vehicle_segment" required class="form-select">
               <option value="A">A Segmenti (Mikro/Şehir)</option>
               <option value="B">B Segmenti (Küçük/Hatchback)</option>
@@ -1013,7 +1625,7 @@
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label">Araç Tipi</label>
+            <UiField class="form-label">Araç Tipi</UiField>
             <select v-model="newQuoteForm.vehicle_type" required class="form-select">
               <option value="Sedan">Sedan</option>
               <option value="SUV">SUV</option>
@@ -1024,45 +1636,68 @@
           </div>
         </div>
 
-        <div style="display: flex; gap: 15px; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 15px;">
-          <button type="button" @click="showAddQuoteModal = false" class="btn btn-secondary">İptal</button>
-          <button type="submit" class="btn btn-primary" style="background: #7c3aed; color: #fff; border: none;">
+        <div
+          style="
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+          "
+        >
+          <UiButton type="button" @click="showAddQuoteModal = false" class="btn btn-secondary"
+            >İptal</UiButton
+          >
+          <UiButton
+            type="submit"
+            class="btn btn-primary"
+            style="background: #7c3aed; color: #fff; border: none"
+          >
             Teklifi Kaydet
-          </button>
+          </UiButton>
         </div>
       </form>
     </div>
-  </div>
+  </UiModal>
 
   <!-- Edit Quote Modal -->
-  <div v-if="showEditQuoteModal" class="modal-overlay" @click.self="showEditQuoteModal = false">
-    <div class="glass-panel modal-content fade-in-up" style="max-width: 550px; padding: 30px;">
-      <h2 style="margin-bottom: 20px; color: #7c3aed;">📝 Teklif Talebi Düzenle</h2>
+  <UiModal v-if="showEditQuoteModal" class="modal-overlay" @close="showEditQuoteModal = false">
+    <div class="glass-panel modal-content fade-in-up" style="max-width: 550px; padding: 30px">
+      <h2 style="margin-bottom: 20px; color: #7c3aed">📝 Teklif Talebi Düzenle</h2>
 
       <form @submit.prevent="submitEditQuote">
-        <div class="form-group" style="margin-bottom: 15px;">
-          <label class="form-label">Şirket Adı</label>
-          <input type="text" v-model="editQuoteForm.company_name" required class="form-input">
+        <div class="form-group" style="margin-bottom: 15px">
+          <UiField class="form-label">Şirket Adı</UiField>
+          <input type="text" v-model="editQuoteForm.company_name" required class="form-input" />
         </div>
 
-        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px;">
+        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px">
           <div class="form-group">
-            <label class="form-label">E-posta</label>
-            <input type="email" v-model="editQuoteForm.email" required class="form-input">
+            <UiField class="form-label">E-posta</UiField>
+            <input type="email" v-model="editQuoteForm.email" required class="form-input" />
           </div>
           <div class="form-group">
-            <label class="form-label">Telefon</label>
-            <input type="text" v-model="editQuoteForm.phone" required class="form-input">
+            <UiField class="form-label">Telefon</UiField>
+            <input type="text" v-model="editQuoteForm.phone" required class="form-input" />
           </div>
         </div>
 
-        <div class="grid-3" style="gap: 15px; grid-template-columns: 1fr 1fr 1fr; margin-bottom: 15px;">
+        <div
+          class="grid-3"
+          style="gap: 15px; grid-template-columns: 1fr 1fr 1fr; margin-bottom: 15px"
+        >
           <div class="form-group">
-            <label class="form-label">Araç Sayısı</label>
-            <input type="number" min="1" v-model.number="editQuoteForm.vehicle_count" required class="form-input">
+            <UiField class="form-label">Araç Sayısı</UiField>
+            <input
+              type="number"
+              min="1"
+              v-model.number="editQuoteForm.vehicle_count"
+              required
+              class="form-input"
+            />
           </div>
           <div class="form-group">
-            <label class="form-label">Kiralama Süresi (Ay)</label>
+            <UiField class="form-label">Kiralama Süresi (Ay)</UiField>
             <select v-model.number="editQuoteForm.duration_months" required class="form-select">
               <option :value="12">12 Ay</option>
               <option :value="24">24 Ay</option>
@@ -1071,8 +1706,12 @@
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label">Yıllık KM Sınırı</label>
-            <select v-model.number="editQuoteForm.estimated_annual_mileage" required class="form-select">
+            <UiField class="form-label">Yıllık KM Sınırı</UiField>
+            <select
+              v-model.number="editQuoteForm.estimated_annual_mileage"
+              required
+              class="form-select"
+            >
               <option :value="10000">10,000 km</option>
               <option :value="20000">20,000 km</option>
               <option :value="30000">30,000 km</option>
@@ -1081,9 +1720,9 @@
           </div>
         </div>
 
-        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px;">
+        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px">
           <div class="form-group">
-            <label class="form-label">Araç Segmenti</label>
+            <UiField class="form-label">Araç Segmenti</UiField>
             <select v-model="editQuoteForm.vehicle_segment" required class="form-select">
               <option value="A">A Segmenti</option>
               <option value="B">B Segmenti</option>
@@ -1093,7 +1732,7 @@
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label">Araç Tipi</label>
+            <UiField class="form-label">Araç Tipi</UiField>
             <select v-model="editQuoteForm.vehicle_type" required class="form-select">
               <option value="Sedan">Sedan</option>
               <option value="SUV">SUV</option>
@@ -1104,112 +1743,206 @@
           </div>
         </div>
 
-        <div class="form-group" style="margin-bottom: 25px;">
-          <label class="form-label">Aylık Toplam Bedel (₺)</label>
-          <input type="number" min="0" v-model.number="editQuoteForm.monthly_price_try" required class="form-input">
+        <div class="form-group" style="margin-bottom: 25px">
+          <UiField class="form-label">Aylık Toplam Bedel (₺)</UiField>
+          <input
+            type="number"
+            min="0"
+            v-model.number="editQuoteForm.monthly_price_try"
+            required
+            class="form-input"
+          />
         </div>
 
-        <div style="display: flex; gap: 15px; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 15px;">
-          <button type="button" @click="showEditQuoteModal = false" class="btn btn-secondary">İptal</button>
-          <button type="submit" class="btn btn-primary" style="background: #7c3aed; color: #fff; border: none;">
+        <div
+          style="
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+          "
+        >
+          <UiButton type="button" @click="showEditQuoteModal = false" class="btn btn-secondary"
+            >İptal</UiButton
+          >
+          <UiButton
+            type="submit"
+            class="btn btn-primary"
+            style="background: #7c3aed; color: #fff; border: none"
+          >
             Değişiklikleri Kaydet
-          </button>
+          </UiButton>
         </div>
       </form>
     </div>
-  </div>
+  </UiModal>
 
   <!-- Edit Customer Modal -->
-  <div v-if="showEditCustomerModal" class="modal-overlay" @click.self="showEditCustomerModal = false">
-    <div class="glass-panel modal-content fade-in-up" style="max-width: 550px; padding: 30px;">
-      <h2 style="margin-bottom: 20px; color: #10b981;">🏢 Müşteri Bilgilerini Düzenle</h2>
+  <UiModal
+    v-if="showEditCustomerModal"
+    class="modal-overlay"
+    @close="showEditCustomerModal = false"
+  >
+    <div class="glass-panel modal-content fade-in-up" style="max-width: 550px; padding: 30px">
+      <h2 style="margin-bottom: 20px; color: #10b981">🏢 Müşteri Bilgilerini Düzenle</h2>
 
       <form @submit.prevent="submitEditCustomer">
-        <div class="form-group" style="margin-bottom: 15px;">
-          <label class="form-label">Şirket Adı</label>
-          <input type="text" v-model="editCustomerForm.company_name" required class="form-input">
+        <div class="form-group" style="margin-bottom: 15px">
+          <UiField class="form-label">Şirket Adı</UiField>
+          <input type="text" v-model="editCustomerForm.company_name" required class="form-input" />
         </div>
 
-        <div class="form-group" style="margin-bottom: 15px;">
-          <label class="form-label">Ticari Unvan</label>
-          <input type="text" v-model="editCustomerForm.legal_title" required class="form-input">
+        <div class="form-group" style="margin-bottom: 15px">
+          <UiField class="form-label">Ticari Unvan</UiField>
+          <input type="text" v-model="editCustomerForm.legal_title" required class="form-input" />
         </div>
 
-        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px;">
+        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px">
           <div class="form-group">
-            <label class="form-label">E-posta</label>
-            <input type="email" v-model="editCustomerForm.email" required class="form-input">
+            <UiField class="form-label">E-posta</UiField>
+            <input type="email" v-model="editCustomerForm.email" required class="form-input" />
           </div>
           <div class="form-group">
-            <label class="form-label">Telefon</label>
-            <input type="text" v-model="editCustomerForm.phone" required class="form-input">
-          </div>
-        </div>
-
-        <div class="form-group" style="margin-bottom: 15px;">
-          <label class="form-label">Adres</label>
-          <input type="text" v-model="editCustomerForm.address" required class="form-input">
-        </div>
-
-        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 25px;">
-          <div class="form-group">
-            <label class="form-label">Kayıtlı Araç Sayısı</label>
-            <input type="number" min="0" v-model.number="editCustomerForm.registered_vehicles_count" required class="form-input">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Aylık Sözleşme Bedeli (₺)</label>
-            <input type="number" min="0" v-model.number="editCustomerForm.contract_amount" required class="form-input">
+            <UiField class="form-label">Telefon</UiField>
+            <input type="text" v-model="editCustomerForm.phone" required class="form-input" />
           </div>
         </div>
 
-        <div style="display: flex; gap: 15px; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 15px;">
-          <button type="button" @click="showEditCustomerModal = false" class="btn btn-secondary">İptal</button>
-          <button type="submit" class="btn btn-primary" style="background: #10b981; color: #fff; border: none; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);">
+        <div class="form-group" style="margin-bottom: 15px">
+          <UiField class="form-label">Adres</UiField>
+          <input type="text" v-model="editCustomerForm.address" required class="form-input" />
+        </div>
+
+        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 25px">
+          <div class="form-group">
+            <UiField class="form-label">Kayıtlı Araç Sayısı</UiField>
+            <input
+              type="number"
+              min="0"
+              v-model.number="editCustomerForm.registered_vehicles_count"
+              required
+              class="form-input"
+            />
+          </div>
+          <div class="form-group">
+            <UiField class="form-label">Aylık Sözleşme Bedeli (₺)</UiField>
+            <input
+              type="number"
+              min="0"
+              v-model.number="editCustomerForm.contract_amount"
+              required
+              class="form-input"
+            />
+          </div>
+        </div>
+
+        <div
+          style="
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+          "
+        >
+          <UiButton type="button" @click="showEditCustomerModal = false" class="btn btn-secondary"
+            >İptal</UiButton
+          >
+          <UiButton
+            type="submit"
+            class="btn btn-primary"
+            style="
+              background: #10b981;
+              color: #fff;
+              border: none;
+              box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+            "
+          >
             Değişiklikleri Kaydet
-          </button>
+          </UiButton>
         </div>
       </form>
     </div>
-  </div>
+  </UiModal>
 
   <!-- Contract Amount Prompt Modal -->
-  <div v-if="showAmountModal" class="modal-overlay" @click.self="cancelContractSigning">
-    <div class="glass-panel modal-content fade-in-up" style="max-width: 450px; padding: 30px;">
-      <h2 style="margin-bottom: 10px; color: #10b981; display: flex; align-items: center; gap: 10px;">
+  <UiModal v-if="showAmountModal" class="modal-overlay" @close="cancelContractSigning">
+    <div class="glass-panel modal-content fade-in-up" style="max-width: 450px; padding: 30px">
+      <h2
+        style="margin-bottom: 10px; color: #10b981; display: flex; align-items: center; gap: 10px"
+      >
         <span>📝</span> Sözleşme İmzalama İşlemi
       </h2>
-      <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 20px;">
-        Teklif onaylandı ve sözleşme imzalanma aşamasına geçildi. Lütfen sözleşmenin kesinleşen **Aylık Toplam İmza Tutarını (₺)** giriniz:
+      <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 20px">
+        Teklif onaylandı ve sözleşme imzalanma aşamasına geçildi. Lütfen sözleşmenin kesinleşen
+        **Aylık Toplam İmza Tutarını (₺)** giriniz:
       </p>
 
       <form @submit.prevent="confirmContractSigning">
-        <div class="form-group" style="margin-bottom: 25px;">
-          <label class="form-label">Sözleşme Aylık Bedeli (₺)</label>
-          <input type="number" min="0" v-model.number="contractAmountInput" required class="form-input" placeholder="Örn: 425000">
+        <div class="form-group" style="margin-bottom: 25px">
+          <UiField class="form-label">Sözleşme Aylık Bedeli (₺)</UiField>
+          <input
+            type="number"
+            min="0"
+            v-model.number="contractAmountInput"
+            required
+            class="form-input"
+            placeholder="Örn: 425000"
+          />
         </div>
 
-        <div style="display: flex; gap: 15px; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 15px;">
-          <button type="button" @click="cancelContractSigning" class="btn btn-secondary">Vazgeç</button>
-          <button type="submit" class="btn btn-primary" style="background: #10b981; color: #fff; border: none; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);">
+        <div
+          style="
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+          "
+        >
+          <UiButton type="button" @click="cancelContractSigning" class="btn btn-secondary"
+            >Vazgeç</UiButton
+          >
+          <UiButton
+            type="submit"
+            class="btn btn-primary"
+            style="
+              background: #10b981;
+              color: #fff;
+              border: none;
+              box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+            "
+          >
             Sözleşmeyi İmzala & Müşteriyi Aktifleştir
-          </button>
+          </UiButton>
         </div>
       </form>
     </div>
-  </div>
+  </UiModal>
 
   <!-- Supplier Bids List Modal (Admin view) -->
-  <div v-if="showBidsModal" class="modal-overlay" @click.self="showBidsModal = false">
-    <div class="glass-panel modal-content fade-in-up" style="max-width: 800px; padding: 30px;">
-      <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px;">
-        <h2 style="color: #7c3aed;">🏢 Tedarikçi Teklifleri (Bids)</h2>
-        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 5px;">
-          <strong>{{ selectedQuoteForBids?.company_name }}</strong> firmasının {{ selectedQuoteForBids?.vehicle_count }} adet {{ selectedQuoteForBids?.vehicle_segment }} Segment {{ selectedQuoteForBids?.vehicle_type }} kiralama talebi için tedarikçilerden gelen teklifler.
+  <UiModal v-if="showBidsModal" class="modal-overlay" @close="showBidsModal = false">
+    <div class="glass-panel modal-content fade-in-up" style="max-width: 800px; padding: 30px">
+      <div
+        style="
+          border-bottom: 1px solid var(--border-color);
+          padding-bottom: 15px;
+          margin-bottom: 20px;
+        "
+      >
+        <h2 style="color: #7c3aed">🏢 Tedarikçi Teklifleri (Bids)</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 5px">
+          <strong>{{ selectedQuoteForBids?.company_name }}</strong> firmasının
+          {{ selectedQuoteForBids?.vehicle_count }} adet
+          {{ selectedQuoteForBids?.vehicle_segment }} Segment
+          {{ selectedQuoteForBids?.vehicle_type }} kiralama talebi için tedarikçilerden gelen
+          teklifler.
         </p>
       </div>
 
-      <div v-if="bidsLoading" class="text-center" style="padding: 30px 0;">Yükleniyor...</div>
-      <div v-else-if="selectedQuoteBids.length === 0" class="empty-state" style="padding: 30px 0;">
+      <div v-if="bidsLoading" class="text-center" style="padding: 30px 0">Yükleniyor...</div>
+      <div v-else-if="selectedQuoteBids.length === 0" class="empty-state" style="padding: 30px 0">
         <p>Bu talep için henüz kiralama tedarikçilerinden teklif gelmedi.</p>
       </div>
       <div v-else class="custom-table-container">
@@ -1221,63 +1954,127 @@
               <th>Teklif Notları</th>
               <th>Tarih</th>
               <th>Durum</th>
-              <th style="width: 150px;">Aksiyon</th>
+              <th style="width: 150px">Aksiyon</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="bid in selectedQuoteBids" :key="bid.id">
-              <td><strong>{{ bid.supplier_name }}</strong></td>
-              <td><strong style="color: #10b981;">₺{{ bid.monthly_price_try?.toLocaleString() }}</strong></td>
-              <td style="font-size: 0.8rem; max-width: 250px; white-space: normal;">{{ bid.notes }}</td>
-              <td style="font-size: 0.8rem;">{{ formatDate(bid.created_at) }}</td>
               <td>
-                <span class="badge" :class="getBidBadgeClass(bid.status)" style="font-size: 0.75rem; padding: 4px 8px;">
+                <strong>{{ bid.supplier_name }}</strong>
+              </td>
+              <td>
+                <strong style="color: #10b981"
+                  >₺{{ bid.monthly_price_try?.toLocaleString() }}</strong
+                >
+              </td>
+              <td style="font-size: 0.8rem; max-width: 250px; white-space: normal">
+                {{ bid.notes }}
+              </td>
+              <td style="font-size: 0.8rem">{{ formatDate(bid.created_at) }}</td>
+              <td>
+                <span
+                  class="badge"
+                  :class="getBidBadgeClass(bid.status)"
+                  style="font-size: 0.75rem; padding: 4px 8px"
+                >
                   {{ bid.status }}
                 </span>
               </td>
               <td>
-                <div v-if="bid.status === 'Beklemede'" style="display: flex; gap: 6px;">
-                  <button @click="acceptSupplierBid(bid.id)" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; background: rgba(16, 185, 129, 0.1); color: #10b981; border-color: rgba(16, 185, 129, 0.2);">
+                <div v-if="bid.status === 'Beklemede'" style="display: flex; gap: 6px">
+                  <UiButton
+                    @click="acceptSupplierBid(bid.id)"
+                    class="btn btn-secondary"
+                    style="
+                      padding: 4px 8px;
+                      font-size: 0.75rem;
+                      background: rgba(16, 185, 129, 0.1);
+                      color: #10b981;
+                      border-color: rgba(16, 185, 129, 0.2);
+                    "
+                  >
                     ✓ Kabul Et
-                  </button>
-                  <button @click="rejectSupplierBid(bid.id)" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.2);">
+                  </UiButton>
+                  <UiButton
+                    @click="rejectSupplierBid(bid.id)"
+                    class="btn btn-secondary"
+                    style="
+                      padding: 4px 8px;
+                      font-size: 0.75rem;
+                      background: rgba(239, 68, 68, 0.1);
+                      color: #ef4444;
+                      border-color: rgba(239, 68, 68, 0.2);
+                    "
+                  >
                     ✕ Reddet
-                  </button>
+                  </UiButton>
                 </div>
-                <span v-else style="color: var(--text-muted); font-size: 0.8rem;">İşlem Tamam</span>
+                <span v-else style="color: var(--text-muted); font-size: 0.8rem">İşlem Tamam</span>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <div style="display: flex; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 15px; margin-top: 20px;">
-        <button @click="showBidsModal = false" class="btn btn-secondary">Kapat</button>
+      <div
+        style="
+          display: flex;
+          justify-content: flex-end;
+          border-top: 1px solid var(--border-color);
+          padding-top: 15px;
+          margin-top: 20px;
+        "
+      >
+        <UiButton @click="showBidsModal = false" class="btn btn-secondary">Kapat</UiButton>
       </div>
     </div>
-  </div>
+  </UiModal>
 
   <!-- Add Supplier Modal -->
-  <div v-if="showAddSupplierModal" class="modal-overlay" @click.self="closeAddSupplierModal">
-    <div class="glass-panel modal-content fade-in-up" style="max-width: 620px; padding: 30px;">
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px;">
-        <h2 style="color: #7c3aed; margin: 0; display: flex; align-items: center; gap: 10px;">
+  <UiModal v-if="showAddSupplierModal" class="modal-overlay" @close="closeAddSupplierModal">
+    <div class="glass-panel modal-content fade-in-up" style="max-width: 620px; padding: 30px">
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 22px;
+        "
+      >
+        <h2 style="color: #7c3aed; margin: 0; display: flex; align-items: center; gap: 10px">
           🏢 Yeni Tedarikçi Ekle
         </h2>
-        <button @click="closeAddSupplierModal" style="background: transparent; border: none; color: var(--text-muted); font-size: 1.4rem; cursor: pointer; line-height: 1;">✕</button>
+        <UiButton
+          @click="closeAddSupplierModal"
+          style="
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.4rem;
+            cursor: pointer;
+            line-height: 1;
+          "
+          >✕</UiButton
+        >
       </div>
 
       <form @submit.prevent="submitAddSupplier">
         <!-- Tedarikçi Adı -->
-        <div class="form-group" style="margin-bottom: 15px;">
-          <label class="form-label">Tedarikçi Adı *</label>
-          <input type="text" v-model="newSupplierForm.name" required class="form-input" placeholder="Örn: OtoPratik Bağcılar">
+        <div class="form-group" style="margin-bottom: 15px">
+          <UiField class="form-label">Tedarikçi Adı *</UiField>
+          <input
+            type="text"
+            v-model="newSupplierForm.name"
+            required
+            class="form-input"
+            placeholder="Örn: OtoPratik Bağcılar"
+          />
         </div>
 
         <!-- Kategori & Servis Tipi -->
-        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px;">
+        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px">
           <div class="form-group">
-            <label class="form-label">Kategori *</label>
+            <UiField class="form-label">Kategori *</UiField>
             <select v-model="newSupplierForm.type" required class="form-select">
               <option value="">Seçiniz...</option>
               <option value="servis">🔧 Yetkili / Anlaşmalı Servis</option>
@@ -1287,7 +2084,7 @@
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label">Sözleşme Tipi *</label>
+            <UiField class="form-label">Sözleşme Tipi *</UiField>
             <select v-model="newSupplierForm.contract_type" required class="form-select">
               <option value="">Seçiniz...</option>
               <option value="Yetkili">🛡️ Yetkili Servis</option>
@@ -1297,197 +2094,479 @@
         </div>
 
         <!-- İl & İlçe -->
-        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px;">
+        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px">
           <div class="form-group">
-            <label class="form-label">İl *</label>
-            <input type="text" v-model="newSupplierForm.city" required class="form-input" placeholder="Örn: İstanbul">
+            <UiField class="form-label">İl *</UiField>
+            <input
+              type="text"
+              v-model="newSupplierForm.city"
+              required
+              class="form-input"
+              placeholder="Örn: İstanbul"
+            />
           </div>
           <div class="form-group">
-            <label class="form-label">İlçe *</label>
-            <input type="text" v-model="newSupplierForm.district" required class="form-input" placeholder="Örn: Bağcılar">
+            <UiField class="form-label">İlçe *</UiField>
+            <input
+              type="text"
+              v-model="newSupplierForm.district"
+              required
+              class="form-input"
+              placeholder="Örn: Bağcılar"
+            />
           </div>
         </div>
 
         <!-- Telefon & E-posta -->
-        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px;">
+        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px">
           <div class="form-group">
-            <label class="form-label">Telefon *</label>
-            <input type="text" v-model="newSupplierForm.phone" required class="form-input" placeholder="+90 212 555 0000">
+            <UiField class="form-label">Telefon *</UiField>
+            <input
+              type="text"
+              v-model="newSupplierForm.phone"
+              required
+              class="form-input"
+              placeholder="+90 212 555 0000"
+            />
           </div>
           <div class="form-group">
-            <label class="form-label">E-posta Adresi (Portal Girişi İçin)</label>
-            <input type="email" v-model="newSupplierForm.email" class="form-input" placeholder="yetkili@servis.com">
+            <UiField class="form-label">E-posta Adresi (Portal Girişi İçin)</UiField>
+            <input
+              type="email"
+              v-model="newSupplierForm.email"
+              class="form-input"
+              placeholder="yetkili@servis.com"
+            />
           </div>
         </div>
 
         <!-- Davetiye Gönder Seçeneği -->
-        <div v-if="newSupplierForm.email" class="form-group" style="margin-bottom: 18px; background: rgba(124, 58, 237, 0.05); padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(124, 58, 237, 0.15);">
-          <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 0.88rem; font-weight: 600; color: #7c3aed; margin: 0;">
-            <input type="checkbox" v-model="newSupplierForm.send_invite" style="width: 18px; height: 18px; accent-color: #7c3aed;">
+        <div
+          v-if="newSupplierForm.email"
+          class="form-group"
+          style="
+            margin-bottom: 18px;
+            background: rgba(124, 58, 237, 0.05);
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(124, 58, 237, 0.15);
+          "
+        >
+          <UiField
+            style="
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              cursor: pointer;
+              font-size: 0.88rem;
+              font-weight: 600;
+              color: #7c3aed;
+              margin: 0;
+            "
+          >
+            <input
+              type="checkbox"
+              v-model="newSupplierForm.send_invite"
+              style="width: 18px; height: 18px; accent-color: #7c3aed"
+            />
             <span>📧 Tedarikçiye şifre oluşturma davetiye e-postası gönderilsin</span>
-          </label>
+          </UiField>
         </div>
 
         <!-- Hizmetler (tag input) -->
-        <div class="form-group" style="margin-bottom: 22px;">
-          <label class="form-label">Sunduğu Hizmetler</label>
+        <div class="form-group" style="margin-bottom: 22px">
+          <UiField class="form-label">Sunduğu Hizmetler</UiField>
           <div class="supplier-tag-input-wrap">
             <div class="supplier-tags">
               <span v-for="(svc, i) in newSupplierForm.services" :key="i" class="supplier-tag-chip">
                 {{ svc }}
-                <button type="button" @click="removeService(i)" class="chip-remove">✕</button>
+                <UiButton type="button" @click="removeService(i)" class="chip-remove">✕</UiButton>
               </span>
               <input
                 v-model="serviceInput"
-                @keydown.enter.prevent="addService"
-                @keydown.comma.prevent="addService"
+                @keydown="handleServiceTagKeydown"
                 class="tag-bare-input"
                 placeholder="Hizmet yazıp Enter'a basın..."
-              >
+              />
             </div>
           </div>
-          <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">
+          <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px">
             Örn: Periyodik Bakım · Fren Sistemi · Akü Değişimi
           </p>
         </div>
 
-        <div style="display: flex; gap: 12px; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 15px;">
-          <button type="button" @click="closeAddSupplierModal" class="btn btn-secondary">İptal</button>
-          <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #7c3aed, #3b82f6); border: none; box-shadow: 0 4px 15px rgba(124,58,237,0.2);">
+        <div
+          style="
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+          "
+        >
+          <UiButton type="button" @click="closeAddSupplierModal" class="btn btn-secondary"
+            >İptal</UiButton
+          >
+          <UiButton
+            type="submit"
+            class="btn btn-primary"
+            style="
+              background: linear-gradient(135deg, #7c3aed, #3b82f6);
+              border: none;
+              box-shadow: 0 4px 15px rgba(124, 58, 237, 0.2);
+            "
+          >
             ✅ Tedarikçiyi Kaydet
-          </button>
+          </UiButton>
         </div>
       </form>
     </div>
-  </div>
+  </UiModal>
 
   <!-- Add Customer Modal -->
-  <div v-if="showAddCustomerModal" class="modal-overlay" @click.self="showAddCustomerModal = false">
-    <div class="glass-panel modal-content fade-in-up" style="max-width: 620px; padding: 30px;">
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px;">
-        <h2 style="color: #10b981; margin: 0; display: flex; align-items: center; gap: 10px;">
+  <UiModal v-if="showAddCustomerModal" class="modal-overlay" @close="showAddCustomerModal = false">
+    <div class="glass-panel modal-content fade-in-up" style="max-width: 620px; padding: 30px">
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 22px;
+        "
+      >
+        <h2 style="color: #10b981; margin: 0; display: flex; align-items: center; gap: 10px">
           🏢 Yeni Müşteri Kaydı Ekle
         </h2>
-        <button @click="showAddCustomerModal = false" style="background: transparent; border: none; color: var(--text-muted); font-size: 1.4rem; cursor: pointer; line-height: 1;">✕</button>
+        <UiButton
+          @click="showAddCustomerModal = false"
+          style="
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.4rem;
+            cursor: pointer;
+            line-height: 1;
+          "
+          >✕</UiButton
+        >
       </div>
 
       <form @submit.prevent="submitNewCustomer">
-        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px;">
+        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px">
           <div class="form-group">
-            <label class="form-label">Şirket Adı *</label>
-            <input type="text" v-model="newCustomerForm.company_name" required class="form-input" placeholder="Örn: Tekno Holding">
+            <UiField class="form-label">Şirket Adı *</UiField>
+            <input
+              type="text"
+              v-model="newCustomerForm.company_name"
+              required
+              class="form-input"
+              placeholder="Örn: Tekno Holding"
+            />
           </div>
           <div class="form-group">
-            <label class="form-label">Ticari Unvan *</label>
-            <input type="text" v-model="newCustomerForm.legal_title" required class="form-input" placeholder="Tekno Holding A.Ş.">
-          </div>
-        </div>
-
-        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px;">
-          <div class="form-group">
-            <label class="form-label">E-posta Adresi *</label>
-            <input type="email" v-model="newCustomerForm.email" required class="form-input" placeholder="info@teknoholding.com">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Telefon Numarası *</label>
-            <input type="tel" v-model="newCustomerForm.phone" required class="form-input" placeholder="+90 212 555 0000">
-          </div>
-        </div>
-
-        <div class="form-group" style="margin-bottom: 15px;">
-          <label class="form-label">Adres *</label>
-          <input type="text" v-model="newCustomerForm.address" required class="form-input" placeholder="Maslak Plazalar No: 18, Şişli, İstanbul">
-        </div>
-
-        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 20px;">
-          <div class="form-group">
-            <label class="form-label">Sözleşmeli Araç Sayısı *</label>
-            <input type="number" v-model.number="newCustomerForm.registered_vehicles_count" required min="1" class="form-input" placeholder="10">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Aylık Sözleşme Bedeli (₺) *</label>
-            <input type="number" v-model.number="newCustomerForm.contract_amount" required min="0" class="form-input" placeholder="250000">
+            <UiField class="form-label">Ticari Unvan *</UiField>
+            <input
+              type="text"
+              v-model="newCustomerForm.legal_title"
+              required
+              class="form-input"
+              placeholder="Tekno Holding A.Ş."
+            />
           </div>
         </div>
 
-        <div class="form-group" style="margin-bottom: 25px; background: rgba(16, 185, 129, 0.05); padding: 14px 16px; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.2);">
-          <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin: 0; color: var(--text-main); font-weight: 600; font-size: 0.88rem;">
-            <input type="checkbox" v-model="newCustomerForm.send_invite" style="width: 18px; height: 18px; accent-color: #10b981; cursor: pointer;">
-            <span>📧 Müşteriye Kurumsal Giriş Daveti Gönder (E-posta ile Şifre Belirleme Bağlantısı)</span>
-          </label>
+        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px">
+          <div class="form-group">
+            <UiField class="form-label">E-posta Adresi *</UiField>
+            <input
+              type="email"
+              v-model="newCustomerForm.email"
+              required
+              class="form-input"
+              placeholder="info@teknoholding.com"
+            />
+          </div>
+          <div class="form-group">
+            <UiField class="form-label">Telefon Numarası *</UiField>
+            <input
+              type="tel"
+              v-model="newCustomerForm.phone"
+              required
+              class="form-input"
+              placeholder="+90 212 555 0000"
+            />
+          </div>
         </div>
 
-        <div style="display: flex; gap: 12px; justify-content: flex-end;">
-          <button type="button" @click="showAddCustomerModal = false" class="btn btn-secondary">İptal</button>
-          <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #10b981, #059669); border: none;">
+        <div class="form-group" style="margin-bottom: 15px">
+          <UiField class="form-label">Adres *</UiField>
+          <input
+            type="text"
+            v-model="newCustomerForm.address"
+            required
+            class="form-input"
+            placeholder="Maslak Plazalar No: 18, Şişli, İstanbul"
+          />
+        </div>
+
+        <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 20px">
+          <div class="form-group">
+            <UiField class="form-label">Sözleşmeli Araç Sayısı *</UiField>
+            <input
+              type="number"
+              v-model.number="newCustomerForm.registered_vehicles_count"
+              required
+              min="1"
+              class="form-input"
+              placeholder="10"
+            />
+          </div>
+          <div class="form-group">
+            <UiField class="form-label">Aylık Sözleşme Bedeli (₺) *</UiField>
+            <input
+              type="number"
+              v-model.number="newCustomerForm.contract_amount"
+              required
+              min="0"
+              class="form-input"
+              placeholder="250000"
+            />
+          </div>
+        </div>
+
+        <div
+          class="form-group"
+          style="
+            margin-bottom: 25px;
+            background: rgba(16, 185, 129, 0.05);
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+          "
+        >
+          <UiField
+            style="
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              cursor: pointer;
+              margin: 0;
+              color: var(--text-main);
+              font-weight: 600;
+              font-size: 0.88rem;
+            "
+          >
+            <input
+              type="checkbox"
+              v-model="newCustomerForm.send_invite"
+              style="width: 18px; height: 18px; accent-color: #10b981; cursor: pointer"
+            />
+            <span
+              >📧 Müşteriye Kurumsal Giriş Daveti Gönder (E-posta ile Şifre Belirleme
+              Bağlantısı)</span
+            >
+          </UiField>
+        </div>
+
+        <div style="display: flex; gap: 12px; justify-content: flex-end">
+          <UiButton type="button" @click="showAddCustomerModal = false" class="btn btn-secondary"
+            >İptal</UiButton
+          >
+          <UiButton
+            type="submit"
+            class="btn btn-primary"
+            style="background: linear-gradient(135deg, #10b981, #059669); border: none"
+          >
             Müşteriyi Kaydet ➔
-          </button>
+          </UiButton>
         </div>
       </form>
     </div>
-  </div>
+  </UiModal>
 
   <!-- Supplier Invite Link Result Modal -->
-  <div v-if="showInviteModal" class="modal-overlay" @click.self="showInviteModal = false">
-    <div class="glass-panel modal-content fade-in-up" style="max-width: 560px; padding: 30px; border-radius: 20px;">
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
-        <h2 style="color: #7c3aed; margin: 0; display: flex; align-items: center; gap: 10px; font-size: 1.3rem;">
+  <UiModal v-if="showInviteModal" class="modal-overlay" @close="showInviteModal = false">
+    <div
+      class="glass-panel modal-content fade-in-up"
+      style="max-width: 560px; padding: 30px; border-radius: 20px"
+    >
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 20px;
+        "
+      >
+        <h2
+          style="
+            color: #7c3aed;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.3rem;
+          "
+        >
           <span>📧</span> Tedarikçi Davet Bağlantısı
         </h2>
-        <button @click="showInviteModal = false" style="background: transparent; border: none; color: var(--text-muted); font-size: 1.4rem; cursor: pointer; line-height: 1;">✕</button>
+        <UiButton
+          @click="showInviteModal = false"
+          style="
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.4rem;
+            cursor: pointer;
+            line-height: 1;
+          "
+          >✕</UiButton
+        >
       </div>
 
       <!-- E-posta Gönderim Durum Bildirimi -->
-      <div v-if="inviteResult.email_sent" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
-        <span style="font-size: 1.6rem;">✅</span>
+      <div
+        v-if="inviteResult.email_sent"
+        style="
+          background: rgba(16, 185, 129, 0.1);
+          border: 1px solid rgba(16, 185, 129, 0.3);
+          border-radius: 12px;
+          padding: 14px 16px;
+          margin-bottom: 20px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        "
+      >
+        <span style="font-size: 1.6rem">✅</span>
         <div>
-          <strong style="color: #10b981; font-size: 0.92rem;">E-Posta Adresine Başarıyla Gönderildi!</strong>
-          <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Davetiye e-postası {{ inviteResult.email }} adresine iletildi.</div>
+          <strong style="color: #10b981; font-size: 0.92rem"
+            >E-Posta Adresine Başarıyla Gönderildi!</strong
+          >
+          <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px">
+            Davetiye e-postası {{ inviteResult.email }} adresine iletildi.
+          </div>
         </div>
       </div>
 
-      <div v-else style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; display: flex; align-items: flex-start; gap: 12px;">
-        <span style="font-size: 1.6rem; line-height: 1;">💡</span>
+      <div
+        v-else
+        style="
+          background: rgba(245, 158, 11, 0.08);
+          border: 1px solid rgba(245, 158, 11, 0.25);
+          border-radius: 12px;
+          padding: 14px 16px;
+          margin-bottom: 20px;
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+        "
+      >
+        <span style="font-size: 1.6rem; line-height: 1">💡</span>
         <div>
-          <strong style="color: #d97706; font-size: 0.92rem;">Davet Bağlantısı Hazırlandı (Manuel İletilebilir)</strong>
-          <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; line-height: 1.4;">
-            SMTP e-posta ayarları yapılmadığı için e-posta doğrudan ulaştırılamadı. Aşağıdaki davet bağlantısını kopyalayarak WhatsApp veya e-posta ile doğrudan iletebilirsiniz.
+          <strong style="color: #d97706; font-size: 0.92rem"
+            >Davet Bağlantısı Hazırlandı (Manuel İletilebilir)</strong
+          >
+          <div
+            style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; line-height: 1.4"
+          >
+            SMTP e-posta ayarları yapılmadığı için e-posta doğrudan ulaştırılamadı. Aşağıdaki davet
+            bağlantısını kopyalayarak WhatsApp veya e-posta ile doğrudan iletebilirsiniz.
           </div>
         </div>
       </div>
 
       <!-- Tedarikçi Detay Kartı -->
-      <div style="background: rgba(124, 58, 237, 0.04); border: 1px solid rgba(124, 58, 237, 0.12); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px;">
-        <div style="font-size: 0.88rem; margin-bottom: 4px; color: var(--text-main);"><strong>Tedarikçi / Servis:</strong> {{ inviteResult.supplier_name }}</div>
-        <div style="font-size: 0.85rem; color: var(--text-muted);"><strong>E-posta:</strong> {{ inviteResult.email }}</div>
+      <div
+        style="
+          background: rgba(124, 58, 237, 0.04);
+          border: 1px solid rgba(124, 58, 237, 0.12);
+          border-radius: 12px;
+          padding: 14px 16px;
+          margin-bottom: 20px;
+        "
+      >
+        <div style="font-size: 0.88rem; margin-bottom: 4px; color: var(--text-main)">
+          <strong>Tedarikçi / Servis:</strong> {{ inviteResult.supplier_name }}
+        </div>
+        <div style="font-size: 0.85rem; color: var(--text-muted)">
+          <strong>E-posta:</strong> {{ inviteResult.email }}
+        </div>
       </div>
 
       <!-- Davet Linki Input Kutusu -->
-      <div class="form-group" style="margin-bottom: 22px;">
-        <label class="form-label" style="font-weight: 600; color: #334155;">Şifre Oluşturma Davet Bağlantısı</label>
-        <div style="display: flex; gap: 8px;">
-          <input type="text" readonly :value="inviteResult.invite_url" class="form-input" style="font-family: monospace; font-size: 0.82rem; background: #f8fafc; color: #0f172a;">
-          <button @click="copyInviteUrl" class="btn" style="white-space: nowrap; border-color: #7c3aed; color: #ffffff; background: linear-gradient(135deg, #7c3aed, #db2777); font-weight: 600; padding: 0 16px;">
+      <div class="form-group" style="margin-bottom: 22px">
+        <UiField class="form-label" style="font-weight: 600; color: #334155"
+          >Şifre Oluşturma Davet Bağlantısı</UiField
+        >
+        <div style="display: flex; gap: 8px">
+          <input
+            type="text"
+            readonly
+            :value="inviteResult.invite_url"
+            class="form-input"
+            style="font-family: monospace; font-size: 0.82rem; background: #f8fafc; color: #0f172a"
+          />
+          <UiButton
+            @click="copyInviteUrl"
+            class="btn"
+            style="
+              white-space: nowrap;
+              border-color: #7c3aed;
+              color: #ffffff;
+              background: linear-gradient(135deg, #7c3aed, #db2777);
+              font-weight: 600;
+              padding: 0 16px;
+            "
+          >
             {{ copied ? '✓ Kopyalandı!' : '📋 Linki Kopyala' }}
-          </button>
+          </UiButton>
         </div>
       </div>
 
       <!-- WhatsApp / Manuel Paylaşım -->
-      <div style="display: flex; gap: 12px; justify-content: space-between; border-top: 1px solid var(--border-color); padding-top: 18px;">
-        <a :href="whatsappShareUrl" target="_blank" class="btn" style="background: #25D366; color: #ffffff; text-decoration: none; display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.88rem; border-radius: 10px; padding: 10px 18px; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.25);">
+      <div
+        style="
+          display: flex;
+          gap: 12px;
+          justify-content: space-between;
+          border-top: 1px solid var(--border-color);
+          padding-top: 18px;
+        "
+      >
+        <a
+          :href="whatsappShareUrl"
+          target="_blank"
+          class="btn"
+          style="
+            background: #25d366;
+            color: #ffffff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            font-size: 0.88rem;
+            border-radius: 10px;
+            padding: 10px 18px;
+            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.25);
+          "
+        >
           💬 WhatsApp İle Gönder
         </a>
-        <button @click="showInviteModal = false" class="btn btn-secondary">Tamam / Kapat</button>
+        <UiButton @click="showInviteModal = false" class="btn btn-secondary"
+          >Tamam / Kapat</UiButton
+        >
       </div>
     </div>
-  </div>
-
+  </UiModal>
 </template>
 
-
 <script setup>
+import { UiButton, UiField, UiModal } from '../components/ui/index.js'
+
 import { ref, reactive, computed, onMounted } from 'vue'
+import ManualSignatureInbox from '../components/ManualSignatureInbox.vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -1500,25 +2579,43 @@ const customerFilter = reactive({ search: '', fleetStatus: 'Tümü' })
 const supplierFilter = reactive({ search: '', type: 'Tümü', contractType: 'Tümü' })
 
 const getQuoteTierPriority = (status) => {
-  if (['Teklif Bekleniyor', 'Teklif Geldi', 'Teklif Verildi', 'Değerlendirmede'].includes(status)) return 1
+  if (['Teklif Bekleniyor', 'Teklif Geldi', 'Teklif Verildi', 'Değerlendirmede'].includes(status))
+    return 1
   if (['Kabul Edildi', 'Sözleşme İmzalandı', 'Sözleşme Yapıldı'].includes(status)) return 2
   if (['İstek Silindi', 'Silindi', 'Reddedildi'].includes(status)) return 3
   return 1
 }
 
 const filteredQuotes = computed(() => {
-  const list = quotes.value.filter(q => {
-    const matchSearch = !quoteFilter.search ||
+  const list = quotes.value.filter((q) => {
+    const matchSearch =
+      !quoteFilter.search ||
       q.company_name?.toLowerCase().includes(quoteFilter.search.toLowerCase()) ||
       q.email?.toLowerCase().includes(quoteFilter.search.toLowerCase())
-    
-    let matchStatus = false
+
+    let matchStatus
     if (quoteFilter.status === 'Tümü') matchStatus = true
-    else if (quoteFilter.status === 'Teklif Bekleniyor') matchStatus = (q.status === 'Teklif Bekleniyor')
-    else if (quoteFilter.status === 'Teklif Geldi') matchStatus = (q.status === 'Teklif Geldi' || q.status === 'Teklif Verildi' || (q.bids && q.bids.length > 0 && !['Kabul Edildi', 'Sözleşme İmzalandı', 'Sözleşme Yapıldı', 'İstek Silindi', 'Silindi', 'Reddedildi'].includes(q.status)))
-    else if (quoteFilter.status === 'Sözleşme Yapıldı') matchStatus = ['Sözleşme Yapıldı', 'Kabul Edildi', 'Sözleşme İmzalandı'].includes(q.status)
-    else if (quoteFilter.status === 'Silinen') matchStatus = ['İstek Silindi', 'Silindi', 'Reddedildi'].includes(q.status)
-    else matchStatus = (q.status === quoteFilter.status)
+    else if (quoteFilter.status === 'Teklif Bekleniyor')
+      matchStatus = q.status === 'Teklif Bekleniyor'
+    else if (quoteFilter.status === 'Teklif Geldi')
+      matchStatus =
+        q.status === 'Teklif Geldi' ||
+        q.status === 'Teklif Verildi' ||
+        (q.bids &&
+          q.bids.length > 0 &&
+          ![
+            'Kabul Edildi',
+            'Sözleşme İmzalandı',
+            'Sözleşme Yapıldı',
+            'İstek Silindi',
+            'Silindi',
+            'Reddedildi',
+          ].includes(q.status))
+    else if (quoteFilter.status === 'Sözleşme Yapıldı')
+      matchStatus = ['Sözleşme Yapıldı', 'Kabul Edildi', 'Sözleşme İmzalandı'].includes(q.status)
+    else if (quoteFilter.status === 'Silinen')
+      matchStatus = ['İstek Silindi', 'Silindi', 'Reddedildi'].includes(q.status)
+    else matchStatus = q.status === quoteFilter.status
 
     const matchSegment = quoteFilter.segment === 'Tümü' || q.vehicle_segment === quoteFilter.segment
     return matchSearch && matchStatus && matchSegment
@@ -1530,19 +2627,21 @@ const filteredQuotes = computed(() => {
     if (priorityA !== priorityB) {
       return priorityA - priorityB
     }
-    const timeA = a.created_at ? new Date(a.created_at).getTime() : (a.id || 0)
-    const timeB = b.created_at ? new Date(b.created_at).getTime() : (b.id || 0)
+    const timeA = a.created_at ? new Date(a.created_at).getTime() : a.id || 0
+    const timeB = b.created_at ? new Date(b.created_at).getTime() : b.id || 0
     return timeB - timeA
   })
 })
 
 const filteredCustomers = computed(() => {
-  return customers.value.filter(c => {
-    const matchSearch = !customerFilter.search ||
+  return customers.value.filter((c) => {
+    const matchSearch =
+      !customerFilter.search ||
       c.company_name?.toLowerCase().includes(customerFilter.search.toLowerCase()) ||
       c.email?.toLowerCase().includes(customerFilter.search.toLowerCase()) ||
       c.phone?.includes(customerFilter.search)
-    const matchFleet = customerFilter.fleetStatus === 'Tümü' ||
+    const matchFleet =
+      customerFilter.fleetStatus === 'Tümü' ||
       (customerFilter.fleetStatus === 'Eksikli' && (c.vehicle_deficit || 0) > 0) ||
       (customerFilter.fleetStatus === 'Tam' && (c.vehicle_deficit || 0) === 0)
     return matchSearch && matchFleet
@@ -1550,13 +2649,15 @@ const filteredCustomers = computed(() => {
 })
 
 const filteredSuppliers = computed(() => {
-  return suppliers.value.filter(s => {
-    const matchSearch = !supplierFilter.search ||
+  return suppliers.value.filter((s) => {
+    const matchSearch =
+      !supplierFilter.search ||
       s.name?.toLowerCase().includes(supplierFilter.search.toLowerCase()) ||
       s.city?.toLowerCase().includes(supplierFilter.search.toLowerCase()) ||
       s.district?.toLowerCase().includes(supplierFilter.search.toLowerCase())
     const matchType = supplierFilter.type === 'Tümü' || s.type === supplierFilter.type
-    const matchContract = supplierFilter.contractType === 'Tümü' || s.contract_type === supplierFilter.contractType
+    const matchContract =
+      supplierFilter.contractType === 'Tümü' || s.contract_type === supplierFilter.contractType
     return matchSearch && matchType && matchContract
   })
 })
@@ -1566,8 +2667,9 @@ const vehicles = ref([])
 const vehicleFilter = reactive({ search: '', status: 'Tümü', fuel: 'Tümü' })
 
 const filteredVehicles = computed(() => {
-  return vehicles.value.filter(v => {
-    const matchSearch = !vehicleFilter.search ||
+  return vehicles.value.filter((v) => {
+    const matchSearch =
+      !vehicleFilter.search ||
       v.plate?.toLowerCase().includes(vehicleFilter.search.toLowerCase()) ||
       v.brand?.toLowerCase().includes(vehicleFilter.search.toLowerCase()) ||
       v.model?.toLowerCase().includes(vehicleFilter.search.toLowerCase()) ||
@@ -1579,11 +2681,13 @@ const filteredVehicles = computed(() => {
 })
 
 const activeVehiclesCount = computed(() => {
-  return vehicles.value.filter(v => v.status === 'Aktif' && v.is_active).length
+  return vehicles.value.filter((v) => v.status === 'Aktif' && v.is_active).length
 })
 
 const serviceVehiclesCount = computed(() => {
-  return vehicles.value.filter(v => ['Serviste', 'Lastik Değişiminde', 'Yol Yardımında'].includes(v.status) && v.is_active).length
+  return vehicles.value.filter(
+    (v) => ['Serviste', 'Lastik Değişiminde', 'Yol Yardımında'].includes(v.status) && v.is_active,
+  ).length
 })
 
 const quotes = ref([])
@@ -1601,7 +2705,7 @@ const newQuoteForm = reactive({
   duration_months: 24,
   vehicle_segment: 'C',
   vehicle_type: 'Sedan',
-  estimated_annual_mileage: 20000
+  estimated_annual_mileage: 20000,
 })
 
 // Edit Quote Modal State
@@ -1617,7 +2721,7 @@ const editQuoteForm = reactive({
   vehicle_type: 'Sedan',
   estimated_annual_mileage: 20000,
   monthly_price_try: 0,
-  status: ''
+  status: '',
 })
 
 // Edit Customer Modal State
@@ -1630,7 +2734,7 @@ const editCustomerForm = reactive({
   phone: '',
   address: '',
   registered_vehicles_count: 0,
-  contract_amount: 0
+  contract_amount: 0,
 })
 
 // Customer Detail View State
@@ -1643,7 +2747,7 @@ const newCustomerForm = reactive({
   address: '',
   registered_vehicles_count: 1,
   contract_amount: 0,
-  send_invite: false
+  send_invite: false,
 })
 
 const submitNewCustomer = async () => {
@@ -1652,7 +2756,7 @@ const submitNewCustomer = async () => {
     const res = await fetch('/api/admin/customers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newCustomerForm)
+      body: JSON.stringify(newCustomerForm),
     })
     if (res.ok) {
       const added = await res.json()
@@ -1666,7 +2770,14 @@ const submitNewCustomer = async () => {
       }
 
       Object.assign(newCustomerForm, {
-        company_name: '', legal_title: '', email: '', phone: '', address: '', registered_vehicles_count: 1, contract_amount: 0, send_invite: false
+        company_name: '',
+        legal_title: '',
+        email: '',
+        phone: '',
+        address: '',
+        registered_vehicles_count: 1,
+        contract_amount: 0,
+        send_invite: false,
       })
     } else {
       const err = await res.json().catch(() => ({}))
@@ -1681,7 +2792,7 @@ const submitNewCustomer = async () => {
 const sendCustomerInvite = async (customer) => {
   try {
     const res = await fetch(`/api/admin/customers/${customer.id}/invite`, {
-      method: 'POST'
+      method: 'POST',
     })
     if (res.ok) {
       const data = await res.json()
@@ -1691,7 +2802,7 @@ const sendCustomerInvite = async (customer) => {
       inviteResult.email_sent = data.email_sent
       inviteResult.smtp_configured = data.smtp_configured
       inviteResult.message = data.message
-      
+
       showInviteModal.value = true
       await fetchCustomers()
     } else {
@@ -1705,10 +2816,11 @@ const sendCustomerInvite = async (customer) => {
 }
 
 const deleteCustomer = async (customer) => {
-  if (!confirm(`'${customer.company_name}' adlı müşteriyi silmek istediğinizden emin misiniz?`)) return
+  if (!confirm(`'${customer.company_name}' adlı müşteriyi silmek istediğinizden emin misiniz?`))
+    return
   try {
     const res = await fetch(`/api/admin/customers/${customer.id}`, {
-      method: 'DELETE'
+      method: 'DELETE',
     })
     if (res.ok) {
       await fetchCustomers()
@@ -1748,8 +2860,14 @@ const newSupplierForm = reactive({
   city: '',
   district: '',
   services: [],
-  contract_type: ''
+  contract_type: '',
 })
+
+function handleServiceTagKeydown(event) {
+  if (event.key !== 'Enter' && event.key !== ',') return
+  event.preventDefault()
+  addService()
+}
 
 const addService = () => {
   const val = serviceInput.value.trim().replace(/,$/, '')
@@ -1765,7 +2883,17 @@ const removeService = (index) => {
 
 const closeAddSupplierModal = () => {
   showAddSupplierModal.value = false
-  Object.assign(newSupplierForm, { name: '', type: '', phone: '', email: '', send_invite: false, city: '', district: '', services: [], contract_type: '' })
+  Object.assign(newSupplierForm, {
+    name: '',
+    type: '',
+    phone: '',
+    email: '',
+    send_invite: false,
+    city: '',
+    district: '',
+    services: [],
+    contract_type: '',
+  })
   serviceInput.value = ''
 }
 
@@ -1778,14 +2906,16 @@ const inviteResult = reactive({
   invite_url: '',
   email_sent: false,
   smtp_configured: false,
-  message: ''
+  message: '',
 })
 
 const copyInviteUrl = () => {
   if (!inviteResult.invite_url) return
   navigator.clipboard.writeText(inviteResult.invite_url)
   copied.value = true
-  setTimeout(() => { copied.value = false }, 2500)
+  setTimeout(() => {
+    copied.value = false
+  }, 2500)
 }
 
 const whatsappShareUrl = computed(() => {
@@ -1801,13 +2931,13 @@ const submitAddSupplier = async () => {
     const res = await fetch('/api/admin/suppliers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newSupplierForm)
+      body: JSON.stringify(newSupplierForm),
     })
     if (res.ok) {
       const added = await res.json()
       await fetchSuppliers()
       closeAddSupplierModal()
-      
+
       if (shouldInvite && added.email) {
         // Trigger explicit invite modal feedback
         await sendSupplierInvite(added)
@@ -1827,14 +2957,17 @@ const submitAddSupplier = async () => {
 const sendSupplierInvite = async (supplier) => {
   let targetEmail = supplier.email
   if (!targetEmail) {
-    const inputEmail = prompt(`"${supplier.name}" için davet gönderilecek e-posta adresini giriniz:`, '')
+    const inputEmail = prompt(
+      `"${supplier.name}" için davet gönderilecek e-posta adresini giriniz:`,
+      '',
+    )
     if (!inputEmail || !inputEmail.trim()) return
     targetEmail = inputEmail.trim()
   }
 
   try {
     const res = await fetch(`/api/admin/suppliers/${supplier.id}/invite`, {
-      method: 'POST'
+      method: 'POST',
     })
     const data = await res.json()
     if (res.ok) {
@@ -1844,7 +2977,7 @@ const sendSupplierInvite = async (supplier) => {
         invite_url: data.invite_url,
         email_sent: data.email_sent,
         smtp_configured: data.smtp_configured,
-        message: data.message
+        message: data.message,
       })
       showInviteModal.value = true
       await fetchSuppliers()
@@ -1858,7 +2991,8 @@ const sendSupplierInvite = async (supplier) => {
 }
 
 const deleteSupplier = async (supplier) => {
-  if (!confirm(`"${supplier.name}" tedarikçisini/servisini silmek istediğinizden emin misiniz?`)) return
+  if (!confirm(`"${supplier.name}" tedarikçisini/servisini silmek istediğinizden emin misiniz?`))
+    return
   try {
     const res = await fetch(`/api/admin/suppliers/${supplier.id}`, { method: 'DELETE' })
     if (res.ok) {
@@ -1882,28 +3016,23 @@ const selectedQuoteForBids = ref(null)
 const selectedQuoteBids = ref([])
 
 // QUOTES COMPUTED
-const totalProposedVehicles = computed(() => {
-  return quotes.value.reduce((acc, q) => acc + q.vehicle_count, 0)
-})
-
-const totalProposedRevenue = computed(() => {
-  return quotes.value.reduce((acc, q) => acc + q.monthly_price_try, 0)
-})
 
 const totalSupplierBidsCount = computed(() => {
   return quotes.value.reduce((acc, q) => acc + (q.bids ? q.bids.length : 0), 0)
 })
 
 const acceptedQuotesCount = computed(() => {
-  return quotes.value.filter(q => q.status === 'Kabul Edildi' || q.status === 'Sözleşme İmzalandı').length
+  return quotes.value.filter(
+    (q) => q.status === 'Kabul Edildi' || q.status === 'Sözleşme İmzalandı',
+  ).length
 })
 
 const rejectedQuotesCount = computed(() => {
-  return quotes.value.filter(q => q.status === 'Reddedildi').length
+  return quotes.value.filter((q) => q.status === 'Reddedildi').length
 })
 
 const deletedQuotesCount = computed(() => {
-  return quotes.value.filter(q => q.status === 'İstek Silindi' || q.status === 'Silindi').length
+  return quotes.value.filter((q) => q.status === 'İstek Silindi' || q.status === 'Silindi').length
 })
 
 // CUSTOMERS COMPUTED
@@ -1917,14 +3046,14 @@ const totalCustomerRevenue = computed(() => {
 
 // SUPPLIERS COMPUTED
 const authorizedSuppliersCount = computed(() => {
-  return suppliers.value.filter(s => s.contract_type === 'Yetkili').length
+  return suppliers.value.filter((s) => s.contract_type === 'Yetkili').length
 })
 
 // Detail Tab state for customer modal
 const detailTab = ref('vehicles')
 
 const contractedSuppliersCount = computed(() => {
-  return suppliers.value.filter(s => s.contract_type === 'Anlaşmalı').length
+  return suppliers.value.filter((s) => s.contract_type === 'Anlaşmalı').length
 })
 
 const fetchQuotes = async () => {
@@ -1971,15 +3100,14 @@ const fetchVehicles = async () => {
   }
 }
 
-
 const addQuote = async () => {
   try {
     const res = await fetch('/api/quotes', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(newQuoteForm)
+      body: JSON.stringify(newQuoteForm),
     })
     if (res.ok) {
       await fetchQuotes()
@@ -2021,9 +3149,9 @@ const submitEditQuote = async () => {
     const res = await fetch(`/api/quotes/${selectedQuoteId.value}`, {
       method: 'PUT',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(editQuoteForm)
+      body: JSON.stringify(editQuoteForm),
     })
     if (res.ok) {
       await fetchQuotes()
@@ -2053,9 +3181,9 @@ const submitEditCustomer = async () => {
     const res = await fetch(`/api/admin/customers/${selectedCustomerId.value}`, {
       method: 'PUT',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(editCustomerForm)
+      body: JSON.stringify(editCustomerForm),
     })
     if (res.ok) {
       await fetchCustomers()
@@ -2067,7 +3195,6 @@ const submitEditCustomer = async () => {
     console.error('Error updating customer:', err)
   }
 }
-
 
 // Fetch vehicles for a customer
 const fetchCustomerVehicles = async (customerId) => {
@@ -2115,10 +3242,9 @@ const closeCustomerDetails = () => {
   customerServices.value = []
 }
 
-
 const onStatusChange = (quoteId, newStatus) => {
   if (newStatus === 'Sözleşme İmzalandı') {
-    const quote = quotes.value.find(q => q.id === quoteId)
+    const quote = quotes.value.find((q) => q.id === quoteId)
     contractAmountInput.value = quote ? quote.monthly_price_try : 0
     pendingQuoteId.value = quoteId
     showAmountModal.value = true
@@ -2160,9 +3286,9 @@ const acceptSupplierBid = async (bidId) => {
     const res = await fetch(`/api/bids/${bidId}/status`, {
       method: 'PUT',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ status: 'Kabul Edildi' })
+      body: JSON.stringify({ status: 'Kabul Edildi' }),
     })
     if (res.ok) {
       await openQuoteBidsModal(selectedQuoteForBids.value)
@@ -2180,9 +3306,9 @@ const rejectSupplierBid = async (bidId) => {
     const res = await fetch(`/api/bids/${bidId}/status`, {
       method: 'PUT',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ status: 'Reddedildi' })
+      body: JSON.stringify({ status: 'Reddedildi' }),
     })
     if (res.ok) {
       await openQuoteBidsModal(selectedQuoteForBids.value)
@@ -2198,7 +3324,7 @@ const getBidBadgeClass = (status) => {
   return {
     'badge-active': status === 'Kabul Edildi',
     'badge-roadside': status === 'Beklemede',
-    'badge-old-reason': status === 'Reddedildi'
+    'badge-old-reason': status === 'Reddedildi',
   }
 }
 
@@ -2207,14 +3333,14 @@ const updateStatus = async (quoteId, newStatus, contractAmount) => {
     const response = await fetch(`/api/quotes/${quoteId}/status`, {
       method: 'PUT',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ 
-        status: newStatus, 
-        contract_amount: contractAmount 
-      })
+      body: JSON.stringify({
+        status: newStatus,
+        contract_amount: contractAmount,
+      }),
     })
-    
+
     if (response.ok) {
       console.log(`Quote #${quoteId} status set to ${newStatus}`)
       await fetchQuotes()
@@ -2235,7 +3361,7 @@ const getStatusClass = (status) => {
     'status-accepted': status === 'Kabul Edildi',
     'status-signed': status === 'Sözleşme İmzalandı',
     'status-rejected': status === 'Reddedildi',
-    'status-deleted': status === 'İstek Silindi' || status === 'Silindi'
+    'status-deleted': status === 'İstek Silindi' || status === 'Silindi',
   }
 }
 
@@ -2244,16 +3370,16 @@ const getCategoryBadgeClass = (type) => {
     'badge-active': type === 'servis',
     'badge-service': type === 'lastik',
     'badge-roadside': type === 'yol_yardim',
-    'badge-replacement': type === 'ikame_arac'
+    'badge-replacement': type === 'ikame_arac',
   }
 }
 
 const getTypeName = (type) => {
   const map = {
-    'servis': 'Yetkili Servis',
-    'lastik': 'Lastik Bayi',
-    'yol_yardim': 'Yol Yardım',
-    'ikame_arac': 'İkame Araç'
+    servis: 'Yetkili Servis',
+    lastik: 'Lastik Bayi',
+    yol_yardim: 'Yol Yardım',
+    ikame_arac: 'İkame Araç',
   }
   return map[type] || type
 }
@@ -2264,7 +3390,7 @@ const formatDate = (dateStr) => {
     const d = new Date(dateStr)
     if (isNaN(d.getTime())) return dateStr
     return d.toLocaleDateString('tr-TR')
-  } catch (e) {
+  } catch {
     return dateStr
   }
 }
@@ -2297,7 +3423,15 @@ const fetchVehicleServices = async (vehicleId) => {
   }
 }
 
-const logout = () => {
+const logout = async () => {
+  try {
+    await fetch('/api/auth/logout', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${localStorage.getItem('fleetcar_admin_token') || ''}` },
+    })
+  } catch {
+    // Logout still clears local credentials when the server is unavailable.
+  }
   localStorage.removeItem('fleetcar_admin_token')
   localStorage.removeItem('fleetcar_admin_user')
   router.push('/admin-login')
@@ -2309,14 +3443,9 @@ onMounted(async () => {
     router.push('/admin-login')
     return
   }
-  
+
   loading.value = true
-  await Promise.all([
-    fetchQuotes(),
-    fetchCustomers(),
-    fetchSuppliers(),
-    fetchVehicles()
-  ])
+  await Promise.all([fetchQuotes(), fetchCustomers(), fetchSuppliers(), fetchVehicles()])
   loading.value = false
 })
 </script>
@@ -2425,7 +3554,6 @@ onMounted(async () => {
   color: var(--text-main);
   line-height: 1.2;
 }
-
 
 .status-select {
   padding: 6px 12px;
@@ -2546,9 +3674,9 @@ onMounted(async () => {
   transition: all 0.2s;
 }
 .cd-back-btn:hover {
-  background: rgba(255,255,255,0.06);
+  background: rgba(255, 255, 255, 0.06);
   color: var(--text-primary);
-  border-color: rgba(255,255,255,0.2);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 /* Hero card */
@@ -2560,7 +3688,7 @@ onMounted(async () => {
   margin-bottom: 24px;
   flex-wrap: wrap;
   border: 1px solid rgba(16, 185, 129, 0.2);
-  background: linear-gradient(135deg, rgba(16,185,129,0.05) 0%, rgba(124,58,237,0.05) 100%);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(124, 58, 237, 0.05) 100%);
 }
 
 .cd-hero-avatar {
@@ -2575,7 +3703,7 @@ onMounted(async () => {
   font-weight: 800;
   color: #fff;
   flex-shrink: 0;
-  box-shadow: 0 8px 24px rgba(16,185,129,0.3);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
 }
 
 .cd-hero-info {
@@ -2611,12 +3739,12 @@ onMounted(async () => {
 }
 
 .cd-hero-badge {
-  background: rgba(255,255,255,0.04);
+  background: rgba(255, 255, 255, 0.04);
   border-radius: 12px;
   padding: 14px 20px;
   text-align: center;
   min-width: 110px;
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 .cd-badge-label {
   font-size: 0.72rem;
@@ -2629,10 +3757,18 @@ onMounted(async () => {
   font-size: 1.1rem;
   font-weight: 800;
 }
-.cd-badge-green .cd-badge-value  { color: #10b981; }
-.cd-badge-purple .cd-badge-value { color: #7c3aed; }
-.cd-badge-blue .cd-badge-value   { color: #3b82f6; }
-.cd-badge-amber .cd-badge-value  { color: #f59e0b; }
+.cd-badge-green .cd-badge-value {
+  color: #10b981;
+}
+.cd-badge-purple .cd-badge-value {
+  color: #7c3aed;
+}
+.cd-badge-blue .cd-badge-value {
+  color: #3b82f6;
+}
+.cd-badge-amber .cd-badge-value {
+  color: #f59e0b;
+}
 
 /* Tabs */
 .cd-tabs {
@@ -2654,7 +3790,9 @@ onMounted(async () => {
   margin-bottom: -1px;
   transition: all 0.2s;
 }
-.cd-tab:hover { color: var(--text-primary); }
+.cd-tab:hover {
+  color: var(--text-primary);
+}
 .cd-tab-active {
   color: #10b981 !important;
   border-bottom-color: #10b981;
@@ -2664,8 +3802,14 @@ onMounted(async () => {
   animation: fadeSlide 0.25s ease;
 }
 @keyframes fadeSlide {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Vehicle grid */
@@ -2678,11 +3822,13 @@ onMounted(async () => {
 .cd-vehicle-card {
   padding: 20px;
   border-radius: 14px;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 .cd-vehicle-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .cd-vehicle-header {
@@ -2722,27 +3868,32 @@ onMounted(async () => {
   align-items: center;
   font-size: 0.82rem;
   padding: 4px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
-.cd-vd-label { color: var(--text-muted); }
-.cd-vd-val   { color: var(--text-primary); font-weight: 500; }
+.cd-vd-label {
+  color: var(--text-muted);
+}
+.cd-vd-val {
+  color: var(--text-primary);
+  font-weight: 500;
+}
 
 /* Hover highlight for customer rows */
 .customer-row:hover td {
-  background: rgba(16,185,129,0.05);
+  background: rgba(16, 185, 129, 0.05);
 }
 
 /* Supplier tag input */
 .supplier-tag-input-wrap {
   border: 1px solid var(--border-color);
   border-radius: 10px;
-  background: var(--glass-bg, rgba(255,255,255,0.04));
+  background: var(--glass-bg, rgba(255, 255, 255, 0.04));
   padding: 8px 10px;
   transition: border-color 0.2s;
 }
 .supplier-tag-input-wrap:focus-within {
   border-color: #7c3aed;
-  box-shadow: 0 0 0 3px rgba(124,58,237,0.12);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
 }
 .supplier-tags {
   display: flex;
@@ -2754,9 +3905,9 @@ onMounted(async () => {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  background: rgba(124,58,237,0.15);
+  background: rgba(124, 58, 237, 0.15);
   color: #c084fc;
-  border: 1px solid rgba(124,58,237,0.25);
+  border: 1px solid rgba(124, 58, 237, 0.25);
   border-radius: 20px;
   padding: 3px 10px;
   font-size: 0.8rem;
@@ -2773,7 +3924,9 @@ onMounted(async () => {
   opacity: 0.7;
   transition: opacity 0.15s;
 }
-.chip-remove:hover { opacity: 1; }
+.chip-remove:hover {
+  opacity: 1;
+}
 .tag-bare-input {
   background: transparent;
   border: none;
@@ -2783,7 +3936,9 @@ onMounted(async () => {
   min-width: 180px;
   flex: 1;
 }
-.tag-bare-input::placeholder { color: var(--text-muted); }
+.tag-bare-input::placeholder {
+  color: var(--text-muted);
+}
 /* ── Filter Bar ─────────────────────────────────────────── */
 .filter-bar {
   padding: 14px 18px;
@@ -2826,16 +3981,16 @@ onMounted(async () => {
 .filter-pill:hover {
   border-color: #7c3aed;
   color: #c084fc;
-  background: rgba(124,58,237,0.08);
+  background: rgba(124, 58, 237, 0.08);
 }
 .filter-pill-active {
-  background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(59,130,246,0.15)) !important;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(59, 130, 246, 0.15)) !important;
   border-color: #7c3aed !important;
   color: #c084fc !important;
   font-weight: 700;
 }
 .filter-input {
-  background: rgba(255,255,255,0.04);
+  background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 5px 12px;
@@ -2847,17 +4002,18 @@ onMounted(async () => {
 }
 .filter-input:focus {
   border-color: #7c3aed;
-  box-shadow: 0 0 0 3px rgba(124,58,237,0.1);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
 }
-.filter-input::placeholder { color: var(--text-muted); }
+.filter-input::placeholder {
+  color: var(--text-muted);
+}
 .filter-result-count {
   font-size: 0.78rem;
   color: var(--text-muted);
-  background: rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border-color);
   border-radius: 20px;
   padding: 3px 10px;
   white-space: nowrap;
 }
 </style>
-

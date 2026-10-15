@@ -6,40 +6,41 @@
       </div>
 
       <h2 class="title">E-posta Adresinizi Doğrulayın</h2>
-      
+
       <p class="description">
         FleetRent platformundaki tüm özellikleri kullanabilmek ve işlemlerinizi tamamlayabilmek için
-        <strong style="color: #2563eb;">{{ userEmail }}</strong> adresinize gönderdiğimiz doğrulama bağlantısına tıklamanız gerekmektedir.
+        <strong style="color: #2563eb">{{ userEmail }}</strong> adresinize gönderdiğimiz doğrulama
+        bağlantısına tıklamanız gerekmektedir.
       </p>
 
       <div class="info-box">
-        <span>⚠️ E-posta adresiniz doğrulanana kadar sistemdeki diğer bölümlere erişiminiz kısıtlanmıştır.</span>
+        <span
+          >⚠️ E-posta adresiniz doğrulanana kadar sistemdeki diğer bölümlere erişiminiz
+          kısıtlanmıştır.</span
+        >
       </div>
 
-      <div v-if="successMsg" class="status-alert success-alert">
-        ✅ {{ successMsg }}
-      </div>
-      <div v-if="errMsg" class="status-alert error-alert">
-        ❌ {{ errMsg }}
-      </div>
+      <div v-if="successMsg" class="status-alert success-alert">✅ {{ successMsg }}</div>
+      <div v-if="errMsg" class="status-alert error-alert">❌ {{ errMsg }}</div>
 
       <div class="action-buttons">
-        <button @click="handleResendEmail" class="btn btn-primary" :disabled="loading">
+        <UiButton @click="handleResendEmail" class="btn btn-primary" :disabled="loading">
           {{ loading ? 'Gönderiliyor...' : 'Doğrulama E-postasını Tekrar Gönder' }}
-        </button>
-        <button @click="handleLogout" class="btn btn-secondary">
-          Çıkış Yap
-        </button>
+        </UiButton>
+        <UiButton @click="handleLogout" class="btn btn-secondary"> Çıkış Yap </UiButton>
       </div>
 
       <p class="spam-hint">
-        E-posta kutunuzda göremiyorsanız lütfen <strong>Spam / Önemsiz</strong> klasörünü de kontrol ediniz.
+        E-posta kutunuzda göremiyorsanız lütfen <strong>Spam / Önemsiz</strong> klasörünü de kontrol
+        ediniz.
       </p>
     </div>
   </div>
 </template>
 
 <script setup>
+import { UiButton } from './ui/index.js'
+
 import { ref, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
@@ -54,14 +55,25 @@ const errMsg = ref('')
 
 const checkVerificationStatus = () => {
   // Exclude auth/public routes from blocking modal
-  const publicRoutes = ['/', '/login', '/admin-login', '/supplier-login', '/service-login', '/setup-password', '/reset-password', '/verify-email']
+  const publicRoutes = [
+    '/',
+    '/login',
+    '/admin-login',
+    '/supplier-login',
+    '/service-login',
+    '/setup-password',
+    '/reset-password',
+    '/verify-email',
+  ]
   if (publicRoutes.includes(route.path)) {
     showModal.value = false
     return
   }
 
-  const token = localStorage.getItem('fleetcar_token') || localStorage.getItem('fleetcar_supplier_token')
-  const email = localStorage.getItem('fleetcar_user_email') || localStorage.getItem('fleetcar_supplier_email')
+  const token =
+    localStorage.getItem('fleetcar_token') || localStorage.getItem('fleetcar_supplier_token')
+  const email =
+    localStorage.getItem('fleetcar_user_email') || localStorage.getItem('fleetcar_supplier_email')
   const customerStr = localStorage.getItem('fleet_customer')
   const supplierStr = localStorage.getItem('fleet_supplier')
 
@@ -111,7 +123,7 @@ const handleResendEmail = async () => {
     const res = await fetch('/api/auth/resend-verification', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: userEmail.value })
+      body: JSON.stringify({ email: userEmail.value }),
     })
 
     const data = await res.json()
@@ -153,9 +165,12 @@ onMounted(() => {
   checkVerificationStatus()
 })
 
-watch(() => route.path, () => {
-  checkVerificationStatus()
-})
+watch(
+  () => route.path,
+  () => {
+    checkVerificationStatus()
+  },
+)
 </script>
 
 <style scoped>

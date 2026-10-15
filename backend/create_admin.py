@@ -5,22 +5,22 @@ Kullanımı:
   python create_admin.py --email admin@fleetrent.com --password secretpassword
 """
 
-import sys
-import io
 import argparse
 import datetime
+import sys
 
 # Safe terminal encoding configuration
-if hasattr(sys.stdout, 'reconfigure'):
+if hasattr(sys.stdout, "reconfigure"):
     try:
-        sys.stdout.reconfigure(encoding='utf-8', errors='backslashreplace')
-        sys.stderr.reconfigure(encoding='utf-8', errors='backslashreplace')
+        sys.stdout.reconfigure(encoding="utf-8", errors="backslashreplace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="backslashreplace")
     except Exception:
         pass
 
-from app.database import SessionLocal, engine
 from app import models
 from app.auth import hash_password
+from app.database import SessionLocal, engine
+
 
 def main():
     parser = argparse.ArgumentParser(description="FleetRent Yonetici Hesabi Olusturucu")
@@ -39,6 +39,7 @@ def main():
     password = args.password
     if not password:
         import getpass
+
         password = getpass.getpass("Yonetici Sifresi: ").strip()
 
     if not email or not password:
@@ -49,7 +50,7 @@ def main():
     try:
         email_clean = email.lower().strip()
         existing = db.query(models.AdminUser).filter(models.AdminUser.email == email_clean).first()
-        
+
         hashed = hash_password(password)
 
         if existing:
@@ -60,7 +61,7 @@ def main():
             new_admin = models.AdminUser(
                 email=email_clean,
                 password_hash=hashed,
-                created_at=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                created_at=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             )
             db.add(new_admin)
             db.commit()
@@ -68,11 +69,12 @@ def main():
 
     except Exception as e:
         db.rollback()
-        err_msg = str(e).encode('ascii', errors='backslashreplace').decode('ascii')
+        err_msg = str(e).encode("ascii", errors="backslashreplace").decode("ascii")
         print(f"[HATA] Veritabani hatasi: {err_msg}")
         sys.exit(1)
     finally:
         db.close()
+
 
 if __name__ == "__main__":
     main()

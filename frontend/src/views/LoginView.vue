@@ -1,168 +1,392 @@
 <template>
-  <div style="min-height: 100vh; background: #f8fafc; display: flex; flex-direction: column;">
+  <div style="min-height: 100vh; background: #f8fafc; display: flex; flex-direction: column">
     <!-- Top Header Bar matching screenshot -->
-    <header class="hero-dark-bg" style="padding: 16px 8%; text-align: left; height: 60px; display: flex; align-items: center;">
-      <router-link to="/" class="nav-logo" style="text-decoration: none;">
-        <img class="brand-logo-image brand-logo-image--dark" src="/fleetrent-logo.jpeg" alt="FleetRent" />
+    <header
+      class="hero-dark-bg"
+      style="padding: 16px 8%; text-align: left; height: 60px; display: flex; align-items: center"
+    >
+      <router-link to="/" class="nav-logo" style="text-decoration: none">
+        <img
+          class="brand-logo-image brand-logo-image--dark"
+          src="/fleetrent-logo.jpeg"
+          alt="FleetRent"
+        />
       </router-link>
     </header>
 
     <!-- Main Container -->
-    <main style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 20px;">
+    <main
+      style="
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+      "
+    >
       <!-- Step 1: Role Selection Screen (matching screenshot with 3 tiles) -->
       <div v-if="selectedRole === null" class="login-selection-card fade-in-up">
-        <div class="nav-logo" style="justify-content: center; margin-bottom: 12px;">
+        <div class="nav-logo" style="justify-content: center; margin-bottom: 12px">
           <img class="brand-logo-image" src="/fleetrent-logo.jpeg" alt="FleetRent" />
         </div>
-        <p style="color: #64748b; font-size: 0.95rem; font-weight: 500;">Giriş tipini seçin</p>
+        <p style="color: #64748b; font-size: 0.95rem; font-weight: 500">Giriş tipini seçin</p>
 
         <div class="login-role-grid">
           <!-- 1. Müşteri Girişi -->
           <div @click="selectedRole = 'customer'" class="login-role-tile tile-customer">
             <span class="tile-icon">🏢</span>
             <span class="tile-title">Müşteri Girişi</span>
-            <span style="font-size: 0.75rem; color: #64748b; margin-top: 4px; font-weight: 500;">Filo Yönetim Paneli</span>
+            <span style="font-size: 0.75rem; color: #64748b; margin-top: 4px; font-weight: 500"
+              >Filo Yönetim Paneli</span
+            >
           </div>
 
           <!-- 2. Tedarikçi Girişi (Araba Sağlayıcı Kiralama Firmaları) -->
           <router-link to="/supplier-login" class="login-role-tile tile-supplier">
             <span class="tile-icon">🏭</span>
             <span class="tile-title">Tedarikçi Girişi</span>
-            <span style="font-size: 0.75rem; color: #10b981; margin-top: 4px; font-weight: 600;">Araba Sağlayıcı & Kiralama</span>
+            <span style="font-size: 0.75rem; color: #10b981; margin-top: 4px; font-weight: 600"
+              >Araba Sağlayıcı & Kiralama</span
+            >
           </router-link>
 
           <!-- 3. Servis Girişi (Bakım, Lastik & Oto Kurtarma) -->
           <router-link to="/service-login" class="login-role-tile tile-service">
             <span class="tile-icon">🔧</span>
             <span class="tile-title">Servis Girişi</span>
-            <span style="font-size: 0.75rem; color: #2563eb; margin-top: 4px; font-weight: 600;">Bakım, Lastik & Oto Kurtarma</span>
+            <span style="font-size: 0.75rem; color: #2563eb; margin-top: 4px; font-weight: 600"
+              >Bakım, Lastik & Oto Kurtarma</span
+            >
           </router-link>
         </div>
 
-        <div style="margin-top: 30px;">
-          <router-link to="/" style="color: #64748b; text-decoration: none; font-size: 0.88rem;">
+        <div style="margin-top: 30px">
+          <router-link to="/" style="color: #64748b; text-decoration: none; font-size: 0.88rem">
             ← Anasayfaya Geri Dön
           </router-link>
         </div>
       </div>
 
       <!-- Step 2: Customer Credentials / Register Form -->
-      <div v-else class="glass-panel login-card fade-in-up" style="max-width: 460px; width: 100%; padding: 36px; border-radius: 20px; background: #ffffff;">
-        <button @click="selectedRole = null" style="background: none; border: none; cursor: pointer; color: #2563eb; font-size: 0.88rem; margin-bottom: 20px; font-weight: 600;">
+      <div
+        v-else
+        class="glass-panel login-card fade-in-up"
+        style="
+          max-width: 460px;
+          width: 100%;
+          padding: 36px;
+          border-radius: 20px;
+          background: #ffffff;
+        "
+      >
+        <UiButton
+          @click="selectedRole = null"
+          style="
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #2563eb;
+            font-size: 0.88rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+          "
+        >
           ← Giriş Tipini Değiştir
-        </button>
+        </UiButton>
 
-        <div style="display: flex; gap: 10px; background: #f1f5f9; padding: 4px; border-radius: 12px; margin-bottom: 20px;">
-          <button @click="authMode = 'login'" :style="{ background: authMode === 'login' ? '#ffffff' : 'transparent', color: authMode === 'login' ? '#0f172a' : '#64748b', fontWeight: authMode === 'login' ? '700' : '500' }" style="flex: 1; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 0.95rem; transition: all 0.2s;">
+        <div
+          style="
+            display: flex;
+            gap: 10px;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+          "
+        >
+          <UiButton
+            @click="authMode = 'login'"
+            :style="{
+              background: authMode === 'login' ? '#ffffff' : 'transparent',
+              color: authMode === 'login' ? '#0f172a' : '#64748b',
+              fontWeight: authMode === 'login' ? '700' : '500',
+            }"
+            style="
+              flex: 1;
+              border: none;
+              padding: 10px;
+              border-radius: 8px;
+              cursor: pointer;
+              font-size: 0.95rem;
+              transition: all 0.2s;
+            "
+          >
             Giriş Yap
-          </button>
-          <button @click="authMode = 'register'" :style="{ background: authMode === 'register' ? '#ffffff' : 'transparent', color: authMode === 'register' ? '#0f172a' : '#64748b', fontWeight: authMode === 'register' ? '700' : '500' }" style="flex: 1; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 0.95rem; transition: all 0.2s;">
+          </UiButton>
+          <UiButton
+            @click="authMode = 'register'"
+            :style="{
+              background: authMode === 'register' ? '#ffffff' : 'transparent',
+              color: authMode === 'register' ? '#0f172a' : '#64748b',
+              fontWeight: authMode === 'register' ? '700' : '500',
+            }"
+            style="
+              flex: 1;
+              border: none;
+              padding: 10px;
+              border-radius: 8px;
+              cursor: pointer;
+              font-size: 0.95rem;
+              transition: all 0.2s;
+            "
+          >
             Kayıt Ol
-          </button>
+          </UiButton>
         </div>
 
         <div v-if="authMode === 'login'">
-          <h2 style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-bottom: 6px;">Müşteri Girişi</h2>
-          <p style="color: #64748b; font-size: 0.88rem; margin-bottom: 20px;">
+          <h2 style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-bottom: 6px">
+            Müşteri Girişi
+          </h2>
+          <p style="color: #64748b; font-size: 0.88rem; margin-bottom: 20px">
             Filo yönetim panelinize erişmek için bilgilerinizi girin.
           </p>
 
           <form @submit.prevent="handleLogin">
             <div class="form-group">
-              <label class="form-label">E-posta Adresi</label>
-              <input type="email" v-model="email" required class="form-input" placeholder="isim@sirket.com">
+              <UiField class="form-label">E-posta Adresi</UiField>
+              <input
+                type="email"
+                v-model="email"
+                required
+                class="form-input"
+                placeholder="isim@sirket.com"
+              />
             </div>
 
-            <div class="form-group" style="margin-bottom: 25px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                <label class="form-label" style="margin-bottom: 0;">Şifre</label>
-                <a href="#" @click.prevent="authMode = 'forgot'" style="font-size: 0.8rem; color: #2563eb; text-decoration: none; font-weight: 600;">Şifremi Unuttum?</a>
+            <div class="form-group" style="margin-bottom: 25px">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  margin-bottom: 6px;
+                "
+              >
+                <UiField class="form-label" style="margin-bottom: 0">Şifre</UiField>
+                <a
+                  href="#"
+                  @click.prevent="authMode = 'forgot'"
+                  style="font-size: 0.8rem; color: #2563eb; text-decoration: none; font-weight: 600"
+                  >Şifremi Unuttum?</a
+                >
               </div>
-              <input type="password" v-model="password" required class="form-input" placeholder="••••••••">
+              <input
+                type="password"
+                v-model="password"
+                required
+                class="form-input"
+                placeholder="••••••••"
+              />
             </div>
 
-            <button type="submit" class="btn btn-blue" style="width: 100%; padding: 14px;" :disabled="loading">
+            <UiButton
+              type="submit"
+              class="btn btn-blue"
+              style="width: 100%; padding: 14px"
+              :disabled="loading"
+            >
               {{ loading ? 'Giriş Yapılıyor...' : 'Giriş Yap' }}
-            </button>
+            </UiButton>
           </form>
-          <div v-if="verificationRequired" style="margin-top: 14px; padding: 14px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; color: #1e3a8a; font-size: 0.88rem;">
-            E-posta adresiniz doğrulanmamış. Giriş yapabilmek için gelen kutunuzdaki bağlantıyı kullanın.
-            <button @click="resendVerification" :disabled="resendLoading" style="display:block;margin-top:10px;border:0;background:none;padding:0;color:#1d4ed8;font-weight:700;cursor:pointer;">
+          <div
+            v-if="verificationRequired"
+            style="
+              margin-top: 14px;
+              padding: 14px;
+              background: #eff6ff;
+              border: 1px solid #bfdbfe;
+              border-radius: 10px;
+              color: #1e3a8a;
+              font-size: 0.88rem;
+            "
+          >
+            E-posta adresiniz doğrulanmamış. Giriş yapabilmek için gelen kutunuzdaki bağlantıyı
+            kullanın.
+            <UiButton
+              @click="resendVerification"
+              :disabled="resendLoading"
+              style="
+                display: block;
+                margin-top: 10px;
+                border: 0;
+                background: none;
+                padding: 0;
+                color: #1d4ed8;
+                font-weight: 700;
+                cursor: pointer;
+              "
+            >
               {{ resendLoading ? 'Gönderiliyor…' : 'Doğrulama e-postasını yeniden gönder' }}
-            </button>
-            <span v-if="resendMessage" style="display:block;margin-top:8px;">{{ resendMessage }}</span>
+            </UiButton>
+            <span v-if="resendMessage" style="display: block; margin-top: 8px">{{
+              resendMessage
+            }}</span>
           </div>
         </div>
 
         <div v-else-if="authMode === 'forgot'">
-          <h2 style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-bottom: 6px;">Şifremi Unuttum</h2>
-          <p style="color: #64748b; font-size: 0.88rem; margin-bottom: 20px;">
-            Hesabınıza tanımlı e-posta adresinizi girin, şifre sıfırlama bağlantısını e-postanıza gönderelim.
+          <h2 style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-bottom: 6px">
+            Şifremi Unuttum
+          </h2>
+          <p style="color: #64748b; font-size: 0.88rem; margin-bottom: 20px">
+            Hesabınıza tanımlı e-posta adresinizi girin, şifre sıfırlama bağlantısını e-postanıza
+            gönderelim.
           </p>
 
-          <div v-if="forgotSuccess" style="padding: 14px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 12px; color: #065f46; font-size: 0.88rem; margin-bottom: 20px;">
+          <div
+            v-if="forgotSuccess"
+            style="
+              padding: 14px;
+              background: #ecfdf5;
+              border: 1px solid #a7f3d0;
+              border-radius: 12px;
+              color: #065f46;
+              font-size: 0.88rem;
+              margin-bottom: 20px;
+            "
+          >
             ✅ {{ forgotSuccess }}
           </div>
 
           <form v-else @submit.prevent="handleForgotPassword">
-            <div class="form-group" style="margin-bottom: 25px;">
-              <label class="form-label">E-posta Adresi *</label>
-              <input type="email" v-model="forgotEmail" required class="form-input" placeholder="isim@sirket.com">
+            <div class="form-group" style="margin-bottom: 25px">
+              <UiField class="form-label">E-posta Adresi *</UiField>
+              <input
+                type="email"
+                v-model="forgotEmail"
+                required
+                class="form-input"
+                placeholder="isim@sirket.com"
+              />
             </div>
 
-            <button type="submit" class="btn btn-blue" style="width: 100%; padding: 14px;" :disabled="forgotLoading">
+            <UiButton
+              type="submit"
+              class="btn btn-blue"
+              style="width: 100%; padding: 14px"
+              :disabled="forgotLoading"
+            >
               {{ forgotLoading ? 'Gönderiliyor...' : 'Şifre Sıfırlama Bağlantısı Gönder' }}
-            </button>
+            </UiButton>
           </form>
 
-          <div style="margin-top: 20px; text-align: center;">
-            <button @click="authMode = 'login'" style="background: none; border: none; cursor: pointer; color: #64748b; font-size: 0.88rem; font-weight: 600;">
+          <div style="margin-top: 20px; text-align: center">
+            <UiButton
+              @click="authMode = 'login'"
+              style="
+                background: none;
+                border: none;
+                cursor: pointer;
+                color: #64748b;
+                font-size: 0.88rem;
+                font-weight: 600;
+              "
+            >
               ← Giriş Ekranına Dön
-            </button>
+            </UiButton>
           </div>
         </div>
 
         <div v-else-if="registrationPending">
-          <h2 style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-bottom: 6px;">E-postanızı doğrulayın</h2>
-          <p style="color: #64748b; font-size: 0.9rem; line-height: 1.6; margin-bottom: 16px;">{{ registrationMessage }}</p>
-          <p style="font-weight:700;color:#0f172a;text-align:center;">{{ email }}</p>
-          <button @click="resendVerification" :disabled="resendLoading" class="btn btn-blue" style="width: 100%; padding: 14px; margin-top: 12px;">
+          <h2 style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-bottom: 6px">
+            E-postanızı doğrulayın
+          </h2>
+          <p style="color: #64748b; font-size: 0.9rem; line-height: 1.6; margin-bottom: 16px">
+            {{ registrationMessage }}
+          </p>
+          <p style="font-weight: 700; color: #0f172a; text-align: center">{{ email }}</p>
+          <UiButton
+            @click="resendVerification"
+            :disabled="resendLoading"
+            class="btn btn-blue"
+            style="width: 100%; padding: 14px; margin-top: 12px"
+          >
             {{ resendLoading ? 'Gönderiliyor…' : 'Doğrulama e-postasını yeniden gönder' }}
-          </button>
-          <p v-if="resendMessage" style="margin-top:12px;color:#475569;font-size:.88rem;">{{ resendMessage }}</p>
-          <button @click="authMode = 'login'" style="display:block;margin:20px auto 0;background:none;border:0;color:#2563eb;font-weight:700;cursor:pointer;">Giriş sayfasına dön</button>
+          </UiButton>
+          <p v-if="resendMessage" style="margin-top: 12px; color: #475569; font-size: 0.88rem">
+            {{ resendMessage }}
+          </p>
+          <UiButton
+            @click="authMode = 'login'"
+            style="
+              display: block;
+              margin: 20px auto 0;
+              background: none;
+              border: 0;
+              color: #2563eb;
+              font-weight: 700;
+              cursor: pointer;
+            "
+            >Giriş sayfasına dön</UiButton
+          >
         </div>
 
         <div v-else>
-          <h2 style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-bottom: 6px;">Yeni Müşteri Kaydı</h2>
-          <p style="color: #64748b; font-size: 0.88rem; margin-bottom: 20px;">
+          <h2 style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-bottom: 6px">
+            Yeni Müşteri Kaydı
+          </h2>
+          <p style="color: #64748b; font-size: 0.88rem; margin-bottom: 20px">
             Teklif almak ve filo yönetim sistemine erişmek için hesabınızı oluşturun.
           </p>
 
           <form @submit.prevent="handleRegister">
             <div class="form-group">
-              <label class="form-label">Şirket / Firma Adı</label>
-              <input type="text" v-model="companyName" class="form-input" placeholder="Örn: Tekno Lojistik A.Ş.">
+              <UiField class="form-label">Şirket / Firma Adı</UiField>
+              <input
+                type="text"
+                v-model="companyName"
+                class="form-input"
+                placeholder="Örn: Tekno Lojistik A.Ş."
+              />
             </div>
 
             <div class="form-group">
-              <label class="form-label">E-posta Adresi *</label>
-              <input type="email" v-model="email" required class="form-input" placeholder="isim@sirket.com">
+              <UiField class="form-label">E-posta Adresi *</UiField>
+              <input
+                type="email"
+                v-model="email"
+                required
+                class="form-input"
+                placeholder="isim@sirket.com"
+              />
             </div>
 
             <div class="form-group">
-              <label class="form-label">Telefon Numarası</label>
-              <input type="tel" v-model="phone" class="form-input" placeholder="05XX XXX XX XX">
+              <UiField class="form-label">Telefon Numarası</UiField>
+              <input type="tel" v-model="phone" class="form-input" placeholder="05XX XXX XX XX" />
             </div>
 
-            <div class="form-group" style="margin-bottom: 25px;">
-              <label class="form-label">Şifre * (En az 6 karakter)</label>
-              <input type="password" v-model="password" required minlength="6" class="form-input" placeholder="••••••••">
+            <div class="form-group" style="margin-bottom: 25px">
+              <UiField class="form-label">Şifre * (En az 6 karakter)</UiField>
+              <input
+                type="password"
+                v-model="password"
+                required
+                minlength="6"
+                class="form-input"
+                placeholder="••••••••"
+              />
             </div>
 
-            <button type="submit" class="btn btn-blue" style="width: 100%; padding: 14px;" :disabled="loading">
+            <UiButton
+              type="submit"
+              class="btn btn-blue"
+              style="width: 100%; padding: 14px"
+              :disabled="loading"
+            >
               {{ loading ? 'Kaydediliyor...' : 'Hesap Oluştur ve Devam Et' }}
-            </button>
+            </UiButton>
           </form>
         </div>
       </div>
@@ -171,6 +395,8 @@
 </template>
 
 <script setup>
+import { UiButton, UiField } from '../components/ui/index.js'
+
 import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
@@ -203,12 +429,13 @@ const handleForgotPassword = async () => {
     const res = await fetch('/api/auth/forgot-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: forgotEmail.value })
+      body: JSON.stringify({ email: forgotEmail.value }),
     })
 
     const data = await res.json()
     if (res.ok) {
-      forgotSuccess.value = data.message || 'Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.'
+      forgotSuccess.value =
+        data.message || 'Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.'
     } else {
       alert(data.detail || 'Bir hata oluştu.')
     }
@@ -223,21 +450,21 @@ const handleForgotPassword = async () => {
 const handleLogin = async () => {
   if (!email.value || !password.value) return
   loading.value = true
-  
+
   try {
     const res = await fetch('/api/customer/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         email: email.value,
-        password: password.value
-      })
+        password: password.value,
+      }),
     })
 
     if (res.ok) {
       const data = await res.json()
       const cust = data.customer || {}
-      
+
       localStorage.setItem('fleetcar_token', data.token)
       localStorage.setItem('fleetcar_customer_id', String(cust.id || '1'))
       localStorage.setItem('fleetcar_customer_name', cust.company_name || 'Müşteri Firma')
@@ -245,7 +472,7 @@ const handleLogin = async () => {
       if (data.user?.name) localStorage.setItem('fleetcar_user_name', data.user.name)
       localStorage.setItem('fleetcar_user_verified', cust.is_email_verified ? 'true' : 'false')
       localStorage.setItem('fleet_customer', JSON.stringify(cust))
-      
+
       router.push('/dashboard')
     } else {
       const errData = await res.json().catch(() => ({}))
@@ -265,8 +492,9 @@ const resendVerification = async () => {
   resendMessage.value = ''
   try {
     const res = await fetch('/api/auth/resend-verification', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email.value, account_type: 'customer' })
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.value, account_type: 'customer' }),
     })
     const data = await res.json().catch(() => ({}))
     resendMessage.value = data.message || data.detail || 'Doğrulama e-postası gönderilemedi.'
@@ -280,7 +508,7 @@ const resendVerification = async () => {
 const handleRegister = async () => {
   if (!email.value || !password.value) return
   loading.value = true
-  
+
   try {
     const res = await fetch('/api/customer/register', {
       method: 'POST',
@@ -289,8 +517,8 @@ const handleRegister = async () => {
         email: email.value,
         password: password.value,
         company_name: companyName.value,
-        phone: phone.value
-      })
+        phone: phone.value,
+      }),
     })
 
     if (res.ok) {

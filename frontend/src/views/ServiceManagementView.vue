@@ -1,107 +1,1916 @@
 <template>
-  <div class="service-app"><Sidebar/><main class="service-main">
-    <header class="topbar"><label>⌕ <input v-model="search" placeholder="Araç, plaka, servis, hasar no, talep no..." /></label><div class="customer-header-actions"><NotificationBell /><router-link to="/profile" class="service-account"><span class="service-avatar">{{initials}}</span><span><strong>{{customerName}}</strong><small>Filo Yöneticisi</small></span></router-link></div></header>
-    <div v-if="loadError" class="service-alert" role="alert">{{loadError}} <button @click="load">Tekrar Dene</button></div><div class="content" :aria-busy="loading">
-      <header class="page-title"><div><h1>⚒ Servis / Bakım & Hasar / Kaza</h1><p>Araç servis, bakım, hasar ve kaza süreçlerini tek ekrandan takip edin.</p></div><button class="primary" @click="openCreate('service')">＋ Yeni İş Emri</button></header>
-      <section class="metrics">
-        <article><i class="blue">⚒</i><small>Toplam Servis / Bakım</small><b>{{summary.service ?? 0}}</b></article>
-        <article><i class="red">⚠</i><small>Toplam Hasar / Kaza</small><b>{{summary.damage ?? 0}}</b></article>
-        <article><i class="blue">◷</i><small>Açık İş Emri</small><b>{{summary.open_work_orders ?? 0}}</b></article>
-        <article class="due-metric" :class="{chosen:showDue}"><button @click="toggleDue" :aria-pressed="showDue"><i class="blue">▣</i><small>Bakımı Yaklaşan Araçlar</small><b>{{summary.due_vehicles ?? 0}}</b></button></article>
-      </section>
-      <div class="layout">
-        <section class="main-col">
-          <button class="mobile-filter-toggle" :aria-expanded="filtersExpanded" aria-controls="page-filters" @click="filtersExpanded=!filtersExpanded">{{filtersExpanded ? 'Filtreleri Gizle' : 'Filtreleri Aç'}} <span>⌄</span></button><div id="page-filters" class="filters" :class="{'mobile-expanded':filtersExpanded}"><label class="search">⌕ <input v-model="search" placeholder="Plaka, servis, iş emri no ara..." /></label><label><small>Araç Grubu</small><select v-model="groupFilter"><option value="all">Tümü</option><option v-for="g in groups" :key="g">{{g}}</option></select></label><label><small>İşlem Türü</small><select v-model="typeFilter"><option value="all">Tümü</option><option value="service">Servis / Bakım</option><option value="damage">Hasar / Kaza</option><option value="roadside">Yol Yardım</option><option value="expertise">Ekspertiz</option><option value="other">Diğer</option></select></label><label><small>Durum</small><select v-model="statusFilter"><option value="all">Tümü</option><option value="open">Açık</option><option v-for="status in statuses" :key="status">{{status}}</option><option value="due">Bakımı yaklaşan</option></select></label><label><small>Başlangıç</small><input v-model="dateFrom" type="date"/></label><label><small>Bitiş</small><input v-model="dateTo" type="date" :min="dateFrom"/></label><button class="filter-button" @click="page=1">⚲ Filtrele</button></div>
-          <nav class="tabs"><button v-for="tab in tabs" :key="tab.key" :class="{active:activeTab===tab.key}" @click="activeTab=tab.key">{{tab.icon}} {{tab.name}} <b>{{summary.tabs?.[tab.key] || 0}}</b></button></nav>
-          <section v-if="!showDue" class="panel"><header><b>▦ {{activeTab==='workorders'?'İş Emirleri':'Servis & Bakım Kayıtları'}}</b><button class="light-btn" @click="exportCsv">↓ Dışa Aktar</button></header><div class="table-wrap"><table><thead><tr><th>Tarih</th><th>Plaka</th><th>Araç / Model</th><th>İşlem Türü</th><th>Açıklama</th><th>Durum</th><th>Tutar (TL)</th><th>İş Emri No</th><th></th></tr></thead><tbody>
-            <tr v-for="r in paginated" :key="r.id" :class="{selected:selected?.id===r.id}" @click="select(r)"><td data-label="Tarih">{{date(r.created_at)}}<small>{{time(r.created_at)}}</small></td><td data-label="Plaka" class="plate"><div class="vehicle-cell"><img v-if="r.photo_url" :src="r.photo_url" alt=""/><span v-else class="vehicle-placeholder">▱</span><span>{{r.vehicle_plate}}</span></div></td><td data-label="Araç">{{r.vehicle_brand_model}}<small>{{vehicle(r.vehicle_id)?.year||'—'}} · {{fmt(vehicle(r.vehicle_id)?.mileage)}} km</small></td><td data-label="İşlem"><span class="pill" :class="r.kind">{{serviceType(r)}}</span></td><td data-label="Açıklama" class="desc">{{r.description}}<small v-if="hasPreferredDates(r.details)">Tercih: {{preferredDateRange(r.details)}}</small><small v-if="r.details?.appointment_date">Randevu: {{date(r.details.appointment_date)}}</small></td><td data-label="Durum"><span class="state" :class="stateClass(r.status)">{{r.status}}</span></td><td data-label="Tutar">{{money(r.amount)}}<small v-if="r.amount_source">{{r.amount_source}}</small></td><td data-label="İş Emri">{{r.details?.work_order_no||'—'}}</td><td data-label="Detay"><button class="dots" :aria-label="(r.details?.work_order_no || 'Talep #'+r.id) + ' detaylarını aç'" @click.stop="openDetail(r)"><span class="desktop-action-label">•••</span><span class="mobile-action-label">Detayları Gör</span></button></td></tr>
-            <tr v-if="loading && !requests.length"><td colspan="9" class="empty">Kayıtlar yükleniyor…</td></tr><tr v-if="!loading && !paginated.length"><td colspan="9" class="empty"><b>Kayıt bulunamadı</b><small>Yeni iş emri oluşturarak süreci başlatabilirsiniz.</small><button @click="openCreate('service')">＋ Yeni İş Emri</button></td></tr>
-          </tbody></table></div><footer>Toplam {{filtered.length}} kayıttan {{start}}–{{end}} görüntüleniyor <span><button :disabled="page<=1" @click="page--">‹</button> {{page}} / {{pages}} <button :disabled="page>=pages" @click="page++">›</button></span></footer></section>
-          <section v-else class="panel due-table"><header><b>Bakımı Yaklaşan Araçlar</b><button class="light-btn" @click="toggleDue">Kayıtlara Dön</button></header><div class="table-wrap"><table><thead><tr><th>Plaka</th><th>Araç</th><th>Bakım Tarihi</th><th>Kilometre</th><th>Bakım Durumu</th><th>İşlem</th></tr></thead><tbody><tr v-for="v in filteredDue" :key="v.id" @click="vehicleId=v.id"><td data-label="Plaka" class="plate">{{v.plate}}</td><td data-label="Araç">{{v.brand}} {{v.model}}</td><td data-label="Bakım Tarihi">{{date(v.next_service_due_date)}}</td><td data-label="Kilometre">{{fmt(v.mileage)}} km</td><td data-label="Durum">{{dueLabel(v)}}</td><td data-label="İşlem"><button class="light-btn" @click.stop="vehicleId=v.id;openCreate('appointment')">Randevu Talep Et</button></td></tr><tr v-if="!filteredDue.length"><td colspan="6" class="empty">Filtrelere uygun bakım kaydı bulunamadı.</td></tr></tbody></table></div></section>
+  <div class="service-app">
+    <Sidebar />
+    <main class="service-main">
+      <header class="topbar">
+        <UiField
+          >⌕ <input v-model="search" placeholder="Araç, plaka, servis, hasar no, talep no..."
+        /></UiField>
+        <div class="customer-header-actions">
+          <NotificationBell /><router-link to="/profile" class="service-account"
+            ><span class="service-avatar">{{ initials }}</span
+            ><span
+              ><strong>{{ customerName }}</strong
+              ><small>Filo Yöneticisi</small></span
+            ></router-link
+          >
+        </div>
+      </header>
+      <UiAlert v-if="loadError" class="service-alert" as="div" tone="error"
+        >{{ loadError }} <UiButton @click="load">Tekrar Dene</UiButton></UiAlert
+      >
+      <div class="content" :aria-busy="loading">
+        <header class="page-title">
+          <div>
+            <h1>⚒ Servis / Bakım & Hasar / Kaza</h1>
+            <p>Araç servis, bakım, hasar ve kaza süreçlerini tek ekrandan takip edin.</p>
+          </div>
+          <UiButton class="primary" @click="openCreate('service')">＋ Yeni İş Emri</UiButton>
+        </header>
+        <section class="metrics">
+          <article>
+            <i class="blue">⚒</i><small>Toplam Servis / Bakım</small
+            ><b>{{ summary.service ?? 0 }}</b>
+          </article>
+          <article>
+            <i class="red">⚠</i><small>Toplam Hasar / Kaza</small><b>{{ summary.damage ?? 0 }}</b>
+          </article>
+          <article>
+            <i class="blue">◷</i><small>Açık İş Emri</small
+            ><b>{{ summary.open_work_orders ?? 0 }}</b>
+          </article>
+          <article class="due-metric" :class="{ chosen: showDue }">
+            <UiButton @click="toggleDue" :aria-pressed="showDue"
+              ><i class="blue">▣</i><small>Bakımı Yaklaşan Araçlar</small
+              ><b>{{ summary.due_vehicles ?? 0 }}</b></UiButton
+            >
+          </article>
         </section>
-        <aside class="right-col">
-          <section class="panel vehicle-panel"><header><b>⚙ Araç Bilgileri</b><select v-model="vehicleId"><option v-for="v in vehicles" :key="v.id" :value="v.id">{{v.plate}}</option></select></header><template v-if="currentVehicle"><div class="car"><img v-if="currentVehicle.photo_url" :src="currentVehicle.photo_url" :alt="currentVehicle.brand + ' ' + currentVehicle.model"/><span v-else class="vehicle-placeholder">▱</span><span class="vehicle-state" :class="{inactive:!currentVehicle.is_active, inService:currentVehicle.is_active && currentVehicle.status!=='Aktif'}">● {{currentVehicle.is_active ? currentVehicle.status || 'Aktif' : 'Pasif'}}</span></div><b class="vehicle-name">{{currentVehicle.brand}} {{currentVehicle.model}} {{currentVehicle.version||''}}</b><strong class="plate">{{currentVehicle.plate}}</strong><dl><dt>Marka / Model</dt><dd>{{currentVehicle.brand}} / {{currentVehicle.model}}</dd><dt>Şasi No</dt><dd>{{currentVehicle.chassis_no||'—'}}</dd><dt>Motor No</dt><dd>{{currentVehicle.engine_no||'—'}}</dd><dt>Renk</dt><dd>{{currentVehicle.color||'—'}}</dd><dt>Yıl</dt><dd>{{currentVehicle.year||'—'}}</dd><dt>Kira Başlangıç</dt><dd>{{date(currentVehicle.contract_start_date)}}</dd><dt>Kira Bitiş</dt><dd>{{date(currentVehicle.contract_end_date)}}</dd></dl><button class="wide" @click="openVehicle(currentVehicle)">Araç Detaylarını Görüntüle</button></template><p v-else class="empty-note">Araç bulunamadı.</p></section>
-          <section class="panel"><header><b>⚒ Bakımı Yaklaşan Araçlar</b><button class="link-btn" @click="showDueList()">Tümünü Gör</button></header><div class="due-list"><button v-for="v in dueVehicles.slice(0,5)" :key="v.id" @click="vehicleId=v.id"><img v-if="v.photo_url" :src="v.photo_url" alt=""/><span v-else class="vehicle-placeholder">▱</span><span><b>{{v.plate}} · {{v.brand}} {{v.model}}</b><small>{{dueLabel(v)}}</small></span><i>Bakım</i></button><p v-if="!dueVehicles.length" class="empty-note">Bakım tarihi/kilometresi yaklaşan araç yok.</p></div></section>
-          <section class="panel"><header><b>⚙ Hızlı İşlemler</b></header><div class="quick"><button @click="openCreate('service')">⚒ Yeni İş Emri</button><button @click="openCreate('appointment')">▣ Randevu Talep Et</button><button @click="showSuppliers=true">▦ Servis Firmaları</button><button @click="openCreate('damage')">⚠ Hasar Bildirimi</button></div></section>
-        </aside>
+        <div class="layout">
+          <section class="main-col">
+            <UiButton
+              class="mobile-filter-toggle"
+              :aria-expanded="filtersExpanded"
+              aria-controls="page-filters"
+              @click="filtersExpanded = !filtersExpanded"
+              >{{ filtersExpanded ? 'Filtreleri Gizle' : 'Filtreleri Aç' }} <span>⌄</span></UiButton
+            >
+            <div id="page-filters" class="filters" :class="{ 'mobile-expanded': filtersExpanded }">
+              <UiField class="search"
+                >⌕
+                <input v-model="search" placeholder="Plaka, servis, iş emri no ara..." /></UiField
+              ><UiField
+                ><small>Araç Grubu</small
+                ><select v-model="groupFilter">
+                  <option value="all">Tümü</option>
+                  <option v-for="g in groups" :key="g">{{ g }}</option>
+                </select></UiField
+              ><UiField
+                ><small>İşlem Türü</small
+                ><select v-model="typeFilter">
+                  <option value="all">Tümü</option>
+                  <option value="service">Servis / Bakım</option>
+                  <option value="damage">Hasar / Kaza</option>
+                  <option value="roadside">Yol Yardım</option>
+                  <option value="expertise">Ekspertiz</option>
+                  <option value="other">Diğer</option>
+                </select></UiField
+              ><UiField
+                ><small>Durum</small
+                ><select v-model="statusFilter">
+                  <option value="all">Tümü</option>
+                  <option value="open">Açık</option>
+                  <option v-for="status in statuses" :key="status">{{ status }}</option>
+                  <option value="due">Bakımı yaklaşan</option>
+                </select></UiField
+              ><UiField><small>Başlangıç</small><input v-model="dateFrom" type="date" /></UiField
+              ><UiField
+                ><small>Bitiş</small><input v-model="dateTo" type="date" :min="dateFrom" /></UiField
+              ><UiButton class="filter-button" @click="page = 1">⚲ Filtrele</UiButton>
+            </div>
+            <nav class="tabs">
+              <UiButton
+                v-for="tab in tabs"
+                :key="tab.key"
+                :class="{ active: activeTab === tab.key }"
+                @click="activeTab = tab.key"
+                >{{ tab.icon }} {{ tab.name }} <b>{{ summary.tabs?.[tab.key] || 0 }}</b></UiButton
+              >
+            </nav>
+            <section v-if="!showDue" class="panel">
+              <header>
+                <b
+                  >▦
+                  {{ activeTab === 'workorders' ? 'İş Emirleri' : 'Servis & Bakım Kayıtları' }}</b
+                ><UiButton class="light-btn" @click="exportCsv">↓ Dışa Aktar</UiButton>
+              </header>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Tarih</th>
+                      <th>Plaka</th>
+                      <th>Araç / Model</th>
+                      <th>İşlem Türü</th>
+                      <th>Açıklama</th>
+                      <th>Durum</th>
+                      <th>Tutar (TL)</th>
+                      <th>İş Emri No</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="r in paginated"
+                      :key="r.id"
+                      :class="{ selected: selected?.id === r.id }"
+                      @click="select(r)"
+                    >
+                      <td data-label="Tarih">
+                        {{ date(r.created_at) }}<small>{{ time(r.created_at) }}</small>
+                      </td>
+                      <td data-label="Plaka" class="plate">
+                        <div class="vehicle-cell">
+                          <img v-if="r.photo_url" :src="r.photo_url" alt="" /><span
+                            v-else
+                            class="vehicle-placeholder"
+                            >▱</span
+                          ><span>{{ r.vehicle_plate }}</span>
+                        </div>
+                      </td>
+                      <td data-label="Araç">
+                        {{ r.vehicle_brand_model
+                        }}<small
+                          >{{ vehicle(r.vehicle_id)?.year || '—' }} ·
+                          {{ fmt(vehicle(r.vehicle_id)?.mileage) }} km</small
+                        >
+                      </td>
+                      <td data-label="İşlem">
+                        <span class="pill" :class="r.kind">{{ serviceType(r) }}</span>
+                      </td>
+                      <td data-label="Açıklama" class="desc">
+                        {{ r.description
+                        }}<small v-if="hasPreferredDates(r.details)"
+                          >Tercih: {{ preferredDateRange(r.details) }}</small
+                        ><small v-if="r.details?.appointment_date"
+                          >Randevu: {{ date(r.details.appointment_date) }}</small
+                        >
+                      </td>
+                      <td data-label="Durum">
+                        <span class="state" :class="stateClass(r.status)">{{ r.status }}</span>
+                      </td>
+                      <td data-label="Tutar">
+                        {{ money(r.amount)
+                        }}<small v-if="r.amount_source">{{ r.amount_source }}</small>
+                      </td>
+                      <td data-label="İş Emri">{{ r.details?.work_order_no || '—' }}</td>
+                      <td data-label="Detay">
+                        <UiButton
+                          class="dots"
+                          :aria-label="
+                            (r.details?.work_order_no || 'Talep #' + r.id) + ' detaylarını aç'
+                          "
+                          @click.stop="openDetail(r)"
+                          ><span class="desktop-action-label">•••</span
+                          ><span class="mobile-action-label">Detayları Gör</span></UiButton
+                        >
+                      </td>
+                    </tr>
+                    <tr v-if="loading && !requests.length">
+                      <td colspan="9" class="empty">Kayıtlar yükleniyor…</td>
+                    </tr>
+                    <tr v-if="!loading && !paginated.length">
+                      <td colspan="9" class="empty">
+                        <b>Kayıt bulunamadı</b
+                        ><small>Yeni iş emri oluşturarak süreci başlatabilirsiniz.</small
+                        ><UiButton @click="openCreate('service')">＋ Yeni İş Emri</UiButton>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <footer>
+                Toplam {{ filtered.length }} kayıttan {{ start }}–{{ end }} görüntüleniyor
+                <span
+                  ><UiButton :disabled="page <= 1" @click="page--">‹</UiButton> {{ page }} /
+                  {{ pages }} <UiButton :disabled="page >= pages" @click="page++">›</UiButton></span
+                >
+              </footer>
+            </section>
+            <section v-else class="panel due-table">
+              <header>
+                <b>Bakımı Yaklaşan Araçlar</b
+                ><UiButton class="light-btn" @click="toggleDue">Kayıtlara Dön</UiButton>
+              </header>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Plaka</th>
+                      <th>Araç</th>
+                      <th>Bakım Tarihi</th>
+                      <th>Kilometre</th>
+                      <th>Bakım Durumu</th>
+                      <th>İşlem</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="v in filteredDue" :key="v.id" @click="vehicleId = v.id">
+                      <td data-label="Plaka" class="plate">{{ v.plate }}</td>
+                      <td data-label="Araç">{{ v.brand }} {{ v.model }}</td>
+                      <td data-label="Bakım Tarihi">{{ date(v.next_service_due_date) }}</td>
+                      <td data-label="Kilometre">{{ fmt(v.mileage) }} km</td>
+                      <td data-label="Durum">{{ dueLabel(v) }}</td>
+                      <td data-label="İşlem">
+                        <UiButton class="light-btn" @click.stop="openVehicleAppointment(v.id)"
+                          >Randevu Talep Et</UiButton
+                        >
+                      </td>
+                    </tr>
+                    <tr v-if="!filteredDue.length">
+                      <td colspan="6" class="empty">Filtrelere uygun bakım kaydı bulunamadı.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </section>
+          <aside class="right-col">
+            <section class="panel vehicle-panel">
+              <header>
+                <b>⚙ Araç Bilgileri</b
+                ><select v-model="vehicleId">
+                  <option v-for="v in vehicles" :key="v.id" :value="v.id">{{ v.plate }}</option>
+                </select>
+              </header>
+              <template v-if="currentVehicle"
+                ><div class="car">
+                  <img
+                    v-if="currentVehicle.photo_url"
+                    :src="currentVehicle.photo_url"
+                    :alt="currentVehicle.brand + ' ' + currentVehicle.model"
+                  /><span v-else class="vehicle-placeholder">▱</span
+                  ><span
+                    class="vehicle-state"
+                    :class="{
+                      inactive: !currentVehicle.is_active,
+                      inService: currentVehicle.is_active && currentVehicle.status !== 'Aktif',
+                    }"
+                    >●
+                    {{
+                      currentVehicle.is_active ? currentVehicle.status || 'Aktif' : 'Pasif'
+                    }}</span
+                  >
+                </div>
+                <b class="vehicle-name"
+                  >{{ currentVehicle.brand }} {{ currentVehicle.model }}
+                  {{ currentVehicle.version || '' }}</b
+                ><strong class="plate">{{ currentVehicle.plate }}</strong>
+                <dl>
+                  <dt>Marka / Model</dt>
+                  <dd>{{ currentVehicle.brand }} / {{ currentVehicle.model }}</dd>
+                  <dt>Şasi No</dt>
+                  <dd>{{ currentVehicle.chassis_no || '—' }}</dd>
+                  <dt>Motor No</dt>
+                  <dd>{{ currentVehicle.engine_no || '—' }}</dd>
+                  <dt>Renk</dt>
+                  <dd>{{ currentVehicle.color || '—' }}</dd>
+                  <dt>Yıl</dt>
+                  <dd>{{ currentVehicle.year || '—' }}</dd>
+                  <dt>Kira Başlangıç</dt>
+                  <dd>{{ date(currentVehicle.contract_start_date) }}</dd>
+                  <dt>Kira Bitiş</dt>
+                  <dd>{{ date(currentVehicle.contract_end_date) }}</dd>
+                </dl>
+                <UiButton class="wide" @click="openVehicle(currentVehicle)"
+                  >Araç Detaylarını Görüntüle</UiButton
+                ></template
+              >
+              <p v-else class="empty-note">Araç bulunamadı.</p>
+            </section>
+            <section class="panel">
+              <header>
+                <b>⚒ Bakımı Yaklaşan Araçlar</b
+                ><UiButton class="link-btn" @click="showDueList()">Tümünü Gör</UiButton>
+              </header>
+              <div class="due-list">
+                <UiButton v-for="v in dueVehicles.slice(0, 5)" :key="v.id" @click="vehicleId = v.id"
+                  ><img v-if="v.photo_url" :src="v.photo_url" alt="" /><span
+                    v-else
+                    class="vehicle-placeholder"
+                    >▱</span
+                  ><span
+                    ><b>{{ v.plate }} · {{ v.brand }} {{ v.model }}</b
+                    ><small>{{ dueLabel(v) }}</small></span
+                  ><i>Bakım</i></UiButton
+                >
+                <p v-if="!dueVehicles.length" class="empty-note">
+                  Bakım tarihi/kilometresi yaklaşan araç yok.
+                </p>
+              </div>
+            </section>
+            <section class="panel">
+              <header><b>⚙ Hızlı İşlemler</b></header>
+              <div class="quick">
+                <UiButton @click="openCreate('service')">⚒ Yeni İş Emri</UiButton
+                ><UiButton @click="openCreate('appointment')">▣ Randevu Talep Et</UiButton
+                ><UiButton @click="showSuppliers = true">▦ Servis Firmaları</UiButton
+                ><UiButton @click="openCreate('damage')">⚠ Hasar Bildirimi</UiButton>
+              </div>
+            </section>
+          </aside>
+        </div>
       </div>
-    </div>
-  </main>
-  <div v-if="modal" class="backdrop" @click.self="modal=''"><section class="dialog"><header><div><small>FLEETRENT · SERVİS YÖNETİMİ</small><h2>{{modal==='detail'?'İş Emri Detayı':createForm.service_type==='Hasar / Kaza'?'Hasar / Kaza Bildirimi':createForm.appointment?'Servis Randevusu':'Yeni İş Emri'}}</h2></div><button @click="modal=''">×</button></header>
-    <form v-if="modal==='create'" @submit.prevent="createRequest"><div class="form-grid"><label>Araç<select v-model="createForm.vehicle_id" required><option value="" disabled>Araç seçin</option><option v-for="v in vehicles.filter(v=>v.is_active!==false)" :key="v.id" :value="v.id">{{v.plate}} · {{v.brand}} {{v.model}}</option></select></label><label>İşlem Türü<select v-model="createForm.service_type"><option>Periyodik Bakım</option><option>Mekanik Onarım</option><option>Genel Kontrol</option><option>Hasar / Kaza</option><option>Ekspertiz</option><option>Diğer</option></select></label><label>Tercih Edilen Aralık — Başlangıç<input v-model="createForm.preferred_date_start" type="date" :max="createForm.preferred_date_end || undefined" :required="!!createForm.preferred_date_end"/></label><label>Tercih Edilen Aralık — Bitiş<input v-model="createForm.preferred_date_end" type="date" :min="createForm.preferred_date_start || undefined" :required="!!createForm.preferred_date_start"/></label><label>Güncel KM<input v-model.number="createForm.mileage" type="number" min="0"/></label><label>Servis Firması<select v-model="createForm.supplier_id"><option value="">Servislerin üstlenmesini bekle</option><option v-for="s in suppliers" :key="s.id" :value="s.id">{{s.name}} · {{s.city||'—'}}</option></select></label><label v-if="createForm.service_type==='Hasar / Kaza'">Olay Tarihi<input v-model="createForm.accident_date" type="date"/></label></div><label>Açıklama<textarea v-model.trim="createForm.description" required rows="3" placeholder="Servis / hasar detaylarını yazın"/></label><p v-if="error" class="error">{{error}}</p><footer><button type="button" class="cancel" @click="modal=''">Vazgeç</button><button class="primary" :disabled="saving">{{saving?'Kaydediliyor…':createForm.appointment?'Randevu Talep Et':'İş Emri Oluştur'}}</button></footer></form>
-    <div v-else-if="modal==='detail'&&selected" class="readonly-detail">
-      <div class="record-summary"><b>{{selected.vehicle_plate}} · {{selected.vehicle_brand_model}}</b><span>{{selected.details?.work_order_no || selected.details?.roadside_case_no || 'Talep #'+selected.id}} · {{date(selected.created_at)}} {{time(selected.created_at)}}</span></div>
-      <dl><dt>İşlem</dt><dd>{{serviceType(selected)}}</dd><dt>Durum</dt><dd>{{selected.status}}</dd><dt>Servis Firması</dt><dd>{{selected.supplier_name}}</dd><dt>Açıklama</dt><dd>{{selected.description || '—'}}</dd><dt>Tercih Edilen Aralık</dt><dd>{{preferredDateRange(selected.details)}}</dd><dt>Randevu</dt><dd>{{date(selected.details?.appointment_date)}}</dd><dt>Servis Girişi</dt><dd>{{date(selected.details?.entry_date)}} {{time(selected.details?.entry_date)}}</dd><dt>Teşhis / İşlem</dt><dd>{{selected.details?.diagnosis_notes || 'Henüz paylaşılmadı'}}</dd><dt>İşçilik</dt><dd>{{money(selected.details?.labor_cost)}}</dd><dt>Tahmini Tutar</dt><dd>{{money(selected.details?.total_estimated_cost)}}</dd><dt>Fatura</dt><dd>{{selected.details?.invoice_no || 'Henüz yüklenmedi'}} · {{money(selected.details?.invoice_amount)}}</dd></dl>
-      <a v-if="selected.details?.invoice_file_url" :href="selected.details.invoice_file_url" target="_blank" rel="noreferrer" class="document-link">Fatura Belgesini Aç ↗</a>
-      <section v-if="selected.details?.parts_list?.length"><h3>Parçalar</h3><ul><li v-for="(part,index) in selected.details.parts_list" :key="index">{{part.part_name || part.name}} · {{part.quantity}} adet · {{money(part.unit_price)}}</li></ul></section>
-      <section v-if="selected.details?.service_history?.length"><h3>Servis Süreci</h3><ol><li v-for="(event,index) in selected.details.service_history" :key="index"><strong>{{event.title}}</strong><small>{{date(event.created_at)}} {{time(event.created_at)}}</small></li></ol></section>
-      <footer><button class="cancel" @click="modal=''">Kapat</button><button class="primary" @click="openVehicle(currentVehicle)">Araç Detayları</button></footer>
-    </div>
-  </section></div>
-  <div v-if="showSuppliers" class="backdrop" @click.self="showSuppliers=false"><section class="dialog"><header><div><small>HİZMET NOKTALARI</small><h2>Servis Firmaları</h2></div><button @click="showSuppliers=false">×</button></header><article v-for="s in suppliers" :key="s.id" class="supplier"><div><b>{{s.name}}</b><small>{{s.contract_type||'Anlaşmalı servis'}} · {{s.district||''}} {{s.city||''}}</small><small>{{(s.services||[]).join(' · ')||'Servis hizmetleri'}} · {{s.phone||'Telefon yok'}}</small></div><button @click="showSuppliers=false;openCreate('service');createForm.supplier_id=String(s.id)">Seç</button></article><p v-if="!suppliers.length" class="empty-note">Servis firması tanımlanmamış.</p></section></div>
+    </main>
+    <UiModal v-if="modal" class="backdrop" @close="modal = ''">
+      <section class="dialog">
+        <header>
+          <div>
+            <small>FLEETRENT · SERVİS YÖNETİMİ</small>
+            <h2>
+              {{
+                modal === 'detail'
+                  ? 'İş Emri Detayı'
+                  : createForm.service_type === 'Hasar / Kaza'
+                    ? 'Hasar / Kaza Bildirimi'
+                    : createForm.appointment
+                      ? 'Servis Randevusu'
+                      : 'Yeni İş Emri'
+              }}
+            </h2>
+          </div>
+          <UiButton @click="modal = ''">×</UiButton>
+        </header>
+        <form v-if="modal === 'create'" @submit.prevent="createRequest">
+          <div class="form-grid">
+            <UiField
+              >Araç<select v-model="createForm.vehicle_id" required>
+                <option value="" disabled>Araç seçin</option>
+                <option
+                  v-for="v in vehicles.filter((v) => v.is_active !== false)"
+                  :key="v.id"
+                  :value="v.id"
+                >
+                  {{ v.plate }} · {{ v.brand }} {{ v.model }}
+                </option>
+              </select></UiField
+            ><UiField
+              >İşlem Türü<select v-model="createForm.service_type">
+                <option>Periyodik Bakım</option>
+                <option>Mekanik Onarım</option>
+                <option>Genel Kontrol</option>
+                <option>Hasar / Kaza</option>
+                <option>Ekspertiz</option>
+                <option>Diğer</option>
+              </select></UiField
+            ><UiField
+              >Tercih Edilen Aralık — Başlangıç<input
+                v-model="createForm.preferred_date_start"
+                type="date"
+                :max="createForm.preferred_date_end || undefined"
+                :required="!!createForm.preferred_date_end" /></UiField
+            ><UiField
+              >Tercih Edilen Aralık — Bitiş<input
+                v-model="createForm.preferred_date_end"
+                type="date"
+                :min="createForm.preferred_date_start || undefined"
+                :required="!!createForm.preferred_date_start" /></UiField
+            ><UiField
+              >Güncel KM<input v-model.number="createForm.mileage" type="number" min="0" /></UiField
+            ><UiField
+              >Servis Firması<select v-model="createForm.supplier_id">
+                <option value="">Servislerin üstlenmesini bekle</option>
+                <option v-for="s in suppliers" :key="s.id" :value="s.id">
+                  {{ s.name }} · {{ s.city || '—' }}
+                </option>
+              </select></UiField
+            ><UiField v-if="createForm.service_type === 'Hasar / Kaza'"
+              >Olay Tarihi<input v-model="createForm.accident_date" type="date"
+            /></UiField>
+          </div>
+          <UiField
+            >Açıklama<textarea
+              v-model.trim="createForm.description"
+              required
+              rows="3"
+              placeholder="Servis / hasar detaylarını yazın"
+            />
+          </UiField>
+          <p v-if="error" class="error">{{ error }}</p>
+          <footer>
+            <UiButton type="button" class="cancel" @click="modal = ''">Vazgeç</UiButton
+            ><UiButton class="primary" :disabled="saving">{{
+              saving
+                ? 'Kaydediliyor…'
+                : createForm.appointment
+                  ? 'Randevu Talep Et'
+                  : 'İş Emri Oluştur'
+            }}</UiButton>
+          </footer>
+        </form>
+        <div v-else-if="modal === 'detail' && selected" class="readonly-detail">
+          <div class="record-summary">
+            <b>{{ selected.vehicle_plate }} · {{ selected.vehicle_brand_model }}</b
+            ><span
+              >{{
+                selected.details?.work_order_no ||
+                selected.details?.roadside_case_no ||
+                'Talep #' + selected.id
+              }}
+              · {{ date(selected.created_at) }} {{ time(selected.created_at) }}</span
+            >
+          </div>
+          <dl>
+            <dt>İşlem</dt>
+            <dd>{{ serviceType(selected) }}</dd>
+            <dt>Durum</dt>
+            <dd>{{ selected.status }}</dd>
+            <dt>Servis Firması</dt>
+            <dd>{{ selected.supplier_name }}</dd>
+            <dt>Açıklama</dt>
+            <dd>{{ selected.description || '—' }}</dd>
+            <dt>Tercih Edilen Aralık</dt>
+            <dd>{{ preferredDateRange(selected.details) }}</dd>
+            <dt>Randevu</dt>
+            <dd>{{ date(selected.details?.appointment_date) }}</dd>
+            <dt>Servis Girişi</dt>
+            <dd>
+              {{ date(selected.details?.entry_date) }} {{ time(selected.details?.entry_date) }}
+            </dd>
+            <dt>Teşhis / İşlem</dt>
+            <dd>{{ selected.details?.diagnosis_notes || 'Henüz paylaşılmadı' }}</dd>
+            <dt>İşçilik</dt>
+            <dd>{{ money(selected.details?.labor_cost) }}</dd>
+            <dt>Tahmini Tutar</dt>
+            <dd>{{ money(selected.details?.total_estimated_cost) }}</dd>
+            <dt>Fatura</dt>
+            <dd>
+              {{ selected.details?.invoice_no || 'Henüz yüklenmedi' }} ·
+              {{ money(selected.details?.invoice_amount) }}
+            </dd>
+          </dl>
+          <a
+            v-if="selected.details?.invoice_file_url"
+            :href="selected.details.invoice_file_url"
+            target="_blank"
+            rel="noreferrer"
+            class="document-link"
+            >Fatura Belgesini Aç ↗</a
+          >
+          <section v-if="selected.details?.parts_list?.length">
+            <h3>Parçalar</h3>
+            <ul>
+              <li v-for="(part, index) in selected.details.parts_list" :key="index">
+                {{ part.part_name || part.name }} · {{ part.quantity }} adet ·
+                {{ money(part.unit_price) }}
+              </li>
+            </ul>
+          </section>
+          <section v-if="selected.details?.service_history?.length">
+            <h3>Servis Süreci</h3>
+            <ol>
+              <li v-for="(event, index) in selected.details.service_history" :key="index">
+                <strong>{{ event.title }}</strong
+                ><small>{{ date(event.created_at) }} {{ time(event.created_at) }}</small>
+              </li>
+            </ol>
+          </section>
+          <footer>
+            <UiButton class="cancel" @click="modal = ''">Kapat</UiButton
+            ><UiButton class="primary" @click="openVehicle(currentVehicle)"
+              >Araç Detayları</UiButton
+            >
+          </footer>
+        </div>
+      </section>
+    </UiModal>
+    <UiModal v-if="showSuppliers" class="backdrop" @close="showSuppliers = false">
+      <section class="dialog">
+        <header>
+          <div>
+            <small>HİZMET NOKTALARI</small>
+            <h2>Servis Firmaları</h2>
+          </div>
+          <UiButton @click="showSuppliers = false">×</UiButton>
+        </header>
+        <article v-for="s in suppliers" :key="s.id" class="supplier">
+          <div>
+            <b>{{ s.name }}</b
+            ><small
+              >{{ s.contract_type || 'Anlaşmalı servis' }} · {{ s.district || '' }}
+              {{ s.city || '' }}</small
+            ><small
+              >{{ (s.services || []).join(' · ') || 'Servis hizmetleri' }} ·
+              {{ s.phone || 'Telefon yok' }}</small
+            >
+          </div>
+          <UiButton @click="selectSupplier(s.id)">Seç</UiButton>
+        </article>
+        <p v-if="!suppliers.length" class="empty-note">Servis firması tanımlanmamış.</p>
+      </section>
+    </UiModal>
   </div>
 </template>
 
 <script setup>
+import { usePagination } from '../composables/usePagination.js'
+
+import { portalClient as json } from '../api/clients.js'
+import { downloadCsv } from '../utils/downloads.js'
+
+import { UiAlert, UiButton, UiField, UiModal } from '../components/ui/index.js'
+
 import NotificationBell from '../components/NotificationBell.vue'
 import { hasPreferredDates, preferredDateRange } from '../utils/preferredDates'
 import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'
-const filtersExpanded=ref(false)
-const route=useRoute(),router=useRouter()
-const customerId=localStorage.getItem('fleetcar_customer_id') || localStorage.getItem('customer_id'),customerName=localStorage.getItem('fleetcar_customer_name')||'Filo Yöneticisi'
-const initials=customerName.split(' ').slice(0,2).map(word=>word[0]).join('').toUpperCase()
-const vehicles=ref([]),requests=ref([]),suppliers=ref([]),summary=ref({}),dueVehicles=ref([]),groups=ref([]),statuses=ref([])
-const search=ref(''),groupFilter=ref('all'),typeFilter=ref('all'),statusFilter=ref('all'),dateFrom=ref(''),dateTo=ref(''),page=ref(1),vehicleId=ref(''),selected=ref(null)
-const modal=ref(''),showSuppliers=ref(false),saving=ref(false),loading=ref(false),error=ref(''),loadError=ref('')
-const createForm=reactive({vehicle_id:'',service_type:'Periyodik Bakım',preferred_date_start:'',preferred_date_end:'',mileage:null,supplier_id:'',accident_date:'',description:'',appointment:false})
-const tabs=[{key:'all',name:'Tümü',icon:'◉'},{key:'service',name:'Servis / Bakım',icon:'⚒'},{key:'damage',name:'Hasar / Kaza',icon:'⚠'},{key:'roadside',name:'Yol Yardım',icon:'♧'},{key:'expertise',name:'Ekspertiz',icon:'◉'},{key:'other',name:'Diğer',icon:'▦'},{key:'workorders',name:'İş Emirleri',icon:'▤'}]
-function routeTab(){return route.name==='WorkOrders'?'workorders':tabs.some(tab=>tab.key===route.query.tab)?route.query.tab:'all'}
-const activeTab=ref(routeTab()),showDue=computed(()=>statusFilter.value==='due')
-const terminalStatuses=['Tamamlandı','Çözüldü','İptal Edildi']
-const currentVehicle=computed(()=>vehicles.value.find(v=>String(v.id)===String(vehicleId.value))||null)
-function vehicle(id){return vehicles.value.find(v=>String(v.id)===String(id))}
-function matchesVehicle(v){const q=search.value.trim().toLocaleLowerCase('tr-TR');return (!q||[v.plate,v.brand,v.model].join(' ').toLocaleLowerCase('tr-TR').includes(q)) && (groupFilter.value==='all'||v.group===groupFilter.value)}
-const filteredDue=computed(()=>dueVehicles.value.filter(matchesVehicle))
-const filtered=computed(()=>requests.value.filter(r=>{
-  const v=vehicle(r.vehicle_id),q=search.value.trim().toLocaleLowerCase('tr-TR'),hay=[r.vehicle_plate,r.vehicle_brand_model,r.description,r.details?.work_order_no,r.details?.roadside_case_no,r.details?.service_type,r.supplier_name].join(' ').toLocaleLowerCase('tr-TR'),day=String(r.created_at||'').slice(0,10)
-  return (!q||hay.includes(q)) && (groupFilter.value==='all'||v?.group===groupFilter.value) && (typeFilter.value==='all'||r.kind===typeFilter.value) && (statusFilter.value==='all'||statusFilter.value==='open'&&!terminalStatuses.includes(r.status)||statusFilter.value===r.status) && (!dateFrom.value||day>=dateFrom.value) && (!dateTo.value||day<=dateTo.value) && (activeTab.value==='all'||(activeTab.value==='workorders'?r.type==='servis':r.kind===activeTab.value))
-}))
-const pages=computed(()=>Math.max(1,Math.ceil(filtered.value.length/10))),paginated=computed(()=>filtered.value.slice((page.value-1)*10,page.value*10)),start=computed(()=>filtered.value.length?(page.value-1)*10+1:0),end=computed(()=>Math.min(page.value*10,filtered.value.length))
-watch(()=>[route.name,route.query.tab],()=>{activeTab.value=routeTab();statusFilter.value='all'})
-watch([search,groupFilter,typeFilter,statusFilter,dateFrom,dateTo,activeTab],()=>page.value=1)
-watch(pages,count=>{if(page.value>count)page.value=count})
-function serviceType(r){return ({yol_yardim:'Yol Yardım',lastik:'Lastik',ikame_arac:'İkame Araç'})[r.type]||r.details?.service_type||'Servis / Bakım'}
-function fmt(n){return n==null?'—':Number(n).toLocaleString('tr-TR')}
-function money(n){return n==null||n===''?'—':Number(n).toLocaleString('tr-TR')+' ₺'}
-function date(value){if(!value)return '—';const d=new Date(value);return Number.isNaN(d.getTime())?value:d.toLocaleDateString('tr-TR')}
-function time(value){if(!value)return '';const d=new Date(value);return Number.isNaN(d.getTime())?'':d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}
-function dueLabel(v){const days=v.days_until_service,km=v.km_until_service;return [days!=null?(days<0?Math.abs(days)+' gün gecikti':days+' gün kaldı'):null,km!=null?(km<0?fmt(Math.abs(km))+' km aşıldı':fmt(km)+' km kaldı'):null].filter(Boolean).join(' · ')}
-function stateClass(status){return ['Tamamlandı','Çözüldü'].includes(status)?'done':['Kaza','İptal Edildi'].includes(status)?'bad':status==='Beklemede'?'pending':'working'}
-function toggleDue(){statusFilter.value=showDue.value?'all':'due'}
-function showDueList(){statusFilter.value='due';activeTab.value='all'}
-function openVehicle(v){if(v)router.push('/dashboard/vehicles/'+encodeURIComponent(v.id)+'?tab=service')}
-async function json(url,options){const response=await fetch(url,options);if(!response.ok){const data=await response.json().catch(()=>({}));throw Error(typeof data.detail==='string'?data.detail:'Veriler yüklenemedi. Lütfen tekrar deneyin.')}return response.json()}
+const filtersExpanded = ref(false)
+const route = useRoute(),
+  router = useRouter()
+const customerId =
+    localStorage.getItem('fleetcar_customer_id') || localStorage.getItem('customer_id'),
+  customerName = localStorage.getItem('fleetcar_customer_name') || 'Filo Yöneticisi'
+const initials = customerName
+  .split(' ')
+  .slice(0, 2)
+  .map((word) => word[0])
+  .join('')
+  .toUpperCase()
+const vehicles = ref([]),
+  requests = ref([]),
+  suppliers = ref([]),
+  summary = ref({}),
+  dueVehicles = ref([]),
+  groups = ref([]),
+  statuses = ref([])
+const search = ref(''),
+  groupFilter = ref('all'),
+  typeFilter = ref('all'),
+  statusFilter = ref('all'),
+  dateFrom = ref(''),
+  dateTo = ref(''),
+  page = ref(1),
+  vehicleId = ref(''),
+  selected = ref(null)
+const modal = ref(''),
+  showSuppliers = ref(false),
+  saving = ref(false),
+  loading = ref(false),
+  error = ref(''),
+  loadError = ref('')
+const createForm = reactive({
+  vehicle_id: '',
+  service_type: 'Periyodik Bakım',
+  preferred_date_start: '',
+  preferred_date_end: '',
+  mileage: null,
+  supplier_id: '',
+  accident_date: '',
+  description: '',
+  appointment: false,
+})
+const tabs = [
+  { key: 'all', name: 'Tümü', icon: '◉' },
+  { key: 'service', name: 'Servis / Bakım', icon: '⚒' },
+  { key: 'damage', name: 'Hasar / Kaza', icon: '⚠' },
+  { key: 'roadside', name: 'Yol Yardım', icon: '♧' },
+  { key: 'expertise', name: 'Ekspertiz', icon: '◉' },
+  { key: 'other', name: 'Diğer', icon: '▦' },
+  { key: 'workorders', name: 'İş Emirleri', icon: '▤' },
+]
+function routeTab() {
+  return route.name === 'WorkOrders'
+    ? 'workorders'
+    : tabs.some((tab) => tab.key === route.query.tab)
+      ? route.query.tab
+      : 'all'
+}
+const activeTab = ref(routeTab()),
+  showDue = computed(() => statusFilter.value === 'due')
+const terminalStatuses = ['Tamamlandı', 'Çözüldü', 'İptal Edildi']
+const currentVehicle = computed(
+  () => vehicles.value.find((v) => String(v.id) === String(vehicleId.value)) || null,
+)
+function vehicle(id) {
+  return vehicles.value.find((v) => String(v.id) === String(id))
+}
+function matchesVehicle(v) {
+  const q = search.value.trim().toLocaleLowerCase('tr-TR')
+  return (
+    (!q || [v.plate, v.brand, v.model].join(' ').toLocaleLowerCase('tr-TR').includes(q)) &&
+    (groupFilter.value === 'all' || v.group === groupFilter.value)
+  )
+}
+const filteredDue = computed(() => dueVehicles.value.filter(matchesVehicle))
+const filtered = computed(() =>
+  requests.value.filter((r) => {
+    const v = vehicle(r.vehicle_id),
+      q = search.value.trim().toLocaleLowerCase('tr-TR'),
+      hay = [
+        r.vehicle_plate,
+        r.vehicle_brand_model,
+        r.description,
+        r.details?.work_order_no,
+        r.details?.roadside_case_no,
+        r.details?.service_type,
+        r.supplier_name,
+      ]
+        .join(' ')
+        .toLocaleLowerCase('tr-TR'),
+      day = String(r.created_at || '').slice(0, 10)
+    return (
+      (!q || hay.includes(q)) &&
+      (groupFilter.value === 'all' || v?.group === groupFilter.value) &&
+      (typeFilter.value === 'all' || r.kind === typeFilter.value) &&
+      (statusFilter.value === 'all' ||
+        (statusFilter.value === 'open' && !terminalStatuses.includes(r.status)) ||
+        statusFilter.value === r.status) &&
+      (!dateFrom.value || day >= dateFrom.value) &&
+      (!dateTo.value || day <= dateTo.value) &&
+      (activeTab.value === 'all' ||
+        (activeTab.value === 'workorders' ? r.type === 'servis' : r.kind === activeTab.value))
+    )
+  }),
+)
+const { totalPages: pages, pageItems: paginated, start, end } = usePagination(filtered, { page })
+watch(
+  () => [route.name, route.query.tab],
+  () => {
+    activeTab.value = routeTab()
+    statusFilter.value = 'all'
+  },
+)
+watch(
+  [search, groupFilter, typeFilter, statusFilter, dateFrom, dateTo, activeTab],
+  () => (page.value = 1),
+)
+function serviceType(r) {
+  return (
+    { yol_yardim: 'Yol Yardım', lastik: 'Lastik', ikame_arac: 'İkame Araç' }[r.type] ||
+    r.details?.service_type ||
+    'Servis / Bakım'
+  )
+}
+function fmt(n) {
+  return n == null ? '—' : Number(n).toLocaleString('tr-TR')
+}
+function money(n) {
+  return n == null || n === '' ? '—' : Number(n).toLocaleString('tr-TR') + ' ₺'
+}
+function date(value) {
+  if (!value) return '—'
+  const d = new Date(value)
+  return Number.isNaN(d.getTime()) ? value : d.toLocaleDateString('tr-TR')
+}
+function time(value) {
+  if (!value) return ''
+  const d = new Date(value)
+  return Number.isNaN(d.getTime())
+    ? ''
+    : d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+}
+function dueLabel(v) {
+  const days = v.days_until_service,
+    km = v.km_until_service
+  return [
+    days != null ? (days < 0 ? Math.abs(days) + ' gün gecikti' : days + ' gün kaldı') : null,
+    km != null ? (km < 0 ? fmt(Math.abs(km)) + ' km aşıldı' : fmt(km) + ' km kaldı') : null,
+  ]
+    .filter(Boolean)
+    .join(' · ')
+}
+function stateClass(status) {
+  return ['Tamamlandı', 'Çözüldü'].includes(status)
+    ? 'done'
+    : ['Kaza', 'İptal Edildi'].includes(status)
+      ? 'bad'
+      : status === 'Beklemede'
+        ? 'pending'
+        : 'working'
+}
+function toggleDue() {
+  statusFilter.value = showDue.value ? 'all' : 'due'
+}
+function showDueList() {
+  statusFilter.value = 'due'
+  activeTab.value = 'all'
+}
+function openVehicle(v) {
+  if (v) router.push('/dashboard/vehicles/' + encodeURIComponent(v.id) + '?tab=service')
+}
 let refreshTimer
-async function load(background=false){if(loading.value)return;if(!customerId){loadError.value='Müşteri bilgisi bulunamadı. Lütfen yeniden giriş yapın.';return}loading.value=true;try{const data=await json('/api/service-overview?customer_id='+encodeURIComponent(customerId));vehicles.value=data.vehicles;requests.value=data.records;summary.value=data.summary;dueVehicles.value=data.due_vehicles;groups.value=data.groups;statuses.value=data.statuses;loadError.value='';if(!currentVehicle.value)vehicleId.value=vehicles.value[0]?.id||'';if(selected.value)selected.value=requests.value.find(r=>r.id===selected.value.id)||null;if(!background)suppliers.value=await json('/api/suppliers?type=servis')}catch(e){loadError.value=e.message}finally{loading.value=false}}
-function select(r){selected.value=r;vehicleId.value=r.vehicle_id}
-function openDetail(r){if(r.type==='yol_yardim'){router.push('/dashboard/roadside');return}select(r);error.value='';modal.value='detail'}
-function openCreate(type){const v=currentVehicle.value?.is_active!==false?currentVehicle.value:vehicles.value.find(v=>v.is_active!==false);Object.assign(createForm,{vehicle_id:v?.id||'',service_type:type==='damage'?'Hasar / Kaza':'Periyodik Bakım',preferred_date_start:'',preferred_date_end:'',mileage:v?.mileage??null,supplier_id:'',accident_date:'',description:'',appointment:type==='appointment'});error.value='';modal.value='create'}
-async function createRequest(){if((!!createForm.preferred_date_start !== !!createForm.preferred_date_end) || createForm.preferred_date_end < createForm.preferred_date_start){error.value='Geçerli bir başlangıç ve bitiş tarihi seçin.';return}saving.value=true;error.value='';try{const data=await json('/api/requests',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({vehicle_id:createForm.vehicle_id,supplier_id:createForm.supplier_id?Number(createForm.supplier_id):null,type:'servis',description:createForm.description,details:{service_type:createForm.service_type,appointment_requested:createForm.appointment,preferred_date_start:createForm.preferred_date_start||null,preferred_date_end:createForm.preferred_date_end||null,mileage:createForm.mileage,accident_date:createForm.accident_date||null}})});modal.value='';await load();const entry=requests.value.find(r=>r.id===data.id);if(entry){statusFilter.value='all';activeTab.value=entry.kind;openDetail(entry)}}catch(e){error.value=e.message}finally{saving.value=false}}
-function exportCsv(){const heads=['Tarih','Plaka','Araç','İşlem','Açıklama','Durum','Tutar','İş Emri No'],rows=filtered.value.map(r=>[r.created_at,r.vehicle_plate,r.vehicle_brand_model,serviceType(r),r.description,r.status,r.amount,r.details?.work_order_no||r.details?.roadside_case_no||'']);const csv=[heads,...rows].map(row=>row.map(x=>'"'+String(x??'').replaceAll('"','""')+'"').join(';')).join('\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff',csv],{type:'text/csv;charset=utf-8'}));a.download='fleetrent-servis-is-emirleri.csv';a.click();URL.revokeObjectURL(a.href)}
-onMounted(()=>{load();refreshTimer=setInterval(()=>{if(!document.hidden && modal.value!=='create')load(true)},15000)})
-onUnmounted(()=>clearInterval(refreshTimer))
+async function load(background = false) {
+  if (loading.value) return
+  if (!customerId) {
+    loadError.value = 'Müşteri bilgisi bulunamadı. Lütfen yeniden giriş yapın.'
+    return
+  }
+  loading.value = true
+  try {
+    const data = await json('/api/service-overview?customer_id=' + encodeURIComponent(customerId))
+    vehicles.value = data.vehicles
+    requests.value = data.records
+    summary.value = data.summary
+    dueVehicles.value = data.due_vehicles
+    groups.value = data.groups
+    statuses.value = data.statuses
+    loadError.value = ''
+    if (!currentVehicle.value) vehicleId.value = vehicles.value[0]?.id || ''
+    if (selected.value)
+      selected.value = requests.value.find((r) => r.id === selected.value.id) || null
+    if (!background) suppliers.value = await json('/api/suppliers?type=servis')
+  } catch (e) {
+    loadError.value = e.message
+  } finally {
+    loading.value = false
+  }
+}
+function select(r) {
+  selected.value = r
+  vehicleId.value = r.vehicle_id
+}
+function openDetail(r) {
+  if (r.type === 'yol_yardim') {
+    router.push('/dashboard/roadside')
+    return
+  }
+  select(r)
+  error.value = ''
+  modal.value = 'detail'
+}
+function selectSupplier(id) {
+  showSuppliers.value = false
+  openCreate('service')
+  createForm.supplier_id = String(id)
+}
+
+function openVehicleAppointment(id) {
+  vehicleId.value = id
+  openCreate('appointment')
+}
+
+function openCreate(type) {
+  const v =
+    currentVehicle.value?.is_active !== false
+      ? currentVehicle.value
+      : vehicles.value.find((v) => v.is_active !== false)
+  Object.assign(createForm, {
+    vehicle_id: v?.id || '',
+    service_type: type === 'damage' ? 'Hasar / Kaza' : 'Periyodik Bakım',
+    preferred_date_start: '',
+    preferred_date_end: '',
+    mileage: v?.mileage ?? null,
+    supplier_id: '',
+    accident_date: '',
+    description: '',
+    appointment: type === 'appointment',
+  })
+  error.value = ''
+  modal.value = 'create'
+}
+async function createRequest() {
+  if (
+    !!createForm.preferred_date_start !== !!createForm.preferred_date_end ||
+    createForm.preferred_date_end < createForm.preferred_date_start
+  ) {
+    error.value = 'Geçerli bir başlangıç ve bitiş tarihi seçin.'
+    return
+  }
+  saving.value = true
+  error.value = ''
+  try {
+    const data = await json('/api/requests', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        vehicle_id: createForm.vehicle_id,
+        supplier_id: createForm.supplier_id ? Number(createForm.supplier_id) : null,
+        type: 'servis',
+        description: createForm.description,
+        details: {
+          service_type: createForm.service_type,
+          appointment_requested: createForm.appointment,
+          preferred_date_start: createForm.preferred_date_start || null,
+          preferred_date_end: createForm.preferred_date_end || null,
+          mileage: createForm.mileage,
+          accident_date: createForm.accident_date || null,
+        },
+      }),
+    })
+    modal.value = ''
+    await load()
+    const entry = requests.value.find((r) => r.id === data.id)
+    if (entry) {
+      statusFilter.value = 'all'
+      activeTab.value = entry.kind
+      openDetail(entry)
+    }
+  } catch (e) {
+    error.value = e.message
+  } finally {
+    saving.value = false
+  }
+}
+function exportCsv() {
+  const heads = ['Tarih', 'Plaka', 'Araç', 'İşlem', 'Açıklama', 'Durum', 'Tutar', 'İş Emri No'],
+    rows = filtered.value.map((r) => [
+      r.created_at,
+      r.vehicle_plate,
+      r.vehicle_brand_model,
+      serviceType(r),
+      r.description,
+      r.status,
+      r.amount,
+      r.details?.work_order_no || r.details?.roadside_case_no || '',
+    ])
+  downloadCsv([heads, ...rows], 'fleetrent-servis-is-emirleri.csv')
+}
+onMounted(() => {
+  load()
+  refreshTimer = setInterval(() => {
+    if (!document.hidden && modal.value !== 'create') load(true)
+  }, 15000)
+})
+onUnmounted(() => clearInterval(refreshTimer))
 </script>
 
 <style scoped>
-.service-app{min-height:100vh;display:flex;background:#f3f8fd;color:#152d50;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.service-main{margin-left:260px;width:calc(100% - 260px);min-width:0;flex:1}.topbar{height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;background:#fff;border-bottom:1px solid #e6edf5;font-size:10px}.topbar label{width:min(430px,55%);padding:8px 10px;border-radius:6px;background:#f1f6fc;color:#53749e}.topbar input{border:0;outline:0;background:transparent;width:90%;font-size:10px}.content{padding:17px 19px;max-width:1650px;margin:auto}.page-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.page-title h1{font-size:18px;margin:0;color:#142f58}.page-title p{font-size:9px;color:#7889a0;margin:4px 0}.primary{border:0;border-radius:5px;background:#1268e8;color:#fff;padding:9px 13px;font-size:10px;font-weight:700;cursor:pointer}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:11px}.metrics article{display:grid;grid-template-columns:32px 1fr;grid-template-rows:auto auto;align-items:center;column-gap:8px;background:white;border:1px solid #e7edf5;border-radius:7px;padding:10px;min-height:46px;cursor:default}.metrics i{grid-row:span 2;width:29px;height:29px;border-radius:50%;display:grid;place-items:center;font-style:normal}.metrics i.blue{color:#1467dc;background:#eaf2ff}.metrics i.red{color:#df434d;background:#fff0f0}.metrics small{font-size:9px;color:#536b88}.metrics b{font-size:17px;color:#18355f}.metrics .due-metric{cursor:pointer;border-color:#b7cff6}.layout{display:grid;grid-template-columns:minmax(0,1fr) 258px;gap:10px}.main-col,.right-col{min-width:0;display:flex;flex-direction:column;gap:9px}.filters{display:flex;align-items:end;gap:6px;background:#fff;border:1px solid #e6edf5;border-radius:6px;padding:8px}.filters label:not(.search){display:flex;flex-direction:column;gap:3px;min-width:66px;flex:.65}.filters label small{font-size:7px;color:#73849c}.filters select,.filters input[type=date]{height:27px;min-width:0;border:1px solid #dce5ef;border-radius:4px;background:#fff;color:#3b5575;font-size:8px;padding:0 4px}.filters .search{display:flex;align-items:center;gap:6px;flex:1.2;min-width:120px;padding:0 8px;height:28px;border:1px solid #dfe8f2;border-radius:4px;color:#8093aa}.filters .search input{min-width:0;width:100%;border:0;outline:0;font-size:8px}.filter-button,.light-btn{height:27px;padding:0 8px;background:#fff;border:1px solid #dce6f1;color:#2467b8;border-radius:4px;font-size:8px;cursor:pointer;white-space:nowrap}.tabs{display:flex;overflow:auto;background:#fff;border:1px solid #e6edf5;border-radius:5px}.tabs button{border:0;border-bottom:3px solid transparent;background:white;color:#536c8d;padding:8px 10px;white-space:nowrap;font-size:8px;cursor:pointer}.tabs button.active{border-bottom-color:#176be8;color:#1a62c8;font-weight:700}.tabs b{margin-left:4px;color:#8997aa}.panel{background:#fff;border:1px solid #e5edf5;border-radius:6px;overflow:hidden;box-shadow:0 2px 7px #173d680b}.panel>header{min-height:36px;padding:0 10px;border-bottom:1px solid #edf1f6;display:flex;align-items:center;justify-content:space-between;font-size:9px;color:#19365c}.panel>header select{font-size:8px;border:1px solid #e2e9f1;border-radius:4px;padding:4px;background:white;color:#365578}table{width:100%;min-width:850px;border-collapse:collapse}.table-wrap{overflow:auto}th,td{text-align:left;padding:7px 5px;border-bottom:1px solid #eef2f7;white-space:nowrap;font-size:8px;color:#354f70}th{font-size:7px;background:#fbfcfe;color:#71839a}td{height:34px}tr.selected{background:#f3f7ff}.plate{font-weight:700;color:#2864b6}.car-cell small,td small{display:block;font-size:7px;color:#8795a8;margin-top:2px}.pill,.state{border-radius:10px;padding:4px 6px;font-size:7px}.pill.service,.pill.expertise{background:#eaf1ff;color:#2562bd}.pill.damage{background:#fff0f1;color:#d1434d}.pill.roadside{background:#eaf5ff;color:#1b78bf}.pill.other{background:#f1f3f7;color:#67758b}.state.done{background:#def6e9;color:#11885d}.state.pending{background:#fff1ca;color:#a87a0a}.state.working{background:#e8f1ff;color:#2868c3}.state.bad{background:#ffe2e3;color:#c53b45}.desc{max-width:125px;overflow:hidden;text-overflow:ellipsis}.dots{border:1px solid #e5ebf2;border-radius:4px;background:white;color:#54708f;cursor:pointer}.empty{text-align:center;height:120px;color:#8091a6}.empty b,.empty small{display:block;margin:5px}.empty button,.wide{margin-top:6px;border:1px solid #d9e5f3;border-radius:4px;background:#fff;color:#2869b9;font-size:8px;padding:6px;cursor:pointer}footer{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;color:#8090a5;font-size:7px}footer span button{border:0;background:white;color:#41648f;cursor:pointer}.vehicle-panel{padding-bottom:8px}.car{height:54px;padding:7px 12px;font-size:32px;display:flex;justify-content:space-between;align-items:center}.car span{font-size:7px;color:#138b5e;background:#e0f8ee;padding:4px 6px;border-radius:10px}.vehicle-panel>template+b,.vehicle-panel>.plate{display:block;margin:2px 11px;font-size:9px}.vehicle-panel .plate{color:#23558d}.vehicle-panel dl{display:grid;grid-template-columns:1fr 1.1fr;gap:7px;border-top:1px solid #edf1f6;margin:9px 0 5px;padding:9px 11px;font-size:7px}.vehicle-panel dt{color:#8391a4}.vehicle-panel dd{margin:0;color:#344e70;font-weight:600;overflow:hidden;text-overflow:ellipsis}.wide{display:block;width:calc(100% - 20px);margin:6px 10px}.link-btn{border:0;background:none;color:#2867b8;font-size:8px;cursor:pointer}.due-list{padding:3px 10px}.due-list>button{width:100%;display:flex;align-items:center;gap:7px;padding:8px 0;border:0;border-bottom:1px solid #eff2f6;background:white;text-align:left;cursor:pointer}.due-list>button span{flex:1}.due-list b,.due-list small{display:block}.due-list b{font-size:7px;color:#314c6e}.due-list small{font-size:7px;color:#8492a6;margin-top:3px}.due-list i{font-style:normal;background:#dff7ed;color:#168d60;border-radius:9px;padding:4px 6px;font-size:7px}.quick{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:9px}.quick button{min-height:38px;border:1px solid #e4ebf3;background:#fff;border-radius:4px;color:#355171;text-align:left;padding:7px;font-size:8px;cursor:pointer}.quick button:first-letter{color:#1768db}.empty-note{padding:12px;color:#8291a4;font-size:8px}.backdrop{position:fixed;inset:0;z-index:1000;background:#06182cb3;display:grid;place-items:center;padding:18px}.dialog{width:min(610px,100%);max-height:90vh;overflow:auto;background:white;border-radius:10px;padding:21px;color:#1c3657;box-shadow:0 20px 70px #061a3380}.dialog>header{display:flex;justify-content:space-between;margin-bottom:14px}.dialog header small{font-size:8px;color:#2a72d2;letter-spacing:.1em}.dialog header h2{font-size:18px;margin:4px 0}.dialog header>button{border:0;background:#f1f5f9;border-radius:50%;width:27px;height:27px;font-size:19px;cursor:pointer}.dialog form>label,.form-grid label{display:flex;flex-direction:column;gap:5px;margin:9px 0;font-size:9px;font-weight:650;color:#4a607a}.dialog input,.dialog select,.dialog textarea{box-sizing:border-box;width:100%;border:1px solid #dce5ef;border-radius:5px;padding:8px;font:inherit;color:#304b6d;background:white}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 11px}.dialog form>footer{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}.cancel{border:1px solid #dce5ef;border-radius:5px;background:#fff;padding:8px 13px;color:#536982;cursor:pointer}.error{padding:8px;background:#fff0f0;color:#b9323b;font-size:9px}.record-summary{display:flex;flex-direction:column;gap:4px;background:#f3f7fc;border-radius:5px;padding:9px;font-size:9px}.record-summary span{color:#71839b}.dialog details{border:1px solid #e3eaf2;border-radius:5px;padding:9px;font-size:9px}.dialog summary{cursor:pointer;font-weight:700}.supplier{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #edf1f6}.supplier div{flex:1}.supplier b,.supplier small{display:block;font-size:9px}.supplier small{font-size:8px;color:#77889e;margin-top:4px}.supplier button{border:1px solid #dbe5f2;border-radius:4px;background:white;color:#2367b9;padding:6px 10px;font-size:8px;cursor:pointer}
-@media(max-width:1200px){.layout{grid-template-columns:minmax(0,1fr) 235px}.filters{flex-wrap:wrap}.filters .search{flex-basis:30%}}
-@media(max-width:900px){.service-app{display:block}.service-app :deep(.portal-sidebar){width:100%;position:relative;height:auto;max-height:none;border:0;border-bottom:1px solid #e2e8f0;padding:14px 18px;top:auto;bottom:auto;left:auto;overflow:visible}.service-main{margin:0;width:100%}.layout{grid-template-columns:1fr}.right-col{display:grid;grid-template-columns:1fr 1fr}.vehicle-panel{grid-column:1/-1}.metrics{grid-template-columns:1fr 1fr}}
-@media(max-width:600px){.content{padding:12px}.page-title h1{font-size:15px}.page-title p{font-size:8px;line-height:1.4}.page-title .primary{font-size:8px;padding:8px}.metrics article{padding:7px;grid-template-columns:25px 1fr}.metrics i{width:23px;height:23px;font-size:12px}.metrics small{font-size:7px}.metrics b{font-size:14px}.filters label:not(.search){min-width:calc(50% - 8px);flex:1}.filters .search{flex:1 1 100%}.tabs button{padding:7px;font-size:7px}.right-col{display:flex}.form-grid{grid-template-columns:1fr}}
+.service-app {
+  min-height: 100vh;
+  display: flex;
+  background: #f3f8fd;
+  color: #152d50;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+}
+.service-main {
+  margin-left: 260px;
+  width: calc(100% - 260px);
+  min-width: 0;
+  flex: 1;
+}
+.topbar {
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 22px;
+  background: #fff;
+  border-bottom: 1px solid #e6edf5;
+  font-size: 10px;
+}
+.topbar label {
+  width: min(430px, 55%);
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #f1f6fc;
+  color: #53749e;
+}
+.topbar input {
+  border: 0;
+  outline: 0;
+  background: transparent;
+  width: 90%;
+  font-size: 10px;
+}
+.content {
+  padding: 17px 19px;
+  max-width: 1650px;
+  margin: auto;
+}
+.page-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.page-title h1 {
+  font-size: 18px;
+  margin: 0;
+  color: #142f58;
+}
+.page-title p {
+  font-size: 9px;
+  color: #7889a0;
+  margin: 4px 0;
+}
+.primary {
+  border: 0;
+  border-radius: 5px;
+  background: #1268e8;
+  color: #fff;
+  padding: 9px 13px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 9px;
+  margin-bottom: 11px;
+}
+.metrics article {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: 8px;
+  background: white;
+  border: 1px solid #e7edf5;
+  border-radius: 7px;
+  padding: 10px;
+  min-height: 46px;
+  cursor: default;
+}
+.metrics i {
+  grid-row: span 2;
+  width: 29px;
+  height: 29px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-style: normal;
+}
+.metrics i.blue {
+  color: #1467dc;
+  background: #eaf2ff;
+}
+.metrics i.red {
+  color: #df434d;
+  background: #fff0f0;
+}
+.metrics small {
+  font-size: 9px;
+  color: #536b88;
+}
+.metrics b {
+  font-size: 17px;
+  color: #18355f;
+}
+.metrics .due-metric {
+  cursor: pointer;
+  border-color: #b7cff6;
+}
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 258px;
+  gap: 10px;
+}
+.main-col,
+.right-col {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.filters {
+  display: flex;
+  align-items: end;
+  gap: 6px;
+  background: #fff;
+  border: 1px solid #e6edf5;
+  border-radius: 6px;
+  padding: 8px;
+}
+.filters label:not(.search) {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 66px;
+  flex: 0.65;
+}
+.filters label small {
+  font-size: 7px;
+  color: #73849c;
+}
+.filters select,
+.filters input[type='date'] {
+  height: 27px;
+  min-width: 0;
+  border: 1px solid #dce5ef;
+  border-radius: 4px;
+  background: #fff;
+  color: #3b5575;
+  font-size: 8px;
+  padding: 0 4px;
+}
+.filters .search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1.2;
+  min-width: 120px;
+  padding: 0 8px;
+  height: 28px;
+  border: 1px solid #dfe8f2;
+  border-radius: 4px;
+  color: #8093aa;
+}
+.filters .search input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  outline: 0;
+  font-size: 8px;
+}
+.filter-button,
+.light-btn {
+  height: 27px;
+  padding: 0 8px;
+  background: #fff;
+  border: 1px solid #dce6f1;
+  color: #2467b8;
+  border-radius: 4px;
+  font-size: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.tabs {
+  display: flex;
+  overflow: auto;
+  background: #fff;
+  border: 1px solid #e6edf5;
+  border-radius: 5px;
+}
+.tabs button {
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: white;
+  color: #536c8d;
+  padding: 8px 10px;
+  white-space: nowrap;
+  font-size: 8px;
+  cursor: pointer;
+}
+.tabs button.active {
+  border-bottom-color: #176be8;
+  color: #1a62c8;
+  font-weight: 700;
+}
+.tabs b {
+  margin-left: 4px;
+  color: #8997aa;
+}
+.panel {
+  background: #fff;
+  border: 1px solid #e5edf5;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 2px 7px #173d680b;
+}
+.panel > header {
+  min-height: 36px;
+  padding: 0 10px;
+  border-bottom: 1px solid #edf1f6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 9px;
+  color: #19365c;
+}
+.panel > header select {
+  font-size: 8px;
+  border: 1px solid #e2e9f1;
+  border-radius: 4px;
+  padding: 4px;
+  background: white;
+  color: #365578;
+}
+table {
+  width: 100%;
+  min-width: 850px;
+  border-collapse: collapse;
+}
+.table-wrap {
+  overflow: auto;
+}
+th,
+td {
+  text-align: left;
+  padding: 7px 5px;
+  border-bottom: 1px solid #eef2f7;
+  white-space: nowrap;
+  font-size: 8px;
+  color: #354f70;
+}
+th {
+  font-size: 7px;
+  background: #fbfcfe;
+  color: #71839a;
+}
+td {
+  height: 34px;
+}
+tr.selected {
+  background: #f3f7ff;
+}
+.plate {
+  font-weight: 700;
+  color: #2864b6;
+}
+.car-cell small,
+td small {
+  display: block;
+  font-size: 7px;
+  color: #8795a8;
+  margin-top: 2px;
+}
+.pill,
+.state {
+  border-radius: 10px;
+  padding: 4px 6px;
+  font-size: 7px;
+}
+.pill.service,
+.pill.expertise {
+  background: #eaf1ff;
+  color: #2562bd;
+}
+.pill.damage {
+  background: #fff0f1;
+  color: #d1434d;
+}
+.pill.roadside {
+  background: #eaf5ff;
+  color: #1b78bf;
+}
+.pill.other {
+  background: #f1f3f7;
+  color: #67758b;
+}
+.state.done {
+  background: #def6e9;
+  color: #11885d;
+}
+.state.pending {
+  background: #fff1ca;
+  color: #a87a0a;
+}
+.state.working {
+  background: #e8f1ff;
+  color: #2868c3;
+}
+.state.bad {
+  background: #ffe2e3;
+  color: #c53b45;
+}
+.desc {
+  max-width: 125px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dots {
+  border: 1px solid #e5ebf2;
+  border-radius: 4px;
+  background: white;
+  color: #54708f;
+  cursor: pointer;
+}
+.empty {
+  text-align: center;
+  height: 120px;
+  color: #8091a6;
+}
+.empty b,
+.empty small {
+  display: block;
+  margin: 5px;
+}
+.empty button,
+.wide {
+  margin-top: 6px;
+  border: 1px solid #d9e5f3;
+  border-radius: 4px;
+  background: #fff;
+  color: #2869b9;
+  font-size: 8px;
+  padding: 6px;
+  cursor: pointer;
+}
+footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  color: #8090a5;
+  font-size: 7px;
+}
+footer span button {
+  border: 0;
+  background: white;
+  color: #41648f;
+  cursor: pointer;
+}
+.vehicle-panel {
+  padding-bottom: 8px;
+}
+.car {
+  height: 54px;
+  padding: 7px 12px;
+  font-size: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.car span {
+  font-size: 7px;
+  color: #138b5e;
+  background: #e0f8ee;
+  padding: 4px 6px;
+  border-radius: 10px;
+}
+.vehicle-panel > template + b,
+.vehicle-panel > .plate {
+  display: block;
+  margin: 2px 11px;
+  font-size: 9px;
+}
+.vehicle-panel .plate {
+  color: #23558d;
+}
+.vehicle-panel dl {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: 7px;
+  border-top: 1px solid #edf1f6;
+  margin: 9px 0 5px;
+  padding: 9px 11px;
+  font-size: 7px;
+}
+.vehicle-panel dt {
+  color: #8391a4;
+}
+.vehicle-panel dd {
+  margin: 0;
+  color: #344e70;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.wide {
+  display: block;
+  width: calc(100% - 20px);
+  margin: 6px 10px;
+}
+.link-btn {
+  border: 0;
+  background: none;
+  color: #2867b8;
+  font-size: 8px;
+  cursor: pointer;
+}
+.due-list {
+  padding: 3px 10px;
+}
+.due-list > button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 0;
+  border: 0;
+  border-bottom: 1px solid #eff2f6;
+  background: white;
+  text-align: left;
+  cursor: pointer;
+}
+.due-list > button span {
+  flex: 1;
+}
+.due-list b,
+.due-list small {
+  display: block;
+}
+.due-list b {
+  font-size: 7px;
+  color: #314c6e;
+}
+.due-list small {
+  font-size: 7px;
+  color: #8492a6;
+  margin-top: 3px;
+}
+.due-list i {
+  font-style: normal;
+  background: #dff7ed;
+  color: #168d60;
+  border-radius: 9px;
+  padding: 4px 6px;
+  font-size: 7px;
+}
+.quick {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 9px;
+}
+.quick button {
+  min-height: 38px;
+  border: 1px solid #e4ebf3;
+  background: #fff;
+  border-radius: 4px;
+  color: #355171;
+  text-align: left;
+  padding: 7px;
+  font-size: 8px;
+  cursor: pointer;
+}
+.quick button:first-letter {
+  color: #1768db;
+}
+.empty-note {
+  padding: 12px;
+  color: #8291a4;
+  font-size: 8px;
+}
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: #06182cb3;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+.dialog {
+  width: min(610px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  background: white;
+  border-radius: 10px;
+  padding: 21px;
+  color: #1c3657;
+  box-shadow: 0 20px 70px #061a3380;
+}
+.dialog > header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.dialog header small {
+  font-size: 8px;
+  color: #2a72d2;
+  letter-spacing: 0.1em;
+}
+.dialog header h2 {
+  font-size: 18px;
+  margin: 4px 0;
+}
+.dialog header > button {
+  border: 0;
+  background: #f1f5f9;
+  border-radius: 50%;
+  width: 27px;
+  height: 27px;
+  font-size: 19px;
+  cursor: pointer;
+}
+.dialog form > label,
+.form-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 9px 0;
+  font-size: 9px;
+  font-weight: 650;
+  color: #4a607a;
+}
+.dialog input,
+.dialog select,
+.dialog textarea {
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid #dce5ef;
+  border-radius: 5px;
+  padding: 8px;
+  font: inherit;
+  color: #304b6d;
+  background: white;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 11px;
+}
+.dialog form > footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+}
+.cancel {
+  border: 1px solid #dce5ef;
+  border-radius: 5px;
+  background: #fff;
+  padding: 8px 13px;
+  color: #536982;
+  cursor: pointer;
+}
+.error {
+  padding: 8px;
+  background: #fff0f0;
+  color: #b9323b;
+  font-size: 9px;
+}
+.record-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: #f3f7fc;
+  border-radius: 5px;
+  padding: 9px;
+  font-size: 9px;
+}
+.record-summary span {
+  color: #71839b;
+}
+.dialog details {
+  border: 1px solid #e3eaf2;
+  border-radius: 5px;
+  padding: 9px;
+  font-size: 9px;
+}
+.dialog summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+.supplier {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #edf1f6;
+}
+.supplier div {
+  flex: 1;
+}
+.supplier b,
+.supplier small {
+  display: block;
+  font-size: 9px;
+}
+.supplier small {
+  font-size: 8px;
+  color: #77889e;
+  margin-top: 4px;
+}
+.supplier button {
+  border: 1px solid #dbe5f2;
+  border-radius: 4px;
+  background: white;
+  color: #2367b9;
+  padding: 6px 10px;
+  font-size: 8px;
+  cursor: pointer;
+}
+@media (max-width: 1200px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) 235px;
+  }
+  .filters {
+    flex-wrap: wrap;
+  }
+  .filters .search {
+    flex-basis: 30%;
+  }
+}
+@media (max-width: 900px) {
+  .service-app {
+    display: block;
+  }
+  .service-app :deep(.portal-sidebar) {
+    width: 100%;
+    position: relative;
+    height: auto;
+    max-height: none;
+    border: 0;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 14px 18px;
+    top: auto;
+    bottom: auto;
+    left: auto;
+    overflow: visible;
+  }
+  .service-main {
+    margin: 0;
+    width: 100%;
+  }
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .right-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .vehicle-panel {
+    grid-column: 1/-1;
+  }
+  .metrics {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 600px) {
+  .content {
+    padding: 12px;
+  }
+  .page-title h1 {
+    font-size: 15px;
+  }
+  .page-title p {
+    font-size: 8px;
+    line-height: 1.4;
+  }
+  .page-title .primary {
+    font-size: 8px;
+    padding: 8px;
+  }
+  .metrics article {
+    padding: 7px;
+    grid-template-columns: 25px 1fr;
+  }
+  .metrics i {
+    width: 23px;
+    height: 23px;
+    font-size: 12px;
+  }
+  .metrics small {
+    font-size: 7px;
+  }
+  .metrics b {
+    font-size: 14px;
+  }
+  .filters label:not(.search) {
+    min-width: calc(50% - 8px);
+    flex: 1;
+  }
+  .filters .search {
+    flex: 1 1 100%;
+  }
+  .tabs button {
+    padding: 7px;
+    font-size: 7px;
+  }
+  .right-col {
+    display: flex;
+  }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
 
-.content{display:grid;grid-template-columns:minmax(0,1fr) 290px;grid-template-rows:max-content max-content 1fr;gap:12px;align-items:start}.page-title,.metrics{grid-column:1;margin:0}.layout{display:contents}.main-col{grid-column:1}.right-col{grid-column:2;grid-row:1 / span 3}.service-main{background:#edf7fe}.topbar{background:#f7fbff}.service-account{display:flex;align-items:center;gap:10px;color:#183963;text-decoration:none}.service-account small{display:block;color:#7587a2;font-size:9px;margin-top:3px}.service-avatar{background:#0064ff;border-radius:50%;color:white;padding:10px;font-size:12px}.page-title h1{font-size:22px;color:#092968}.page-title p{font-size:10px}.page-title{gap:10px}.metrics article{min-height:63px;padding:13px}.metrics i{width:34px;height:34px;font-size:18px}.metrics b{font-size:22px}.due-metric button{display:contents;border:0;background:transparent;text-align:left;color:inherit;cursor:pointer}.due-metric.chosen{background:#eff6ff;border-color:#0064ff}.service-alert{padding:12px 20px;background:#fff3de;color:#986529;font-size:12px}.service-alert button{cursor:pointer}.filters{flex-wrap:wrap}.filters .search{flex:1 1 140px;height:32px}.filters small{font-size:9px}.filters select,.filters input[type=date],.filters .search input{font-size:10px;height:31px}.filter-button{background:#0064ff;color:white;height:32px}.tabs button{font-size:10px;padding:10px 8px}.tabs button.active{background:#eaf4ff}.tabs b{color:#126ad1;background:#e8f1fb;padding:3px 5px;border-radius:7px}.panel>header{font-size:11px}.panel>header select{font-size:10px}table{min-width:760px}th{font-size:9px}td{font-size:10px;height:44px;white-space:normal}.pill,.state{font-size:9px;display:inline-block;white-space:nowrap}td small{font-size:9px;margin-top:4px}.desc{max-width:150px}.vehicle-cell{display:flex;align-items:center;gap:6px;white-space:nowrap}.vehicle-cell img{width:34px;height:26px;object-fit:contain}.vehicle-placeholder{font-size:26px;color:#6696bd}.car{height:70px}.car img{height:100%;max-width:160px;object-fit:contain}.car .vehicle-placeholder{font-size:40px;background:transparent}.car .vehicle-state{font-size:9px}.car .vehicle-state.inService{background:#fff1cf;color:#b27c10}.car .vehicle-state.inactive{background:#eef0f4;color:#738198}.vehicle-name{display:block;margin:8px 11px 4px;font-size:12px}.vehicle-panel>.plate{font-size:12px}.vehicle-panel dl{font-size:10px;gap:9px 6px}.vehicle-panel dd{overflow-wrap:anywhere;overflow:visible}.due-list b,.due-list small{font-size:10px}.due-list i{font-size:9px}.due-list img{width:32px;height:25px;object-fit:contain}.quick button{font-size:10px;min-height:45px;color:#1261bb}.wide,.link-btn{font-size:10px}.empty-note{font-size:11px}footer{font-size:10px}.dialog form>label,.form-grid label{font-size:12px}.dialog .primary,.dialog .error,.supplier b,.supplier small,.supplier button{font-size:12px}.readonly-detail dl{display:grid;grid-template-columns:140px 1fr;gap:12px;font-size:12px;margin:20px 0}.readonly-detail dt{color:#7588a1}.readonly-detail dd{margin:0;overflow-wrap:anywhere}.readonly-detail h3{font-size:13px;margin:18px 0 8px}.readonly-detail li{font-size:12px;margin:8px 0}.readonly-detail li small{display:block;color:#7b8da3;font-size:10px;margin-top:4px}.readonly-detail footer{justify-content:flex-end;gap:10px}.document-link{font-size:12px;color:#0064ff}.record-summary{font-size:12px}.due-table table{min-width:650px}
-@media(max-width:1200px){.content{grid-template-columns:minmax(0,1fr) 260px}.metrics{grid-template-columns:1fr 1fr}}
-@media(max-width:900px){.content{display:block}.page-title,.metrics{margin-bottom:12px}.layout{display:grid;grid-template-columns:1fr}.right-col{grid-column:auto;grid-row:auto}.topbar{gap:10px}.topbar label{flex:1}}
-@media(max-width:600px){.page-title h1{font-size:18px}.page-title p{font-size:9px}.metrics b{font-size:18px}.metrics small{font-size:9px}.topbar input{font-size:10px}.service-account strong{font-size:9px}.service-avatar{padding:8px}.readonly-detail dl{grid-template-columns:100px 1fr}.tabs button{font-size:9px}}
+.content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 290px;
+  grid-template-rows: max-content max-content 1fr;
+  gap: 12px;
+  align-items: start;
+}
+.page-title,
+.metrics {
+  grid-column: 1;
+  margin: 0;
+}
+.layout {
+  display: contents;
+}
+.main-col {
+  grid-column: 1;
+}
+.right-col {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+}
+.service-main {
+  background: #edf7fe;
+}
+.topbar {
+  background: #f7fbff;
+}
+.service-account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #183963;
+  text-decoration: none;
+}
+.service-account small {
+  display: block;
+  color: #7587a2;
+  font-size: 9px;
+  margin-top: 3px;
+}
+.service-avatar {
+  background: #0064ff;
+  border-radius: 50%;
+  color: white;
+  padding: 10px;
+  font-size: 12px;
+}
+.page-title h1 {
+  font-size: 22px;
+  color: #092968;
+}
+.page-title p {
+  font-size: 10px;
+}
+.page-title {
+  gap: 10px;
+}
+.metrics article {
+  min-height: 63px;
+  padding: 13px;
+}
+.metrics i {
+  width: 34px;
+  height: 34px;
+  font-size: 18px;
+}
+.metrics b {
+  font-size: 22px;
+}
+.due-metric button {
+  display: contents;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+}
+.due-metric.chosen {
+  background: #eff6ff;
+  border-color: #0064ff;
+}
+.service-alert {
+  padding: 12px 20px;
+  background: #fff3de;
+  color: #986529;
+  font-size: 12px;
+}
+.service-alert button {
+  cursor: pointer;
+}
+.filters {
+  flex-wrap: wrap;
+}
+.filters .search {
+  flex: 1 1 140px;
+  height: 32px;
+}
+.filters small {
+  font-size: 9px;
+}
+.filters select,
+.filters input[type='date'],
+.filters .search input {
+  font-size: 10px;
+  height: 31px;
+}
+.filter-button {
+  background: #0064ff;
+  color: white;
+  height: 32px;
+}
+.tabs button {
+  font-size: 10px;
+  padding: 10px 8px;
+}
+.tabs button.active {
+  background: #eaf4ff;
+}
+.tabs b {
+  color: #126ad1;
+  background: #e8f1fb;
+  padding: 3px 5px;
+  border-radius: 7px;
+}
+.panel > header {
+  font-size: 11px;
+}
+.panel > header select {
+  font-size: 10px;
+}
+table {
+  min-width: 760px;
+}
+th {
+  font-size: 9px;
+}
+td {
+  font-size: 10px;
+  height: 44px;
+  white-space: normal;
+}
+.pill,
+.state {
+  font-size: 9px;
+  display: inline-block;
+  white-space: nowrap;
+}
+td small {
+  font-size: 9px;
+  margin-top: 4px;
+}
+.desc {
+  max-width: 150px;
+}
+.vehicle-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.vehicle-cell img {
+  width: 34px;
+  height: 26px;
+  object-fit: contain;
+}
+.vehicle-placeholder {
+  font-size: 26px;
+  color: #6696bd;
+}
+.car {
+  height: 70px;
+}
+.car img {
+  height: 100%;
+  max-width: 160px;
+  object-fit: contain;
+}
+.car .vehicle-placeholder {
+  font-size: 40px;
+  background: transparent;
+}
+.car .vehicle-state {
+  font-size: 9px;
+}
+.car .vehicle-state.inService {
+  background: #fff1cf;
+  color: #b27c10;
+}
+.car .vehicle-state.inactive {
+  background: #eef0f4;
+  color: #738198;
+}
+.vehicle-name {
+  display: block;
+  margin: 8px 11px 4px;
+  font-size: 12px;
+}
+.vehicle-panel > .plate {
+  font-size: 12px;
+}
+.vehicle-panel dl {
+  font-size: 10px;
+  gap: 9px 6px;
+}
+.vehicle-panel dd {
+  overflow-wrap: anywhere;
+  overflow: visible;
+}
+.due-list b,
+.due-list small {
+  font-size: 10px;
+}
+.due-list i {
+  font-size: 9px;
+}
+.due-list img {
+  width: 32px;
+  height: 25px;
+  object-fit: contain;
+}
+.quick button {
+  font-size: 10px;
+  min-height: 45px;
+  color: #1261bb;
+}
+.wide,
+.link-btn {
+  font-size: 10px;
+}
+.empty-note {
+  font-size: 11px;
+}
+footer {
+  font-size: 10px;
+}
+.dialog form > label,
+.form-grid label {
+  font-size: 12px;
+}
+.dialog .primary,
+.dialog .error,
+.supplier b,
+.supplier small,
+.supplier button {
+  font-size: 12px;
+}
+.readonly-detail dl {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 12px;
+  font-size: 12px;
+  margin: 20px 0;
+}
+.readonly-detail dt {
+  color: #7588a1;
+}
+.readonly-detail dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.readonly-detail h3 {
+  font-size: 13px;
+  margin: 18px 0 8px;
+}
+.readonly-detail li {
+  font-size: 12px;
+  margin: 8px 0;
+}
+.readonly-detail li small {
+  display: block;
+  color: #7b8da3;
+  font-size: 10px;
+  margin-top: 4px;
+}
+.readonly-detail footer {
+  justify-content: flex-end;
+  gap: 10px;
+}
+.document-link {
+  font-size: 12px;
+  color: #0064ff;
+}
+.record-summary {
+  font-size: 12px;
+}
+.due-table table {
+  min-width: 650px;
+}
+@media (max-width: 1200px) {
+  .content {
+    grid-template-columns: minmax(0, 1fr) 260px;
+  }
+  .metrics {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 900px) {
+  .content {
+    display: block;
+  }
+  .page-title,
+  .metrics {
+    margin-bottom: 12px;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .right-col {
+    grid-column: auto;
+    grid-row: auto;
+  }
+  .topbar {
+    gap: 10px;
+  }
+  .topbar label {
+    flex: 1;
+  }
+}
+@media (max-width: 600px) {
+  .page-title h1 {
+    font-size: 18px;
+  }
+  .page-title p {
+    font-size: 9px;
+  }
+  .metrics b {
+    font-size: 18px;
+  }
+  .metrics small {
+    font-size: 9px;
+  }
+  .topbar input {
+    font-size: 10px;
+  }
+  .service-account strong {
+    font-size: 9px;
+  }
+  .service-avatar {
+    padding: 8px;
+  }
+  .readonly-detail dl {
+    grid-template-columns: 100px 1fr;
+  }
+  .tabs button {
+    font-size: 9px;
+  }
+}
 </style>
