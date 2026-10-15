@@ -23,6 +23,7 @@ from app.email_utils import (
     send_supplier_invitation_email,
 )
 from app.event_responsibility import router as event_responsibility_router
+from app.fleet_operations import router as fleet_operations_router
 from app.init_db import create_tables, seed
 from app.offer_history import (
     customer_router as customer_offer_router,
@@ -96,6 +97,7 @@ from app.schemas import (
     VehicleResponse,
     VehicleUpdate,
 )
+from app.shell_integration import router as shell_integration_router
 from app.signature_documents import router as signature_documents_router
 from app.supplier_integrations import router as supplier_integrations_router
 from app.supplier_operations import router as supplier_workspace_router
@@ -4383,6 +4385,8 @@ def get_customer_services(customer_id: int, db: Session = Depends(get_db)):
 app.include_router(supplier_workspace_router)
 
 app.include_router(supplier_integrations_router)
+app.include_router(shell_integration_router)
+app.include_router(fleet_operations_router)
 
 
 # Every legacy route is authenticated and scoped; workspace routers own their permissions.

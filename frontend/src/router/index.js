@@ -161,6 +161,9 @@ const routes = [
     meta: { requiresSupplierAuth: true },
     beforeEnter: (to) =>
       [
+        'operations',
+        'branches',
+        'reservations',
         'maintenance',
         'sales',
         'rentals',

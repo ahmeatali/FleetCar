@@ -51,12 +51,52 @@
     /></router-link>
     <nav :aria-label="supplier ? 'Tedarikçi menüsü' : 'Müşteri menüsü'">
       <ul class="fleet-menu">
-        <li v-for="item in items" :key="item.label">
+        <li
+          v-for="item in navigationEntries"
+          :key="item.id || item.to || item.label"
+          :class="{ 'fleet-menu-group': item.children }"
+        >
+          <template v-if="item.children">
+            <UiButton
+              type="button"
+              class="fleet-nav-link fleet-group-toggle"
+              :class="{
+                'group-current': item.children.some(isSelected),
+                'group-expanded': expandedGroup === item.id,
+              }"
+              :aria-expanded="expandedGroup === item.id"
+              :aria-controls="`supplier-group-${item.id}`"
+              @click="expandedGroup = expandedGroup === item.id ? null : item.id"
+            >
+              <span class="nav-glyph" aria-hidden="true">{{ item.icon }}</span>
+              <span>{{ item.label }}</span>
+              <span class="group-chevron" aria-hidden="true">⌄</span>
+            </UiButton>
+            <ul
+              v-show="expandedGroup === item.id"
+              :id="`supplier-group-${item.id}`"
+              class="fleet-submenu"
+              :aria-label="item.label + ' alt menüleri'"
+            >
+              <li v-for="child in item.children" :key="child.to">
+                <router-link
+                  :to="child.to"
+                  class="fleet-nav-link fleet-submenu-link"
+                  :class="{ selected: isSelected(child) }"
+                  :aria-current="isSelected(child) ? 'page' : undefined"
+                >
+                  <span class="nav-glyph" aria-hidden="true">{{ child.icon }}</span>
+                  {{ child.label }}
+                </router-link>
+              </li>
+            </ul>
+          </template>
           <router-link
-            v-if="item.to"
+            v-else-if="item.to"
             :to="item.to"
             class="fleet-nav-link"
             :class="{ selected: isSelected(item) }"
+            :aria-current="isSelected(item) ? 'page' : undefined"
             ><span class="nav-glyph" aria-hidden="true">{{ item.icon }}</span
             >{{ item.label }}</router-link
           >
@@ -85,11 +125,13 @@ import { UiButton } from './ui/index.js'
 
 import { useRoute, useRouter } from 'vue-router'
 import { supplierNavigation } from '../utils/supplierModules'
+import { supplierNavigationGroups } from '../utils/supplierNavigation.js'
 import { supplierApi } from '../utils/supplierApi'
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 const props = defineProps({ supplier: Boolean })
 const route = useRoute(),
   router = useRouter()
+const expandedGroup = ref(null)
 const mobileOpen = ref(false),
   isMobile = ref(false),
   menuButton = ref(null),
@@ -119,6 +161,9 @@ const customerItems = [
   { label: 'İş Emirleri', icon: '▣', to: '/dashboard/work-orders' },
 ]
 const items = computed(() => (props.supplier ? supplierNavigation : customerItems))
+const navigationEntries = computed(() =>
+  props.supplier ? supplierNavigationGroups : customerItems,
+)
 const isSelected = (item) => {
   if (props.supplier) {
     const [path, query] = item.to.split('?')
@@ -142,6 +187,15 @@ const currentLabel = computed(
   () =>
     items.value.find((item) => item.to && isSelected(item))?.label ||
     (props.supplier ? 'Tedarikçi Portalı' : 'Müşteri Portalı'),
+)
+watch(
+  () => [props.supplier, route.fullPath],
+  () => {
+    expandedGroup.value = props.supplier
+      ? supplierNavigationGroups.find((group) => group.children?.some(isSelected))?.id || null
+      : null
+  },
+  { immediate: true },
 )
 function closeMenu() {
   mobileOpen.value = false
@@ -243,6 +297,48 @@ const logout = async () => {
 }
 .supplier-navigation .fleet-menu {
   gap: 2px;
+}
+.fleet-menu-group {
+  border-radius: 7px;
+}
+.fleet-menu-group:has(.group-expanded) {
+  background: #082333;
+}
+.fleet-group-toggle.group-current,
+.fleet-group-toggle.group-expanded {
+  background: #10334d;
+  color: white;
+}
+.group-chevron {
+  margin-left: auto;
+  transition: transform 0.15s ease;
+}
+.group-expanded .group-chevron {
+  transform: rotate(180deg);
+}
+.fleet-submenu {
+  display: grid;
+  gap: 2px;
+  list-style: none;
+  margin: 0;
+  padding: 5px 6px 7px 14px;
+}
+.supplier-navigation .fleet-submenu-link {
+  padding-left: 12px;
+  gap: 9px;
+}
+.fleet-submenu-link .nav-glyph {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.fleet-nav-link:focus-visible {
+  outline: 2px solid #8cbcff;
+  outline-offset: -2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .group-chevron {
+    transition: none;
+  }
 }
 .fleet-brand {
   display: flex;
@@ -374,6 +470,10 @@ nav {
   display: none;
 }
 @media (max-width: 900px) {
+  .supplier-navigation .fleet-nav-link {
+    min-height: 44px;
+    height: auto !important;
+  }
   .mobile-navigation-bar {
     display: flex;
     position: sticky;

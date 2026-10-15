@@ -553,7 +553,8 @@
   padding: 14px;
 }
 .sw-filters label,
-.sw-report-filter label {
+.sw-report-filter label,
+.sw-detailed-report-filters label {
   flex: 1;
   min-width: 90px;
   font-size: 10px;
@@ -570,6 +571,8 @@
 .sw-filters select,
 .sw-report-filter input,
 .sw-report-filter select,
+.sw-detailed-report-filters input,
+.sw-detailed-report-filters select,
 .sw-settings input,
 .sw-settings select,
 .sw-form-modal input,
@@ -1257,5 +1260,46 @@
 @media (max-width: 600px) {
   .sw-report-cost-charts {
     grid-template-columns: 1fr;
+  }
+}
+
+.sw-settings-tabs {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.sw-detailed-report-heading {
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.sw-report-export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.sw-detailed-report-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  align-items: end;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.sw-detailed-report-filters label {
+  min-width: 0;
+}
+.sw-detailed-report-filters .sw-button {
+  min-height: 34px;
+}
+@media (max-width: 600px) {
+  .sw-detailed-report-filters {
+    grid-template-columns: 1fr;
+  }
+  .sw-report-export-actions {
+    width: 100%;
+  }
+  .sw-report-export-actions .sw-button {
+    flex: 1;
   }
 }

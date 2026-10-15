@@ -43,7 +43,8 @@
             >＋ {{ cfg.create }}</UiButton
           ><UiButton
             v-if="
-              !['home', 'settings'].includes(section) && data?.session?.capabilities?.export_report
+              !['home', 'settings', 'operations', 'branches', 'reservations'].includes(section) &&
+              data?.session?.capabilities?.export_report
             "
             class="sw-button"
             @click="exportRows"
@@ -98,7 +99,10 @@
             </div></router-link
           >
         </section>
-        <section v-if="section !== 'settings' && section !== 'users'" class="sw-kpis">
+        <section
+          v-if="!['settings', 'users', 'operations', 'branches', 'reservations'].includes(section)"
+          class="sw-kpis"
+        >
           <UiButton
             v-for="card in kpis"
             :key="card.label"
@@ -113,49 +117,66 @@
           >
         </section>
 
+        <SupplierFleetPlanning
+          v-if="section === 'home'"
+          compact
+          :role="role"
+          :customers="data.customers"
+        />
         <!-- The overview and reports use the same ledger, with no synthetic history. -->
         <template v-if="['home', 'reports'].includes(section)">
           <section v-if="section === 'reports'" class="sw-card sw-report-ledger">
-            <div class="sw-card-heading">
+            <div class="sw-card-heading sw-detailed-report-heading">
               <h2>Ayrıntılı Filo Raporları</h2>
-              <select
-                aria-label="Ayrıntılı Rapor"
-                v-model="serverReportKey"
-                @change="loadServerReport"
-              >
-                <option v-for="report in reportCatalog" :key="report.key" :value="report.key">
-                  {{ report.label }}
-                </option></select
-              ><UiButton class="sw-button" @click="loadServerReport">Filtreleri Uygula</UiButton
-              ><UiButton
+              <div
                 v-if="['owner', 'finance', 'fleet_manager'].includes(role)"
-                class="sw-button"
-                @click="exportServerReport('xlsx')"
-                >Excel İndir</UiButton
-              ><UiButton
-                v-if="['owner', 'finance', 'fleet_manager'].includes(role)"
-                class="sw-button"
-                @click="exportServerReport('pdf')"
-                >PDF İndir</UiButton
+                class="sw-report-export-actions"
               >
-            </div>
-            <UiField>Marka<input v-model="reportFilters.brand" /></UiField
-            ><UiField>Model<input v-model="reportFilters.model" /></UiField
-            ><UiField>Araç Grubu<input v-model="reportFilters.group" /></UiField
-            ><UiField
-              >Sözleşme<select v-model="reportFilters.contract">
-                <option value="">Tümü</option>
-                <option
-                  v-for="contract in data.records.filter(
-                    (r) => r.kind === 'contract' && r.source === 'operation',
-                  )"
-                  :key="contract.id"
-                  :value="contract.id"
+                <UiButton class="sw-button" @click="exportServerReport('xlsx')"
+                  >Excel İndir</UiButton
                 >
-                  {{ contract.number }}
-                </option>
-              </select></UiField
-            >
+                <UiButton class="sw-button" @click="exportServerReport('pdf')">PDF İndir</UiButton>
+              </div>
+            </div>
+            <form class="sw-detailed-report-filters" @submit.prevent="loadServerReport">
+              <UiField
+                >Rapor Türü
+                <select
+                  aria-label="Ayrıntılı Rapor"
+                  v-model="serverReportKey"
+                  @change="loadServerReport"
+                >
+                  <option v-for="report in reportCatalog" :key="report.key" :value="report.key">
+                    {{ report.label }}
+                  </option>
+                </select>
+              </UiField>
+              <UiField
+                >Marka<input v-model="reportFilters.brand" placeholder="Tüm markalar"
+              /></UiField>
+              <UiField
+                >Model<input v-model="reportFilters.model" placeholder="Tüm modeller"
+              /></UiField>
+              <UiField
+                >Araç Grubu<input v-model="reportFilters.group" placeholder="Tüm gruplar"
+              /></UiField>
+              <UiField
+                >Sözleşme
+                <select v-model="reportFilters.contract" aria-label="Rapor Sözleşmesi">
+                  <option value="">Tümü</option>
+                  <option
+                    v-for="contract in data.records.filter(
+                      (r) => r.kind === 'contract' && r.source === 'operation',
+                    )"
+                    :key="contract.id"
+                    :value="contract.id"
+                  >
+                    {{ contract.number }}
+                  </option>
+                </select>
+              </UiField>
+              <UiButton type="submit" class="sw-button primary">Filtreleri Uygula</UiButton>
+            </form>
             <p v-if="serverReport" class="sw-muted">{{ serverReport.note }}</p>
             <UiTable v-if="serverReport" class="sw-table-scroll"
               ><table class="sw-table">
@@ -547,33 +568,50 @@
           </section>
         </template>
 
-        <template v-else-if="section === 'settings'"
-          ><section v-if="role === 'owner'" class="sw-card">
-            <h2>Denetim Geçmişi</h2>
-            <UiButton class="sw-button" @click="loadAudit">Erişim ve İşlem Sonuçlarını Gör</UiButton
-            ><UiTable v-if="auditRows.length" class="sw-table-scroll"
-              ><table class="sw-table">
-                <thead>
-                  <tr>
-                    <th>Tarih</th>
-                    <th>Hesap / Rol</th>
-                    <th>İşlem / Kaynak</th>
-                    <th>Sonuç</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="entry in auditRows" :key="entry.id">
-                    <td>{{ entry.date }}</td>
-                    <td>{{ entry.actor_scope }} · {{ entry.role }}</td>
-                    <td>{{ entry.method }} {{ entry.resource }}</td>
-                    <td>{{ entry.status_code }}</td>
-                  </tr>
-                </tbody>
-              </table></UiTable
+        <SupplierFleetPlanning
+          v-else-if="['operations', 'branches', 'reservations'].includes(section)"
+          :mode="section"
+          :role="role"
+          :customers="data.customers"
+        />
+        <template v-else-if="section === 'settings'">
+          <div class="sw-settings-tabs" role="tablist" aria-label="Ayarlar">
+            <UiButton
+              id="settings-general-tab"
+              class="sw-button"
+              role="tab"
+              :class="{ primary: settingsTab === 'general' }"
+              :aria-selected="settingsTab === 'general'"
+              aria-controls="settings-general"
+              @click="settingsTab = 'general'"
+              >Genel Ayarlar</UiButton
             >
-          </section>
-          <SupplierArvento :vehicles="data.vehicles" :role="role" @updated="load" />
-          <section class="sw-card sw-settings">
+            <UiButton
+              id="settings-integrations-tab"
+              class="sw-button"
+              role="tab"
+              :class="{ primary: settingsTab === 'integrations' }"
+              :aria-selected="settingsTab === 'integrations'"
+              aria-controls="settings-integrations"
+              @click="settingsTab = 'integrations'"
+              >Entegrasyonlar</UiButton
+            >
+          </div>
+          <div
+            v-if="settingsTab === 'integrations'"
+            id="settings-integrations"
+            role="tabpanel"
+            aria-labelledby="settings-integrations-tab"
+          >
+            <SupplierIntegrations :vehicles="data.vehicles" :role="role" @updated="load" />
+          </div>
+          <section
+            v-if="settingsTab === 'general'"
+            id="settings-general"
+            role="tabpanel"
+            aria-labelledby="settings-general-tab"
+            class="sw-card sw-settings"
+          >
             <h2>Şirket ve Operasyon Ayarları</h2>
             <p class="sw-muted">Eşikler rapor uyarılarını ve yeni işlem onaylarını belirler.</p>
             <form @submit.prevent="saveSettings">
@@ -620,8 +658,8 @@
               >
             </form>
             <p class="sw-muted">
-              ERP, HGS ve e-imza sağlayıcıları henüz seçilmedi. GPS bağlantısını Arvento bölümünden
-              yönetin.
+              ERP, HGS ve e-imza sağlayıcıları henüz seçilmedi. GPS ve yakıt bağlantılarını
+              Entegrasyonlar sekmesinden yönetin.
             </p>
           </section>
         </template>
@@ -1515,7 +1553,8 @@ import { useRoute, useRouter } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'
 import ResponsibilityQueue from '../components/ResponsibilityQueue.vue'
 import SupplierSignedDocument from '../components/SupplierSignedDocument.vue'
-import SupplierArvento from '../components/SupplierArvento.vue'
+import SupplierIntegrations from '../components/SupplierIntegrations.vue'
+import SupplierFleetPlanning from '../components/SupplierFleetPlanning.vue'
 import { supplierApi, downloadSupplierCsv } from '../utils/supplierApi'
 import { supplierModules, roleLabels } from '../utils/supplierModules'
 import { analyzeSupplier, detectSupplierFindings, num } from '../utils/supplierAnalytics'
@@ -1544,7 +1583,7 @@ const initials = computed(() =>
     .toUpperCase(),
 )
 const role = computed(() => data.value?.session?.role || 'viewer')
-const auditRows = ref([])
+const settingsTab = ref('general')
 const reportTab = ref('Genel Bakış'),
   reportCatalog = ref([]),
   serverReportKey = ref('fleet'),
@@ -2671,13 +2710,6 @@ async function reflectCost() {
     'Yansıtma fatura taslağı oluşturuldu.',
   )
   if (record) router.push(recordLink(record))
-}
-async function loadAudit() {
-  try {
-    auditRows.value = await supplierApi('/audit')
-  } catch (e) {
-    error.value = e.message
-  }
 }
 async function loadServerReport() {
   try {

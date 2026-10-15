@@ -30,7 +30,10 @@ def attach(db, ctx, row, vehicle_ids=None):
     )
     if round(unit * len(ids), 2) != round(row.amount, 2):
         raise HTTPException(400, "Araç bedelleri sözleşme aylık toplamıyla eşleşmeli.")
-    for car in cars:
+    for car in sorted(cars, key=lambda car: car.id):
+        from app.fleet_schedule import check_contract_reservations
+
+        check_contract_reservations(db, ctx, car, row)
         if (
             db.query(m.SupplierOperation)
             .filter_by(supplier_id=ctx["id"], vehicle_id=car.id, kind="sale")
@@ -55,7 +58,10 @@ def attach(db, ctx, row, vehicle_ids=None):
 
 def activate(db, ctx, row):
     cars = contract_cars(db, ctx, row)
-    for car in cars:
+    for car in sorted(cars, key=lambda car: car.id):
+        from app.fleet_schedule import check_contract_reservations
+
+        check_contract_reservations(db, ctx, car, row)
         # Lock before checking current assignment; a second activation must see the committed state.
         db.query(m.Vehicle).filter_by(
             id=car.id, supplier_id=ctx["id"]
