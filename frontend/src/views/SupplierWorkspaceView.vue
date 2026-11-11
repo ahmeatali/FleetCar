@@ -17,16 +17,11 @@
           :aria-label="`${pendingApprovals} bekleyen onay`"
           >♧<b v-if="pendingApprovals">{{ pendingApprovals }}</b></router-link
         >
-        <div class="sw-profile">
-          <span>{{ initials }}</span>
-          <div>
-            <strong>{{ data?.session?.name || companyName }}</strong
-            ><small
-              >{{ data?.settings?.company_name || data?.session?.company_name || companyName }} ·
-              {{ roleLabels[role] }}</small
-            >
-          </div>
-        </div>
+        <SupplierProfileMenu
+          :name="data?.session?.name || companyName"
+          :subtitle="`${data?.settings?.company_name || data?.session?.company_name || companyName} · ${roleLabels[role]}`"
+          :role="role"
+        />
       </header>
       <section class="sw-heading">
         <div>
@@ -100,7 +95,11 @@
           >
         </section>
         <section
-          v-if="!['settings', 'users', 'operations', 'branches', 'reservations'].includes(section)"
+          v-if="
+            !['settings', 'users', 'operations', 'branches', 'reservations', 'approvals'].includes(
+              section,
+            )
+          "
           class="sw-kpis"
         >
           <UiButton
@@ -117,12 +116,6 @@
           >
         </section>
 
-        <SupplierFleetPlanning
-          v-if="section === 'home'"
-          compact
-          :role="role"
-          :customers="data.customers"
-        />
         <!-- The overview and reports use the same ledger, with no synthetic history. -->
         <template v-if="['home', 'reports'].includes(section)">
           <section v-if="section === 'reports'" class="sw-card sw-report-ledger">
@@ -225,13 +218,16 @@
             ><UiButton class="sw-button" @click="clearFilters">Temizle</UiButton>
           </section>
           <div class="sw-dashboard-grid">
-            <article class="sw-card">
+            <SupplierFleetPlanning
+              v-if="section === 'home'"
+              class="sw-dashboard-tasks"
+              compact
+              :role="role"
+              :customers="data.customers"
+            />
+            <article v-else class="sw-card">
               <div class="sw-card-heading">
-                <h2>
-                  {{
-                    section === 'home' ? 'Kayıtlı Gelir ve Maliyet' : 'Aylık Ciro ve Maliyet (TL)'
-                  }}
-                </h2>
+                <h2>Aylık Ciro ve Maliyet (TL)</h2>
                 <small>Gerçekleşen kayıtlar</small>
               </div>
               <div v-if="analytics.monthly.length" class="sw-bar-chart">
@@ -264,7 +260,12 @@
               <div class="sw-distribution">
                 <div
                   class="sw-donut"
-                  :style="{ background: donut(analytics.statusGroups.map((g) => g.count)) }"
+                  :style="{
+                    background: donut(
+                      analytics.statusGroups.map((g) => g.count),
+                      analytics.statusGroups.map((g) => g.color),
+                    ),
+                  }"
                 >
                   <div>
                     <strong>{{ analytics.cars.length }}</strong
@@ -273,11 +274,13 @@
                 </div>
                 <div>
                   <div
-                    v-for="(group, index) in analytics.statusGroups"
-                    :key="group.label"
+                    v-for="group in analytics.statusGroups.filter(
+                      (g) => g.key !== 'Pasif' || g.count,
+                    )"
+                    :key="group.key"
                     class="sw-distribution-row"
                   >
-                    <i :style="{ background: colors[index] }" /><span>{{ group.label }}</span
+                    <i :style="{ background: group.color }" /><span>{{ group.label }}</span
                     ><strong>{{ group.count }}</strong>
                   </div>
                 </div>
@@ -385,7 +388,7 @@
                 Gider kaydı bulunmuyor.
               </p>
             </article>
-            <article class="sw-card">
+            <article v-if="section !== 'home'" class="sw-card">
               <h2>Marka / Model Dağılımı</h2>
               <div
                 v-for="c in analytics.models.slice(0, 5)"
@@ -574,6 +577,13 @@
           :role="role"
           :customers="data.customers"
         />
+        <SupplierApprovalCenter
+          v-else-if="section === 'approvals'"
+          :data="data"
+          :role="role"
+          :link-for="recordLink"
+          @updated="load"
+        />
         <template v-else-if="section === 'settings'">
           <div class="sw-settings-tabs" role="tablist" aria-label="Ayarlar">
             <UiButton
@@ -743,27 +753,6 @@
               </div>
               <p>{{ r.details.assumptions }}</p>
             </article>
-          </section>
-          <section v-if="section === 'approvals'" class="sw-card sw-permissions">
-            <h2>Yetki Matrisi ve Onay Limiti</h2>
-            <div class="sw-role-grid">
-              <span><strong>Şirket Sahibi</strong>Tüm modüller, onay ve kullanıcı yönetimi</span
-              ><span
-                ><strong>Operasyon</strong>Müşteri, araç, teklif, sözleşme, teslimat, bakım</span
-              ><span><strong>Finans</strong>Fatura, tahsilat, ödeme, TPC, yakıt ve HGS</span
-              ><span
-                ><strong>Filo Yöneticisi</strong>Filo operasyonları, satış hazırlığı ve rapor dışa
-                aktarma</span
-              ><span><strong>Satış</strong>Müşteri, teklif, sözleşme ve satış dosyaları</span
-              ><span
-                ><strong>Teslim &amp; İade</strong>Teslim formu ve iade kontrolü; finans son
-                mutabakatı hariç</span
-              ><span><strong>Görüntüleyici</strong>Salt okuma ve rapor görüntüleme</span>
-            </div>
-            <p>
-              {{ money(data.settings.approval_threshold) }} üzerindeki ticari işlemler güncel tutar
-              ve sürüm için şirket sahibi onayı gerektirir.
-            </p>
           </section>
           <section v-if="section === 'service'" class="sw-card sw-due-card">
             <h2>Yaklaşan Bakımlar</h2>
@@ -1555,6 +1544,8 @@ import ResponsibilityQueue from '../components/ResponsibilityQueue.vue'
 import SupplierSignedDocument from '../components/SupplierSignedDocument.vue'
 import SupplierIntegrations from '../components/SupplierIntegrations.vue'
 import SupplierFleetPlanning from '../components/SupplierFleetPlanning.vue'
+import SupplierApprovalCenter from '../components/SupplierApprovalCenter.vue'
+import SupplierProfileMenu from '../components/SupplierProfileMenu.vue'
 import { supplierApi, downloadSupplierCsv } from '../utils/supplierApi'
 import { supplierModules, roleLabels } from '../utils/supplierModules'
 import { analyzeSupplier, detectSupplierFindings, num } from '../utils/supplierAnalytics'
@@ -1574,14 +1565,6 @@ const currentDate = new Date().toLocaleDateString('tr-TR', {
   month: 'long',
   year: 'numeric',
 })
-const initials = computed(() =>
-  (data.value?.session?.name || companyName)
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((s) => s[0])
-    .join('')
-    .toUpperCase(),
-)
 const role = computed(() => data.value?.session?.role || 'viewer')
 const settingsTab = ref('general')
 const reportTab = ref('Genel Bakış'),
@@ -2115,11 +2098,14 @@ const kpis = computed(() => {
       ]
     return [
       { ...card('Toplam Araç', a.cars.length), icon: '▱', to: '/supplier-portal/vehicles' },
-      ...a.statusGroups.map((g, i) => ({
-        ...card(g.label + ' Araç', g.count, ['blue', 'green', 'amber', 'purple', 'gray', 'red'][i]),
-        icon: ['⚿', '▤', '⚒', '◇', '○', '!'][i],
-        to: '/supplier-portal/vehicles',
-      })),
+      // Removed-from-fleet vehicles only get a card when there are any.
+      ...a.statusGroups
+        .filter((g) => g.key !== 'Pasif' || g.count)
+        .map((g) => ({
+          ...card(g.label, g.count, g.tone),
+          icon: g.icon,
+          to: '/supplier-portal/vehicles',
+        })),
     ]
   }
   if (section.value === 'savings')
@@ -2222,7 +2208,7 @@ const searchResults = computed(() => {
     .filter((r) => `${r.title} ${r.subtitle}`.toLocaleLowerCase('tr-TR').includes(q))
     .slice(0, 10)
 })
-function donut(values) {
+function donut(values, palette = colors) {
   const total = values.reduce((s, v) => s + num(v), 0)
   if (!total) return '#e8f0f7'
   let offset = 0
@@ -2230,7 +2216,7 @@ function donut(values) {
     .map((value, index) => {
       const start = offset
       offset += (num(value) / total) * 100
-      return `${colors[index % colors.length]} ${start}% ${offset}%`
+      return `${palette[index % palette.length]} ${start}% ${offset}%`
     })
     .join(',')})`
 }

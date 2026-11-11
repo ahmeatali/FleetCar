@@ -16,7 +16,7 @@ from sqlalchemy.pool import StaticPool
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from app import main
 from app import models as m
-from app.auth import hash_password
+from app.auth import hash_password, verify_password
 from app.database import Base, get_db
 from app.supplier_operations import session_token
 
@@ -482,6 +482,135 @@ class SupplierWorkspaceTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200, response.text)
         self.status(response.json(), "Onaylandı")
         self.status(edited, "Aktif")
+
+    def decide(self, row, decision, expected=200, token=None, note=""):
+        response = self.client.post(
+            f'/api/supplier-workspace/records/{row["id"]}/decision',
+            {"decision": decision, "note": note, "version": row["version"]},
+            token,
+        )
+        self.assertEqual(response.status_code, expected, response.text)
+        return response.json()
+
+    def set_matrix(self, contract_limits):
+        current = self.client.get("/api/supplier-workspace/settings").json()
+        current["approval_matrix"]["contract"] = contract_limits
+        response = self.client.put("/api/supplier-workspace/settings", current)
+        self.assertEqual(response.status_code, 200, response.text)
+        return response.json()
+
+    def test_approval_walks_role_limit_chain(self):
+        self.set_matrix({"fleet_manager": None, "operations": 150000, "finance": 300000})
+        contract = self.create("contract", amount=200000)
+        approval = self.client.get("/api/supplier-workspace/records/approval").json()[0]
+        steps = approval["details"]["steps"]
+        self.assertEqual([s["role"] for s in steps], ["operations", "finance"])
+        self.assertEqual(approval["details"]["category"], "contract")
+        self.decide(approval, "approve", expected=403, token=self.finance_token)
+        self.decide(approval, "approve", expected=403, token=self.viewer_token)
+        approval = self.decide(approval, "approve", token=self.ops_token)
+        self.assertEqual(approval["status"], "Beklemede")
+        self.assertEqual(approval["details"]["steps"][0]["actor"], "Ops")
+        self.status(contract, "Aktif", expected=400)
+        self.decide(approval, "approve", expected=403, token=self.ops_token)
+        self.decide(approval, "reject", expected=400, token=self.finance_token)
+        approval = self.decide(approval, "approve", token=self.finance_token)
+        self.assertEqual(approval["status"], "Onaylandı")
+        self.status(contract, "Aktif")
+        self.decide(approval, "approve", expected=400, token=self.finance_token)
+
+    def test_approval_rejection_owner_override_and_self_approval(self):
+        self.set_matrix({"fleet_manager": None, "operations": 150000, "finance": 300000})
+        self.create("contract", amount=250000)
+        approval = self.client.get("/api/supplier-workspace/records/approval").json()[0]
+        rejected = self.decide(approval, "reject", token=self.ops_token, note="Bütçe dışı")
+        self.assertEqual(rejected["status"], "Reddedildi")
+        self.assertEqual(rejected["details"]["steps"][0]["note"], "Bütçe dışı")
+        response = self.client.post(
+            "/api/supplier-workspace/records/contract",
+            self.payload(amount=140000, vehicle_id="car2"),
+            token=self.ops_token,
+        )
+        self.assertEqual(response.status_code, 200, response.text)
+        own = next(
+            a
+            for a in self.client.get("/api/supplier-workspace/records/approval").json()
+            if a["status"] == "Beklemede"
+        )
+        self.assertEqual(own["details"]["requested_by"]["user_id"], 1)
+        self.decide(own, "approve", expected=403, token=self.ops_token)
+        approved = self.decide(own, "approve")
+        self.assertEqual(approved["status"], "Onaylandı")
+        self.assertTrue(all(s["status"] == "Onaylandı" for s in approved["details"]["steps"]))
+
+    def test_approval_matrix_rejects_lower_upper_limit(self):
+        current = self.client.get("/api/supplier-workspace/settings").json()
+        self.assertEqual(current["approval_matrix"]["service"]["fleet_manager"], 10000)
+        current["approval_matrix"]["service"] = {
+            "fleet_manager": 50000,
+            "operations": 10000,
+            "finance": 100000,
+        }
+        response = self.client.put("/api/supplier-workspace/settings", current)
+        self.assertEqual(response.status_code, 422)
+        del current["approval_matrix"]
+        current["renewal_days"] = 45
+        response = self.client.put("/api/supplier-workspace/settings", current)
+        self.assertEqual(response.status_code, 200, response.text)
+        saved = self.client.get("/api/supplier-workspace/settings").json()
+        self.assertEqual(saved["approval_matrix"]["service"]["fleet_manager"], 10000)
+
+    def test_password_change_checks_current_and_signs_out_other_sessions(self):
+        other_device = session_token(self.db, 1)
+        bad = self.client.post(
+            "/api/supplier-workspace/password",
+            {"current_password": "WrongPassword1", "new_password": "NewOwnerPass10"},
+        )
+        self.assertEqual(bad.status_code, 400)
+        short = self.client.post(
+            "/api/supplier-workspace/password",
+            {"current_password": "OwnerPassword10", "new_password": "short"},
+        )
+        self.assertEqual(short.status_code, 422)
+        ok = self.client.post(
+            "/api/supplier-workspace/password",
+            {"current_password": "OwnerPassword10", "new_password": "NewOwnerPass10"},
+        )
+        self.assertEqual(ok.status_code, 200, ok.text)
+        self.assertTrue(verify_password("NewOwnerPass10", self.db.get(m.Supplier, 1).password_hash))
+        self.assertEqual(self.client.get("/api/supplier-workspace/session").status_code, 200)
+        gone = self.client.get("/api/supplier-workspace/session", token=other_device)
+        self.assertEqual(gone.status_code, 401)
+        self.assertEqual(
+            self.client.get("/api/supplier-workspace/session", token=self.ops_token).status_code,
+            200,
+        )
+        member = self.client.post(
+            "/api/supplier-workspace/password",
+            {"current_password": "MemberPassword10", "new_password": "NewMemberPass10"},
+            token=self.ops_token,
+        )
+        self.assertEqual(member.status_code, 200, member.text)
+        self.assertTrue(
+            verify_password("NewMemberPass10", self.db.get(m.SupplierPortalUser, 1).password_hash)
+        )
+
+    def test_dealer_vehicle_cannot_be_contracted_until_picked_up(self):
+        path = "/api/supplier-workspace/vehicles/car2/dealer"
+        response = self.client.post(path, {"at_dealer": True}, token=self.viewer_token)
+        self.assertEqual(response.status_code, 403)
+        response = self.client.post(path, {"at_dealer": True})
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(response.json()["status"], "Bayide")
+        self.assertEqual(self.client.post(path, {"at_dealer": True}).status_code, 400)
+        blocked = self.client.post(
+            "/api/supplier-workspace/records/contract", self.payload(vehicle_id="car2")
+        )
+        self.assertEqual(blocked.status_code, 400, blocked.text)
+        response = self.client.post(path, {"at_dealer": False})
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(response.json()["status"], "Aktif")
+        self.create("contract", vehicle_id="car2")
 
     def test_policy_projection_and_expensive_policy_approval(self):
         policy = self.create(

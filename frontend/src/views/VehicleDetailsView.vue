@@ -127,6 +127,20 @@
                       ><UiButton v-if="!isSupplier" @click="createRequest('servis')"
                         >⚒ Servis</UiButton
                       ><UiButton @click="activeTab = 'hgs'">▤ HGS</UiButton
+                      ><UiButton
+                        v-if="isSupplier && (vehicle.status === 'Bayide' || canMarkDealer)"
+                        :disabled="dealerBusy"
+                        :title="
+                          vehicle.status === 'Bayide'
+                            ? 'Araç bayiden alındı; filoda kullanıma açılır.'
+                            : 'Bayide parası ödenmiş, teslim alınmayı bekleyen araç.'
+                        "
+                        @click="toggleDealer"
+                        >{{
+                          vehicle.status === 'Bayide'
+                            ? '✓ Bayiden Teslim Alındı'
+                            : '⛟ Bayide Bekliyor'
+                        }}</UiButton
                       ><UiButton @click="showMoreQuickActions = !showMoreQuickActions"
                         >Daha Fazla⌄</UiButton
                       >
@@ -1176,6 +1190,36 @@ function mapLink(latitude, longitude) {
 }
 function returnToList() {
   router.push(listPath.value + '?search=' + encodeURIComponent(pageSearch.value))
+}
+const dealerBusy = ref(false)
+const canMarkDealer = computed(
+  () =>
+    vehicle.value?.is_active &&
+    !vehicle.value?.customer_id &&
+    vehicle.value?.vehicle_group !== 'Satışta' &&
+    ['Aktif', 'Müsait', 'Havuzda', '', null, undefined].includes(vehicle.value?.status),
+)
+async function toggleDealer() {
+  const atDealer = vehicle.value.status !== 'Bayide'
+  dealerBusy.value = true
+  try {
+    const response = await supplierFetch(
+      '/vehicles/' + encodeURIComponent(vehicle.value.id) + '/dealer',
+      { method: 'POST', body: { at_dealer: atDealer } },
+    )
+    const result = await response.json()
+    if (!response.ok) throw new Error(result.detail || 'Araç durumu güncellenemedi.')
+    vehicle.value = { ...vehicle.value, status: result.status }
+    showToast(
+      atDealer
+        ? 'Araç bayide teslim bekliyor olarak işaretlendi. Teslim alınana kadar kiralanamaz.'
+        : 'Araç bayiden teslim alındı ve filoda kullanıma açıldı.',
+    )
+  } catch (error) {
+    showToast(error.message)
+  } finally {
+    dealerBusy.value = false
+  }
 }
 function showToast(message) {
   toast.value = message

@@ -52,7 +52,7 @@ def capabilities(role):
     return {
         "view": role in ROLES,
         "write": sorted(WRITES.get(role) or []) if role != "owner" else ["*"],
-        "approve": role == "owner",
+        "approve": role in {"owner", "fleet_manager", "operations", "finance"},
         "download_document": role in DOCUMENT_ROLES,
         "export_report": role in EXPORT_ROLES,
     }

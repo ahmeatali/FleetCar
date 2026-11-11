@@ -1,5 +1,7 @@
 """Workflow vocabulary and default settings, shared by validation and projections."""
 
+from app.approval_rules import DEFAULT_MATRIX
+
 INITIAL = {
     "offer": "Taslak",
     "contract": "Taslak",
@@ -74,6 +76,7 @@ TRANSITIONS = {
 
 DEFAULT_SETTINGS = {
     "approval_threshold": 100000,
+    "approval_matrix": DEFAULT_MATRIX,
     "low_balance": 200,
     "renewal_days": 30,
     "low_usage_km": 500,

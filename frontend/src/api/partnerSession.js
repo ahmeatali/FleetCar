@@ -17,3 +17,17 @@ export function savePartnerSession(data, email, storage = localStorage) {
   }
   for (const [key, value] of Object.entries(values)) storage.setItem(key, String(value))
 }
+
+const SUPPLIER_KEYS = [
+  'fleetcar_supplier_token',
+  'fleetcar_supplier_id',
+  'fleetcar_supplier_name',
+  'fleetcar_supplier_email',
+  'fleetcar_supplier_type',
+  'fleetcar_supplier_role',
+  'fleetcar_supplier_user_name',
+]
+
+export function clearSupplierSession(storage = localStorage) {
+  for (const key of SUPPLIER_KEYS) storage.removeItem(key)
+}

@@ -127,6 +127,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { supplierNavigation } from '../utils/supplierModules'
 import { supplierNavigationGroups } from '../utils/supplierNavigation.js'
 import { supplierApi } from '../utils/supplierApi'
+import { clearSupplierSession } from '../api/partnerSession.js'
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 const props = defineProps({ supplier: Boolean })
 const route = useRoute(),
@@ -258,16 +259,7 @@ const logout = async () => {
     } catch {
       // An expired or unavailable server session must not prevent local logout.
     }
-    for (const key of [
-      'fleetcar_supplier_token',
-      'fleetcar_supplier_id',
-      'fleetcar_supplier_name',
-      'fleetcar_supplier_email',
-      'fleetcar_supplier_type',
-      'fleetcar_supplier_role',
-      'fleetcar_supplier_user_name',
-    ])
-      localStorage.removeItem(key)
+    clearSupplierSession()
     router.push('/supplier-login')
     return
   }

@@ -10,12 +10,13 @@ from app import models as m
 from app.common.time import business_today, stamp
 from app.common.validation import number_detail
 from app.supplier_context import customer_ids, operation, vehicle
+from app.approval_rules import approval_details, normalize_matrix
 from app.supplier_workflow import DEFAULT_SETTINGS, INITIAL, PREFIXES, TRANSITIONS
 
 
 def settings(db, sid):
     row = db.query(m.SupplierSetting).filter_by(supplier_id=sid).first()
-    return (
+    value = (
         {
             **DEFAULT_SETTINGS,
             **{k: v for k, v in (row.value or {}).items() if k in DEFAULT_SETTINGS},
@@ -23,6 +24,16 @@ def settings(db, sid):
         if row
         else dict(DEFAULT_SETTINGS)
     )
+    value["approval_matrix"] = normalize_matrix(value.get("approval_matrix"))
+    return value
+
+
+def requester(ctx):
+    return {
+        "actor": ctx["actor"],
+        "role": ctx["role"],
+        "user_id": getattr(ctx.get("session"), "user_id", None),
+    }
 
 
 def link_customer(db, sid, cid, details=None):
@@ -276,6 +287,14 @@ def audit(db, ctx, record, title, details=None):
 
 def append_record(db, ctx, kind, data):
     v, parent = validate_record(db, ctx, kind, data)
+    if kind == "approval":
+        data.details = approval_details(
+            settings(db, ctx["id"])["approval_matrix"],
+            parent.kind,
+            parent.amount,
+            requester(ctx),
+            data.details,
+        )
     if kind == "sale":
         from app.vehicle_sales import validate
 
@@ -432,7 +451,13 @@ def append_record(db, ctx, kind, data):
             date=business_today().isoformat(),
             amount=row.amount,
             status="Beklemede",
-            details={"target_version": 1, "target_amount": row.amount},
+            details=approval_details(
+                settings(db, ctx["id"])["approval_matrix"],
+                row.kind,
+                row.amount,
+                requester(ctx),
+                {"target_version": 1, "target_amount": row.amount},
+            ),
             created_at=stamp(),
             updated_at=stamp(),
         )
@@ -496,6 +521,20 @@ def display_status(row):
     return row.status
 
 
+def approval_view(db, row):
+    """Approvals created before the limit matrix get their chain computed on read."""
+    if row.details.get("steps"):
+        return row.details
+    parent = db.get(m.SupplierOperation, row.parent_id) if row.parent_id else None
+    return approval_details(
+        settings(db, row.supplier_id)["approval_matrix"],
+        parent.kind if parent else "other",
+        row.amount,
+        row.details.get("requested_by") or {},
+        row.details,
+    )
+
+
 def serialize(db, row):
     c = db.get(m.Customer, row.customer_id) if row.customer_id else None
     v = db.get(m.Vehicle, row.vehicle_id) if row.vehicle_id else None
@@ -538,7 +577,7 @@ def serialize(db, row):
         "amount": row.amount,
         "status": status,
         "raw_status": row.status,
-        "details": row.details,
+        "details": approval_view(db, row) if row.kind == "approval" else row.details,
         "version": row.version,
         "created_at": row.created_at,
         "paid": round(paid, 2),

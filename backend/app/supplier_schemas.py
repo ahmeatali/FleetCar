@@ -5,6 +5,8 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from app.approval_rules import validate_matrix
+
 
 class OperationInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -63,6 +65,17 @@ class CustomerInput(BaseModel):
     details: dict = Field(default_factory=dict)
 
 
+class PasswordChangeInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    current_password: str = Field(min_length=1, max_length=200)
+    new_password: str = Field(min_length=10, max_length=200)
+
+
+class DealerStatusInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    at_dealer: bool
+
+
 class MemberInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
     name: str = Field(min_length=1, max_length=100)
@@ -77,6 +90,7 @@ class MemberInput(BaseModel):
 class SettingsInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
     approval_threshold: float = Field(100000, ge=0, allow_inf_nan=False)
+    approval_matrix: Optional[dict] = None
     low_balance: float = Field(200, ge=0, allow_inf_nan=False)
     renewal_days: int = Field(30, ge=1, le=365)
     low_usage_km: int = Field(500, ge=0)
@@ -84,6 +98,19 @@ class SettingsInput(BaseModel):
     company_name: str = Field("", max_length=200)
     currency: Literal["TRY"] = "TRY"
     company_mode: Literal["EXTERNAL_INTEGRATION", "FLEETRENT_PANEL"] = "FLEETRENT_PANEL"
+
+
+    @field_validator("approval_matrix")
+    @classmethod
+    def check_matrix(cls, value):
+        return None if value is None else validate_matrix(value)
+
+
+class DecisionInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    decision: Literal["approve", "reject"]
+    note: str = Field("", max_length=1000)
+    version: int = Field(gt=0)
 
 
 class SharedInput(BaseModel):
