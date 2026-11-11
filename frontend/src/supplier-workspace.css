@@ -147,6 +147,11 @@
   background: #0064ff;
   border-color: #0064ff;
 }
+.sw-button.sw-ai-button {
+  color: #4b33d6;
+  border-color: #d9d2ff;
+  background: #f4f1ff;
+}
 .sw-button.danger {
   color: #d9374d;
   border-color: #f7d4da;

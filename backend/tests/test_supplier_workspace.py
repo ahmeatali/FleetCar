@@ -663,6 +663,122 @@ class SupplierWorkspaceTests(unittest.TestCase):
         nothing = self.client.post(url + "&commit=true", xlsx(newer))
         self.assertEqual(nothing.status_code, 400)
 
+    def test_ai_fleet_insights_metrics_cache_and_plate_filter(self):
+        from app import ai_assistant
+
+        car = self.db.get(m.Vehicle, "car")
+        start = date.today() - timedelta(days=183)
+        car.customer_id, car.mileage = 1, 40000
+        car.contract_start_date = start.isoformat()
+        car.contract_end_date = (start + timedelta(days=365)).isoformat()
+        car.contract_duration_months, car.monthly_km_limit = 12, 2000
+        self.db.add(
+            m.VehicleMileageRecord(
+                vehicle_id="car", mileage=10000, recorded_at=start.isoformat(), source="t"
+            )
+        )
+        self.db.commit()
+        rows = {r["plate"]: r for r in ai_assistant.fleet_metrics(self.db, 1)}
+        self.assertIn("km_overage_risk", rows["34 ABC 123"]["flags"])
+        self.assertGreater(rows["34 ABC 123"]["usage_ratio"], 2)
+        self.assertEqual(rows["34 XYZ 456"]["status"], "Havuzda")
+        self.assertNotIn("06 OTHER", rows)
+        url = "/api/supplier-workspace/ai/fleet-insights"
+        self.assertIsNone(self.client.get(url).json())
+        reply = {
+            "summary": "Özet",
+            "insights": [
+                {
+                    "type": "km_asimi",
+                    "severity": "yuksek",
+                    "plates": ["34 ABC 123", "99 UYDURMA 1"],
+                    "title": "Aşım",
+                    "recommendation": "Paketi yükseltin",
+                    "rationale": "Oran 2,5",
+                    "estimated_monthly_impact_try": 0,
+                }
+            ],
+        }
+        with patch("app.ai_assistant.ask", return_value=(reply, {"model": "m"})) as ask:
+            denied = self.client.post(url, token=self.viewer_token)
+            self.assertEqual(denied.status_code, 403)
+            first = self.client.post(url)
+            self.assertEqual(first.status_code, 200, first.text)
+            self.assertEqual(first.json()["insights"][0]["plates"], ["34 ABC 123"])
+            sent = json.loads(ask.call_args.args[1])
+            self.assertEqual(sent["vehicles_needing_attention"][0]["plate"], "34 ABC 123")
+            self.client.post(url)
+            self.assertEqual(ask.call_count, 1)
+            self.client.post(url + "?force=true")
+            self.assertEqual(ask.call_count, 2)
+        latest = self.client.get(url, token=self.viewer_token).json()
+        self.assertEqual(latest["summary"], "Özet")
+        self.assertIn("34 ABC 123", latest["metrics"])
+
+    def test_ai_document_reading_matches_vehicles(self):
+        url = "/api/supplier-workspace/ai/read-document?doc_type="
+        contract = {
+            "document_kind": "Sözleşme",
+            "contract_no": "SZ-1",
+            "lessor": "ABC",
+            "lessee": "ABC Lojistik",
+            "start_date": "2026-12-01",
+            "end_date": "2027-11-30",
+            "duration_months": 12,
+            "general_terms": [],
+            "vehicles": [
+                {
+                    "chassis_no": "vin1",
+                    "plate": "",
+                    "brand_model": "BMW",
+                    "monthly_rent_try": 50000,
+                    "monthly_km_limit": 2500,
+                    "total_km": 30000,
+                    "extra_km_price_try": 4.5,
+                    "duration_months": 12,
+                    "source": "Ek-1",
+                },
+                {
+                    "chassis_no": "",
+                    "plate": "34XYZ456",
+                    "brand_model": "Toyota",
+                    "monthly_rent_try": 0,
+                    "monthly_km_limit": 0,
+                    "total_km": 0,
+                    "extra_km_price_try": 0,
+                    "duration_months": 0,
+                    "source": "Ek-1",
+                },
+                {
+                    "chassis_no": "VIN3",
+                    "plate": "06 OTHER",
+                    "brand_model": "Ford",
+                    "monthly_rent_try": 0,
+                    "monthly_km_limit": 0,
+                    "total_km": 0,
+                    "extra_km_price_try": 0,
+                    "duration_months": 0,
+                    "source": "Ek-1",
+                },
+            ],
+            "notes": "",
+        }
+        with patch("app.ai_assistant.ask", return_value=(contract, {})) as ask:
+            self.assertEqual(
+                self.client.post(url + "contract", b"%PDF", token=self.viewer_token).status_code,
+                403,
+            )
+            response = self.client.post(url + "contract", b"%PDF-1.4 test")
+            self.assertEqual(response.status_code, 200, response.text)
+            matched = [v["vehicle"] for v in response.json()["data"]["vehicles"]]
+            self.assertEqual(matched[0]["plate"], "34 ABC 123")
+            self.assertEqual(matched[1]["plate"], "34 XYZ 456")
+            self.assertIsNone(matched[2])  # another supplier's vehicle is never matched
+            block = ask.call_args.args[1][0]
+            self.assertEqual(block["source"]["media_type"], "application/pdf")
+            bad = self.client.post(url + "poster", b"%PDF")
+            self.assertEqual(bad.status_code, 400)
+
     def test_policy_projection_and_expensive_policy_approval(self):
         policy = self.create(
             "policy",

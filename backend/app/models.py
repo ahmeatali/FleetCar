@@ -456,6 +456,20 @@ class SupplierSession(Base):
     expires_at = Column(String, nullable=False)
 
 
+class SupplierAiInsight(Base):
+    """Stored AI output so a page shows the last analysis without calling the API again."""
+
+    __tablename__ = "supplier_ai_insights"
+    id = Column(Integer, primary_key=True)
+    supplier_id = Column(Integer, ForeignKey("suppliers.id"), nullable=False, index=True)
+    kind = Column(String, nullable=False)
+    input_hash = Column(String, nullable=False)
+    model = Column(String, nullable=False)
+    payload = Column(JSON, nullable=False, default=dict)
+    usage = Column(JSON, nullable=False, default=dict)
+    created_at = Column(String, nullable=False)
+
+
 class SupplierSetting(Base):
     __tablename__ = "supplier_settings"
     id = Column(Integer, primary_key=True)

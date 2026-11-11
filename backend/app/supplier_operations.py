@@ -1314,6 +1314,46 @@ def edit_inventory(
     return main.update_vehicle(vid, data, db, supplier_id=ctx["id"])
 
 
+@router.get("/ai/fleet-insights")
+def ai_fleet_insights_latest(ctx=Depends(context), db: Session = Depends(get_db)):
+    """Last stored analysis; null when none was generated yet (no API call here)."""
+    from app import ai_assistant
+
+    row = (
+        db.query(m.SupplierAiInsight)
+        .filter_by(supplier_id=ctx["id"], kind="fleet")
+        .order_by(m.SupplierAiInsight.id.desc())
+        .first()
+    )
+    if not row:
+        return None
+    return ai_assistant.insight_view(row, ai_assistant.fleet_metrics(db, ctx["id"]))
+
+
+@router.post("/ai/fleet-insights")
+def ai_fleet_insights(force: bool = False, ctx=Depends(context), db: Session = Depends(get_db)):
+    from app import ai_assistant
+
+    if ctx["role"] not in {"owner", "fleet_manager", "operations", "finance"}:
+        raise HTTPException(403, "AI analizi için rolünüz yetkili değil.")
+    return ai_assistant.fleet_insights(db, ctx, force=force)
+
+
+@router.post("/ai/read-document")
+async def ai_read_document(
+    request: Request,
+    doc_type: str,
+    ctx=Depends(context),
+    db: Session = Depends(get_db),
+):
+    from app import ai_assistant
+
+    if ctx["role"] == "viewer":
+        raise HTTPException(403, "Belge okutmak için rolünüz yetkili değil.")
+    media_type = request.headers.get("content-type", "").split(";")[0].strip().lower()
+    return ai_assistant.read_document(db, ctx, doc_type, await request.body(), media_type)
+
+
 @router.post("/vehicle-import")
 async def import_vehicles(
     request: Request,

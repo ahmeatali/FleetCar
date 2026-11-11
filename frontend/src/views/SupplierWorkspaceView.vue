@@ -20,6 +20,13 @@
             pendingApprovals
           }}</b></router-link
         >
+        <SupplierAiDocument
+          v-if="showAiDocument && aiDocType && data"
+          :doc-type="aiDocType"
+          :vehicles="data.vehicles"
+          @close="showAiDocument = false"
+          @saved="load"
+        />
         <SupplierProfileMenu
           :name="data?.session?.name || companyName"
           :subtitle="`${data?.settings?.company_name || data?.session?.company_name || companyName} · ${roleLabels[role]}`"
@@ -37,7 +44,14 @@
           <p>{{ cfg.description }}</p>
         </div>
         <div class="sw-heading-actions">
-          <UiButton v-if="canCreate" class="sw-button primary" @click="openCreate"
+          <UiButton
+            v-if="aiDocType && role !== 'viewer'"
+            class="sw-button sw-ai-button"
+            @click="showAiDocument = true"
+            >✦ AI ile
+            {{ { receipt: 'Fiş', invoice: 'Fatura', contract: 'Sözleşme' }[aiDocType] }}
+            Oku</UiButton
+          ><UiButton v-if="canCreate" class="sw-button primary" @click="openCreate"
             >＋ {{ cfg.create }}</UiButton
           ><UiButton
             v-if="
@@ -678,6 +692,7 @@
         </template>
 
         <template v-else-if="section === 'savings'">
+          <SupplierAiInsights :role="role" :vehicles="data.vehicles" />
           <section class="sw-card">
             <div class="sw-card-heading">
               <h2>Tespitler ve Öneriler</h2>
@@ -717,8 +732,8 @@
               </table></UiTable
             >
             <p class="sw-muted">
-              Bu tespitler inceleme önerisidir. Tutarlar gerçekleşmiş tasarruf değildir; AI veya dış
-              piyasa kıyaslaması kullanılmaz.
+              Bu tablo kural tabanlıdır ve inceleme önerisidir. Tutarlar gerçekleşmiş tasarruf
+              değildir; dış piyasa kıyaslaması kullanılmaz.
             </p>
           </section>
         </template>
@@ -1550,6 +1565,8 @@ import SupplierFleetPlanning from '../components/SupplierFleetPlanning.vue'
 import SupplierApprovalCenter from '../components/SupplierApprovalCenter.vue'
 import SupplierProfileMenu from '../components/SupplierProfileMenu.vue'
 import NavIcon from '../components/NavIcon.vue'
+import SupplierAiInsights from '../components/SupplierAiInsights.vue'
+import SupplierAiDocument from '../components/SupplierAiDocument.vue'
 import { supplierApi, downloadSupplierCsv } from '../utils/supplierApi'
 import { supplierModules, roleLabels } from '../utils/supplierModules'
 import { analyzeSupplier, detectSupplierFindings, num } from '../utils/supplierAnalytics'
@@ -1570,6 +1587,14 @@ const currentDate = new Date().toLocaleDateString('tr-TR', {
   year: 'numeric',
 })
 const role = computed(() => data.value?.session?.role || 'viewer')
+// Which document the AI reader takes on this page (UTTS/fuel receipts, invoices, contracts).
+const aiDocType = computed(
+  () =>
+    ({ fuel: 'receipt', invoices: 'invoice', accounting: 'invoice', contracts: 'contract' })[
+      section.value
+    ] || '',
+)
+const showAiDocument = ref(false)
 const settingsTab = ref('general')
 const reportTab = ref('Genel Bakış'),
   reportCatalog = ref([]),
