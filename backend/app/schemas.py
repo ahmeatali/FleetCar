@@ -181,13 +181,13 @@ class VehicleResponse(BaseModel):
     status: str
     mileage: int
     chassis_no: str
-    license_serial_no: str
-    inspection_date: str
-    vehicle_segment: str
-    vehicle_type: str
-    tire_change_date: str
-    last_service_date: str
-    last_service_mileage: int
+    license_serial_no: Optional[str] = None
+    inspection_date: Optional[str] = None
+    vehicle_segment: Optional[str] = None
+    vehicle_type: Optional[str] = None
+    tire_change_date: Optional[str] = None
+    last_service_date: Optional[str] = None
+    last_service_mileage: Optional[int] = 0
     is_active: bool
     removal_reason: Optional[str] = None
     supplier_id: Optional[int] = None

@@ -1314,6 +1314,29 @@ def edit_inventory(
     return main.update_vehicle(vid, data, db, supplier_id=ctx["id"])
 
 
+@router.post("/vehicle-import")
+async def import_vehicles(
+    request: Request,
+    filename: str = "",
+    commit: bool = False,
+    ctx=Depends(context),
+    db: Session = Depends(get_db),
+):
+    """Preview (default) or apply a bulk vehicle file; apply re-validates the same file."""
+    from app import vehicle_import
+
+    permit(ctx, "vehicle")
+    table = vehicle_import.read_table(await request.body(), filename)
+    rows, ignored = vehicle_import.build_rows(table)
+    rows = vehicle_import.plan(db, ctx, rows)
+    summary = vehicle_import.summarize(rows, ignored)
+    if commit:
+        if not summary["create"] and not summary["update"]:
+            raise HTTPException(400, "Aktarılacak yeni veya değişen araç yok.")
+        summary["result"] = vehicle_import.apply(db, ctx, rows)
+    return summary
+
+
 @router.post("/vehicles/{vid}/dealer")
 def dealer_status(
     vid: str, data: DealerStatusInput, ctx=Depends(context), db: Session = Depends(get_db)

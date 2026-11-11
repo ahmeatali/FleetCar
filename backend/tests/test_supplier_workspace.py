@@ -612,6 +612,57 @@ class SupplierWorkspaceTests(unittest.TestCase):
         self.assertEqual(response.json()["status"], "Aktif")
         self.create("contract", vehicle_id="car2")
 
+    def test_bulk_vehicle_import_preview_commit_and_reimport(self):
+        from tests.test_vehicle_import import HEADER, xlsx
+
+        good = [
+            "34 KLM 101",
+            "WVWZZZ1KZAW000001",
+            "Volkswagen",
+            "Golf 1.5 TSI",
+            "2024",
+            "Benzin",
+        ]
+        rows = [
+            HEADER,
+            good + ["12000", "2027-01-01"],
+            ["34 KLM 102", "BAD", "Fiat", "Egea", "2023", "Dizel", "5000", ""],
+            ["34 ABC 123", "WVWZZZ1KZAW000002", "Fiat", "Egea", "2023", "Dizel", "5000", ""],
+            ["34 KLM 101", "WVWZZZ1KZAW000003", "Fiat", "Egea", "2023", "Dizel", "5000", ""],
+        ]
+        url = "/api/supplier-workspace/vehicle-import?filename=liste.xlsx"
+        denied = self.client.post(url, xlsx(rows), token=self.viewer_token)
+        self.assertEqual(denied.status_code, 403)
+        preview = self.client.post(url, xlsx(rows))
+        self.assertEqual(preview.status_code, 200, preview.text)
+        summary = preview.json()
+        self.assertEqual((summary["create"], summary["error"]), (1, 3))
+        errors = {r["row"]: " ".join(r["errors"]) for r in summary["rows"]}
+        self.assertIn("Şase", errors[3])
+        self.assertIn("başka bir araçta", errors[4])
+        self.assertIn("tekrar ediyor", errors[5])
+        self.assertIsNone(self.db.get(m.Vehicle, "WVWZZZ1KZAW000001"))
+        done = self.client.post(url + "&commit=true", xlsx(rows))
+        self.assertEqual(done.status_code, 200, done.text)
+        self.assertEqual(done.json()["result"], {"created": 1, "updated": 0})
+        car = self.db.get(m.Vehicle, "WVWZZZ1KZAW000001")
+        self.assertEqual((car.supplier_id, car.plate, car.mileage), (1, "34 KLM 101", 12000))
+        self.assertEqual(
+            (car.model, car.version, car.inspection_date), ("Golf", "1.5 TSI", "2027-01-01")
+        )
+        again = self.client.post(url, xlsx(rows[:2])).json()
+        self.assertEqual(again["unchanged"], 1)
+        lower = self.client.post(url, xlsx([HEADER, good + ["9000", "2027-01-01"]])).json()
+        self.assertEqual(lower["unchanged"], 1)
+        self.assertIn("düşük", " ".join(lower["rows"][0]["warnings"]))
+        newer = [HEADER, good + ["15000", "2028-01-01"]]
+        updated = self.client.post(url + "&commit=true", xlsx(newer)).json()
+        self.assertEqual(updated["result"], {"created": 0, "updated": 1})
+        self.db.refresh(car)
+        self.assertEqual((car.mileage, car.inspection_date), (15000, "2028-01-01"))
+        nothing = self.client.post(url + "&commit=true", xlsx(newer))
+        self.assertEqual(nothing.status_code, 400)
+
     def test_policy_projection_and_expensive_policy_approval(self):
         policy = self.create(
             "policy",
