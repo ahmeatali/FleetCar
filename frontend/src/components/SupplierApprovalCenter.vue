@@ -199,7 +199,7 @@
             ><span>⚒</span>Bakım önerilerini incele<b>›</b></router-link
           >
           <router-link v-if="isOwner" to="/supplier-portal/users"
-            ><span>♧</span>Onaycı kullanıcıları yönet<b>›</b></router-link
+            ><span>👥</span>Onaycı kullanıcıları yönet<b>›</b></router-link
           >
         </section>
 

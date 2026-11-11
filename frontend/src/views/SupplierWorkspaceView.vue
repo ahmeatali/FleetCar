@@ -14,8 +14,11 @@
         <router-link
           to="/supplier-portal/approvals"
           class="sw-notification"
-          :aria-label="`${pendingApprovals} bekleyen onay`"
-          >♧<b v-if="pendingApprovals">{{ pendingApprovals }}</b></router-link
+          :aria-label="`Bildirimler: ${pendingApprovals} bekleyen onay`"
+          :title="`${pendingApprovals} bekleyen onay`"
+          ><NavIcon name="bell" size="24" /><b v-if="pendingApprovals">{{
+            pendingApprovals
+          }}</b></router-link
         >
         <SupplierProfileMenu
           :name="data?.session?.name || companyName"
@@ -26,7 +29,7 @@
       <section class="sw-heading">
         <div>
           <h1>
-            <span>{{ cfg.icon }}</span
+            <span><NavIcon :label="cfg.label" size="22" /></span
             >{{
               section === 'home' ? `Hoş geldiniz, ${data?.session?.name || companyName}` : cfg.label
             }}
@@ -1546,6 +1549,7 @@ import SupplierIntegrations from '../components/SupplierIntegrations.vue'
 import SupplierFleetPlanning from '../components/SupplierFleetPlanning.vue'
 import SupplierApprovalCenter from '../components/SupplierApprovalCenter.vue'
 import SupplierProfileMenu from '../components/SupplierProfileMenu.vue'
+import NavIcon from '../components/NavIcon.vue'
 import { supplierApi, downloadSupplierCsv } from '../utils/supplierApi'
 import { supplierModules, roleLabels } from '../utils/supplierModules'
 import { analyzeSupplier, detectSupplierFindings, num } from '../utils/supplierAnalytics'

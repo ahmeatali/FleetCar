@@ -3,7 +3,7 @@
     <router-link :to="supplier ? '/supplier-portal' : '/dashboard'" class="mobile-brand"
       ><img
         class="customer-logo customer-logo--mobile"
-        src="/fleetrent-logo.jpeg"
+        src="/fleetrent-logo-dark.png"
         alt="FleetRent"
         width="140"
         height="36" /></router-link
@@ -44,7 +44,7 @@
     <router-link :to="supplier ? '/supplier-portal' : '/dashboard'" class="fleet-brand"
       ><img
         class="customer-logo"
-        src="/fleetrent-logo.jpeg"
+        src="/fleetrent-logo-dark.png"
         alt="FleetRent"
         width="188"
         height="46"
@@ -68,7 +68,7 @@
               :aria-controls="`supplier-group-${item.id}`"
               @click="expandedGroup = expandedGroup === item.id ? null : item.id"
             >
-              <span class="nav-glyph" aria-hidden="true">{{ item.icon }}</span>
+              <NavIcon class="nav-glyph" :label="item.label" />
               <span>{{ item.label }}</span>
               <span class="group-chevron" aria-hidden="true">⌄</span>
             </UiButton>
@@ -85,7 +85,7 @@
                   :class="{ selected: isSelected(child) }"
                   :aria-current="isSelected(child) ? 'page' : undefined"
                 >
-                  <span class="nav-glyph" aria-hidden="true">{{ child.icon }}</span>
+                  <NavIcon class="nav-glyph" :label="child.label" size="18" />
                   {{ child.label }}
                 </router-link>
               </li>
@@ -97,8 +97,7 @@
             class="fleet-nav-link"
             :class="{ selected: isSelected(item) }"
             :aria-current="isSelected(item) ? 'page' : undefined"
-            ><span class="nav-glyph" aria-hidden="true">{{ item.icon }}</span
-            >{{ item.label }}</router-link
+            ><NavIcon class="nav-glyph" :label="item.label" />{{ item.label }}</router-link
           >
           <UiButton
             v-else
@@ -106,8 +105,7 @@
             :aria-label="item.label + ': Yakında'"
             aria-disabled="true"
             ><span class="unavailable-content"
-              ><span class="nav-glyph" aria-hidden="true">{{ item.icon }}</span
-              >{{ item.label }}</span
+              ><NavIcon class="nav-glyph" :label="item.label" />{{ item.label }}</span
             ><span class="coming-soon">Yakında</span></UiButton
           >
         </li>
@@ -122,6 +120,7 @@
 <script setup>
 defineOptions({ name: 'AppSidebar' })
 import { UiButton } from './ui/index.js'
+import NavIcon from './NavIcon.vue'
 
 import { useRoute, useRouter } from 'vue-router'
 import { supplierNavigation } from '../utils/supplierModules'
@@ -320,8 +319,8 @@ const logout = async () => {
   gap: 9px;
 }
 .fleet-submenu-link .nav-glyph {
-  font-size: 16px;
-  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
 }
 .fleet-nav-link:focus-visible {
   outline: 2px solid #8cbcff;
@@ -345,7 +344,7 @@ const logout = async () => {
   height: 46px;
   object-fit: cover;
   object-position: center;
-  background: #fff;
+  background: #0b2a4a;
   border-radius: 8px;
 }
 .fleet-menu {
@@ -383,11 +382,9 @@ const logout = async () => {
   box-shadow: 0 4px 14px #0064ff30;
 }
 .nav-glyph {
-  font-size: 23px;
   width: 22px;
-  display: inline-block;
-  text-align: center;
-  line-height: 1;
+  height: 22px;
+  flex-shrink: 0;
 }
 .unavailable {
   cursor: default;

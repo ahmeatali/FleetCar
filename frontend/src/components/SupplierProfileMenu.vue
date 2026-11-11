@@ -34,7 +34,7 @@
         role="menuitem"
         to="/supplier-portal/users"
         @click="open = false"
-        ><span>♧</span>Kullanıcılar</router-link
+        ><span>👥</span>Kullanıcılar</router-link
       >
       <button type="button" role="menuitem" class="pm-logout" @click="logout">
         <span>⇥</span>Çıkış Yap
