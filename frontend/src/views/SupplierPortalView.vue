@@ -1939,6 +1939,7 @@
 </template>
 
 <script setup>
+import { notify } from '../utils/feedback.js'
 import { UiAlert, UiButton, UiField, UiModal } from '../components/ui/index.js'
 
 import { hasPreferredDates, preferredDateRange } from '../utils/preferredDates'
@@ -2062,11 +2063,11 @@ const submitCheckin = async () => {
       await fetchRequests()
       showCheckinModal.value = false
     } else {
-      alert('Servise giriş kaydı oluşturulurken bir hata oluştu.')
+      notify('Servise giriş kaydı oluşturulurken bir hata oluştu.')
     }
   } catch (error) {
     console.error('Checkin error:', error)
-    alert('Sistem bağlantı hatası.')
+    notify('Sistem bağlantı hatası.')
   }
 }
 
@@ -2126,11 +2127,11 @@ const submitWorkOrder = async () => {
       await fetchRequests()
       showWorkOrderModal.value = false
     } else {
-      alert('İş emri güncellenirken bir hata oluştu.')
+      notify('İş emri güncellenirken bir hata oluştu.')
     }
   } catch (error) {
     console.error('Work order error:', error)
-    alert('Sistem bağlantı hatası.')
+    notify('Sistem bağlantı hatası.')
   }
 }
 
@@ -2165,7 +2166,7 @@ const submitInvoice = async () => {
         { method: 'POST', headers: { 'Content-Type': file.type }, body: file },
       )
       if (!uploaded.ok)
-        return alert('Fatura dosyası yüklenemedi. PDF, JPEG veya PNG dosyası seçin.')
+        return notify('Fatura dosyası yüklenemedi. PDF, JPEG veya PNG dosyası seçin.')
       file_url = (await uploaded.json()).url
     }
     const res = await fetch(`/api/requests/${selectedRequestForInvoice.value.id}/invoice`, {
@@ -2177,11 +2178,11 @@ const submitInvoice = async () => {
       await fetchRequests()
       showInvoiceModal.value = false
     } else {
-      alert('Fatura bilgileri kaydedilirken bir hata oluştu.')
+      notify('Fatura bilgileri kaydedilirken bir hata oluştu.')
     }
   } catch (error) {
     console.error('Invoice submit error:', error)
-    alert('Sistem bağlantı hatası.')
+    notify('Sistem bağlantı hatası.')
   }
 }
 
@@ -2388,7 +2389,7 @@ const submitBid = async () => {
       await fetchSupplierBids()
       showBidModal.value = false
     } else {
-      alert('Teklif gönderilirken hata oluştu.')
+      notify('Teklif gönderilirken hata oluştu.')
     }
   } catch (err) {
     console.error('Error submitting bid:', err)
@@ -2563,11 +2564,11 @@ const updateStatus = async (request, newStatus) => {
     if (response.ok) {
       await fetchRequests()
     } else {
-      alert('Durum güncellenirken bir hata oluştu.')
+      notify('Durum güncellenirken bir hata oluştu.')
     }
   } catch (error) {
     console.error('Error updating status:', error)
-    alert('Sistem bağlantı hatası.')
+    notify('Sistem bağlantı hatası.')
   } finally {
     updatingId.value = null
   }

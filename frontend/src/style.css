@@ -1468,8 +1468,28 @@ h6 {
 }
 
 /* Tile 1: Müşteri Girişi (Blue) */
+button.login-role-tile {
+  font: inherit;
+  width: 100%;
+}
+.login-role-tile:focus-visible {
+  outline: 3px solid #0064ff;
+  outline-offset: 2px;
+}
+.tile-icon {
+  display: inline-flex;
+}
 .tile-customer {
   border: 2px solid #3b82f6;
+}
+.tile-customer .tile-icon {
+  color: #2563eb;
+}
+.tile-supplier .tile-icon {
+  color: #9333ea;
+}
+.tile-service .tile-icon {
+  color: #ea580c;
 }
 .tile-customer:hover {
   background: #eff6ff;

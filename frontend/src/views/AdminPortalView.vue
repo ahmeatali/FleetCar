@@ -83,7 +83,7 @@
         >
           <div class="glass-panel stat-card-new">
             <div class="stat-icon-wrapper quote-purple">
-              <span>📄</span>
+              <NavIcon name="document" size="22" />
             </div>
             <div class="stat-info">
               <span class="stat-label">Toplam Talep</span>
@@ -92,7 +92,7 @@
           </div>
           <div class="glass-panel stat-card-new">
             <div class="stat-icon-wrapper quote-blue">
-              <span>🏢</span>
+              <NavIcon name="store" size="22" />
             </div>
             <div class="stat-info">
               <span class="stat-label">Gelen Tedarikçi Teklifi</span>
@@ -103,7 +103,7 @@
           </div>
           <div class="glass-panel stat-card-new">
             <div class="stat-icon-wrapper quote-green">
-              <span>✅</span>
+              <NavIcon name="check" size="22" />
             </div>
             <div class="stat-info">
               <span class="stat-label">Kabul / İmzalandı</span>
@@ -115,7 +115,7 @@
               class="stat-icon-wrapper"
               style="background: rgba(239, 68, 68, 0.1); color: #ef4444"
             >
-              <span>❌</span>
+              <NavIcon name="x-circle" size="22" />
             </div>
             <div class="stat-info">
               <span class="stat-label">Reddedilen Teklif</span>
@@ -127,7 +127,7 @@
               class="stat-icon-wrapper"
               style="background: rgba(100, 116, 139, 0.1); color: #64748b"
             >
-              <span>🗑️</span>
+              <NavIcon name="trash" size="22" />
             </div>
             <div class="stat-info">
               <span class="stat-label">Silinen Talepler</span>
@@ -353,7 +353,7 @@
         <div class="grid-3" style="margin-top: 25px; gap: 20px">
           <div class="glass-panel stat-card-new">
             <div class="stat-icon-wrapper quote-purple">
-              <span>🏢</span>
+              <NavIcon name="store" size="22" />
             </div>
             <div class="stat-info">
               <span class="stat-label">Aktif Sözleşmeli Şirket</span>
@@ -362,7 +362,7 @@
           </div>
           <div class="glass-panel stat-card-new">
             <div class="stat-icon-wrapper quote-blue">
-              <span>🚗</span>
+              <NavIcon name="car" size="22" />
             </div>
             <div class="stat-info">
               <span class="stat-label">Toplam Filo Aracı</span>
@@ -867,7 +867,7 @@
         <div class="grid-3" style="margin-top: 25px; gap: 20px">
           <div class="glass-panel stat-card-new">
             <div class="stat-icon-wrapper quote-purple">
-              <span>🚗</span>
+              <NavIcon name="car" size="22" />
             </div>
             <div class="stat-info">
               <span class="stat-label">Toplam Kayıtlı Araç</span>
@@ -876,7 +876,7 @@
           </div>
           <div class="glass-panel stat-card-new">
             <div class="stat-icon-wrapper quote-green">
-              <span>🛡️</span>
+              <NavIcon name="shield" size="22" />
             </div>
             <div class="stat-info">
               <span class="stat-label">Aktif Kullanımda</span>
@@ -885,7 +885,7 @@
           </div>
           <div class="glass-panel stat-card-new">
             <div class="stat-icon-wrapper quote-blue">
-              <span>🔧</span>
+              <NavIcon name="wrench" size="22" />
             </div>
             <div class="stat-info">
               <span class="stat-label">Serviste / Bakımda</span>
@@ -1297,7 +1297,7 @@
         <div class="grid-3" style="margin-top: 25px; gap: 20px">
           <div class="glass-panel stat-card-new">
             <div class="stat-icon-wrapper quote-purple">
-              <span>🏢</span>
+              <NavIcon name="store" size="22" />
             </div>
             <div class="stat-info">
               <span class="stat-label">Toplam Entegre Tedarikçi</span>
@@ -1306,7 +1306,7 @@
           </div>
           <div class="glass-panel stat-card-new">
             <div class="stat-icon-wrapper quote-blue">
-              <span>🛡️</span>
+              <NavIcon name="shield" size="22" />
             </div>
             <div class="stat-info">
               <span class="stat-label">Yetkili Servisler</span>
@@ -1317,7 +1317,7 @@
           </div>
           <div class="glass-panel stat-card-new">
             <div class="stat-icon-wrapper quote-green">
-              <span>🤝</span>
+              <NavIcon name="users" size="22" />
             </div>
             <div class="stat-info">
               <span class="stat-label">Anlaşmalı Servisler</span>
@@ -2606,6 +2606,7 @@
 </template>
 
 <script setup>
+import { askText, confirmAction, notify } from '../utils/feedback.js'
 import { UiButton, UiField, UiModal } from '../components/ui/index.js'
 
 import { ref, reactive, computed, onMounted } from 'vue'
@@ -2656,12 +2657,18 @@ const formatDateTime = (value) =>
 
 async function enterAccount(portal, subjectId, name) {
   const label = portal === 'supplier' ? 'tedarikçi' : 'müşteri'
-  if (!confirm(`${name} adlı ${label} hesabına destek için gireceksiniz. Devam edilsin mi?`)) return
+  if (
+    !(await confirmAction(
+      `${name} adlı ${label} hesabına destek için gireceksiniz. Devam edilsin mi?`,
+      { confirmText: 'Hesaba Gir' },
+    ))
+  )
+    return
   try {
     const path = await startImpersonation(portal, subjectId)
     router.push(path)
   } catch (error) {
-    alert(error?.message || 'Hesaba girilemedi.')
+    notify(error?.message || 'Hesaba girilemedi.')
   }
 }
 
@@ -2858,7 +2865,7 @@ const submitNewCustomer = async () => {
       if (shouldInvite && added.id) {
         await sendCustomerInvite(added)
       } else {
-        alert(`${newCustomerForm.company_name} başarıyla müşteri olarak eklendi!`)
+        notify(`${newCustomerForm.company_name} başarıyla müşteri olarak eklendi!`)
       }
 
       Object.assign(newCustomerForm, {
@@ -2873,11 +2880,11 @@ const submitNewCustomer = async () => {
       })
     } else {
       const err = await res.json().catch(() => ({}))
-      alert('Müşteri eklenirken bir hata oluştu: ' + (err.detail || 'Bilinmeyen hata.'))
+      notify('Müşteri eklenirken bir hata oluştu: ' + (err.detail || 'Bilinmeyen hata.'))
     }
   } catch (err) {
     console.error('Müşteri ekleme hatası:', err)
-    alert('Sunucuya bağlanılamadı.')
+    notify('Sunucuya bağlanılamadı.')
   }
 }
 
@@ -2899,16 +2906,20 @@ const sendCustomerInvite = async (customer) => {
       await fetchCustomers()
     } else {
       const err = await res.json().catch(() => ({}))
-      alert('Davetiye gönderilemedi: ' + (err.detail || 'Bilinmeyen hata.'))
+      notify('Davetiye gönderilemedi: ' + (err.detail || 'Bilinmeyen hata.'))
     }
   } catch (err) {
     console.error('Error sending customer invite:', err)
-    alert('Sunucuya bağlanılamadı.')
+    notify('Sunucuya bağlanılamadı.')
   }
 }
 
 const deleteCustomer = async (customer) => {
-  if (!confirm(`'${customer.company_name}' adlı müşteriyi silmek istediğinizden emin misiniz?`))
+  if (
+    !(await confirmAction(
+      `'${customer.company_name}' adlı müşteriyi silmek istediğinizden emin misiniz?`,
+    ))
+  )
     return
   try {
     const res = await fetch(`/api/admin/customers/${customer.id}`, {
@@ -2919,14 +2930,14 @@ const deleteCustomer = async (customer) => {
       if (showCustomerDetailsModal.value && selectedCustomerDetails.value?.id === customer.id) {
         showCustomerDetailsModal.value = false
       }
-      alert(`'${customer.company_name}' müşterisi başarıyla silindi.`)
+      notify(`'${customer.company_name}' müşterisi başarıyla silindi.`)
     } else {
       const err = await res.json().catch(() => ({}))
-      alert('Müşteri silinemedi: ' + (err.detail || 'Bilinmeyen hata.'))
+      notify('Müşteri silinemedi: ' + (err.detail || 'Bilinmeyen hata.'))
     }
   } catch (err) {
     console.error('Error deleting customer:', err)
-    alert('Sunucuya bağlanılamadı.')
+    notify('Sunucuya bağlanılamadı.')
   }
 }
 
@@ -3034,22 +3045,22 @@ const submitAddSupplier = async () => {
         // Trigger explicit invite modal feedback
         await sendSupplierInvite(added)
       } else {
-        alert(`✅ ${added.name} başarıyla sisteme kaydedildi.`)
+        notify(`✅ ${added.name} başarıyla sisteme kaydedildi.`)
       }
     } else {
       const errData = await res.json().catch(() => ({}))
-      alert(errData.detail || 'Tedarikçi eklenirken hata oluştu.')
+      notify(errData.detail || 'Tedarikçi eklenirken hata oluştu.')
     }
   } catch (err) {
     console.error('Error adding supplier:', err)
-    alert('Bağlantı hatası oluştu.')
+    notify('Bağlantı hatası oluştu.')
   }
 }
 
 const sendSupplierInvite = async (supplier) => {
   let targetEmail = supplier.email
   if (!targetEmail) {
-    const inputEmail = prompt(
+    const inputEmail = await askText(
       `"${supplier.name}" için davet gönderilecek e-posta adresini giriniz:`,
       '',
     )
@@ -3074,29 +3085,33 @@ const sendSupplierInvite = async (supplier) => {
       showInviteModal.value = true
       await fetchSuppliers()
     } else {
-      alert(`Hata: ${data.detail || 'Davet gönderilemedi.'}`)
+      notify(`Hata: ${data.detail || 'Davet gönderilemedi.'}`)
     }
   } catch (err) {
     console.error('Invite error:', err)
-    alert('Sunucuya bağlanılamadı.')
+    notify('Sunucuya bağlanılamadı.')
   }
 }
 
 const deleteSupplier = async (supplier) => {
-  if (!confirm(`"${supplier.name}" tedarikçisini/servisini silmek istediğinizden emin misiniz?`))
+  if (
+    !(await confirmAction(
+      `"${supplier.name}" tedarikçisini/servisini silmek istediğinizden emin misiniz?`,
+    ))
+  )
     return
   try {
     const res = await fetch(`/api/admin/suppliers/${supplier.id}`, { method: 'DELETE' })
     if (res.ok) {
       await fetchSuppliers()
-      alert(`✅ ${supplier.name} başarıyla silindi.`)
+      notify(`✅ ${supplier.name} başarıyla silindi.`)
     } else {
       const errData = await res.json().catch(() => ({}))
-      alert(errData.detail || 'Silme işlemi sırasında hata oluştu.')
+      notify(errData.detail || 'Silme işlemi sırasında hata oluştu.')
     }
   } catch (err) {
     console.error('Delete supplier error:', err)
-    alert('Sunucuya bağlanılamadı.')
+    notify('Sunucuya bağlanılamadı.')
   }
 }
 
@@ -3214,7 +3229,7 @@ const addQuote = async () => {
       newQuoteForm.vehicle_type = 'Sedan'
       newQuoteForm.estimated_annual_mileage = 20000
     } else {
-      alert('Teklif eklenirken hata oluştu.')
+      notify('Teklif eklenirken hata oluştu.')
     }
   } catch (err) {
     console.error('Error adding quote:', err)
@@ -3249,7 +3264,7 @@ const submitEditQuote = async () => {
       await fetchQuotes()
       showEditQuoteModal.value = false
     } else {
-      alert('Teklif güncellenirken hata oluştu.')
+      notify('Teklif güncellenirken hata oluştu.')
     }
   } catch (err) {
     console.error('Error updating quote:', err)
@@ -3281,7 +3296,7 @@ const submitEditCustomer = async () => {
       await fetchCustomers()
       showEditCustomerModal.value = false
     } else {
-      alert('Müşteri bilgileri güncellenirken hata oluştu.')
+      notify('Müşteri bilgileri güncellenirken hata oluştu.')
     }
   } catch (err) {
     console.error('Error updating customer:', err)
@@ -3386,7 +3401,7 @@ const acceptSupplierBid = async (bidId) => {
       await openQuoteBidsModal(selectedQuoteForBids.value)
       await fetchQuotes()
     } else {
-      alert('Teklif kabul edilirken hata oluştu.')
+      notify('Teklif kabul edilirken hata oluştu.')
     }
   } catch (err) {
     console.error('Error accepting bid:', err)
@@ -3405,7 +3420,7 @@ const rejectSupplierBid = async (bidId) => {
     if (res.ok) {
       await openQuoteBidsModal(selectedQuoteForBids.value)
     } else {
-      alert('Teklif reddedilirken hata oluştu.')
+      notify('Teklif reddedilirken hata oluştu.')
     }
   } catch (err) {
     console.error('Error rejecting bid:', err)
@@ -3438,7 +3453,7 @@ const updateStatus = async (quoteId, newStatus, contractAmount) => {
       await fetchQuotes()
       await fetchCustomers()
     } else {
-      alert('Durum güncellenirken hata oluştu.')
+      notify('Durum güncellenirken hata oluştu.')
     }
   } catch (error) {
     console.error('Error updating status:', error)

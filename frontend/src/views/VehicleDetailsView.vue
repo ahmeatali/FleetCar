@@ -856,6 +856,7 @@
 </template>
 
 <script setup>
+import { askText, confirmAction } from '../utils/feedback.js'
 import { customerRoleLabel } from '../utils/customerIdentity.js'
 
 const customerRole = customerRoleLabel()
@@ -1348,7 +1349,7 @@ async function uploadFile(event, category) {
     }
     const documentType =
       category === 'document'
-        ? window.prompt(
+        ? await askText(
             'Belge türü (Ruhsat, Kasko, Trafik Sigortası, Sözleşme vb.)',
             file.type === 'application/pdf' ? 'Araç Belgesi' : 'Belge',
           )
@@ -1356,7 +1357,7 @@ async function uploadFile(event, category) {
     if (category === 'document' && documentType === null) continue
     const expiryDate =
       category === 'document'
-        ? window.prompt('Belge bitiş tarihi (YYYY-MM-DD), yoksa boş bırakın:', '')
+        ? await askText('Belge bitiş tarihi (YYYY-MM-DD), yoksa boş bırakın:', '')
         : null
     const query = new URLSearchParams({ category, original_name: file.name })
     if (documentType) query.set('document_type', documentType)
@@ -1381,7 +1382,8 @@ async function uploadFile(event, category) {
 }
 
 async function deleteFile(file) {
-  if (!window.confirm('“' + file.original_name + '” dosyasını silmek istiyor musunuz?')) return
+  if (!(await confirmAction('“' + file.original_name + '” dosyasını silmek istiyor musunuz?')))
+    return
   const response = await (isSupplier.value
     ? supplierFetch('/vehicles/' + encodeURIComponent(vehicle.value.id) + '/files/' + file.id, {
         method: 'DELETE',
@@ -1511,9 +1513,11 @@ function openLocation() {
 
 async function removeVehicle() {
   showActions.value = false
-  if (!window.confirm(vehicle.value.plate + ' plakalı aracı filodan çıkarmak istiyor musunuz?'))
+  if (
+    !(await confirmAction(vehicle.value.plate + ' plakalı aracı filodan çıkarmak istiyor musunuz?'))
+  )
     return
-  const reason = window.prompt('Araç çıkarma nedeni', 'Sözleşme Bitişi')
+  const reason = await askText('Araç çıkarma nedeni', 'Sözleşme Bitişi')
   if (reason === null) return
   const response = await (isSupplier.value
     ? supplierFetch('/vehicles/' + encodeURIComponent(vehicle.value.id) + '/remove', {

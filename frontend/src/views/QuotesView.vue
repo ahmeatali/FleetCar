@@ -3205,6 +3205,7 @@
 </template>
 
 <script setup>
+import { confirmAction, notify } from '../utils/feedback.js'
 import { UiButton, UiField, UiModal } from '../components/ui/index.js'
 
 import NotificationBell from '../components/NotificationBell.vue'
@@ -3645,7 +3646,9 @@ const openBidDetailModal = (bid, quote) => {
 
 const approveBid = async (bidId, _quote) => {
   if (
-    !confirm('Bu tedarikçi teklifini onaylamak ve sözleşmeyi başlatmak istediğinize emin misiniz?')
+    !(await confirmAction(
+      'Bu tedarikçi teklifini onaylamak ve sözleşmeyi başlatmak istediğinize emin misiniz?',
+    ))
   )
     return
   try {
@@ -3660,7 +3663,7 @@ const approveBid = async (bidId, _quote) => {
       await fetchQuotes()
       await fetchCompanyStatus()
     } else {
-      alert('Teklif onaylanırken bir hata oluştu.')
+      notify('Teklif onaylanırken bir hata oluştu.')
     }
   } catch (e) {
     console.error('Approve bid error:', e)
@@ -3668,7 +3671,7 @@ const approveBid = async (bidId, _quote) => {
 }
 
 const rejectBid = async (bidId) => {
-  if (!confirm('Bu tedarikçi teklifini reddetmek istediğinize emin misiniz?')) return
+  if (!(await confirmAction('Bu tedarikçi teklifini reddetmek istediğinize emin misiniz?'))) return
   try {
     const res = await fetch(`/api/bids/${bidId}/status`, {
       method: 'PUT',
@@ -3680,7 +3683,7 @@ const rejectBid = async (bidId) => {
       showBidDetailModal.value = false
       await fetchQuotes()
     } else {
-      alert('Teklif reddedilirken bir hata oluştu.')
+      notify('Teklif reddedilirken bir hata oluştu.')
     }
   } catch (e) {
     console.error('Reject bid error:', e)
@@ -3688,7 +3691,12 @@ const rejectBid = async (bidId) => {
 }
 
 const deleteQuoteRequest = async (quoteId) => {
-  if (!confirm('Bu kiralama teklif talebini silmek/iptal etmek istediğinize emin misiniz?')) return
+  if (
+    !(await confirmAction(
+      'Bu kiralama teklif talebini silmek/iptal etmek istediğinize emin misiniz?',
+    ))
+  )
+    return
   try {
     const res = await fetch(`/api/quotes/${quoteId}`, {
       method: 'DELETE',
@@ -3697,7 +3705,7 @@ const deleteQuoteRequest = async (quoteId) => {
     if (res.ok) {
       await fetchQuotes()
     } else {
-      alert('İstek silinirken bir hata oluştu.')
+      notify('İstek silinirken bir hata oluştu.')
     }
   } catch (e) {
     console.error('Delete quote request error:', e)
@@ -3773,11 +3781,11 @@ const confirmAndSubmitQuote = async () => {
       await fetchQuotes()
     } else {
       const errData = await res.json().catch(() => ({}))
-      alert(errData.detail || 'Teklif oluşturulurken bir hata meydana geldi.')
+      notify(errData.detail || 'Teklif oluşturulurken bir hata meydana geldi.')
     }
   } catch (e) {
     console.error('Submit quote error:', e)
-    alert('Bir hata oluştu.')
+    notify('Bir hata oluştu.')
   } finally {
     submittingQuote.value = false
   }

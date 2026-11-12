@@ -33,17 +33,21 @@
 
         <div class="login-role-grid">
           <!-- 1. Müşteri Girişi -->
-          <div @click="selectedRole = 'customer'" class="login-role-tile tile-customer">
-            <span class="tile-icon">🏢</span>
+          <button
+            type="button"
+            @click="selectedRole = 'customer'"
+            class="login-role-tile tile-customer"
+          >
+            <span class="tile-icon"><NavIcon name="briefcase" size="26" /></span>
             <span class="tile-title">Müşteri Girişi</span>
             <span style="font-size: 0.75rem; color: #64748b; margin-top: 4px; font-weight: 500"
               >Filo Yönetim Paneli</span
             >
-          </div>
+          </button>
 
           <!-- 2. Tedarikçi Girişi (Araba Sağlayıcı Kiralama Firmaları) -->
           <router-link to="/supplier-login" class="login-role-tile tile-supplier">
-            <span class="tile-icon">🏭</span>
+            <span class="tile-icon"><NavIcon name="store" size="26" /></span>
             <span class="tile-title">Tedarikçi Girişi</span>
             <span style="font-size: 0.75rem; color: #10b981; margin-top: 4px; font-weight: 600"
               >Araba Sağlayıcı & Kiralama</span
@@ -52,7 +56,7 @@
 
           <!-- 3. Servis Girişi (Bakım, Lastik & Oto Kurtarma) -->
           <router-link to="/service-login" class="login-role-tile tile-service">
-            <span class="tile-icon">🔧</span>
+            <span class="tile-icon"><NavIcon name="wrench" size="26" /></span>
             <span class="tile-title">Servis Girişi</span>
             <span style="font-size: 0.75rem; color: #2563eb; margin-top: 4px; font-weight: 600"
               >Bakım, Lastik & Oto Kurtarma</span
@@ -395,6 +399,8 @@
 </template>
 
 <script setup>
+import NavIcon from '../components/NavIcon.vue'
+import { notify } from '../utils/feedback.js'
 import { UiButton, UiField } from '../components/ui/index.js'
 
 import { ref } from 'vue'
@@ -437,11 +443,11 @@ const handleForgotPassword = async () => {
       forgotSuccess.value =
         data.message || 'Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.'
     } else {
-      alert(data.detail || 'Bir hata oluştu.')
+      notify(data.detail || 'Bir hata oluştu.')
     }
   } catch (err) {
     console.error('Forgot password error:', err)
-    alert('Sunucuya bağlanılamadı.')
+    notify('Sunucuya bağlanılamadı.')
   } finally {
     forgotLoading.value = false
   }
@@ -478,11 +484,11 @@ const handleLogin = async () => {
     } else {
       const errData = await res.json().catch(() => ({}))
       if (res.status === 403) verificationRequired.value = true
-      alert(errData.detail || 'Giriş yapılamadı! Lütfen e-posta ve şifrenizi kontrol edin.')
+      notify(errData.detail || 'Giriş yapılamadı! Lütfen e-posta ve şifrenizi kontrol edin.')
     }
   } catch (err) {
     console.error('Customer Login error:', err)
-    alert('Sunucuya bağlanılamadı. Lütfen backend servisini kontrol edin.')
+    notify('Sunucuya bağlanılamadı. Lütfen backend servisini kontrol edin.')
   } finally {
     loading.value = false
   }
@@ -530,11 +536,11 @@ const handleRegister = async () => {
         : 'Kayıt tamamlandı ancak doğrulama e-postası gönderilemedi. Aşağıdaki düğmeyle yeniden deneyin.'
     } else {
       const errData = await res.json().catch(() => ({}))
-      alert(errData.detail || 'Kayıt oluşturulamadı! Lütfen bilgilerinizi kontrol edin.')
+      notify(errData.detail || 'Kayıt oluşturulamadı! Lütfen bilgilerinizi kontrol edin.')
     }
   } catch (err) {
     console.error('Customer Register error:', err)
-    alert('Sunucuya bağlanılamadı. Lütfen backend servisini kontrol edin.')
+    notify('Sunucuya bağlanılamadı. Lütfen backend servisini kontrol edin.')
   } finally {
     loading.value = false
   }

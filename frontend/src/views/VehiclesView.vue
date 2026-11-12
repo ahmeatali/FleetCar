@@ -1253,6 +1253,7 @@
 </template>
 
 <script setup>
+import { notify } from '../utils/feedback.js'
 import { customerRoleLabel } from '../utils/customerIdentity.js'
 
 const customerRole = customerRoleLabel()
@@ -1525,11 +1526,11 @@ const addVehicle = async () => {
       }
     } else {
       const err = await response.json()
-      alert(err.detail || 'Araç eklenirken bir hata oluştu.')
+      notify(err.detail || 'Araç eklenirken bir hata oluştu.')
     }
   } catch (error) {
     console.error('Error adding vehicle:', error)
-    alert('Sistem bağlantı hatası.')
+    notify('Sistem bağlantı hatası.')
   } finally {
     saving.value = false
   }
@@ -1613,11 +1614,11 @@ const saveVehicleEdit = async () => {
       isEditingVehicle.value = false
     } else {
       const err = await response.json()
-      alert(err.detail || 'Araç bilgileri güncellenirken bir hata oluştu.')
+      notify(err.detail || 'Araç bilgileri güncellenirken bir hata oluştu.')
     }
   } catch (error) {
     console.error('Error updating vehicle:', error)
-    alert('Sistem bağlantı hatası.')
+    notify('Sistem bağlantı hatası.')
   } finally {
     saving.value = false
   }
@@ -1638,11 +1639,11 @@ const confirmRemoveVehicle = async () => {
       await fetchVehicles()
       showRemoveModal.value = false
     } else {
-      alert('Araç kaldırılırken bir hata oluştu.')
+      notify('Araç kaldırılırken bir hata oluştu.')
     }
   } catch (error) {
     console.error('Error removing vehicle:', error)
-    alert('Sistem bağlantı hatası.')
+    notify('Sistem bağlantı hatası.')
   }
 }
 
@@ -1659,11 +1660,11 @@ const reactivateVehicle = async (vehicle) => {
       await fetchVehicles()
       showDetailsModal.value = false
     } else {
-      alert('Araç tekrar filoya eklenirken bir hata oluştu.')
+      notify('Araç tekrar filoya eklenirken bir hata oluştu.')
     }
   } catch (error) {
     console.error('Error reactivating vehicle:', error)
-    alert('Sistem bağlantı hatası.')
+    notify('Sistem bağlantı hatası.')
   }
 }
 
@@ -1811,7 +1812,7 @@ const saveFuelRecord = async () => {
     })
     if (!response.ok) {
       const error = await response.json()
-      alert(error.detail || 'Gider kaydı eklenemedi.')
+      notify(error.detail || 'Gider kaydı eklenemedi.')
       return
     }
     fuelRecords.value.unshift({
@@ -1822,7 +1823,7 @@ const saveFuelRecord = async () => {
     showFuelModal.value = false
   } catch (error) {
     console.error('Vehicle expense save error:', error)
-    alert('Gider kaydı kaydedilirken bağlantı hatası oluştu.')
+    notify('Gider kaydı kaydedilirken bağlantı hatası oluştu.')
   }
 }
 const csvDownload = (rows, filename) => {
