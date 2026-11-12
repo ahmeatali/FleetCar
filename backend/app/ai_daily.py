@@ -1,14 +1,16 @@
-"""Daily AI fleet analysis: runs at 06:00 Istanbul time for suppliers with a live session.
+"""Daily AI fleet analysis at 06:00 Istanbul time for suppliers and customers with a live session.
 
-Each supplier/day is claimed through a unique row in ai_job_claims, so several workers or a
-restart never analyse the same fleet twice on one day. A failed run releases its claim and is
-retried on the next start. Set FLEETCAR_AI_DAILY=0 to switch the job off.
+Each company/day is claimed through a unique row (ai_job_claims for suppliers,
+customer_ai_job_claims for customers), so several workers or a restart never analyse the same
+fleet twice on one day. A failed run releases its claim and is retried on the next start.
+Set FLEETCAR_AI_DAILY=0 to switch the job off.
 """
 
 import logging
 import os
 import threading
 import time
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
 from fastapi import HTTPException
@@ -22,6 +24,25 @@ RUN_HOUR = 6
 log = logging.getLogger("fleetcar.ai_daily")
 
 
+@dataclass(frozen=True)
+class Spec:
+    name: str  # "suppliers" | "customers"
+    insight: type
+    claim: type
+    owner: str  # owner column on insight and claim rows
+
+    def run(self, db, oid):
+        from app import ai_assistant
+
+        if self.name == "suppliers":
+            return ai_assistant.fleet_insights(db, {"id": oid}, force=True, trigger="daily")
+        return ai_assistant.customer_fleet_insights(db, oid, force=True, trigger="daily")
+
+
+SUPPLIERS = Spec("suppliers", m.SupplierAiInsight, m.AiJobClaim, "supplier_id")
+CUSTOMERS = Spec("customers", m.CustomerAiInsight, m.CustomerAiJobClaim, "customer_id")
+
+
 def local_date(value):
     moment = datetime.fromisoformat(value.replace("Z", "+00:00"))
     if not moment.tzinfo:
@@ -29,24 +50,29 @@ def local_date(value):
     return moment.astimezone(BUSINESS_TIMEZONE).date()
 
 
-def active_supplier_ids(db):
+def active_ids(db, spec):
     now = datetime.now(timezone.utc).isoformat()
-    rows = db.query(m.SupplierSession.supplier_id).filter(m.SupplierSession.expires_at > now)
-    return sorted({sid for (sid,) in rows.distinct()})
+    if spec is SUPPLIERS:
+        rows = db.query(m.SupplierSession.supplier_id).filter(m.SupplierSession.expires_at > now)
+    else:
+        rows = db.query(m.PortalSession.subject_id).filter(
+            m.PortalSession.kind == "customer", m.PortalSession.expires_at > now
+        )
+    return sorted({oid for (oid,) in rows.distinct()})
 
 
-def analysed_today(db, sid, today):
+def analysed_today(db, spec, oid, today):
     row = (
-        db.query(m.SupplierAiInsight)
-        .filter_by(supplier_id=sid, kind="fleet")
-        .order_by(m.SupplierAiInsight.id.desc())
+        db.query(spec.insight)
+        .filter_by(kind="fleet", **{spec.owner: oid})
+        .order_by(spec.insight.id.desc())
         .first()
     )
     return bool(row) and local_date(row.created_at) == today
 
 
-def claim(db, sid, day):
-    db.add(m.AiJobClaim(job=JOB, supplier_id=sid, run_date=day, started_at=stamp()))
+def claim(db, spec, oid, day):
+    db.add(spec.claim(job=JOB, run_date=day, started_at=stamp(), **{spec.owner: oid}))
     try:
         db.commit()
         return True
@@ -55,8 +81,8 @@ def claim(db, sid, day):
         return False
 
 
-def finish(db, sid, day, status):
-    row = db.query(m.AiJobClaim).filter_by(job=JOB, supplier_id=sid, run_date=day).first()
+def finish(db, spec, oid, day, status):
+    row = db.query(spec.claim).filter_by(job=JOB, run_date=day, **{spec.owner: oid}).first()
     if status == "failed":
         db.delete(row)  # release so the next start retries today's run
     else:
@@ -65,31 +91,34 @@ def finish(db, sid, day, status):
 
 
 def run_daily(session_factory, today=None):
-    """Analyse every active supplier once for `today`; returns a status per supplier id."""
-    from app import ai_assistant
+    """Analyse every active supplier and customer once for `today`.
 
+    Returns {"suppliers": {id: status}, "customers": {id: status}}.
+    """
     today = today or datetime.now(BUSINESS_TIMEZONE).date()
     day = today.isoformat()
     result = {}
     db = session_factory()
     try:
-        for sid in active_supplier_ids(db):
-            if analysed_today(db, sid, today) or not claim(db, sid, day):
-                result[sid] = "skipped"
-                continue
-            try:
-                ai_assistant.fleet_insights(db, {"id": sid}, force=True, trigger="daily")
-                status = "done"
-            except HTTPException as exc:  # no active vehicles, missing key, API refusal
-                db.rollback()
-                status = "empty" if exc.status_code == 400 else "failed"
-                log.warning("Daily AI analysis for supplier %s: %s", sid, exc.detail)
-            except Exception:
-                db.rollback()
-                status = "failed"
-                log.exception("Daily AI analysis failed for supplier %s", sid)
-            finish(db, sid, day, status)
-            result[sid] = status
+        for spec in (SUPPLIERS, CUSTOMERS):
+            statuses = result.setdefault(spec.name, {})
+            for oid in active_ids(db, spec):
+                if analysed_today(db, spec, oid, today) or not claim(db, spec, oid, day):
+                    statuses[oid] = "skipped"
+                    continue
+                try:
+                    spec.run(db, oid)
+                    status = "done"
+                except HTTPException as exc:  # no active vehicles, missing key, API refusal
+                    db.rollback()
+                    status = "empty" if exc.status_code == 400 else "failed"
+                    log.warning("Daily AI analysis for %s %s: %s", spec.name, oid, exc.detail)
+                except Exception:
+                    db.rollback()
+                    status = "failed"
+                    log.exception("Daily AI analysis failed for %s %s", spec.name, oid)
+                finish(db, spec, oid, day, status)
+                statuses[oid] = status
     finally:
         db.close()
     return result

@@ -470,6 +470,7 @@ const handleLogin = async () => {
       localStorage.setItem('fleetcar_customer_name', cust.company_name || 'Müşteri Firma')
       localStorage.setItem('fleetcar_user_email', data.user?.email || cust.email || email.value)
       if (data.user?.name) localStorage.setItem('fleetcar_user_name', data.user.name)
+      localStorage.setItem('fleetcar_user_role', data.user?.role || 'owner')
       localStorage.setItem('fleetcar_user_verified', cust.is_email_verified ? 'true' : 'false')
       localStorage.setItem('fleet_customer', JSON.stringify(cust))
 

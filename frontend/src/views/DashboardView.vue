@@ -45,6 +45,13 @@
           </div></router-link
         >
       </section>
+      <SupplierAiInsights
+        portal="customer"
+        compact
+        class="overview-ai"
+        :role="customerRole"
+        :vehicles="vehicles"
+      />
       <section class="overview-grid">
         <article class="overview-panel locations-panel">
           <div class="panel-title">
@@ -238,6 +245,7 @@ import NotificationBell from '../components/NotificationBell.vue'
 import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'
+import SupplierAiInsights from '../components/SupplierAiInsights.vue'
 const router = useRouter(),
   vehicles = ref([]),
   requests = ref([]),
@@ -247,6 +255,8 @@ const router = useRouter(),
   search = ref(''),
   monthCount = ref(6)
 const customerName = localStorage.getItem('fleetcar_customer_name') || 'Filo Yöneticisi'
+// The server enforces roles; this only hides the run button for read-only users.
+const customerRole = localStorage.getItem('fleetcar_user_role') || ''
 const initials = customerName
   .split(' ')
   .slice(0, 2)
@@ -662,6 +672,9 @@ onMounted(load)
   text-decoration: none;
   border-radius: 5px;
   font-size: 12px;
+}
+.overview-ai {
+  margin-bottom: 14px;
 }
 .overview-stats {
   display: grid;

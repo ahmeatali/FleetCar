@@ -105,12 +105,20 @@ def _months(a, b):
     return max(0.0, (b - a).days / 30.44)
 
 
-def fleet_metrics(db, sid):
-    """Deterministic per-vehicle usage metrics and the rule flags that select vehicles."""
+def fleet_metrics(db, sid=None, customer_id=None):
+    """Deterministic per-vehicle usage metrics and the rule flags that select vehicles.
+
+    Scoped to a supplier's own fleet (sid) or to the vehicles a customer rents (customer_id).
+    """
     today = business_today()
+    owner = (
+        m.Vehicle.customer_id == customer_id
+        if customer_id is not None
+        else m.Vehicle.supplier_id == sid
+    )
     cars = (
         db.query(m.Vehicle)
-        .filter(m.Vehicle.supplier_id == sid, m.Vehicle.is_active.is_(True))
+        .filter(owner, m.Vehicle.is_active.is_(True))
         .filter((m.Vehicle.status.is_(None)) | (m.Vehicle.status != "Satıldı"))
         .all()
     )
@@ -119,7 +127,10 @@ def fleet_metrics(db, sid):
     for r in db.query(m.VehicleMileageRecord).filter(m.VehicleMileageRecord.vehicle_id.in_(ids)):
         records.setdefault(r.vehicle_id, []).append((_day(r.recorded_at), int(r.mileage or 0)))
     last_return = {}
-    for r in db.query(m.Rental).filter(m.Rental.supplier_id == sid, m.Rental.vehicle_id.in_(ids)):
+    rentals = db.query(m.Rental).filter(m.Rental.vehicle_id.in_(ids))
+    if customer_id is None:
+        rentals = rentals.filter(m.Rental.supplier_id == sid)
+    for r in rentals:
         end = _day(r.returned_at) or (_day(r.ends_at) if r.status == "Tamamlandı" else None)
         if end and (r.vehicle_id not in last_return or end > last_return[r.vehicle_id]):
             last_return[r.vehicle_id] = end
@@ -129,6 +140,16 @@ def fleet_metrics(db, sid):
             m.Customer.id.in_({c.customer_id for c in cars if c.customer_id})
         )
     }
+    suppliers = (
+        {
+            s.id: s.name
+            for s in db.query(m.Supplier).filter(
+                m.Supplier.id.in_({c.supplier_id for c in cars if c.supplier_id})
+            )
+        }
+        if customer_id is not None
+        else {}
+    )
     rows = []
     for c in cars:
         history = sorted((d, km) for d, km in records.get(c.id, []) if d)
@@ -160,6 +181,10 @@ def fleet_metrics(db, sid):
             "inspection_date": c.inspection_date,
             "flags": [],
         }
+        if customer_id is not None:  # the customer's own view: who supplies it, who uses it
+            del row["customer"]
+            row["supplier"] = suppliers.get(c.supplier_id)
+            row["assigned_to"] = c.assignment_user
         recent = [(d, km) for d, km in history if d >= today - timedelta(days=90)]
         if len(recent) >= 2 and (recent[-1][0] - recent[0][0]).days >= 14:
             span = _months(recent[0][0], recent[-1][0])
@@ -215,6 +240,9 @@ def fleet_metrics(db, sid):
     return rows
 
 
+KEYS = ("customer", "supplier", "assigned_to")
+
+
 def fleet_overview(rows):
     def count(key):
         totals = {}
@@ -227,7 +255,8 @@ def fleet_overview(rows):
         "vehicle_count": len(rows),
         "by_status": count("status"),
         "by_segment": count("segment"),
-        "by_customer": count("customer"),
+        # supplier rows carry "customer"; customer rows carry "supplier" and "assigned_to"
+        **{f"by_{key}": count(key) for key in KEYS if any(key in r for r in rows)},
         "flag_counts": {
             flag: sum(1 for r in rows if flag in r["flags"])
             for flag in sorted({f for r in rows for f in r["flags"]})
@@ -302,8 +331,32 @@ Sana platformun hesapladığı metrikler JSON olarak verilecek. Kurallar:
 - "summary": filonun genel durumunu 2-3 cümleyle özetle."""
 
 
-def fleet_insights(db, ctx, force=False, trigger="manual"):
-    rows = fleet_metrics(db, ctx["id"])
+CUSTOMER_INSIGHT_SYSTEM = """Sen uzun dönem araç kiralayan bir şirketin filo danışmanısın.
+Şirketin filo yöneticisine, kiraladığı araçlar için maliyet ve verimlilik önerileri
+yazıyorsun. Yönetici soru sormayacak; öneriler kendi başına anlaşılır olmalı.
+
+Sana platformun hesapladığı metrikler JSON olarak verilecek. "supplier" aracı kiralayan
+tedarikçi, "assigned_to" aracı kullanan kişi veya birimdir. Kurallar:
+- Yalnızca verilen veriye dayan. Veride olmayan bir rakamı, tedarikçiyi, kişiyi veya plakayı
+  uydurma.
+- Her öneride ilgili plakaları "plates" alanına, verideki yazımıyla aynen yaz.
+- "rationale" alanında öneriyi hangi metriğe dayandırdığını rakamla göster
+  (ör. "Sözleşmenin 7. ayında 41.200 km; beklenen 29.000 km, oran 1,42").
+- Kiracının çıkarına somut aksiyon öner: sözleşme sonunda aşım ücreti doğmadan km paketini
+  tedarikçiyle revize etmek, çok km yapan ve az km yapan araçları kullanıcılar/birimler arasında
+  değiştirerek limitleri dengelemek, sürekli az kullanılan aracı iade etmek veya daha küçük
+  segmente geçmek, muayene/bakım tarihini kaçırmamak, bitmek üzere olan sözleşmeyi zamanında
+  yenilemek veya teklif toplamak.
+- Benzer durumdaki araçları tek öneride grupla. Aşım riski olan bir aracı düşük kullanılan bir
+  araçla eşleştiren değişim önerileri değerlidir.
+- "estimated_monthly_impact_try": yalnızca verideki kira/km değerlerinden makul bir aylık etki
+  hesaplayabiliyorsan TL olarak yaz; hesaplayamıyorsan 0 yaz.
+- En önemli en fazla 12 öneriyi önem sırasına göre ver. Türkçe, kısa ve net yaz.
+- "summary": filonun genel durumunu 2-3 cümleyle özetle."""
+
+
+def _analyse(db, rows, model, owner, system, force, trigger):
+    """Shared generation: cache by input hash/age, ask Claude, keep only known plates, store."""
     if not rows:
         raise HTTPException(400, "Analiz için aktif araç bulunmuyor.")
     flagged = sorted(
@@ -317,10 +370,7 @@ def fleet_insights(db, ctx, force=False, trigger="manual"):
     blob = json.dumps(data, ensure_ascii=False, sort_keys=True, default=str)
     digest = hashlib.sha256(blob.encode()).hexdigest()
     cached = (
-        db.query(m.SupplierAiInsight)
-        .filter_by(supplier_id=ctx["id"], kind="fleet")
-        .order_by(m.SupplierAiInsight.id.desc())
-        .first()
+        db.query(model).filter_by(kind="fleet", **owner).order_by(model.id.desc()).first()
     )
     if cached and not force:
         age = datetime.fromisoformat(stamp()) - datetime.fromisoformat(cached.created_at)
@@ -328,20 +378,20 @@ def fleet_insights(db, ctx, force=False, trigger="manual"):
             return insight_view(cached, rows)
     if not flagged:
         payload = {
-            "summary": "Kayıtlı verilerde km aşımı, düşük kullanım veya havuzda uzun bekleyen "
-            "araç görünmüyor.",
+            "summary": "Kayıtlı verilerde km aşımı, düşük kullanım veya yaklaşan bir tarih "
+            "görünmüyor.",
             "insights": [],
         }
         usage = {}
     else:
-        payload, usage = ask(INSIGHT_SYSTEM, blob, INSIGHT_SCHEMA, effort="medium")
+        payload, usage = ask(system, blob, INSIGHT_SCHEMA, effort="medium")
         usage = dict(usage)
         known = {r["plate"] for r in rows}
         for item in payload.get("insights", []):
             item["plates"] = [p for p in item.get("plates", []) if p in known]
     usage["trigger"] = trigger
-    row = m.SupplierAiInsight(
-        supplier_id=ctx["id"],
+    row = model(
+        **owner,
         kind="fleet",
         input_hash=digest,
         model=usage.get("model", MODEL),
@@ -352,6 +402,31 @@ def fleet_insights(db, ctx, force=False, trigger="manual"):
     db.add(row)
     db.commit()
     return insight_view(row, rows)
+
+
+def fleet_insights(db, ctx, force=False, trigger="manual"):
+    sid = ctx["id"]
+    return _analyse(
+        db,
+        fleet_metrics(db, sid),
+        m.SupplierAiInsight,
+        {"supplier_id": sid},
+        INSIGHT_SYSTEM,
+        force,
+        trigger,
+    )
+
+
+def customer_fleet_insights(db, customer_id, force=False, trigger="manual"):
+    return _analyse(
+        db,
+        fleet_metrics(db, customer_id=customer_id),
+        m.CustomerAiInsight,
+        {"customer_id": customer_id},
+        CUSTOMER_INSIGHT_SYSTEM,
+        force,
+        trigger,
+    )
 
 
 def insight_view(row, rows):

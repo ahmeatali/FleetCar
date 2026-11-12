@@ -8,7 +8,11 @@ const FLAG = 'fleetcar_impersonation'
 // Portal pages read the company id/name from localStorage to scope their requests
 // (e.g. /api/vehicles?customer_id=...), so impersonation must set them like a real login.
 const IDENTITY_KEYS = {
-  customer: { id: 'fleetcar_customer_id', name: 'fleetcar_customer_name' },
+  customer: {
+    id: 'fleetcar_customer_id',
+    name: 'fleetcar_customer_name',
+    role: 'fleetcar_user_role',
+  },
   supplier: { id: 'fleetcar_supplier_id', name: 'fleetcar_supplier_name' },
 }
 
@@ -37,6 +41,11 @@ export async function startImpersonation(portal, subjectId, userId = null, stora
     storage.setItem(idKeys.id, String(data.subject_id))
     storage.setItem(idKeys.name, data.subject_name || '')
     setKeys.push(idKeys.id, idKeys.name)
+    if (idKeys.role) {
+      // the support session is the company's owner session
+      storage.setItem(idKeys.role, 'owner')
+      setKeys.push(idKeys.role)
+    }
   }
   storage.setItem(
     FLAG,

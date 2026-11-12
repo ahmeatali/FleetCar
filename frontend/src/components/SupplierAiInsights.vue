@@ -1,11 +1,12 @@
 <template>
-  <section class="sw-card ai-card">
+  <section v-if="!hidden" class="sw-card ai-card">
     <div class="ai-head">
       <div>
         <h2><span class="ai-spark" aria-hidden="true">✦</span> AI Filo Önerileri</h2>
         <p class="ai-muted">
-          Filonuz her sabah 06:00'da km, sözleşme ve kullanım verilerine göre otomatik analiz
-          edilir; öneriler hangi rakama dayandığıyla birlikte gösterilir.
+          {{ isCustomer ? 'Kiraladığınız araçlar' : 'Filonuz' }} her sabah 06:00'da km, sözleşme ve
+          kullanım verilerine göre otomatik analiz edilir; öneriler hangi rakama dayandığıyla
+          birlikte gösterilir.
         </p>
       </div>
       <div class="ai-actions">
@@ -16,7 +17,7 @@
         <button
           v-if="canRun"
           type="button"
-          :class="['sw-button', { primary: !result }]"
+          :class="['sw-button', 'ai-btn', { primary: !result }]"
           :disabled="busy"
           @click="run(Boolean(result))"
         >
@@ -102,13 +103,22 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { UiAlert } from './ui/index.js'
 import { supplierApi } from '../utils/supplierApi'
+import { apiRequest } from '../api/http.js'
 import { formatMoney } from '../utils/formatters.js'
 
 const props = defineProps({
   role: { type: String, default: 'viewer' },
   vehicles: { type: Array, default: () => [] },
   compact: { type: Boolean, default: false },
+  // "supplier": the rental company's own fleet; "customer": the vehicles a customer rents
+  portal: { type: String, default: 'supplier' },
 })
+const isCustomer = computed(() => props.portal === 'customer')
+function api(query = '', options = {}) {
+  return isCustomer.value
+    ? apiRequest(`/api/customer/reports/ai-insights${query}`, { account: 'customer', ...options })
+    : supplierApi(`/ai/fleet-insights${query}`, options)
+}
 const COMPACT_COUNT = 3
 const result = ref(null),
   busy = ref(false),
@@ -116,11 +126,14 @@ const result = ref(null),
   loaded = ref(false),
   filter = ref('all'),
   expanded = reactive({}),
-  expandedAll = ref(false)
+  expandedAll = ref(false),
+  hidden = ref(false)
 const showAll = computed(() => !props.compact || expandedAll.value)
 
 const canRun = computed(() =>
-  ['owner', 'fleet_manager', 'operations', 'finance'].includes(props.role),
+  isCustomer.value
+    ? !['Görüntüleyici', 'Sürücü'].includes(props.role)
+    : ['owner', 'fleet_manager', 'operations', 'finance'].includes(props.role),
 )
 const severityLabels = { yuksek: 'Yüksek', orta: 'Orta', dusuk: 'Düşük' }
 const typeLabels = {
@@ -170,13 +183,15 @@ const when = (v) =>
   })
 const plateLink = (plate) => {
   const v = byPlate.value[plate]
-  return v ? `/supplier-portal/vehicles/${encodeURIComponent(v.id)}` : '/supplier-portal/vehicles'
+  const base = isCustomer.value ? '/dashboard/vehicles' : '/supplier-portal/vehicles'
+  return v ? `${base}/${encodeURIComponent(v.id)}` : base
 }
 function metricText(plate) {
   const m = result.value?.metrics?.[plate]
   if (!m) return plate
   return [
-    m.customer,
+    m.customer || m.supplier,
+    m.assigned_to,
     m.usage_ratio != null ? `Kullanım oranı ${m.usage_ratio}` : null,
     m.projected_overage_km != null ? `Projeksiyon farkı ${m.projected_overage_km} km` : null,
     m.idle_days != null ? `${m.idle_days} gündür havuzda` : null,
@@ -187,9 +202,11 @@ function metricText(plate) {
 
 async function load() {
   try {
-    result.value = await supplierApi('/ai/fleet-insights')
+    result.value = await api()
   } catch (e) {
-    error.value = e.message
+    if (e.status === 403)
+      hidden.value = true // e.g. drivers: the panel is not for them
+    else error.value = e.message
   } finally {
     loaded.value = true
   }
@@ -198,9 +215,7 @@ async function run(force) {
   busy.value = true
   error.value = ''
   try {
-    result.value = await supplierApi(`/ai/fleet-insights${force ? '?force=true' : ''}`, {
-      method: 'POST',
-    })
+    result.value = await api(force ? '?force=true' : '', { method: 'POST' })
     filter.value = 'all'
   } catch (e) {
     error.value = e.message
@@ -212,9 +227,14 @@ onMounted(load)
 </script>
 
 <style scoped>
+/* Self-contained so the panel also looks right on pages without the workspace CSS. */
 .ai-card {
   display: grid;
   gap: 12px;
+  border: 1px solid #dfe6ff;
+  border-radius: 7px;
+  padding: 18px;
+  min-width: 0;
   border-color: #dfe6ff;
   background: linear-gradient(180deg, #f7f8ff 0, white 120px);
 }
@@ -225,7 +245,33 @@ onMounted(load)
   align-items: flex-start;
   flex-wrap: wrap;
 }
+.ai-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dfe9f4;
+  border-radius: 5px;
+  background: white;
+  color: #1b4889;
+  font: inherit;
+  font-size: 11px;
+  min-height: 34px;
+  padding: 0 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.ai-btn.primary {
+  color: white;
+  background: #0064ff;
+  border-color: #0064ff;
+}
+.ai-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
 .ai-head h2 {
+  font-size: 14px;
+  color: #062464;
   margin: 0 0 4px;
   display: flex;
   gap: 8px;
