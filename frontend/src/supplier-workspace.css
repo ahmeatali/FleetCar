@@ -58,7 +58,7 @@
 .sw-profile small {
   display: block;
   color: #617da6;
-  font-size: 10px;
+  font-size: 11px;
   margin-top: 4px;
 }
 .sw-notification {
@@ -78,7 +78,7 @@
   position: absolute;
   top: -2px;
   right: -4px;
-  font-size: 9px;
+  font-size: 11px;
   background: #ff4c60;
   color: white;
   border-radius: 20px;
@@ -219,7 +219,7 @@
   color: #1592a3;
 }
 .sw-kpi small {
-  font-size: 10px;
+  font-size: 11px;
   color: #60769c;
 }
 .sw-kpi strong {
@@ -231,7 +231,7 @@
   overflow-wrap: anywhere;
 }
 .sw-kpi em {
-  font-size: 9px;
+  font-size: 11px;
   color: #788cac;
   display: block;
   font-style: normal;
@@ -264,12 +264,12 @@
   margin: 0;
 }
 .sw-card-heading a {
-  font-size: 10px;
+  font-size: 11px;
   color: #0064ff;
   text-decoration: none;
 }
 .sw-card-heading small {
-  font-size: 10px;
+  font-size: 11px;
   color: #8495ad;
 }
 .sw-dashboard-grid {
@@ -316,7 +316,7 @@
   color: #092260;
 }
 .sw-donut small {
-  font-size: 10px;
+  font-size: 11px;
 }
 .sw-distribution > div:last-child {
   flex: 1;
@@ -364,7 +364,7 @@
   border-radius: 2px 2px 0 0;
 }
 .sw-bar-group small {
-  font-size: 8px;
+  font-size: 11px;
   margin: 6px 0;
   color: #8394af;
 }
@@ -372,7 +372,7 @@
   display: flex;
   gap: 18px;
   justify-content: center;
-  font-size: 10px;
+  font-size: 11px;
   color: #6d82a5;
   margin-top: 12px;
 }
@@ -399,7 +399,7 @@
   border-radius: 4px;
 }
 .sw-muted {
-  font-size: 10px;
+  font-size: 11px;
   color: #7d8faa;
   line-height: 1.6;
 }
@@ -432,7 +432,7 @@
 .sw-event-row small {
   display: block;
   color: #8396b3;
-  font-size: 9px;
+  font-size: 11px;
   margin-top: 4px;
 }
 .sw-upcoming {
@@ -457,12 +457,12 @@
   display: block;
 }
 .sw-upcoming small {
-  font-size: 9px;
+  font-size: 11px;
   color: #8093ad;
   margin-top: 4px;
 }
 .sw-upcoming b {
-  font-size: 9px;
+  font-size: 11px;
   color: #c98523;
   background: #fff2dd;
   padding: 4px 7px;
@@ -482,7 +482,7 @@
   border: 1px solid #e5edf6;
   padding: 10px 3px;
   border-radius: 5px;
-  font-size: 9px;
+  font-size: 11px;
   text-decoration: none;
   color: #26487d;
   gap: 8px;
@@ -496,7 +496,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 10px;
+  font-size: 11px;
   margin: 16px 0;
   position: relative;
 }
@@ -547,7 +547,7 @@
   background: none;
   color: #58729d;
   border-radius: 5px;
-  font-size: 10px;
+  font-size: 11px;
   white-space: nowrap;
   padding: 8px 12px;
   cursor: pointer;
@@ -561,7 +561,7 @@
   padding: 2px 5px;
   background: #eaf2ff;
   color: #0064ff;
-  font-size: 9px;
+  font-size: 11px;
   margin-left: 5px;
 }
 .sw-status-tabs .active b {
@@ -581,7 +581,7 @@
 .sw-detailed-report-filters label {
   flex: 1;
   min-width: 90px;
-  font-size: 10px;
+  font-size: 11px;
   color: #7285a5;
   display: flex;
   flex-direction: column;
@@ -631,7 +631,7 @@
 .sw-table {
   border-collapse: collapse;
   width: 100%;
-  font-size: 10px;
+  font-size: 11px;
   white-space: nowrap;
 }
 .sw-table th {
@@ -650,7 +650,7 @@
 .sw-table td small {
   display: block;
   color: #8b9bb4;
-  font-size: 9px;
+  font-size: 11px;
   margin-top: 4px;
   max-width: 150px;
   overflow: hidden;
@@ -684,7 +684,7 @@
   justify-content: space-between;
   gap: 10px;
   padding: 15px 12px;
-  font-size: 10px;
+  font-size: 11px;
   color: #6e87a9;
 }
 .sw-table-footer > div {
@@ -708,7 +708,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 9px;
+  font-size: 11px;
   background: #edf3fc;
   color: #2676e1;
   padding: 4px 7px;
@@ -764,11 +764,11 @@
 .sw-detail-vehicle small {
   color: #7d94b4;
   width: 100%;
-  font-size: 10px;
+  font-size: 11px;
 }
 .sw-detail-vehicle a {
   color: #0064ff;
-  font-size: 10px;
+  font-size: 11px;
   margin-left: auto;
   text-decoration: none;
 }
@@ -780,7 +780,7 @@
 }
 .sw-detail-tabs button {
   font: inherit;
-  font-size: 10px;
+  font-size: 11px;
   padding: 9px 2px;
   border: 0;
   border-bottom: 2px solid transparent;
@@ -799,7 +799,7 @@
   display: grid;
   grid-template-columns: 110px minmax(0, 1fr);
   gap: 10px;
-  font-size: 10px;
+  font-size: 11px;
   padding: 8px 0;
   border-bottom: 1px solid #f0f4f9;
 }
@@ -830,7 +830,7 @@
 }
 .sw-detail-metrics small {
   display: block;
-  font-size: 10px;
+  font-size: 11px;
   color: #7790b2;
 }
 .sw-detail-metrics strong {
@@ -840,7 +840,7 @@
   margin-top: 5px;
 }
 .sw-check-preview p {
-  font-size: 10px;
+  font-size: 11px;
   color: #338b69;
 }
 .sw-related {
@@ -855,7 +855,7 @@
 }
 .sw-related span {
   color: #7c91b3;
-  font-size: 10px;
+  font-size: 11px;
 }
 .sw-detail-line {
   display: flex;
@@ -885,7 +885,7 @@
   cursor: pointer;
 }
 .sw-scenarios p {
-  font-size: 10px;
+  font-size: 11px;
   color: #8094b0;
   line-height: 1.6;
 }
@@ -1146,7 +1146,7 @@
     font-size: 20px;
   }
   .sw-kpi small {
-    font-size: 9px;
+    font-size: 11px;
   }
   .sw-kpi-icon {
     width: 30px;
@@ -1226,7 +1226,7 @@
     width: 11px;
   }
   .sw-bar-group small {
-    font-size: 7px;
+    font-size: 11px;
   }
 }
 @media print {

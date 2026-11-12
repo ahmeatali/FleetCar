@@ -219,7 +219,7 @@ async function logout() {
   color: #061d63;
 }
 .pm-head small {
-  font-size: 10px;
+  font-size: 11px;
   color: #7587a6;
   overflow-wrap: anywhere;
 }

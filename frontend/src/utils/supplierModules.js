@@ -36,7 +36,7 @@ export const supplierModules = {
     kind: 'rental',
     readonly: true,
     description:
-      'Araç bazında teslimat, iade ve müşteri atamaları, müşteri atamaları ve kiralama bitişlerini takip edin.',
+      'Araç bazında teslimat, iade, müşteri atamaları ve kiralama bitişlerini takip edin.',
   },
   maintenance: {
     label: 'Bakım Önerileri',

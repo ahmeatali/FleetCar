@@ -1307,7 +1307,7 @@ a:focus-visible {
   white-space: nowrap;
 }
 .comparison {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--muted);
 }
 .increase {
@@ -1339,7 +1339,7 @@ h2 {
   gap: 14px;
   flex-wrap: wrap;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 .chart-legend span,
 .map-legend span {
@@ -1383,7 +1383,7 @@ i.gray-dot,
   min-height: 180px;
 }
 .spending-chart svg text {
-  font-size: 10px;
+  font-size: 11px;
   fill: #6983a6;
 }
 .distribution-content {
@@ -1430,7 +1430,7 @@ i.gray-dot,
   align-items: center;
   gap: 6px;
   margin: 16px 0;
-  font-size: 10px;
+  font-size: 11px;
 }
 .distribution li span {
   flex: 1;
@@ -1450,7 +1450,7 @@ i.gray-dot,
 }
 .panel-title select {
   max-width: 105px;
-  font-size: 10px;
+  font-size: 11px;
   padding: 5px;
   min-height: 28px;
 }
@@ -1473,7 +1473,7 @@ i.gray-dot,
   padding: 5px;
   background: #fff;
   white-space: nowrap;
-  font-size: 10px;
+  font-size: 11px;
   color: #3b638e;
 }
 .map-locations button.active {
@@ -1488,7 +1488,7 @@ i.gray-dot,
   margin-top: 10px;
 }
 .data-note {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--muted);
   line-height: 1.5;
   margin: 8px 0;
@@ -1509,7 +1509,7 @@ table {
   width: 100%;
   border-collapse: collapse;
   white-space: nowrap;
-  font-size: 10px;
+  font-size: 11px;
 }
 th,
 td {
@@ -1520,7 +1520,7 @@ td {
 th {
   background: #f4f9ff;
   color: #617da3;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
 }
 td {
@@ -1530,7 +1530,7 @@ td small {
   display: block;
   margin-top: 5px;
   color: #5484bd;
-  font-size: 9px;
+  font-size: 11px;
 }
 a {
   color: inherit;
@@ -1541,7 +1541,7 @@ a {
   color: #267ce0;
   background: #f8fcff;
   border-radius: 4px;
-  font-size: 10px;
+  font-size: 11px;
   padding: 4px 8px;
 }
 .table-footer {
@@ -1551,7 +1551,7 @@ a {
   padding: 12px;
   gap: 10px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 .pagination {
   display: flex;
@@ -1593,7 +1593,7 @@ a {
   border-radius: 50%;
   color: #fff;
   background: #3285e8;
-  font-size: 10px;
+  font-size: 11px;
 }
 .ranking li:first-child .rank-number {
   background: #ee5770;
@@ -1622,17 +1622,17 @@ a {
 .ranking li > div {
   flex: 1;
   min-width: 0;
-  font-size: 10px;
+  font-size: 11px;
 }
 .ranking small {
   display: block;
-  font-size: 9px;
+  font-size: 11px;
   color: var(--muted);
   margin-top: 4px;
 }
 .rank-value {
   text-align: right;
-  font-size: 9px;
+  font-size: 11px;
   white-space: nowrap;
 }
 .rank-track {
@@ -1666,7 +1666,7 @@ a {
   display: block;
 }
 .fuel-insights small {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--muted);
   line-height: 1.6;
 }
@@ -1913,7 +1913,7 @@ td.empty {
     max-width: none !important;
     padding: 0;
     background: #fff;
-    font-size: 10px;
+    font-size: 11px;
   }
   .fuel-charts {
     grid-template-columns: 1fr 1fr;
@@ -1941,7 +1941,7 @@ td.empty {
   }
   table {
     white-space: normal;
-    font-size: 9px;
+    font-size: 11px;
   }
   .fuel-insights {
     margin-top: 14px;

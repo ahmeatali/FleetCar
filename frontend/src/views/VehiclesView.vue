@@ -2007,7 +2007,7 @@ onMounted(() => {
 }
 .fleet-account small {
   color: var(--fleet-muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 .fleet-avatar {
   display: grid;
@@ -2017,7 +2017,7 @@ onMounted(() => {
   border-radius: 50%;
   background: #1c70dc;
   color: white;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
 }
 .fleet-heading {
@@ -2034,11 +2034,11 @@ onMounted(() => {
 }
 .fleet-heading p {
   color: var(--fleet-muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 .fleet-eyebrow {
   color: #91a1b5;
-  font-size: 8px;
+  font-size: 11px;
   font-weight: 750;
   letter-spacing: 0.1em;
 }
@@ -2062,7 +2062,7 @@ onMounted(() => {
   background: white;
   color: #47617f;
   padding: 7px 10px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 650;
   cursor: pointer;
   white-space: nowrap;
@@ -2136,7 +2136,7 @@ onMounted(() => {
 }
 .fleet-stat small {
   color: var(--fleet-muted);
-  font-size: 9px;
+  font-size: 11px;
   white-space: nowrap;
 }
 .fleet-stat strong {
@@ -2146,7 +2146,7 @@ onMounted(() => {
 .fleet-stat em {
   margin-left: 5px;
   color: #1aa578;
-  font-size: 8px;
+  font-size: 11px;
   font-style: normal;
   font-weight: 600;
 }
@@ -2288,7 +2288,7 @@ onMounted(() => {
 }
 .fleet-plate::before {
   width: 11px;
-  font-size: 6px;
+  font-size: 11px;
 }
 .fleet-vehicle-cell {
   display: flex;
@@ -2306,7 +2306,7 @@ onMounted(() => {
 }
 .fleet-vehicle-cell small {
   color: #708399;
-  font-size: 10px;
+  font-size: 11px;
 }
 .fleet-car-thumb {
   display: grid;
@@ -2360,7 +2360,7 @@ onMounted(() => {
 .fleet-status {
   padding: 3px 6px;
   border-radius: 20px;
-  font-size: 10px;
+  font-size: 11px;
   text-transform: none;
   white-space: nowrap;
 }
@@ -2388,7 +2388,7 @@ onMounted(() => {
   gap: 10px;
   padding: 6px 10px;
   color: #8696a8;
-  font-size: 8px;
+  font-size: 11px;
 }
 .fleet-pagination {
   display: flex;
@@ -2403,7 +2403,7 @@ onMounted(() => {
   background: white;
   color: #657b94;
   cursor: pointer;
-  font-size: 9px;
+  font-size: 11px;
 }
 .fleet-pagination button.current {
   background: #1467e9;
@@ -2459,7 +2459,7 @@ onMounted(() => {
 .fleet-detail-subtitle {
   margin-top: 2px;
   color: #667e99;
-  font-size: 9px;
+  font-size: 11px;
 }
 .fleet-specs {
   display: flex;
@@ -2468,7 +2468,7 @@ onMounted(() => {
   padding: 9px 0;
   border-bottom: 1px solid #eef2f7;
   color: #627790;
-  font-size: 8px;
+  font-size: 11px;
 }
 .fleet-info-section {
   padding: 10px 0;
@@ -2476,13 +2476,13 @@ onMounted(() => {
 }
 .fleet-info-section h4 {
   margin-bottom: 8px;
-  font-size: 9px;
+  font-size: 11px;
 }
 .fleet-info-section dl {
   display: grid;
   grid-template-columns: minmax(92px, 0.8fr) 1.2fr;
   gap: 6px 8px;
-  font-size: 8px;
+  font-size: 11px;
 }
 .fleet-info-section dt {
   color: #8494a7;
@@ -2502,7 +2502,7 @@ onMounted(() => {
   border: 0;
   background: none;
   color: #1567dd;
-  font-size: 8px;
+  font-size: 11px;
   cursor: pointer;
 }
 .fleet-quick-grid {
@@ -2521,7 +2521,7 @@ onMounted(() => {
   color: #49627f;
   padding: 4px 5px;
   text-align: left;
-  font-size: 7px;
+  font-size: 11px;
   cursor: pointer;
 }
 .fleet-quick-grid button:hover {
@@ -2552,13 +2552,13 @@ onMounted(() => {
 }
 .fleet-history li strong {
   color: #405978;
-  font-size: 8px;
+  font-size: 11px;
 }
 .fleet-history li small,
 .fleet-history li p {
   margin: 0;
   color: #8797a9;
-  font-size: 7px;
+  font-size: 11px;
 }
 .fleet-history-dot {
   position: absolute;
@@ -2581,7 +2581,7 @@ onMounted(() => {
 }
 .fleet-history-empty {
   color: #8797a9;
-  font-size: 8px;
+  font-size: 11px;
 }
 .fleet-detail-footer {
   display: flex;
@@ -2597,7 +2597,7 @@ onMounted(() => {
   color: #46617f;
   padding: 7px 4px;
   border-radius: 5px;
-  font-size: 8px;
+  font-size: 11px;
   cursor: pointer;
 }
 .fleet-no-selection {
@@ -2614,10 +2614,10 @@ onMounted(() => {
   font-size: 36px;
 }
 .fleet-no-selection strong {
-  font-size: 10px;
+  font-size: 11px;
 }
 .fleet-no-selection p {
-  font-size: 9px;
+  font-size: 11px;
 }
 .fleet-workspace:has(.fleet-no-selection) .fleet-no-selection {
   display: none;
@@ -2646,7 +2646,7 @@ onMounted(() => {
 .fleet-map-card p {
   margin-top: 8px;
   color: #75879b;
-  font-size: 9px;
+  font-size: 11px;
 }
 
 @media (max-width: 1350px) {
@@ -2767,7 +2767,7 @@ onMounted(() => {
   width: 14px;
   background: #003399;
   color: #fff;
-  font-size: 0.5rem;
+  font-size: 0.6875rem;
   font-family: var(--font-sans);
   font-weight: 700;
   display: flex;

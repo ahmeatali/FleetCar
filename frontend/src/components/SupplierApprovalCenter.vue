@@ -848,7 +848,7 @@ async function saveMatrix() {
   box-shadow: 0 0 0 1px #0064ff inset;
 }
 .ac-kpi small {
-  font-size: 10px;
+  font-size: 11px;
   color: #60769c;
 }
 .ac-kpi strong {
@@ -859,7 +859,7 @@ async function saveMatrix() {
 }
 .ac-kpi em {
   display: block;
-  font-size: 9px;
+  font-size: 11px;
   font-style: normal;
   color: #788cac;
   overflow-wrap: anywhere;
@@ -960,7 +960,7 @@ async function saveMatrix() {
 .ac-history td small {
   display: block;
   color: #7f91ad;
-  font-size: 10px;
+  font-size: 11px;
 }
 .ac-table tbody tr {
   cursor: pointer;
@@ -973,7 +973,7 @@ async function saveMatrix() {
 }
 .ac-type {
   display: inline-block;
-  font-size: 10px;
+  font-size: 11px;
   padding: 3px 8px;
   border-radius: 5px;
   background: #eaf2ff;
@@ -1002,7 +1002,7 @@ async function saveMatrix() {
   color: #138a65;
 }
 .ac-priority {
-  font-size: 10px;
+  font-size: 11px;
   padding: 3px 8px;
   border-radius: 10px;
 }
@@ -1055,7 +1055,7 @@ async function saveMatrix() {
   color: white;
 }
 .ac-waiting {
-  font-size: 10px;
+  font-size: 11px;
   color: #8a9ab3;
 }
 .ac-bulk {
@@ -1095,7 +1095,7 @@ async function saveMatrix() {
   color: #061d63;
 }
 .ac-donut small {
-  font-size: 9px;
+  font-size: 11px;
   color: #7587a6;
 }
 .ac-summary ul {
@@ -1197,7 +1197,7 @@ async function saveMatrix() {
   font-weight: 700;
 }
 .ac-urgent small {
-  font-size: 10px;
+  font-size: 11px;
   color: #c9304a;
 }
 .ac-bottom {
@@ -1282,14 +1282,14 @@ async function saveMatrix() {
 .ac-steps em {
   font-style: normal;
   font-weight: 400;
-  font-size: 10px;
+  font-size: 11px;
   color: #7f91ad;
   margin-left: 4px;
 }
 .ac-steps small {
   display: block;
   color: #7f91ad;
-  font-size: 10px;
+  font-size: 11px;
 }
 .ac-note {
   color: #4c6690 !important;
@@ -1303,7 +1303,7 @@ async function saveMatrix() {
   white-space: nowrap;
 }
 .ac-status {
-  font-size: 10px;
+  font-size: 11px;
   padding: 3px 8px;
   border-radius: 10px;
 }

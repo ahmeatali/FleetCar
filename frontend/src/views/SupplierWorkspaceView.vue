@@ -953,13 +953,30 @@
                       </tr>
                       <tr v-if="!pagedRows.length">
                         <td :colspan="8 + extraColumns.length" class="sw-empty">
-                          {{ loading ? 'Yükleniyor…' : 'Bu filtrelere uygun kayıt bulunamadı.'
-                          }}<br /><UiButton
-                            v-if="canCreate"
-                            class="sw-button primary"
-                            @click="openCreate"
-                            >{{ cfg.create }}</UiButton
-                          >
+                          <template v-if="loading">Yükleniyor…</template>
+                          <template v-else-if="hasActiveFilters">
+                            Bu filtrelere uygun kayıt bulunamadı.<br /><UiButton
+                              class="sw-button"
+                              @click="clearFilters"
+                              >Filtreleri Temizle</UiButton
+                            >
+                          </template>
+                          <template v-else-if="assignedWithoutRental.length">
+                            Müşteriye atanmış {{ assignedWithoutRental.length }} araç var, ancak
+                            bunların kiralama kaydı yok (ör. toplu yüklemeyle eklenenler).<br />
+                            Kiralama kaydı, araç müşteriye teslim edildiğinde oluşur.<br />
+                            <router-link class="sw-button primary" to="/supplier-portal/deliveries"
+                              >Teslimat Planla</router-link
+                            >
+                          </template>
+                          <template v-else>
+                            Bu bölümde henüz kayıt yok.<br /><UiButton
+                              v-if="canCreate"
+                              class="sw-button primary"
+                              @click="openCreate"
+                              >{{ cfg.create }}</UiButton
+                            >
+                          </template>
                         </td>
                       </tr>
                     </tbody>
@@ -1765,6 +1782,22 @@ const rows = computed(() => {
       ? (data.value.fuel || []).filter((r) => r.details.kind === 'Yakıt')
       : data.value[section.value] || []
   return data.value.records.filter((r) => r.kind === cfg.value.kind)
+})
+const hasActiveFilters = computed(() =>
+  Object.values(filters).some((value) => String(value ?? '').trim()),
+)
+// Vehicles count as "Kira" once assigned to a customer, but a rental record only exists after
+// delivery; surface the gap instead of an unexplained empty list.
+const assignedWithoutRental = computed(() => {
+  if (section.value !== 'rentals' || !data.value) return []
+  const open = new Set(
+    (data.value.rentals || [])
+      .filter((r) => !['Tamamlandı', 'İptal'].includes(r.status))
+      .map((r) => r.vehicle_id),
+  )
+  return (data.value.vehicles || []).filter(
+    (v) => v.customer_id && v.is_active !== false && !open.has(v.id),
+  )
 })
 const extraColumns = computed(
   () =>

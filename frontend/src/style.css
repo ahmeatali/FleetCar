@@ -924,47 +924,6 @@ h6 {
   gap: 8px;
 }
 
-.partner-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
-  padding: 18px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  transition: all 0.25s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-}
-
-.partner-card:hover {
-  transform: translateY(-3px);
-  border-color: #cbd5e1;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-}
-
-.partner-badge {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 0.95rem;
-}
-
-.partner-info h4 {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #0f172a;
-  margin-bottom: 2px;
-}
-
-.partner-info p {
-  font-size: 0.78rem;
-  color: #64748b;
-}
-
 /* Shared customer workspace visual language */
 .portal-layout,
 .tire-app,
@@ -1322,28 +1281,13 @@ h6 {
     padding: 54px 18px !important;
   }
 
-  #partners .text-center {
-    margin-bottom: 26px !important;
-  }
-  #partners h2,
   .container h2 {
     font-size: clamp(1.75rem, 8vw, 2.2rem) !important;
   }
-  #partners .text-center p {
-    font-size: 0.95rem !important;
-    line-height: 1.6;
-  }
-
   .grid-2,
   .grid-3,
   .grid-4 {
     grid-template-columns: minmax(0, 1fr) !important;
-  }
-
-  .partner-card {
-    width: 100%;
-    min-height: 72px;
-    padding: 14px;
   }
 }
 
@@ -1441,41 +1385,6 @@ h6 {
   font-size: 0.88rem;
   color: #94a3b8;
   line-height: 1.5;
-}
-
-.testimonial-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 28px;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.testimonial-stars {
-  color: #f59e0b;
-  font-size: 1rem;
-  margin-bottom: 16px;
-}
-
-.testimonial-text {
-  font-size: 0.92rem;
-  color: #334155;
-  line-height: 1.6;
-  margin-bottom: 20px;
-}
-
-.testimonial-author h5 {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.testimonial-author p {
-  font-size: 0.8rem;
-  color: #64748b;
 }
 
 .dark-footer {

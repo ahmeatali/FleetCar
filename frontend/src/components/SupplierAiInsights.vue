@@ -383,7 +383,7 @@ onMounted(load)
 }
 .ai-sev,
 .ai-type {
-  font-size: 10px;
+  font-size: 11px;
   padding: 2px 8px;
   border-radius: 10px;
   background: #eef1f6;
@@ -426,7 +426,7 @@ onMounted(load)
 .ai-plates a,
 .ai-plates button {
   font: inherit;
-  font-size: 10.5px;
+  font-size: 11px;
   padding: 2px 7px;
   border-radius: 4px;
   border: 1px solid #d5deeb;

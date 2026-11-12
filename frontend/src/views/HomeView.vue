@@ -10,18 +10,8 @@
       </router-link>
 
       <ul class="nav-links" :class="{ 'nav-links--open': mobileMenuOpen }">
-        <li>
-          <a href="#vehicles" class="nav-link" style="color: #475569"
-            >Araçlar <span style="font-size: 0.75rem">▼</span></a
-          >
-        </li>
-        <li><a href="#compare" class="nav-link" style="color: #475569">Karşılaştır</a></li>
-        <li>
-          <a href="#ai-assistant" class="nav-link" style="color: #475569; font-weight: 600"
-            >✨ AI Asistan</a
-          >
-        </li>
-        <li><a href="#partners" class="nav-link" style="color: #475569">Kurumsal</a></li>
+        <li><a href="#features" class="nav-link" style="color: #475569">Özellikler</a></li>
+        <li><a href="#how-it-works" class="nav-link" style="color: #475569">Nasıl Çalışır?</a></li>
         <li><a href="#contact" class="nav-link" style="color: #475569">İletişim</a></li>
       </ul>
 
@@ -75,8 +65,8 @@
         </h1>
 
         <p class="hero-dark-subtitle">
-          150+ tedarikçiyi anında karşılaştırın. AI asistanımız size en uygun aracı ve en iyi fiyatı
-          bulsun. Ücretsiz, hızlı, güvenilir.
+          Tedarikçilerden gelen teklifleri tek ekranda karşılaştırın. AI asistanımız ihtiyacınıza
+          uygun aracı ve teklifi bulmanıza yardım etsin. Teklif almak ücretsizdir.
         </p>
 
         <div style="display: flex; justify-content: center; gap: 16px; flex-wrap: wrap">
@@ -113,159 +103,27 @@
         <!-- Trust Badges Row -->
         <div class="trust-badges-row">
           <div class="trust-badge-item">
-            <span>🛡️</span>
-            <span>SSL Güvenli Ödeme</span>
+            <span>🔒</span>
+            <span>Güvenli Bağlantı</span>
           </div>
           <div class="trust-badge-item">
-            <span>🕒</span>
-            <span>7/24 Müşteri Desteği</span>
+            <span>⚖️</span>
+            <span>Teklifleri Karşılaştırma</span>
           </div>
           <div class="trust-badge-item">
-            <span>📉</span>
-            <span>En İyi Fiyat Garantisi</span>
+            <span>✨</span>
+            <span>AI Destekli Öneriler</span>
           </div>
           <div class="trust-badge-item">
-            <span>👥</span>
-            <span>150+ Tedarikçi</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- SECTION 2: İŞ ORTAKLARIMIZ -->
-    <section id="partners" class="container" style="padding: 80px 20px">
-      <div class="text-center" style="margin-bottom: 48px">
-        <span
-          style="
-            font-size: 0.8rem;
-            font-weight: 700;
-            color: #2563eb;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-          "
-          >GÜVENİLİR AĞIMIZ</span
-        >
-        <h2 style="font-size: 2.4rem; font-weight: 800; color: #0f172a; margin: 8px 0 12px">
-          İş Ortaklarımız
-        </h2>
-        <p style="color: #64748b; font-size: 1.05rem">
-          Türkiye'nin önde gelen otomotiv ve kiralama markaları ile güçlü iş birliği içindeyiz.
-        </p>
-      </div>
-
-      <div class="grid-4" style="gap: 20px">
-        <!-- Partner 1 -->
-        <div class="partner-card">
-          <div class="partner-badge" style="background: #fee2e2; color: #dc2626">TT</div>
-          <div class="partner-info">
-            <h4>Toyota Türkiye</h4>
-            <p>Otomobil</p>
-          </div>
-        </div>
-
-        <!-- Partner 2 -->
-        <div class="partner-card">
-          <div class="partner-badge" style="background: #dbeafe; color: #2563eb">VW</div>
-          <div class="partner-info">
-            <h4>Volkswagen</h4>
-            <p>Otomobil</p>
-          </div>
-        </div>
-
-        <!-- Partner 3 -->
-        <div class="partner-card">
-          <div class="partner-badge" style="background: #f3e8ff; color: #7c3aed">MB</div>
-          <div class="partner-info">
-            <h4>Mercedes-Benz</h4>
-            <p>Premium</p>
-          </div>
-        </div>
-
-        <!-- Partner 4 -->
-        <div class="partner-card">
-          <div class="partner-badge" style="background: #e0e7ff; color: #4338ca">FD</div>
-          <div class="partner-info">
-            <h4>Ford Türkiye</h4>
-            <p>Ticari & Otomobil</p>
-          </div>
-        </div>
-
-        <!-- Partner 5 -->
-        <div class="partner-card">
-          <div class="partner-badge" style="background: #e0f2fe; color: #0284c7">HY</div>
-          <div class="partner-info">
-            <h4>Hyundai</h4>
-            <p>Otomobil</p>
-          </div>
-        </div>
-
-        <!-- Partner 6 -->
-        <div class="partner-card">
-          <div class="partner-badge" style="background: #f1f5f9; color: #334155">BM</div>
-          <div class="partner-info">
-            <h4>BMW Group</h4>
-            <p>Premium</p>
-          </div>
-        </div>
-
-        <!-- Partner 7 -->
-        <div class="partner-card">
-          <div class="partner-badge" style="background: #fef9c3; color: #ca8a04">RN</div>
-          <div class="partner-info">
-            <h4>Renault Türkiye</h4>
-            <p>Otomobil</p>
-          </div>
-        </div>
-
-        <!-- Partner 8 -->
-        <div class="partner-card">
-          <div class="partner-badge" style="background: #ffedd5; color: #ea580c">AB</div>
-          <div class="partner-info">
-            <h4>Avis Budget</h4>
-            <p>Kiralama</p>
-          </div>
-        </div>
-
-        <!-- Partner 9 -->
-        <div class="partner-card">
-          <div class="partner-badge" style="background: #fef3c7; color: #d97706">HZ</div>
-          <div class="partner-info">
-            <h4>Hertz Türkiye</h4>
-            <p>Kiralama</p>
-          </div>
-        </div>
-
-        <!-- Partner 10 -->
-        <div class="partner-card">
-          <div class="partner-badge" style="background: #dcfce7; color: #16a34a">GR</div>
-          <div class="partner-info">
-            <h4>Garenta</h4>
-            <p>Kiralama</p>
-          </div>
-        </div>
-
-        <!-- Partner 11 -->
-        <div class="partner-card">
-          <div class="partner-badge" style="background: #ccfbf1; color: #0d9488">OT</div>
-          <div class="partner-info">
-            <h4>Otokoç Otomotiv</h4>
-            <p>Filo</p>
-          </div>
-        </div>
-
-        <!-- Partner 12 -->
-        <div class="partner-card">
-          <div class="partner-badge" style="background: #e0f2fe; color: #0284c7">VF</div>
-          <div class="partner-info">
-            <h4>Vdf Filo</h4>
-            <p>Filo</p>
+            <span>🆓</span>
+            <span>Ücretsiz Teklif</span>
           </div>
         </div>
       </div>
     </section>
 
     <!-- SECTION 3: FARK YARATAN ÖZELLİKLER -->
-    <section class="container" style="padding: 80px 20px">
+    <section id="features" class="container" style="padding: 80px 20px">
       <div class="text-center" style="margin-bottom: 48px">
         <span
           style="
@@ -296,11 +154,8 @@
         <!-- Feature 2 -->
         <div class="feature-box">
           <div class="feature-icon-square">🛡️</div>
-          <h3>Tam Kapsamlı Sigorta</h3>
-          <p>
-            Kasko ve trafik sigortası dahil paketlerimizle aracınızı her koşulda güvence altına
-            alın.
-          </p>
+          <h3>Sigorta Dahil Teklifler</h3>
+          <p>Kasko ve trafik sigortasını içeren teklifleri tek ekranda karşılaştırın.</p>
         </div>
 
         <!-- Feature 3 -->
@@ -308,17 +163,18 @@
           <div class="feature-icon-square">🔧</div>
           <h3>Bakım & Servis</h3>
           <p>
-            Periyodik bakım, lastik değişimi ve kaza anlarında dakikalar içerisinde destek hizmeti.
+            Periyodik bakım, lastik ve hasar taleplerini platformdan açın, servis sürecini takip
+            edin.
           </p>
         </div>
 
         <!-- Feature 4 -->
         <div class="feature-box">
-          <div class="feature-icon-square">🕒</div>
-          <h3>7/24 Destek</h3>
+          <div class="feature-icon-square">🛟</div>
+          <h3>Yol Yardım Talebi</h3>
           <p>
-            Yapay zeka destekli sistemimiz sayesinde saniyeler içerisinde yol yardım ekibimiz
-            hizmetinizde.
+            Arıza veya kaza anında yol yardım talebinizi platformdan açın, süreci adım adım takip
+            edin.
           </p>
         </div>
 
@@ -327,25 +183,25 @@
           <div class="feature-icon-square">💍</div>
           <h3>Esnek Sözleşme</h3>
           <p>
-            12 ila 48 ay arasında değişen kiralama süreleri ile bütçenize ve ihtiyacınıza göre plan
-            seçin.
+            Farklı kiralama sürelerindeki teklifleri karşılaştırıp bütçenize ve ihtiyacınıza uygun
+            olanı seçin.
           </p>
         </div>
 
         <!-- Feature 6 -->
         <div class="feature-box">
           <div class="feature-icon-square">🏷️</div>
-          <h3>Kurumsal İndirimler</h3>
+          <h3>Kurumsal Teklifler</h3>
           <p>
-            Çoklu araç kiralamalarında özel kurumsal fiyatlar ve filo yönetimi avantajlarından
-            yararlanın.
+            Çoklu araç taleplerinde tedarikçilerden kurumsal teklif alın, filonuzu tek panelden
+            yönetin.
           </p>
         </div>
       </div>
     </section>
 
     <!-- SECTION 4: NASIL ÇALIŞIR? (Dark Section) -->
-    <section class="process-dark-section">
+    <section id="how-it-works" class="process-dark-section">
       <div class="container" style="max-width: 1100px">
         <div class="text-center" style="margin-bottom: 54px">
           <span
@@ -398,72 +254,6 @@
       </div>
     </section>
 
-    <!-- SECTION 5: MÜŞTERİLERİMİZ NE DİYOR? -->
-    <section class="container" style="padding: 80px 20px">
-      <div class="text-center" style="margin-bottom: 48px">
-        <span
-          style="
-            font-size: 0.8rem;
-            font-weight: 700;
-            color: #2563eb;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-          "
-          >REFERANSLAR</span
-        >
-        <h2 style="font-size: 2.4rem; font-weight: 800; color: #0f172a; margin: 8px 0 0">
-          Müşterilerimiz Ne Diyor?
-        </h2>
-      </div>
-
-      <div class="grid-3" style="gap: 24px">
-        <!-- Testimonial 1 -->
-        <div class="testimonial-card">
-          <div>
-            <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
-            <p class="testimonial-text">
-              "FleetRent sayesinde 50 araçlık filomuzun kiralama sürecini çok daha hızlı ve verimli
-              yönetiyoruz. Fiyatlar rekabetçi, destek ekibi çok ilgili."
-            </p>
-          </div>
-          <div class="testimonial-author" style="border-top: 1px solid #f1f5f9; padding-top: 16px">
-            <h5>Ahmet Kaya</h5>
-            <p>Satın Alma Müdürü, LogiTech A.Ş.</p>
-          </div>
-        </div>
-
-        <!-- Testimonial 2 -->
-        <div class="testimonial-card">
-          <div>
-            <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
-            <p class="testimonial-text">
-              "Bireysel uzun dönem kiralama için araştırırken FleetRent'i buldum. Formları doldurmak
-              çok kolay ve kısa sürede dönüş sağlandı. Kesinlikle tavsiye ederim."
-            </p>
-          </div>
-          <div class="testimonial-author" style="border-top: 1px solid #f1f5f9; padding-top: 16px">
-            <h5>Zeynep Arslan</h5>
-            <p>Bireysel Kullanıcı</p>
-          </div>
-        </div>
-
-        <!-- Testimonial 3 -->
-        <div class="testimonial-card">
-          <div>
-            <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
-            <p class="testimonial-text">
-              "R2R portföyümüzü FleetRent üzerinden yönetmek inanılmaz kolaylaştı. Profesyonel bir
-              ekip, her aşamada yanınızda."
-            </p>
-          </div>
-          <div class="testimonial-author" style="border-top: 1px solid #f1f5f9; padding-top: 16px">
-            <h5>Murat Demir</h5>
-            <p>Filo Direktörü, Ekspres Lojistik</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <!-- FOOTER (Dark Theme) -->
     <footer id="contact" class="dark-footer">
       <div class="container" style="max-width: 1200px">
@@ -478,82 +268,20 @@
               />
             </div>
             <p style="font-size: 0.88rem; line-height: 1.6; color: #94a3b8; margin-bottom: 20px">
-              Türkiye'nin lider uzun dönem araç kiralama platformu. Kurumsal, bireysel ve R2R
-              ihtiyaçlarınız için profesyonel çözümler sunuyoruz.
+              Kurumsal, bireysel ve R2R uzun dönem araç kiralama için teklif karşılaştırma ve filo
+              yönetim platformu.
             </p>
-            <div style="display: flex; gap: 12px">
-              <a
-                href="#"
-                style="
-                  width: 34px;
-                  height: 34px;
-                  background: rgba(255, 255, 255, 0.06);
-                  border-radius: 50%;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  color: #ffffff;
-                  text-decoration: none;
-                "
-                >f</a
-              >
-              <a
-                href="#"
-                style="
-                  width: 34px;
-                  height: 34px;
-                  background: rgba(255, 255, 255, 0.06);
-                  border-radius: 50%;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  color: #ffffff;
-                  text-decoration: none;
-                "
-                >in</a
-              >
-              <a
-                href="#"
-                style="
-                  width: 34px;
-                  height: 34px;
-                  background: rgba(255, 255, 255, 0.06);
-                  border-radius: 50%;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  color: #ffffff;
-                  text-decoration: none;
-                "
-                >ig</a
-              >
-              <a
-                href="#"
-                style="
-                  width: 34px;
-                  height: 34px;
-                  background: rgba(255, 255, 255, 0.06);
-                  border-radius: 50%;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  color: #ffffff;
-                  text-decoration: none;
-                "
-                >yt</a
-              >
-            </div>
           </div>
 
           <!-- Col 2: Araçlar -->
           <div>
             <h4>ARAÇLAR</h4>
             <ul>
-              <li><a href="#">Ekonomik</a></li>
-              <li><a href="#">SUV & Crossover</a></li>
-              <li><a href="#">Lüks</a></li>
-              <li><a href="#">Elektrikli</a></li>
-              <li><a href="#">Ticari</a></li>
+              <li><a href="#" @click.prevent="openQuoteModal('bireysel')">Ekonomik</a></li>
+              <li><a href="#" @click.prevent="openQuoteModal('bireysel')">SUV & Crossover</a></li>
+              <li><a href="#" @click.prevent="openQuoteModal('bireysel')">Lüks</a></li>
+              <li><a href="#" @click.prevent="openQuoteModal('bireysel')">Elektrikli</a></li>
+              <li><a href="#" @click.prevent="openQuoteModal('bireysel')">Ticari</a></li>
             </ul>
           </div>
 
@@ -564,8 +292,8 @@
               <li><a href="#" @click.prevent="openQuoteModal('bireysel')">Bireysel Kiralama</a></li>
               <li><a href="#" @click.prevent="openQuoteModal('kurumsal')">Kurumsal Kiralama</a></li>
               <li><a href="#" @click.prevent="openQuoteModal('r2r')">R2R Kiralama</a></li>
-              <li><a href="#">Filo Yönetimi</a></li>
-              <li><a href="#">AI Araç Önerisi</a></li>
+              <li><router-link to="/login">Filo Yönetimi</router-link></li>
+              <li><a href="#" @click.prevent="openQuoteModal('kurumsal')">AI Araç Önerisi</a></li>
             </ul>
           </div>
 

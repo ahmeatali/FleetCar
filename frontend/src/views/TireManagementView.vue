@@ -960,7 +960,7 @@ onUnmounted(() => clearInterval(refreshTimer))
   display: block;
 }
 .top-user small {
-  font-size: 9px;
+  font-size: 11px;
   color: #8392a8;
   margin-top: 2px;
 }
@@ -984,7 +984,7 @@ onUnmounted(() => clearInterval(refreshTimer))
   top: -2px;
   background: #ec3445;
   color: #fff;
-  font-size: 8px;
+  font-size: 11px;
   font-style: normal;
   border-radius: 12px;
   padding: 2px 4px;
@@ -1017,7 +1017,7 @@ onUnmounted(() => clearInterval(refreshTimer))
 }
 .page-heading p {
   margin: 3px 0 0 34px;
-  font-size: 10px;
+  font-size: 11px;
   color: #74859e;
 }
 .primary-btn {
@@ -1076,7 +1076,7 @@ onUnmounted(() => clearInterval(refreshTimer))
   display: block;
 }
 .metric-card small {
-  font-size: 10px;
+  font-size: 11px;
   color: #49617e;
 }
 .metric-card strong {
@@ -1088,7 +1088,7 @@ onUnmounted(() => clearInterval(refreshTimer))
   margin-left: auto;
   font-style: normal;
   color: #7589a3;
-  font-size: 9px;
+  font-size: 11px;
   white-space: nowrap;
 }
 .dashboard-grid {
@@ -1129,7 +1129,7 @@ onUnmounted(() => clearInterval(refreshTimer))
   flex: 0.65;
 }
 .filter-bar label small {
-  font-size: 8px;
+  font-size: 11px;
   color: #70829a;
 }
 .filter-bar select,
@@ -1139,7 +1139,7 @@ onUnmounted(() => clearInterval(refreshTimer))
   border-radius: 5px;
   background: #fff;
   color: #425a78;
-  font-size: 9px;
+  font-size: 11px;
   padding: 0 6px;
   min-width: 0;
 }
@@ -1153,7 +1153,7 @@ onUnmounted(() => clearInterval(refreshTimer))
   border: 1px solid #dfe8f2;
   border-radius: 5px;
   color: #155eca;
-  font-size: 10px;
+  font-size: 11px;
   cursor: pointer;
 }
 .panel {
@@ -1189,7 +1189,7 @@ onUnmounted(() => clearInterval(refreshTimer))
   color: #2365bc;
   border-radius: 4px;
   padding: 5px 8px;
-  font-size: 9px;
+  font-size: 11px;
   cursor: pointer;
 }
 .table-actions button:disabled {
@@ -1209,11 +1209,11 @@ td {
   padding: 9px 7px;
   border-bottom: 1px solid #eef2f7;
   white-space: nowrap;
-  font-size: 9px;
+  font-size: 11px;
   color: #314b6f;
 }
 th {
-  font-size: 8px;
+  font-size: 11px;
   color: #6d809b;
   font-weight: 600;
   background: #fbfcfe;
@@ -1236,11 +1236,11 @@ td {
   font-size: 18px;
 }
 .car-cell span:last-child {
-  font-size: 9px;
+  font-size: 11px;
 }
 .car-cell small {
   display: block;
-  font-size: 8px;
+  font-size: 11px;
   color: #8190a4;
   margin-top: 2px;
 }
@@ -1250,7 +1250,7 @@ td {
   background: none;
   color: #235db0;
   font-weight: 700;
-  font-size: 9px;
+  font-size: 11px;
   cursor: pointer;
 }
 .status-pill {
@@ -1259,7 +1259,7 @@ td {
   gap: 4px;
   border-radius: 12px;
   padding: 4px 7px;
-  font-size: 8px;
+  font-size: 11px;
   font-weight: 650;
 }
 .status-pill i,
@@ -1315,7 +1315,7 @@ td {
   justify-content: space-between;
   padding: 0 11px;
   color: #788ba4;
-  font-size: 8px;
+  font-size: 11px;
 }
 .pagination {
   display: flex;
@@ -1328,7 +1328,7 @@ td {
   border-radius: 4px;
   background: #fff;
   color: #647c9a;
-  font-size: 9px;
+  font-size: 11px;
   cursor: pointer;
 }
 .pagination button.current {
@@ -1352,7 +1352,7 @@ td {
   align-items: center;
   gap: 7px;
   margin: 7px 0;
-  font-size: 8px;
+  font-size: 11px;
   color: #4e6481;
 }
 .brand-row b {
@@ -1396,7 +1396,7 @@ td {
 }
 .season-item small,
 .season-item em {
-  font-size: 7px;
+  font-size: 11px;
   color: #8090a4;
 }
 .season-item em {
@@ -1411,11 +1411,11 @@ td {
   border: 1px solid #d4eaff;
   border-radius: 7px;
   color: #1c548f;
-  font-size: 9px;
+  font-size: 11px;
   min-height: 100px;
 }
 .tip-card p {
-  font-size: 8px;
+  font-size: 11px;
   line-height: 1.5;
   margin: 6px 0;
   color: #54728f;
@@ -1426,7 +1426,7 @@ td {
   border-radius: 4px;
   color: #2364b5;
   padding: 5px 8px;
-  font-size: 8px;
+  font-size: 11px;
   cursor: pointer;
 }
 .summary-body {
@@ -1464,7 +1464,7 @@ td {
   color: #193961;
 }
 .donut small {
-  font-size: 7px;
+  font-size: 11px;
   color: #8292a7;
 }
 .legend {
@@ -1476,7 +1476,7 @@ td {
   align-items: center;
   gap: 5px;
   margin: 8px 0;
-  font-size: 8px;
+  font-size: 11px;
   color: #4e6480;
 }
 .legend i {
@@ -1496,11 +1496,11 @@ td {
   background: #56647d;
 }
 .legend b {
-  font-size: 8px;
+  font-size: 11px;
   color: #233f65;
 }
 .legend small {
-  font-size: 7px;
+  font-size: 11px;
   color: #8795a8;
 }
 .timeline {
@@ -1530,30 +1530,30 @@ td {
   width: 100%;
 }
 .timeline li b {
-  font-size: 9px;
+  font-size: 11px;
   color: #263f62;
 }
 .timeline li small,
 .timeline li p {
   display: block;
-  font-size: 8px;
+  font-size: 11px;
   color: #7386a0;
   margin: 3px 0 0;
 }
 .timeline li p {
-  font-size: 7px;
+  font-size: 11px;
 }
 .timeline-badge {
   float: right;
   padding: 3px 7px;
   border-radius: 10px;
-  font-size: 7px;
+  font-size: 11px;
 }
 .timeline .no-timeline {
   border: 0;
   min-height: 38px;
   color: #8090a5;
-  font-size: 9px;
+  font-size: 11px;
 }
 .outline-wide {
   display: block;
@@ -1564,7 +1564,7 @@ td {
   border: 1px solid #dce6f1;
   border-radius: 5px;
   color: #2767b4;
-  font-size: 8px;
+  font-size: 11px;
   cursor: pointer;
 }
 .completed {
@@ -1574,7 +1574,7 @@ td {
 .muted-empty {
   padding: 15px;
   color: #8392a7;
-  font-size: 9px;
+  font-size: 11px;
 }
 .modal-backdrop {
   position: fixed;
@@ -1602,7 +1602,7 @@ td {
   margin-bottom: 18px;
 }
 .modal-card header small {
-  font-size: 9px;
+  font-size: 11px;
   color: #2875d8;
   letter-spacing: 0.1em;
   font-weight: 700;
@@ -1627,7 +1627,7 @@ td {
   flex-direction: column;
   gap: 6px;
   margin: 10px 0;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 650;
   color: #455a76;
 }
@@ -1668,7 +1668,7 @@ td {
   background: #fff1f1;
   border-radius: 5px;
   color: #bf313b;
-  font-size: 10px;
+  font-size: 11px;
 }
 .operation-car {
   display: flex;
@@ -1706,16 +1706,16 @@ td {
 .history-list article b,
 .history-list article small {
   display: block;
-  font-size: 10px;
+  font-size: 11px;
 }
 .history-list article small,
 .history-list article p {
   color: #71839a;
-  font-size: 9px;
+  font-size: 11px;
   margin: 4px 0;
 }
 .history-list article em {
-  font-size: 9px;
+  font-size: 11px;
   font-style: normal;
   color: #13885d;
 }
@@ -1779,12 +1779,12 @@ td {
     font-size: 17px;
   }
   .page-heading p {
-    font-size: 9px;
+    font-size: 11px;
     line-height: 1.5;
   }
   .page-heading > .primary-btn {
     padding: 9px;
-    font-size: 9px;
+    font-size: 11px;
     white-space: nowrap;
   }
   .dashboard-grid,
@@ -1871,7 +1871,7 @@ td {
 .profile-link {
   color: #1766bb;
   text-decoration: none;
-  font-size: 10px;
+  font-size: 11px;
 }
 .tire-alert {
   padding: 12px 20px;
@@ -1904,10 +1904,10 @@ td {
 }
 .filter-bar select,
 .filter-bar input[type='date'] {
-  font-size: 10px;
+  font-size: 11px;
 }
 .filter-bar label small {
-  font-size: 9px;
+  font-size: 11px;
 }
 .filter-btn {
   background: #0064ff;
@@ -1924,64 +1924,64 @@ td {
 }
 .brand-row {
   grid-template-columns: 65px 1fr 30px 25px;
-  font-size: 9px;
+  font-size: 11px;
 }
 .brand-row small {
-  font-size: 8px;
+  font-size: 11px;
   color: #6e819a;
 }
 .timeline li {
   background: transparent !important;
 }
 .timeline li p {
-  font-size: 9px;
+  font-size: 11px;
 }
 .timeline li small,
 .timeline li b {
-  font-size: 10px;
+  font-size: 11px;
 }
 .timeline-badge {
-  font-size: 8px;
+  font-size: 11px;
 }
 .legend > div {
-  font-size: 9px;
+  font-size: 11px;
 }
 .legend b {
-  font-size: 9px;
+  font-size: 11px;
 }
 .table-actions {
   flex-wrap: wrap;
   justify-content: flex-end;
 }
 .table-actions button {
-  font-size: 9px;
+  font-size: 11px;
 }
 .row-actions button {
   width: 27px;
   height: 27px;
 }
 .status-pill {
-  font-size: 9px;
+  font-size: 11px;
 }
 .modal-card form > label,
 .form-grid label {
   font-size: 12px;
 }
 .tip-card p {
-  font-size: 10px;
+  font-size: 11px;
 }
 .tip-card button {
-  font-size: 10px;
+  font-size: 11px;
 }
 .outline-wide {
-  font-size: 10px;
+  font-size: 11px;
 }
 .table-footer {
-  font-size: 9px;
+  font-size: 11px;
 }
 td small {
   display: block;
-  font-size: 8px;
+  font-size: 11px;
   color: #7b8da6;
   margin-top: 3px;
 }
@@ -1992,7 +1992,7 @@ table {
   font-size: 23px;
 }
 .page-heading p {
-  font-size: 10px;
+  font-size: 11px;
 }
 .summary-body {
   padding: 18px 12px;
@@ -2043,7 +2043,7 @@ table {
     gap: 5px;
   }
   .top-user b {
-    font-size: 9px;
+    font-size: 11px;
   }
   .metric-card strong {
     font-size: 19px;
@@ -2058,7 +2058,7 @@ table {
     gap: 15px;
   }
   .table-actions button {
-    font-size: 8px;
+    font-size: 11px;
   }
   .top-search {
     width: 52%;
