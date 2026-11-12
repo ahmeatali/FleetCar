@@ -102,6 +102,8 @@ from app.signature_documents import router as signature_documents_router
 from app.supplier_integrations import router as supplier_integrations_router
 from app.supplier_operations import router as supplier_workspace_router
 from app.supplier_reports import router as supplier_reports_router
+from app.team_management import router as team_router
+from app.team_permissions import enforce_access
 from app.tenant_visibility import (
     clear_customer_projection,
     customer_vehicle_ids,
@@ -2391,7 +2393,20 @@ def _supplier_login(creds: AdminLoginRequest, db: Session, expected_type: str):
         member = (
             db.query(models.SupplierPortalUser).filter_by(email=email_clean, is_active=True).first()
         )
-        if member and verify_password(creds.password, member.password_hash):
+        access = (
+            (
+                db.query(models.TeamMemberAccess)
+                .filter_by(portal="supplier", tenant_id=member.supplier_id, user_id=member.id)
+                .first()
+            )
+            if member
+            else None
+        )
+        if (
+            member
+            and not (access and access.pending)
+            and verify_password(creds.password, member.password_hash)
+        ):
             company = db.get(models.Supplier, member.supplier_id)
             if company and company.is_email_verified and company.type not in SERVICE_SUPPLIER_TYPES:
                 from app.supplier_context import session_token
@@ -3098,6 +3113,15 @@ def delete_customer_user(user_id: int, customer_id: int, db: Session = Depends(g
     )
     if not user:
         raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı.")
+    from app.team_management import revoke_sessions
+
+    revoke_sessions(db, "customer", customer_id, user.id)
+    db.query(models.TeamInvitation).filter_by(
+        portal="customer", tenant_id=customer_id, user_id=user.id
+    ).delete()
+    db.query(models.TeamMemberAccess).filter_by(
+        portal="customer", tenant_id=customer_id, user_id=user.id
+    ).delete()
     db.delete(user)
     db.commit()
     return {"status": "deleted"}
@@ -4382,11 +4406,12 @@ def get_customer_services(customer_id: int, db: Session = Depends(get_db)):
 
 # Supplier business routes are kept separate from customer/service operations.
 
-app.include_router(supplier_workspace_router)
 
-app.include_router(supplier_integrations_router)
-app.include_router(shell_integration_router)
-app.include_router(fleet_operations_router)
+app.include_router(supplier_workspace_router, dependencies=[Depends(enforce_access)])
+
+app.include_router(supplier_integrations_router, dependencies=[Depends(enforce_access)])
+app.include_router(shell_integration_router, dependencies=[Depends(enforce_access)])
+app.include_router(fleet_operations_router, dependencies=[Depends(enforce_access)])
 
 
 # Every legacy route is authenticated and scoped; workspace routers own their permissions.
@@ -4466,15 +4491,23 @@ def portal_logout(request: Request, response: Response, db: Session = Depends(ge
     return {"ok": True}
 
 
-app.include_router(supplier_offer_history_router)
-app.include_router(customer_offer_router)
+app.include_router(supplier_offer_history_router, dependencies=[Depends(enforce_access)])
+app.include_router(customer_offer_router, dependencies=[Depends(enforce_access)])
 
-app.include_router(supplier_reports_router)
+app.include_router(supplier_reports_router, dependencies=[Depends(enforce_access)])
 
-app.include_router(signature_documents_router)
+app.include_router(signature_documents_router, dependencies=[Depends(enforce_access)])
 
-app.include_router(event_responsibility_router)
+app.include_router(event_responsibility_router, dependencies=[Depends(enforce_access)])
 
 
-app.include_router(vehicle_business_history_router)
+app.include_router(vehicle_business_history_router, dependencies=[Depends(enforce_access)])
 app.add_middleware(PortalAuditMiddleware, application=app)
+
+
+app.include_router(team_router, dependencies=[Depends(enforce_access)])
+for _route in app.routes:
+    if isinstance(_route, APIRoute):
+        _route.dependant.dependencies.insert(
+            0, get_dependant(path=_route.path, call=enforce_access)
+        )

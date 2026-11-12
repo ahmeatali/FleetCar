@@ -98,6 +98,23 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/dashboard/savings',
+    name: 'FleetSavings',
+    component: () => import('../views/FleetSavingsView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/dashboard/users',
+    name: 'CustomerTeam',
+    component: () => import('../views/TeamManagementView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/accept-invitation',
+    name: 'AcceptInvitation',
+    component: () => import('../views/AcceptInvitationView.vue'),
+  },
+  {
     path: '/dashboard/settings',
     name: 'Settings',
     component: () => import('../views/SettingsView.vue'),
@@ -155,6 +172,16 @@ const routes = [
     meta: { requiresSupplierAuth: true },
   },
   {
+    path: '/supplier-portal/savings',
+    redirect: { name: 'FleetSavings' },
+  },
+  {
+    path: '/supplier-portal/users',
+    name: 'SupplierTeam',
+    component: () => import('../views/TeamManagementView.vue'),
+    meta: { requiresSupplierAuth: true },
+  },
+  {
     path: '/supplier-portal/:section',
     name: 'SupplierWorkspace',
     component: () => import('../views/SupplierWorkspaceView.vue'),
@@ -183,7 +210,6 @@ const routes = [
         'accounting',
         'reports',
         'approvals',
-        'savings',
         'planning',
         'users',
         'settings',

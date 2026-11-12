@@ -59,4 +59,12 @@ def customer_history(vid: str, p=Depends(customer_context), db: Session = Depend
 
     if vid not in customer_vehicle_ids(db, p["id"]):
         raise HTTPException(404, "Araç bulunamadı.")
-    return history(db, vid, customer_id=p["id"])
+    from app.team_permissions import KINDS, policy
+
+    permissions = policy(db, "customer", p["id"], p.get("user_id"))
+    rows = history(db, vid, customer_id=p["id"])
+    return (
+        rows
+        if permissions is None
+        else [row for row in rows if permissions.get(KINDS.get(row["kind"]), {}).get("view", False)]
+    )

@@ -126,9 +126,7 @@ try {
     'accounting',
     'reports',
     'approvals',
-    'savings',
     'planning',
-    'users',
     'settings',
   ]) {
     await visit(section)
@@ -147,7 +145,6 @@ try {
         'hgs',
         'reports',
         'approvals',
-        'savings',
         'planning',
       ].includes(section)
     )
