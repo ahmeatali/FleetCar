@@ -302,7 +302,7 @@ Sana platformun hesapladığı metrikler JSON olarak verilecek. Kurallar:
 - "summary": filonun genel durumunu 2-3 cümleyle özetle."""
 
 
-def fleet_insights(db, ctx, force=False):
+def fleet_insights(db, ctx, force=False, trigger="manual"):
     rows = fleet_metrics(db, ctx["id"])
     if not rows:
         raise HTTPException(400, "Analiz için aktif araç bulunmuyor.")
@@ -335,9 +335,11 @@ def fleet_insights(db, ctx, force=False):
         usage = {}
     else:
         payload, usage = ask(INSIGHT_SYSTEM, blob, INSIGHT_SCHEMA, effort="medium")
+        usage = dict(usage)
         known = {r["plate"] for r in rows}
         for item in payload.get("insights", []):
             item["plates"] = [p for p in item.get("plates", []) if p in known]
+    usage["trigger"] = trigger
     row = m.SupplierAiInsight(
         supplier_id=ctx["id"],
         kind="fleet",
@@ -357,6 +359,7 @@ def insight_view(row, rows):
         **row.payload,
         "generated_at": row.created_at,
         "model": row.model,
+        "trigger": (row.usage or {}).get("trigger", "manual"),
         "vehicle_count": len(rows),
         "flagged_count": sum(1 for r in rows if r["flags"]),
         "metrics": {r["plate"]: r for r in rows if r["flags"]},

@@ -715,6 +715,65 @@ class SupplierWorkspaceTests(unittest.TestCase):
         self.assertEqual(latest["summary"], "Özet")
         self.assertIn("34 ABC 123", latest["metrics"])
 
+    def test_ai_daily_run_once_per_day_with_claims_and_retry(self):
+        from app import ai_daily
+
+        car = self.db.get(m.Vehicle, "car")
+        start = date.today() - timedelta(days=183)
+        car.customer_id, car.mileage = 1, 40000
+        car.contract_start_date = start.isoformat()
+        car.contract_end_date = (start + timedelta(days=365)).isoformat()
+        car.contract_duration_months, car.monthly_km_limit = 12, 2000
+        self.db.add(
+            m.VehicleMileageRecord(
+                vehicle_id="car", mileage=10000, recorded_at=start.isoformat(), source="t"
+            )
+        )
+        self.db.query(m.SupplierSession).filter(m.SupplierSession.supplier_id != 1).delete()
+        self.db.commit()
+        factory = sessionmaker(bind=self.engine, autoflush=False)
+        reply = ({"summary": "Günlük", "insights": []}, {"model": "m"})
+        today = date(2026, 11, 12)
+        with patch("app.ai_assistant.ask", side_effect=RuntimeError("API down")), self.assertLogs(
+            "fleetcar.ai_daily", "ERROR"
+        ):
+            self.assertEqual(ai_daily.run_daily(factory, today), {1: "failed"})
+        self.assertEqual(self.db.query(m.AiJobClaim).count(), 0)  # released for a retry
+        with patch("app.ai_assistant.ask", return_value=reply) as ask:
+            self.assertEqual(ai_daily.run_daily(factory, today), {1: "done"})
+            self.assertEqual(ai_daily.run_daily(factory, today), {1: "skipped"})
+            self.assertEqual(ask.call_count, 1)
+        latest = self.client.get("/api/supplier-workspace/ai/fleet-insights").json()
+        self.assertEqual((latest["summary"], latest["trigger"]), ("Günlük", "daily"))
+        # another worker already holds tomorrow's claim: this one must not call the API
+        tomorrow = today + timedelta(days=1)
+        self.db.add(
+            m.AiJobClaim(
+                job=ai_daily.JOB, supplier_id=1, run_date=tomorrow.isoformat(), started_at="x"
+            )
+        )
+        self.db.commit()
+        with patch("app.ai_assistant.ask", return_value=reply) as ask, patch(
+            "app.ai_daily.analysed_today", return_value=False
+        ):
+            self.assertEqual(ai_daily.run_daily(factory, tomorrow), {1: "skipped"})
+            ask.assert_not_called()
+        self.db.query(m.SupplierSession).delete()
+        self.db.commit()
+        self.assertEqual(ai_daily.run_daily(factory, today + timedelta(days=2)), {})
+
+    def test_ai_daily_schedule_targets_six_oclock(self):
+        from app import ai_daily
+        from app.common.time import BUSINESS_TIMEZONE
+
+        early = datetime(2026, 11, 12, 5, 30, tzinfo=BUSINESS_TIMEZONE)
+        late = datetime(2026, 11, 12, 6, 0, tzinfo=BUSINESS_TIMEZONE)
+        self.assertEqual(ai_daily.seconds_until_next_run(early), 1800)
+        self.assertEqual(ai_daily.seconds_until_next_run(late), 86400)
+        self.assertEqual(
+            ai_daily.local_date("2026-11-12T22:30:00+00:00"), date(2026, 11, 13)
+        )
+
     def test_ai_document_reading_matches_vehicles(self):
         url = "/api/supplier-workspace/ai/read-document?doc_type="
         contract = {

@@ -132,6 +132,12 @@
             </div></UiButton
           >
         </section>
+        <SupplierAiInsights
+          v-if="section === 'home'"
+          compact
+          :role="role"
+          :vehicles="data.vehicles"
+        />
 
         <!-- The overview and reports use the same ledger, with no synthetic history. -->
         <template v-if="['home', 'reports'].includes(section)">
@@ -454,7 +460,6 @@
               </p>
             </article>
           </div>
-          <SupplierAiInsights v-if="section === 'home'" :role="role" :vehicles="data.vehicles" />
           <section v-if="section === 'reports'" class="sw-report-cost-charts">
             <article v-for="category in ['Yakıt', 'HGS', 'Servis']" :key="category" class="sw-card">
               <h2>{{ category }} Maliyetleri (TL)</h2>

@@ -214,6 +214,9 @@ def startup():
         print("Roadside request migration notice:", exc)
     finally:
         db.close()
+    from app import ai_daily
+
+    ai_daily.start(SessionLocal)
 
 
 # ─────────────────── HELPERS ───────────────────────────────────────────────

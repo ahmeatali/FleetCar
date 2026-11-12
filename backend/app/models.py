@@ -470,6 +470,20 @@ class SupplierAiInsight(Base):
     created_at = Column(String, nullable=False)
 
 
+class AiJobClaim(Base):
+    """One row per supplier and day for the daily AI run; the unique key is the worker lock."""
+
+    __tablename__ = "ai_job_claims"
+    __table_args__ = (UniqueConstraint("job", "supplier_id", "run_date"),)
+    id = Column(Integer, primary_key=True)
+    job = Column(String, nullable=False)
+    supplier_id = Column(Integer, ForeignKey("suppliers.id"), nullable=False)
+    run_date = Column(String, nullable=False)
+    status = Column(String, nullable=False, default="running")
+    started_at = Column(String, nullable=False)
+    finished_at = Column(String)
+
+
 class SupplierSetting(Base):
     __tablename__ = "supplier_settings"
     id = Column(Integer, primary_key=True)

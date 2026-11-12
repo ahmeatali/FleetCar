@@ -4,22 +4,23 @@
       <div>
         <h2><span class="ai-spark" aria-hidden="true">✦</span> AI Filo Önerileri</h2>
         <p class="ai-muted">
-          Km, sözleşme ve kullanım verileriniz analiz edilir; öneriler hangi rakama dayandığıyla
-          birlikte gösterilir.
+          Filonuz her sabah 06:00'da km, sözleşme ve kullanım verilerine göre otomatik analiz
+          edilir; öneriler hangi rakama dayandığıyla birlikte gösterilir.
         </p>
       </div>
       <div class="ai-actions">
         <small v-if="result?.generated_at" class="ai-muted"
-          >Son analiz: {{ when(result.generated_at) }}</small
+          >{{ result.trigger === 'daily' ? 'Günlük analiz' : 'Son analiz' }}:
+          {{ when(result.generated_at) }}</small
         >
         <button
           v-if="canRun"
           type="button"
-          class="sw-button primary"
+          :class="['sw-button', { primary: !result }]"
           :disabled="busy"
           @click="run(Boolean(result))"
         >
-          {{ busy ? 'Analiz ediliyor…' : result ? 'Yeniden Analiz Et' : 'Analizi Başlat' }}
+          {{ busy ? 'Analiz ediliyor…' : result ? 'Şimdi Yenile' : 'Şimdi Analiz Et' }}
         </button>
       </div>
     </div>
@@ -32,7 +33,7 @@
 
     <template v-if="result && !busy">
       <p class="ai-summary">{{ result.summary }}</p>
-      <div v-if="result.insights.length" class="ai-filters">
+      <div v-if="result.insights.length && showAll" class="ai-filters">
         <button
           v-for="f in filters"
           :key="f.key"
@@ -72,6 +73,17 @@
           </div>
         </article>
         <p v-if="!result.insights.length" class="ai-muted">Şu an öneri gerektiren bir durum yok.</p>
+        <button
+          v-if="!showAll && result.insights.length > COMPACT_COUNT"
+          type="button"
+          class="ai-more"
+          @click="expandedAll = true"
+        >
+          Tüm önerileri gör ({{ result.insights.length }})
+        </button>
+        <button v-else-if="compact && expandedAll" type="button" class="ai-more" @click="collapse">
+          Daha az göster
+        </button>
       </div>
       <p class="ai-foot ai-muted">
         {{ result.vehicle_count }} araç tarandı, {{ result.flagged_count }} araç kural eşiklerine
@@ -79,11 +91,8 @@
       </p>
     </template>
     <p v-else-if="!busy && !error && loaded" class="ai-muted ai-empty">
-      Henüz analiz yapılmadı.
-      {{
-        canRun
-          ? '"Analizi Başlat" ile ilk önerileri oluşturun.'
-          : 'Yetkili bir kullanıcı analizi başlatabilir.'
+      Henüz analiz yapılmadı. İlk öneriler bir sonraki sabah 06:00'da otomatik hazırlanır{{
+        canRun ? '; beklemek istemezseniz "Şimdi Analiz Et"e basın.' : '.'
       }}
     </p>
   </section>
@@ -98,13 +107,17 @@ import { formatMoney } from '../utils/formatters.js'
 const props = defineProps({
   role: { type: String, default: 'viewer' },
   vehicles: { type: Array, default: () => [] },
+  compact: { type: Boolean, default: false },
 })
+const COMPACT_COUNT = 3
 const result = ref(null),
   busy = ref(false),
   error = ref(''),
   loaded = ref(false),
   filter = ref('all'),
-  expanded = reactive({})
+  expanded = reactive({}),
+  expandedAll = ref(false)
+const showAll = computed(() => !props.compact || expandedAll.value)
 
 const canRun = computed(() =>
   ['owner', 'fleet_manager', 'operations', 'finance'].includes(props.role),
@@ -139,8 +152,13 @@ const filters = computed(() => {
 })
 const shown = computed(() => {
   const group = filters.value.find((f) => f.key === filter.value) || filters.value[0]
-  return (result.value?.insights || []).filter(group.match)
+  const items = (result.value?.insights || []).filter(group.match)
+  return showAll.value ? items : items.slice(0, COMPACT_COUNT)
 })
+function collapse() {
+  expandedAll.value = false
+  filter.value = 'all'
+}
 const byPlate = computed(() => Object.fromEntries(props.vehicles.map((v) => [v.plate, v])))
 const money = (v) => formatMoney(Number(v) || 0)
 const when = (v) =>
@@ -375,6 +393,17 @@ onMounted(load)
 .ai-foot {
   border-top: 1px solid #eef2f8;
   padding-top: 10px;
+}
+.ai-more {
+  justify-self: start;
+  border: 0;
+  background: none;
+  padding: 2px 0;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4b33d6;
+  cursor: pointer;
 }
 .ai-empty {
   padding: 12px 0;
