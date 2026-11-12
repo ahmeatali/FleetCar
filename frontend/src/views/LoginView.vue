@@ -158,11 +158,13 @@
 
           <form @submit.prevent="handleLogin">
             <div class="form-group">
-              <UiField class="form-label">E-posta Adresi</UiField>
+              <UiField class="form-label" input-id="login-email">E-posta Adresi</UiField>
               <input
+                id="login-email"
                 type="email"
                 v-model="email"
                 required
+                autocomplete="username"
                 class="form-input"
                 placeholder="isim@sirket.com"
               />
@@ -177,7 +179,9 @@
                   margin-bottom: 6px;
                 "
               >
-                <UiField class="form-label" style="margin-bottom: 0">Şifre</UiField>
+                <UiField class="form-label" style="margin-bottom: 0" input-id="login-password"
+                  >Şifre</UiField
+                >
                 <a
                   href="#"
                   @click.prevent="authMode = 'forgot'"
@@ -186,9 +190,11 @@
                 >
               </div>
               <input
+                id="login-password"
                 type="password"
                 v-model="password"
                 required
+                autocomplete="current-password"
                 class="form-input"
                 placeholder="••••••••"
               />
@@ -265,8 +271,10 @@
 
           <form v-else @submit.prevent="handleForgotPassword">
             <div class="form-group" style="margin-bottom: 25px">
-              <UiField class="form-label">E-posta Adresi *</UiField>
+              <UiField class="form-label" input-id="forgot-email">E-posta Adresi *</UiField>
               <input
+                id="forgot-email"
+                autocomplete="email"
                 type="email"
                 v-model="forgotEmail"
                 required
@@ -346,8 +354,10 @@
 
           <form @submit.prevent="handleRegister">
             <div class="form-group">
-              <UiField class="form-label">Şirket / Firma Adı</UiField>
+              <UiField class="form-label" input-id="register-company">Şirket / Firma Adı</UiField>
               <input
+                id="register-company"
+                autocomplete="organization"
                 type="text"
                 v-model="companyName"
                 class="form-input"
@@ -356,8 +366,10 @@
             </div>
 
             <div class="form-group">
-              <UiField class="form-label">E-posta Adresi *</UiField>
+              <UiField class="form-label" input-id="register-email">E-posta Adresi *</UiField>
               <input
+                id="register-email"
+                autocomplete="email"
                 type="email"
                 v-model="email"
                 required
@@ -367,13 +379,24 @@
             </div>
 
             <div class="form-group">
-              <UiField class="form-label">Telefon Numarası</UiField>
-              <input type="tel" v-model="phone" class="form-input" placeholder="05XX XXX XX XX" />
+              <UiField class="form-label" input-id="register-phone">Telefon Numarası</UiField>
+              <input
+                id="register-phone"
+                autocomplete="tel"
+                type="tel"
+                v-model="phone"
+                class="form-input"
+                placeholder="05XX XXX XX XX"
+              />
             </div>
 
             <div class="form-group" style="margin-bottom: 25px">
-              <UiField class="form-label">Şifre * (En az 6 karakter)</UiField>
+              <UiField class="form-label" input-id="register-password"
+                >Şifre * (En az 6 karakter)</UiField
+              >
               <input
+                id="register-password"
+                autocomplete="new-password"
                 type="password"
                 v-model="password"
                 required

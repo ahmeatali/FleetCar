@@ -173,11 +173,18 @@
                 <article class="detail-panel detail-information-card">
                   <h2>▦ &nbsp; Araç Bilgileri</h2>
                   <dl class="detail-information-list">
-                    <template v-for="field in generalFields" :key="field.label"
+                    <template v-for="field in shownGeneralFields" :key="field.label"
                       ><dt>{{ field.label }}</dt>
                       <dd>{{ field.value || '—' }}</dd></template
                     >
                   </dl>
+                  <p v-if="emptyGeneralCount" class="detail-missing-fields">
+                    {{ emptyGeneralCount }} alan boş.
+                    <button type="button" @click="showEmptyFields = !showEmptyFields">
+                      {{ showEmptyFields ? 'Boş alanları gizle' : 'Boş alanları göster' }}
+                    </button>
+                    <button type="button" @click="openEdit">Bilgileri tamamla</button>
+                  </p>
                 </article>
                 <div class="detail-general-center">
                   <article class="detail-panel detail-delivery-card">
@@ -996,6 +1003,18 @@ const generalFields = computed(() =>
     field('Kasko Bitiş', 'casco_insurance_expiry_date'),
     field('ERP ID', 'erp_id'),
   ].filter(Boolean),
+)
+
+// Show filled facts first; empty ones stay one click away instead of a long list of dashes.
+const showEmptyFields = ref(false)
+const isEmptyValue = (value) => value === null || value === undefined || String(value).trim() === ''
+const emptyGeneralCount = computed(
+  () => generalFields.value.filter((item) => isEmptyValue(item.value)).length,
+)
+const shownGeneralFields = computed(() =>
+  showEmptyFields.value
+    ? generalFields.value
+    : generalFields.value.filter((item) => !isEmptyValue(item.value)),
 )
 
 const editGroups = [
@@ -2849,5 +2868,19 @@ onMounted(loadDetails)
     width: 100%;
     max-width: 100%;
   }
+}
+.detail-missing-fields {
+  margin: 10px 0 0;
+  font-size: var(--fr-text-sm);
+  color: var(--fr-muted);
+}
+.detail-missing-fields button {
+  border: 0;
+  background: none;
+  padding: 0 0 0 8px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--fr-primary);
+  cursor: pointer;
 }
 </style>

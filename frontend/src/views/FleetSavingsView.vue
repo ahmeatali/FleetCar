@@ -21,6 +21,12 @@
         {{ error }} <UiButton class="btn" @click="load">Tekrar Dene</UiButton>
       </UiAlert>
       <template v-else>
+        <SupplierAiInsights
+          portal="customer"
+          class="savings-ai"
+          :role="customerRole"
+          :vehicles="vehicles"
+        />
         <section class="savings-filters glass-panel" aria-label="İnceleme eşikleri">
           <UiField
             >Araç<select v-model="vehicleId" class="form-input">
@@ -60,11 +66,13 @@
           </article>
         </section>
         <section class="glass-panel savings-results">
-          <h2>Tespitler ve Öneriler</h2>
+          <h2>Kural Tabanlı Tespitler</h2>
           <p class="savings-note">
-            Bu tespitler inceleme önerisidir. İncelenecek tutarlar gerçekleşmiş tasarruf değildir.
-            Yakıt hesapları kayıtlar arasındaki yaklaşık tüketimi gösterir; dolum kapsamını
-            doğrulayın. Eşikler yalnızca bu ekrandaki analizi değiştirir.
+            Aşağıdaki eşiklerle bulunan kayıtlar; yukarıdaki AI önerileri bu verilere dayanır.
+            "İlgili Tutar" düşük kullanımda aracın aylık kirasını, tekrarlanan fişte fiş tutarını
+            gösterir; gerçekleşmiş veya garanti edilmiş tasarruf değildir. Yakıt hesapları kayıtlar
+            arasındaki yaklaşık tüketimi gösterir; dolum kapsamını doğrulayın. Eşikler yalnızca bu
+            ekrandaki analizi değiştirir.
           </p>
           <UiTable
             ><table class="data-table">
@@ -73,7 +81,7 @@
                   <th>Kategori</th>
                   <th>Tespit</th>
                   <th>Kanıt</th>
-                  <th>İncelenecek Tutar</th>
+                  <th>İlgili Tutar</th>
                   <th>Aksiyon</th>
                 </tr>
               </thead>
@@ -112,11 +120,13 @@
 import { PageHeader } from '../components/ui/index.js'
 import { computed, onMounted, reactive, ref } from 'vue'
 import Sidebar from '../components/Sidebar.vue'
+import SupplierAiInsights from '../components/SupplierAiInsights.vue'
 import { UiAlert, UiButton, UiField, UiTable } from '../components/ui/index.js'
 import { apiRequest } from '../api/http.js'
 import { detectCustomerFindings } from '../utils/customerFindings.js'
 import { downloadCsv } from '../utils/downloads.js'
 
+const customerRole = localStorage.getItem('fleetcar_user_role') || ''
 const vehicles = ref([]),
   expenses = ref([]),
   vehicleId = ref(''),
@@ -160,7 +170,7 @@ async function load() {
 function exportFindings() {
   downloadCsv(
     [
-      ['Kategori', 'Tespit', 'Kanıt', 'İncelenecek Tutar'],
+      ['Kategori', 'Tespit', 'Kanıt', 'İlgili Tutar'],
       ...findings.value.map((finding) => [
         finding.category,
         finding.title,
@@ -256,5 +266,8 @@ onMounted(load)
   .savings-results {
     padding: 14px;
   }
+}
+.savings-ai {
+  margin-bottom: 16px;
 }
 </style>
