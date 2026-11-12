@@ -621,6 +621,21 @@
                   <td style="text-align: right">
                     <div style="display: flex; gap: 6px; justify-content: flex-end">
                       <UiButton
+                        @click.stop="enterAccount('customer', c.id, c.company_name)"
+                        class="btn btn-secondary"
+                        style="
+                          padding: 6px 10px;
+                          font-size: 0.78rem;
+                          border-color: rgba(13, 148, 136, 0.3);
+                          color: #0d9488;
+                          background: rgba(13, 148, 136, 0.06);
+                          font-weight: 600;
+                        "
+                        title="Destek için bu müşterinin portalına gir"
+                      >
+                        🔑 Hesaba Gir
+                      </UiButton>
+                      <UiButton
                         @click.stop="sendCustomerInvite(c)"
                         class="btn btn-secondary"
                         style="
@@ -1490,6 +1505,21 @@
                   </td>
                   <td style="text-align: right">
                     <div style="display: flex; gap: 6px; justify-content: flex-end">
+                      <UiButton
+                        @click="enterAccount('supplier', s.id, s.name)"
+                        class="btn btn-secondary"
+                        style="
+                          padding: 6px 10px;
+                          font-size: 0.78rem;
+                          border-color: rgba(13, 148, 136, 0.3);
+                          color: #0d9488;
+                          background: rgba(13, 148, 136, 0.06);
+                          font-weight: 600;
+                        "
+                        title="Destek için bu tedarikçinin portalına gir"
+                      >
+                        🔑 Hesaba Gir
+                      </UiButton>
                       <UiButton
                         @click="sendSupplierInvite(s)"
                         class="btn btn-secondary"
@@ -2568,10 +2598,22 @@ import { UiButton, UiField, UiModal } from '../components/ui/index.js'
 import { ref, reactive, computed, onMounted } from 'vue'
 import ManualSignatureInbox from '../components/ManualSignatureInbox.vue'
 import { useRouter } from 'vue-router'
+import { startImpersonation } from '../api/impersonation.js'
 
 const router = useRouter()
 
 const activeTab = ref('quotes') // 'quotes', 'customers', 'suppliers'
+
+async function enterAccount(portal, subjectId, name) {
+  const label = portal === 'supplier' ? 'tedarikçi' : 'müşteri'
+  if (!confirm(`${name} adlı ${label} hesabına destek için gireceksiniz. Devam edilsin mi?`)) return
+  try {
+    const path = await startImpersonation(portal, subjectId)
+    router.push(path)
+  } catch (error) {
+    alert(error?.message || 'Hesaba girilemedi.')
+  }
+}
 
 // ── Filter state ─────────────────────────────────────────────────────────
 const quoteFilter = reactive({ search: '', status: 'Tümü', segment: 'Tümü' })

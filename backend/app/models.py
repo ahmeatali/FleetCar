@@ -454,6 +454,7 @@ class SupplierSession(Base):
     user_id = Column(Integer, ForeignKey("supplier_portal_users.id"))
     token_hash = Column(String, nullable=False, unique=True, index=True)
     expires_at = Column(String, nullable=False)
+    impersonated_by = Column(Integer, ForeignKey("admin_users.id"), nullable=True)
 
 
 class SupplierAiInsight(Base):
@@ -530,6 +531,23 @@ class PortalSession(Base):
     user_id = Column(Integer)
     token_hash = Column(String, nullable=False, unique=True, index=True)
     expires_at = Column(String, nullable=False)
+    impersonated_by = Column(Integer, ForeignKey("admin_users.id"), nullable=True)
+
+
+class ImpersonationEvent(Base):
+    """Internal support-access trail. Impersonated companies never see these rows."""
+
+    __tablename__ = "impersonation_events"
+    id = Column(Integer, primary_key=True)
+    admin_id = Column(Integer, ForeignKey("admin_users.id"), nullable=False, index=True)
+    admin_email = Column(String, nullable=False)
+    portal = Column(String, nullable=False)  # supplier | customer
+    subject_id = Column(Integer, nullable=False, index=True)
+    subject_name = Column(String)
+    user_id = Column(Integer, nullable=True)
+    session_id = Column(Integer, nullable=True)
+    started_at = Column(String, nullable=False)
+    ended_at = Column(String, nullable=True)
 
 
 class AccessAudit(Base):

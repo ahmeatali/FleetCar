@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <ImpersonationBanner />
     <router-view />
     <EmailVerificationModal />
   </div>
@@ -7,4 +8,5 @@
 
 <script setup>
 import EmailVerificationModal from './components/EmailVerificationModal.vue'
+import ImpersonationBanner from './components/ImpersonationBanner.vue'
 </script>

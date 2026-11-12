@@ -139,6 +139,11 @@ def check_database_columns():
         if "customer_id" not in columns:
             db.execute(text("ALTER TABLE quotes ADD COLUMN customer_id INTEGER;"))
             db.commit()
+        for table in ("supplier_sessions", "portal_sessions"):
+            existing = [r[1] for r in db.execute(text(f"PRAGMA table_info({table});")).fetchall()]
+            if existing and "impersonated_by" not in existing:
+                db.execute(text(f"ALTER TABLE {table} ADD COLUMN impersonated_by INTEGER;"))
+                db.commit()
     except Exception as e:
         print("Column migration notice:", e)
     finally:
@@ -4411,6 +4416,10 @@ def get_customer_services(customer_id: int, db: Session = Depends(get_db)):
 
 
 app.include_router(supplier_workspace_router, dependencies=[Depends(enforce_access)])
+
+from app.impersonation import router as impersonation_router
+
+app.include_router(impersonation_router)
 
 app.include_router(supplier_integrations_router, dependencies=[Depends(enforce_access)])
 app.include_router(shell_integration_router, dependencies=[Depends(enforce_access)])
