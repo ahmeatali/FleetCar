@@ -4417,9 +4417,11 @@ def get_customer_services(customer_id: int, db: Session = Depends(get_db)):
 
 app.include_router(supplier_workspace_router, dependencies=[Depends(enforce_access)])
 
+from app.customer_ai import router as customer_ai_router
 from app.impersonation import router as impersonation_router
 
 app.include_router(impersonation_router)
+app.include_router(customer_ai_router, dependencies=[Depends(enforce_access)])
 
 app.include_router(supplier_integrations_router, dependencies=[Depends(enforce_access)])
 app.include_router(shell_integration_router, dependencies=[Depends(enforce_access)])

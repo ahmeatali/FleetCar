@@ -485,6 +485,34 @@ class AiJobClaim(Base):
     finished_at = Column(String)
 
 
+class CustomerAiInsight(Base):
+    """Stored AI fleet analysis for a customer's rented vehicles."""
+
+    __tablename__ = "customer_ai_insights"
+    id = Column(Integer, primary_key=True)
+    customer_id = Column(Integer, ForeignKey("customers.id"), nullable=False, index=True)
+    kind = Column(String, nullable=False)
+    input_hash = Column(String, nullable=False)
+    model = Column(String, nullable=False)
+    payload = Column(JSON, nullable=False, default=dict)
+    usage = Column(JSON, nullable=False, default=dict)
+    created_at = Column(String, nullable=False)
+
+
+class CustomerAiJobClaim(Base):
+    """One row per customer and day for the daily AI run; the unique key is the worker lock."""
+
+    __tablename__ = "customer_ai_job_claims"
+    __table_args__ = (UniqueConstraint("job", "customer_id", "run_date"),)
+    id = Column(Integer, primary_key=True)
+    job = Column(String, nullable=False)
+    customer_id = Column(Integer, ForeignKey("customers.id"), nullable=False)
+    run_date = Column(String, nullable=False)
+    status = Column(String, nullable=False, default="running")
+    started_at = Column(String, nullable=False)
+    finished_at = Column(String)
+
+
 class SupplierSetting(Base):
     __tablename__ = "supplier_settings"
     id = Column(Integer, primary_key=True)

@@ -80,6 +80,12 @@ class WorkspaceClient:
         return self.request("PUT", path, body, token)
 
 
+def ai_assistant_rows(db, customer_id):
+    from app import ai_assistant
+
+    return ai_assistant.fleet_metrics(db, customer_id=customer_id)
+
+
 def sign_fixture(test, row):
     from io import BytesIO
 
@@ -730,18 +736,25 @@ class SupplierWorkspaceTests(unittest.TestCase):
             )
         )
         self.db.query(m.SupplierSession).filter(m.SupplierSession.supplier_id != 1).delete()
+        self.db.query(m.PortalSession).filter_by(kind="customer").delete()
         self.db.commit()
         factory = sessionmaker(bind=self.engine, autoflush=False)
         reply = ({"summary": "Günlük", "insights": []}, {"model": "m"})
+
+        def run(day):
+            result = ai_daily.run_daily(factory, day)
+            self.assertEqual(result["customers"], {})
+            return result["suppliers"]
+
         today = date(2026, 11, 12)
         with patch("app.ai_assistant.ask", side_effect=RuntimeError("API down")), self.assertLogs(
             "fleetcar.ai_daily", "ERROR"
         ):
-            self.assertEqual(ai_daily.run_daily(factory, today), {1: "failed"})
+            self.assertEqual(run(today), {1: "failed"})
         self.assertEqual(self.db.query(m.AiJobClaim).count(), 0)  # released for a retry
         with patch("app.ai_assistant.ask", return_value=reply) as ask:
-            self.assertEqual(ai_daily.run_daily(factory, today), {1: "done"})
-            self.assertEqual(ai_daily.run_daily(factory, today), {1: "skipped"})
+            self.assertEqual(run(today), {1: "done"})
+            self.assertEqual(run(today), {1: "skipped"})
             self.assertEqual(ask.call_count, 1)
         latest = self.client.get("/api/supplier-workspace/ai/fleet-insights").json()
         self.assertEqual((latest["summary"], latest["trigger"]), ("Günlük", "daily"))
@@ -756,11 +769,92 @@ class SupplierWorkspaceTests(unittest.TestCase):
         with patch("app.ai_assistant.ask", return_value=reply) as ask, patch(
             "app.ai_daily.analysed_today", return_value=False
         ):
-            self.assertEqual(ai_daily.run_daily(factory, tomorrow), {1: "skipped"})
+            self.assertEqual(run(tomorrow), {1: "skipped"})
             ask.assert_not_called()
         self.db.query(m.SupplierSession).delete()
         self.db.commit()
-        self.assertEqual(ai_daily.run_daily(factory, today + timedelta(days=2)), {})
+        self.assertEqual(run(today + timedelta(days=2)), {})
+
+    def test_customer_ai_insights_scope_roles_and_daily(self):
+        from app import ai_daily
+        from app.portal_access import mint
+
+        car = self.db.get(m.Vehicle, "car")
+        start = date.today() - timedelta(days=183)
+        car.customer_id, car.mileage, car.assignment_user = 1, 40000, "Satış Ekibi"
+        car.contract_start_date = start.isoformat()
+        car.contract_end_date = (start + timedelta(days=365)).isoformat()
+        car.contract_duration_months, car.monthly_km_limit = 12, 2000
+        self.db.add(
+            m.VehicleMileageRecord(
+                vehicle_id="car", mileage=10000, recorded_at=start.isoformat(), source="t"
+            )
+        )
+        users = [
+            m.CustomerPortalUser(
+                customer_id=1, name=name, email=f"{role}@c.test", role=role, created_at="x"
+            )
+            for name, role in (("Sürücü", "Sürücü"), ("İzleyici", "Görüntüleyici"))
+        ]
+        self.db.add_all(users)
+        self.db.commit()
+        owner = mint(self.db, "customer", 1)
+        driver = mint(self.db, "customer", 1, users[0].id)
+        viewer = mint(self.db, "customer", 1, users[1].id)
+        other = mint(self.db, "customer", 2)
+        url = "/api/customer/reports/ai-insights"
+
+        rows = {r["plate"]: r for r in ai_assistant_rows(self.db, 1)}
+        self.assertEqual(set(rows), {"34 ABC 123"})  # only the vehicle this customer rents
+        row = rows["34 ABC 123"]
+        self.assertEqual(row["supplier"], "ABC Filo Kiralama")
+        self.assertEqual(row["assigned_to"], "Satış Ekibi")
+        self.assertNotIn("customer", row)
+        self.assertIn("km_overage_risk", row["flags"])
+
+        self.assertIsNone(self.client.get(url, token=owner).json())
+        self.assertEqual(self.client.get(url, token=driver).status_code, 403)
+        self.assertEqual(self.client.post(url, token=viewer).status_code, 403)
+        reply = {
+            "summary": "Müşteri özeti",
+            "insights": [
+                {
+                    "type": "km_asimi",
+                    "severity": "yuksek",
+                    "plates": ["34 ABC 123", "34 XYZ 456"],
+                    "title": "Aşım",
+                    "recommendation": "Paketi revize edin",
+                    "rationale": "Oran 2,5",
+                    "estimated_monthly_impact_try": 0,
+                }
+            ],
+        }
+        with patch("app.ai_assistant.ask", return_value=(reply, {"model": "m"})) as ask:
+            first = self.client.post(url, token=owner)
+            self.assertEqual(first.status_code, 200, first.text)
+            # a plate this customer does not rent is dropped
+            self.assertEqual(first.json()["insights"][0]["plates"], ["34 ABC 123"])
+            system, sent = ask.call_args.args[0], json.loads(ask.call_args.args[1])
+            self.assertIn("kiralayan", system)
+            self.assertIn("by_supplier", sent["overview"])
+            self.assertNotIn("by_customer", sent["overview"])
+            self.assertEqual(self.client.post(url, token=other).status_code, 400)
+        latest = self.client.get(url, token=viewer).json()
+        self.assertEqual(latest["summary"], "Müşteri özeti")
+        self.assertEqual(self.db.query(m.SupplierAiInsight).count(), 0)
+
+        # the daily job covers customers with a live session
+        self.db.query(m.CustomerAiInsight).delete()
+        self.db.query(m.SupplierSession).delete()
+        self.db.query(m.PortalSession).filter(
+            m.PortalSession.kind == "customer", m.PortalSession.subject_id != 1
+        ).delete()
+        self.db.commit()
+        factory = sessionmaker(bind=self.engine, autoflush=False)
+        with patch("app.ai_assistant.ask", return_value=(reply, {"model": "m"})):
+            result = ai_daily.run_daily(factory, date(2026, 11, 12))
+        self.assertEqual(result, {"suppliers": {}, "customers": {1: "done"}})
+        self.assertEqual(self.client.get(url, token=owner).json()["trigger"], "daily")
 
     def test_ai_daily_schedule_targets_six_oclock(self):
         from app import ai_daily
