@@ -145,28 +145,54 @@ let media,
   previousOverflow = ''
 const customerItems = [
   { label: 'Ana Sayfa', icon: '⌂', to: '/dashboard' },
-  { label: 'Araçlar', icon: '▱', to: '/dashboard/vehicles' },
-  { label: 'Talep & Teklifler', icon: '▤', to: '/dashboard/quotes' },
-  { label: 'Sözleşmeler', icon: '▣' },
-  { label: 'Servis / Bakım', icon: '⚒', to: '/dashboard/service-management' },
-  { label: 'Lastik Yönetimi', icon: '◎', to: '/dashboard/tires' },
-  { label: 'Hasar ve Kaza', icon: '⚠', to: '/dashboard/service-management?tab=damage' },
-  { label: 'Yol Yardım', icon: '♧', to: '/dashboard/roadside' },
-  { label: 'Şoförlü Araçlar', icon: '♧' },
-  { label: 'Araç Takip', icon: '⌖', to: '/dashboard/reports?tab=location' },
-  { label: 'HGS & Cezalar', icon: '♜' },
+  {
+    id: 'customer-fleet',
+    label: 'Filo',
+    children: [
+      { label: 'Araçlar', to: '/dashboard/vehicles' },
+      { label: 'Araç Takip', to: '/dashboard/reports?tab=location' },
+      { label: 'Belgeler', to: '/dashboard/settings?tab=sirket_evraklari' },
+    ],
+  },
+  {
+    id: 'customer-service',
+    label: 'Servis & Talepler',
+    children: [
+      { label: 'Talep & Teklifler', to: '/dashboard/quotes' },
+      { label: 'Tedarikçi İşlemleri', to: '/dashboard/requests' },
+      { label: 'Servis / Bakım', to: '/dashboard/service-management' },
+      { label: 'Lastik Yönetimi', to: '/dashboard/tires' },
+      { label: 'Hasar ve Kaza', to: '/dashboard/service-management?tab=damage' },
+      { label: 'Yol Yardım', to: '/dashboard/roadside' },
+      { label: 'İş Emirleri', to: '/dashboard/work-orders' },
+    ],
+  },
   { label: 'Yakıt ve Giderler', icon: '▥', to: '/dashboard/fuel' },
-  { label: 'Faturalar', icon: '▤' },
-  { label: 'Raporlar', icon: '▥', to: '/dashboard/reports' },
-  { label: 'Filo Kontrol & Tasarruf', icon: '◇', to: '/dashboard/savings' },
-  { label: 'Belgeler', icon: '▤', to: '/dashboard/settings?tab=sirket_evraklari' },
-  { label: 'Bildirimler', icon: '♧' },
-  { label: 'Kullanıcılar ve Yetkiler', icon: '♧', to: '/dashboard/users' },
-  { label: 'Ayarlar', icon: '⚙', to: '/dashboard/settings' },
-  { label: 'Tedarikçi İşlemleri', icon: '▤', to: '/dashboard/requests' },
-  { label: 'İş Emirleri', icon: '▣', to: '/dashboard/work-orders' },
+  {
+    id: 'customer-reports',
+    label: 'Raporlama',
+    children: [
+      { label: 'Raporlar', to: '/dashboard/reports' },
+      { label: 'Filo Kontrol & Tasarruf', to: '/dashboard/savings' },
+    ],
+  },
+  {
+    id: 'customer-admin',
+    label: 'Yönetim',
+    children: [
+      { label: 'Kullanıcılar ve Yetkiler', to: '/dashboard/users' },
+      { label: 'Ayarlar', to: '/dashboard/settings' },
+    ],
+  },
+  // Not built yet: listed under "Yakında".
+  { label: 'Sözleşmeler' },
+  { label: 'Faturalar' },
+  { label: 'HGS & Cezalar' },
+  { label: 'Şoförlü Araçlar' },
+  { label: 'Bildirimler' },
 ]
-const items = computed(() => (props.supplier ? supplierNavigation : customerItems))
+const customerLinks = customerItems.flatMap((item) => item.children || [item])
+const items = computed(() => (props.supplier ? supplierNavigation : customerLinks))
 const accessPermissions = ref(null),
   canManageTeam = ref(true)
 const moduleForLink = (item) => {
@@ -248,9 +274,8 @@ const currentLabel = computed(
 watch(
   () => [props.supplier, route.fullPath],
   () => {
-    expandedGroup.value = props.supplier
-      ? supplierNavigationGroups.find((group) => group.children?.some(isSelected))?.id || null
-      : null
+    const source = props.supplier ? supplierNavigationGroups : customerItems
+    expandedGroup.value = source.find((group) => group.children?.some(isSelected))?.id || null
   },
   { immediate: true },
 )

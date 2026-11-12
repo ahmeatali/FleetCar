@@ -92,6 +92,8 @@ export const iconPaths = {
 // Labels are matched first; the old glyph is the fallback so nothing renders empty.
 const byLabel = [
   [/^ana sayfa/i, 'home'],
+  [/^filo$/i, 'car'],
+  [/^yönetim$/i, 'settings'],
   [/günlük operasyon|operasyon merkezi/i, 'check'],
   [/^operasyonlar/i, 'tools'],
   [/şube|lokasyon/i, 'branch'],

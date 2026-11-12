@@ -17,7 +17,7 @@
             ><span class="account-avatar">{{ initials }}</span
             ><span
               ><strong>{{ customerName }}</strong
-              ><small>Filo Yöneticisi</small></span
+              ><small>{{ customerRoleText }}</small></span
             ></router-link
           >
         </div>
@@ -34,7 +34,7 @@
       <UiAlert v-if="error" class="overview-alert" as="div" tone="error"
         >{{ error }} <UiButton @click="load">Tekrar Dene</UiButton></UiAlert
       >
-      <UiAlert v-if="loading" as="p" tone="info">Dashboard verileri yükleniyor…</UiAlert>
+      <UiAlert v-if="loading" as="p" tone="info">Pano verileri yükleniyor…</UiAlert>
       <section class="overview-stats" aria-label="Filo özeti">
         <router-link v-for="card in cards" :key="card.label" :to="card.to" class="overview-stat"
           ><span class="stat-symbol">{{ card.icon }}</span>
@@ -239,6 +239,9 @@
   </div>
 </template>
 <script setup>
+import { customerRoleLabel } from '../utils/customerIdentity.js'
+
+const customerRoleText = customerRoleLabel()
 import { UiAlert, UiButton } from '../components/ui/index.js'
 
 import NotificationBell from '../components/NotificationBell.vue'

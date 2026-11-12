@@ -23,7 +23,7 @@
             <span class="fleet-avatar">{{ userInitials }}</span
             ><span
               ><strong>{{ customerName }}</strong
-              ><small>{{ isSupplier ? 'Tedarikçi' : 'Filo yöneticisi' }}</small></span
+              ><small>{{ isSupplier ? 'Tedarikçi' : customerRole }}</small></span
             >
           </div>
         </div>
@@ -1253,6 +1253,9 @@
 </template>
 
 <script setup>
+import { customerRoleLabel } from '../utils/customerIdentity.js'
+
+const customerRole = customerRoleLabel()
 import { UiAlert, UiButton, UiField, UiModal } from '../components/ui/index.js'
 
 import NotificationBell from '../components/NotificationBell.vue'

@@ -84,16 +84,16 @@
 
           <div class="grid-3" style="gap: 20px">
             <div class="user-info-box">
-              <span class="info-label">Filo Yöneticisi</span>
-              <strong class="info-val">{{ profile.company_name || 'Filo Yöneticisi' }}</strong>
+              <span class="info-label">Firma</span>
+              <strong class="info-val">{{ profile.company_name || '—' }}</strong>
             </div>
             <div class="user-info-box">
               <span class="info-label">Kullanıcı Rolü</span>
-              <strong class="info-val" style="color: var(--secondary)">Filo Yöneticisi</strong>
+              <strong class="info-val" style="color: var(--secondary)">{{ customerRole }}</strong>
             </div>
             <div class="user-info-box">
-              <span class="info-label">Sözleşme Durumu</span>
-              <strong class="info-val" style="color: #059669">Aktif Kiralama</strong>
+              <span class="info-label">Giriş Yapan Kullanıcı</span>
+              <strong class="info-val">{{ signedInAs }}</strong>
             </div>
           </div>
         </div>
@@ -198,6 +198,11 @@
 </template>
 
 <script setup>
+import { customerRoleLabel } from '../utils/customerIdentity.js'
+
+const customerRole = customerRoleLabel()
+const signedInAs =
+  localStorage.getItem('fleetcar_user_name') || localStorage.getItem('fleetcar_user_email') || '—'
 import NotificationBell from '../components/NotificationBell.vue'
 import { ref, onMounted } from 'vue'
 import Sidebar from '../components/Sidebar.vue'

@@ -15,7 +15,7 @@
             <span class="avatar">{{ initials }}</span
             ><span
               ><b>{{ customerName }}</b
-              ><small>Filo Yöneticisi</small></span
+              ><small>{{ customerRole }}</small></span
             ><router-link to="/profile" class="profile-link">Profilim</router-link>
           </div>
         </div>
@@ -548,6 +548,9 @@
 </template>
 
 <script setup>
+import { customerRoleLabel } from '../utils/customerIdentity.js'
+
+const customerRole = customerRoleLabel()
 import { usePagination } from '../composables/usePagination.js'
 
 import { portalClient as json } from '../api/clients.js'

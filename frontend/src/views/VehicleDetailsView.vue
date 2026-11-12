@@ -18,9 +18,7 @@
               <span>{{ userInitials }}</span>
               <div>
                 <strong>{{ userName }}</strong
-                ><small
-                  >{{ companyName }} · {{ isSupplier ? 'Tedarikçi' : 'Filo Yöneticisi' }}</small
-                >
+                ><small>{{ companyName }} · {{ isSupplier ? 'Tedarikçi' : customerRole }}</small>
               </div>
               <UiButton aria-label="Profil menüsü">⌄</UiButton>
             </div>
@@ -858,6 +856,9 @@
 </template>
 
 <script setup>
+import { customerRoleLabel } from '../utils/customerIdentity.js'
+
+const customerRole = customerRoleLabel()
 import {
   formatNumber,
   formatMoney,

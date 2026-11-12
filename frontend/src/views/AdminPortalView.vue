@@ -5,11 +5,10 @@
     <aside class="portal-sidebar admin-sidebar">
       <router-link to="/admin-portal" class="nav-logo" style="margin-bottom: 25px">
         <img class="brand-logo-image" src="/fleetrent-logo.jpeg" alt="FleetRent" />
-        <span class="brand-logo-role">Yönetici</span>
       </router-link>
 
       <div class="admin-profile">
-        <div class="avatar">⚙️</div>
+        <div class="avatar"><NavIcon name="settings" size="20" /></div>
         <div>
           <h4 style="font-size: 0.85rem; font-weight: 600">Yönetici Paneli</h4>
           <span style="font-size: 0.7rem; color: #34d399; font-weight: 600"
@@ -19,48 +18,16 @@
       </div>
 
       <ul class="sidebar-menu">
-        <li>
+        <li v-for="tab in adminTabs" :key="tab.id">
           <a
             href="#"
-            @click.prevent="activeTab = 'quotes'"
+            @click.prevent="openTab(tab.id)"
             class="sidebar-link"
-            :class="{ 'active-admin': activeTab === 'quotes' }"
+            :class="{ 'active-admin': activeTab === tab.id }"
+            :aria-current="activeTab === tab.id ? 'page' : undefined"
           >
-            <span class="icon">📑</span>
-            <span>Gelen Teklifler</span>
-          </a>
-        </li>
-        <li>
-          <a
-            href="#"
-            @click.prevent="activeTab = 'customers'"
-            class="sidebar-link"
-            :class="{ 'active-admin': activeTab === 'customers' }"
-          >
-            <span class="icon">👥</span>
-            <span>Aktif Müşteriler</span>
-          </a>
-        </li>
-        <li>
-          <a
-            href="#"
-            @click.prevent="activeTab = 'vehicles'"
-            class="sidebar-link"
-            :class="{ 'active-admin': activeTab === 'vehicles' }"
-          >
-            <span class="icon">🚗</span>
-            <span>Araçlar</span>
-          </a>
-        </li>
-        <li>
-          <a
-            href="#"
-            @click.prevent="activeTab = 'suppliers'"
-            class="sidebar-link"
-            :class="{ 'active-admin': activeTab === 'suppliers' }"
-          >
-            <span class="icon">🏢</span>
-            <span>Tedarikçiler</span>
+            <NavIcon class="icon" :name="tab.icon" size="18" />
+            <span>{{ tab.label }}</span>
           </a>
         </li>
       </ul>
@@ -78,7 +45,7 @@
             color: #fecdd3;
           "
         >
-          <span class="icon">🚪</span>
+          <NavIcon class="icon" name="return" size="18" />
           <span>Çıkış Yap</span>
         </UiButton>
       </div>
@@ -624,16 +591,16 @@
                         @click.stop="enterAccount('customer', c.id, c.company_name)"
                         class="btn btn-secondary"
                         style="
-                          padding: 6px 10px;
+                          padding: 6px 12px;
                           font-size: 0.78rem;
-                          border-color: rgba(13, 148, 136, 0.3);
-                          color: #0d9488;
-                          background: rgba(13, 148, 136, 0.06);
-                          font-weight: 600;
+                          border-color: #0d9488;
+                          color: #ffffff;
+                          background: #0d9488;
+                          font-weight: 700;
                         "
                         title="Destek için bu müşterinin portalına gir"
                       >
-                        🔑 Hesaba Gir
+                        Hesaba Gir
                       </UiButton>
                       <UiButton
                         @click.stop="sendCustomerInvite(c)"
@@ -1509,16 +1476,16 @@
                         @click="enterAccount('supplier', s.id, s.name)"
                         class="btn btn-secondary"
                         style="
-                          padding: 6px 10px;
+                          padding: 6px 12px;
                           font-size: 0.78rem;
-                          border-color: rgba(13, 148, 136, 0.3);
-                          color: #0d9488;
-                          background: rgba(13, 148, 136, 0.06);
-                          font-weight: 600;
+                          border-color: #0d9488;
+                          color: #ffffff;
+                          background: #0d9488;
+                          font-weight: 700;
                         "
                         title="Destek için bu tedarikçinin portalına gir"
                       >
-                        🔑 Hesaba Gir
+                        Hesaba Gir
                       </UiButton>
                       <UiButton
                         @click="sendSupplierInvite(s)"
@@ -1561,7 +1528,53 @@
           </div>
         </div>
       </div>
-      <ManualSignatureInbox account="admin" />
+      <!-- 4. SUPPORT ACCESS LOG -->
+      <div v-if="activeTab === 'support'">
+        <header class="dashboard-header">
+          <div>
+            <h1>Destek Kayıtları</h1>
+            <p style="color: var(--text-muted); font-size: 0.95rem">
+              Yöneticilerin destek için girdiği firma hesapları. Bu kayıtları firmalar görmez.
+            </p>
+          </div>
+          <UiButton class="btn btn-secondary" :disabled="supportLoading" @click="loadSupportLog"
+            >Yenile</UiButton
+          >
+        </header>
+        <p v-if="supportError" class="admin-support-error">{{ supportError }}</p>
+        <div class="glass-panel" style="padding: 0; overflow-x: auto">
+          <table class="data-table admin-support-table">
+            <thead>
+              <tr>
+                <th>Giriş</th>
+                <th>Yönetici</th>
+                <th>Portal</th>
+                <th>Firma</th>
+                <th>Durum</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in supportLog" :key="row.id">
+                <td>{{ formatDateTime(row.started_at) }}</td>
+                <td>{{ row.admin_email }}</td>
+                <td>{{ row.portal === 'supplier' ? 'Tedarikçi' : 'Müşteri' }}</td>
+                <td>{{ row.subject_name || '#' + row.subject_id }}</td>
+                <td>
+                  <span :class="['admin-support-state', { active: row.active }]">{{
+                    row.active ? 'Açık' : `Kapandı · ${formatDateTime(row.ended_at)}`
+                  }}</span>
+                </td>
+              </tr>
+              <tr v-if="!supportLog.length && !supportLoading">
+                <td colspan="5" style="text-align: center; color: var(--text-muted)">
+                  Henüz destek girişi yapılmadı.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <ManualSignatureInbox v-if="activeTab !== 'support'" account="admin" />
     </main>
   </div>
 
@@ -2599,10 +2612,47 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import ManualSignatureInbox from '../components/ManualSignatureInbox.vue'
 import { useRouter } from 'vue-router'
 import { startImpersonation } from '../api/impersonation.js'
+import { apiRequest } from '../api/http.js'
+import NavIcon from '../components/NavIcon.vue'
 
 const router = useRouter()
 
-const activeTab = ref('quotes') // 'quotes', 'customers', 'suppliers'
+const activeTab = ref('quotes') // 'quotes', 'customers', 'vehicles', 'suppliers', 'support'
+const adminTabs = [
+  { id: 'quotes', label: 'Gelen Teklifler', icon: 'document' },
+  { id: 'customers', label: 'Aktif Müşteriler', icon: 'users' },
+  { id: 'vehicles', label: 'Araçlar', icon: 'car' },
+  { id: 'suppliers', label: 'Tedarikçiler', icon: 'store' },
+  { id: 'support', label: 'Destek Kayıtları', icon: 'shield' },
+]
+const supportLog = ref([]),
+  supportLoading = ref(false),
+  supportError = ref('')
+async function loadSupportLog() {
+  supportLoading.value = true
+  supportError.value = ''
+  try {
+    supportLog.value = await apiRequest('/api/admin/impersonation-log', { account: 'admin' })
+  } catch (error) {
+    supportError.value = error?.message || 'Destek kayıtları yüklenemedi.'
+  } finally {
+    supportLoading.value = false
+  }
+}
+function openTab(id) {
+  activeTab.value = id
+  if (id === 'support') loadSupportLog()
+}
+const formatDateTime = (value) =>
+  value
+    ? new Date(value).toLocaleString('tr-TR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : '—'
 
 async function enterAccount(portal, subjectId, name) {
   const label = portal === 'supplier' ? 'tedarikçi' : 'müşteri'
@@ -4057,5 +4107,29 @@ onMounted(async () => {
   border-radius: 20px;
   padding: 3px 10px;
   white-space: nowrap;
+}
+
+.admin-support-table th,
+.admin-support-table td {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 0.85rem;
+}
+.admin-support-state {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.admin-support-state.active {
+  background: #fff7ed;
+  color: #c2410c;
+}
+.admin-support-error {
+  color: #b91c1c;
+  margin: 0 0 12px;
 }
 </style>

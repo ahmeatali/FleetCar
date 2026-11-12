@@ -15,7 +15,7 @@
           <NotificationBell /><span class="avatar">{{ initials }}</span>
           <div>
             <strong>{{ customerName }}</strong
-            ><small>Filo Yöneticisi</small>
+            ><small>{{ customerRole }}</small>
           </div>
         </div>
       </header>
@@ -572,6 +572,9 @@
 </template>
 
 <script setup>
+import { customerRoleLabel } from '../utils/customerIdentity.js'
+
+const customerRole = customerRoleLabel()
 import { downloadCsv } from '../utils/downloads.js'
 
 import { UiAlert, UiButton, UiField, UiModal, UiTable } from '../components/ui/index.js'

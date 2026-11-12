@@ -44,7 +44,8 @@ export async function startImpersonation(portal, subjectId, userId = null, stora
     if (idKeys.role) {
       // the support session is the company's owner session
       storage.setItem(idKeys.role, 'owner')
-      setKeys.push(idKeys.role)
+      storage.setItem('fleetcar_user_name', 'Destek modu')
+      setKeys.push(idKeys.role, 'fleetcar_user_name')
     }
   }
   storage.setItem(
