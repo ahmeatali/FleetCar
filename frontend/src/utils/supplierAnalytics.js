@@ -5,8 +5,19 @@ export function inRange(value, start, end) {
   const stamp = day(value)
   return Boolean(stamp) && (!start || stamp >= start) && (!end || stamp <= end)
 }
+// Bayide: bought and paid at the dealer, not yet picked up into the fleet.
+export const FLEET_GROUPS = [
+  { key: 'Kirada', label: 'Kira', tone: 'green', color: '#13b785', icon: '⚿' },
+  { key: 'Havuzda', label: 'Havuz', tone: 'blue', color: '#0064ff', icon: '▤' },
+  { key: 'Serviste', label: 'Servis', tone: 'amber', color: '#ffa92e', icon: '⚒' },
+  { key: 'Satışta', label: '2. El', tone: 'purple', color: '#8879db', icon: '◇' },
+  { key: 'Dealer', label: 'Dealer', tone: 'teal', color: '#1aa5b8', icon: '⛟' },
+  { key: 'Hasar', label: 'Hasarlı', tone: 'red', color: '#f15d7d', icon: '!' },
+  { key: 'Pasif', label: 'Pasif', tone: 'gray', color: '#a5aec0', icon: '○' },
+]
 export function fleetStatus(v) {
   if (!v.is_active) return 'Pasif'
+  if (v.status === 'Bayide') return 'Dealer'
   if (['Servis', 'Serviste', 'Lastik Değişiminde'].includes(v.status)) return 'Serviste'
   if (['Hasar', 'Kaza'].includes(v.status)) return 'Hasar'
   if (v.vehicle_group === 'Satışta') return 'Satışta'
@@ -82,9 +93,10 @@ export function analyzeSupplier(data, filters = {}) {
       range(r) &&
       invoices.some((i) => i.id === r.parent_id && i.details.direction === 'gider'),
   )
-  const statusGroups = ['Kirada', 'Havuzda', 'Serviste', 'Satışta', 'Pasif', 'Hasar'].map(
-    (label) => ({ label, count: cars.filter((v) => fleetStatus(v) === label).length }),
-  )
+  const statusGroups = FLEET_GROUPS.map((g) => ({
+    ...g,
+    count: cars.filter((v) => fleetStatus(v) === g.key).length,
+  }))
   const today = new Date().toLocaleDateString('en-CA')
   const upcoming = []
   const days = (value) =>

@@ -41,7 +41,7 @@ def attach(db, ctx, row, vehicle_ids=None):
             .first()
         ):
             raise HTTPException(400, "Satış dosyası bulunan araç kiralanamaz.")
-        if not car.is_active or car.vehicle_group == "Satışta":
+        if not car.is_active or car.vehicle_group == "Satışta" or car.status == "Bayide":
             raise HTTPException(400, "Sözleşme aracı kiralamaya uygun değil.")
         db.add(
             m.ContractVehicle(
@@ -86,7 +86,7 @@ def activate(db, ctx, row):
             raise HTTPException(409, "Sözleşme araçlarından biri başka kiralama/müşteriye bağlı.")
         if (
             not car.is_active
-            or car.status in {"Servis", "Serviste", "Hasar", "Kaza"}
+            or car.status in {"Servis", "Serviste", "Hasar", "Kaza", "Bayide"}
             or car.vehicle_group == "Satışta"
         ):
             raise HTTPException(400, "Sözleşme araçlarından biri kiralamaya uygun değil.")

@@ -454,6 +454,35 @@ class SupplierSession(Base):
     user_id = Column(Integer, ForeignKey("supplier_portal_users.id"))
     token_hash = Column(String, nullable=False, unique=True, index=True)
     expires_at = Column(String, nullable=False)
+    impersonated_by = Column(Integer, ForeignKey("admin_users.id"), nullable=True)
+
+
+class SupplierAiInsight(Base):
+    """Stored AI output so a page shows the last analysis without calling the API again."""
+
+    __tablename__ = "supplier_ai_insights"
+    id = Column(Integer, primary_key=True)
+    supplier_id = Column(Integer, ForeignKey("suppliers.id"), nullable=False, index=True)
+    kind = Column(String, nullable=False)
+    input_hash = Column(String, nullable=False)
+    model = Column(String, nullable=False)
+    payload = Column(JSON, nullable=False, default=dict)
+    usage = Column(JSON, nullable=False, default=dict)
+    created_at = Column(String, nullable=False)
+
+
+class AiJobClaim(Base):
+    """One row per supplier and day for the daily AI run; the unique key is the worker lock."""
+
+    __tablename__ = "ai_job_claims"
+    __table_args__ = (UniqueConstraint("job", "supplier_id", "run_date"),)
+    id = Column(Integer, primary_key=True)
+    job = Column(String, nullable=False)
+    supplier_id = Column(Integer, ForeignKey("suppliers.id"), nullable=False)
+    run_date = Column(String, nullable=False)
+    status = Column(String, nullable=False, default="running")
+    started_at = Column(String, nullable=False)
+    finished_at = Column(String)
 
 
 class SupplierSetting(Base):
@@ -502,6 +531,23 @@ class PortalSession(Base):
     user_id = Column(Integer)
     token_hash = Column(String, nullable=False, unique=True, index=True)
     expires_at = Column(String, nullable=False)
+    impersonated_by = Column(Integer, ForeignKey("admin_users.id"), nullable=True)
+
+
+class ImpersonationEvent(Base):
+    """Internal support-access trail. Impersonated companies never see these rows."""
+
+    __tablename__ = "impersonation_events"
+    id = Column(Integer, primary_key=True)
+    admin_id = Column(Integer, ForeignKey("admin_users.id"), nullable=False, index=True)
+    admin_email = Column(String, nullable=False)
+    portal = Column(String, nullable=False)  # supplier | customer
+    subject_id = Column(Integer, nullable=False, index=True)
+    subject_name = Column(String)
+    user_id = Column(Integer, nullable=True)
+    session_id = Column(Integer, nullable=True)
+    started_at = Column(String, nullable=False)
+    ended_at = Column(String, nullable=True)
 
 
 class AccessAudit(Base):

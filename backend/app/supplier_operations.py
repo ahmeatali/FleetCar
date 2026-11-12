@@ -9,7 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app import models as m
-from app.auth import hash_password
+from app.auth import hash_password, verify_password
 from app.common.time import business_today as business_today
 from app.common.time import stamp as stamp
 from app.common.validation import number_detail as number_detail
@@ -40,11 +40,15 @@ from app.supplier_context import (
     vehicle as vehicle,
 )
 from app.supplier_permissions import capabilities, permit
+from app.approval_rules import ROLE_LABELS, current_step, decide
 from app.supplier_schemas import (
     ConvertInput,
     CustomerInput,
+    DealerStatusInput,
+    DecisionInput,
     MemberInput,
     OperationInput,
+    PasswordChangeInput,
     SettingsInput,
     SharedInput,
     TransitionInput,
@@ -54,6 +58,9 @@ from app.supplier_service import (
 )
 from app.supplier_service import (
     approval_needed as approval_needed,
+)
+from app.supplier_service import (
+    approval_view as approval_view,
 )
 from app.supplier_service import (
     audit as audit,
@@ -88,8 +95,36 @@ def read_session(ctx=Depends(context)):
         "name": ctx["actor"],
         "company_name": ctx["supplier"].name,
         "role": ctx["role"],
+        "user_id": ctx["session"].user_id,
         "capabilities": capabilities(ctx["role"]),
     }
+
+
+@router.post("/password")
+def change_password(
+    data: PasswordChangeInput, ctx=Depends(context), db: Session = Depends(get_db)
+):
+    session = ctx["session"]
+    account = (
+        db.get(m.SupplierPortalUser, session.user_id) if session.user_id else ctx["supplier"]
+    )
+    if not account.password_hash or not verify_password(
+        data.current_password, account.password_hash
+    ):
+        raise HTTPException(400, "Mevcut şifre hatalı.")
+    if data.new_password == data.current_password:
+        raise HTTPException(400, "Yeni şifre mevcut şifreden farklı olmalı.")
+    account.password_hash = hash_password(data.new_password)
+    # Other devices signed in with the old password are signed out; this one stays.
+    db.query(m.SupplierSession).filter(
+        m.SupplierSession.supplier_id == ctx["id"],
+        m.SupplierSession.user_id.is_(None)
+        if session.user_id is None
+        else m.SupplierSession.user_id == session.user_id,
+        m.SupplierSession.id != session.id,
+    ).delete(synchronize_session=False)
+    db.commit()
+    return {"ok": True}
 
 
 @router.post("/logout")
@@ -536,6 +571,9 @@ def change_status(
             or row.details.get("target_amount") != parent.amount
         ):
             raise HTTPException(409, "Onay konusu değişti. Yeni onay isteyin.")
+    if row.kind == "approval":
+        # Only the owner reaches this path (permit); an owner decision closes the chain.
+        row.details, _ = decide(ctx, approval_view(db, row), data.status == "Onaylandı")
     changed = (
         db.query(m.SupplierOperation)
         .filter_by(id=row.id, version=data.version)
@@ -718,6 +756,59 @@ def request_approval(rid: int, ctx=Depends(context), db: Session = Depends(get_d
     return serialize(db, row)
 
 
+@router.post("/records/{rid}/decision")
+def approval_decision(
+    rid: int, data: DecisionInput, ctx=Depends(context), db: Session = Depends(get_db)
+):
+    row = operation(db, ctx, rid)
+    if row.kind != "approval":
+        raise HTTPException(404, "Onay talebi bulunamadı.")
+    if row.version != data.version:
+        raise HTTPException(409, "Kayıt değişti. Yenileyin.")
+    if row.status != "Beklemede":
+        raise HTTPException(400, "Bu onay talebi zaten sonuçlandı.")
+    approve = data.decision == "approve"
+    note = data.note.strip()
+    if not approve and len(note) < 3:
+        raise HTTPException(400, "Ret gerekçesi yazın.")
+    view = approval_view(db, row)
+    step = view["steps"][current_step(view) or 0]["role"]
+    details, status = decide(ctx, view, approve, note)
+    if approve:
+        parent = operation(db, ctx, row.parent_id)
+        if (
+            details.get("target_version") != parent.version
+            or details.get("target_amount") != parent.amount
+        ):
+            raise HTTPException(409, "Onay konusu değişti. Yeni onay isteyin.")
+    changed = (
+        db.query(m.SupplierOperation)
+        .filter_by(id=row.id, version=data.version)
+        .update(
+            {
+                "status": status,
+                "version": data.version + 1,
+                "updated_at": stamp(),
+                "details": details,
+            },
+            synchronize_session=False,
+        )
+    )
+    if changed != 1:
+        db.rollback()
+        raise HTTPException(409, "Kayıt değişti. Yenileyin.")
+    db.refresh(row)
+    audit(
+        db,
+        ctx,
+        row,
+        f"{ROLE_LABELS[step]} adımı {'onaylandı' if approve else 'reddedildi'}",
+        {"note": note, "status": status},
+    )
+    db.commit()
+    return serialize(db, row)
+
+
 @router.get("/users")
 def users(ctx=Depends(context), db: Session = Depends(get_db)):
     if ctx["role"] != "owner":
@@ -795,7 +886,7 @@ def save_settings(data: SettingsInput, ctx=Depends(context), db: Session = Depen
     if not r:
         r = m.SupplierSetting(supplier_id=ctx["id"])
         db.add(r)
-    r.value = {**(r.value or {}), **data.model_dump()}
+    r.value = {**(r.value or {}), **data.model_dump(exclude_none=True)}
     db.commit()
     return settings(db, ctx["id"])
 
@@ -1225,6 +1316,112 @@ def edit_inventory(
             409, "Aktif kiralama ve sözleşme alanlarını sözleşme/iade akışından yönetin."
         )
     return main.update_vehicle(vid, data, db, supplier_id=ctx["id"])
+
+
+@router.get("/ai/fleet-insights")
+def ai_fleet_insights_latest(ctx=Depends(context), db: Session = Depends(get_db)):
+    """Last stored analysis; null when none was generated yet (no API call here)."""
+    from app import ai_assistant
+
+    row = (
+        db.query(m.SupplierAiInsight)
+        .filter_by(supplier_id=ctx["id"], kind="fleet")
+        .order_by(m.SupplierAiInsight.id.desc())
+        .first()
+    )
+    if not row:
+        return None
+    return ai_assistant.insight_view(row, ai_assistant.fleet_metrics(db, ctx["id"]))
+
+
+@router.post("/ai/fleet-insights")
+def ai_fleet_insights(force: bool = False, ctx=Depends(context), db: Session = Depends(get_db)):
+    from app import ai_assistant
+
+    if ctx["role"] not in {"owner", "fleet_manager", "operations", "finance"}:
+        raise HTTPException(403, "AI analizi için rolünüz yetkili değil.")
+    return ai_assistant.fleet_insights(db, ctx, force=force)
+
+
+@router.post("/ai/read-document")
+async def ai_read_document(
+    request: Request,
+    doc_type: str,
+    ctx=Depends(context),
+    db: Session = Depends(get_db),
+):
+    from app import ai_assistant
+
+    if ctx["role"] == "viewer":
+        raise HTTPException(403, "Belge okutmak için rolünüz yetkili değil.")
+    media_type = request.headers.get("content-type", "").split(";")[0].strip().lower()
+    return ai_assistant.read_document(db, ctx, doc_type, await request.body(), media_type)
+
+
+@router.post("/vehicle-import")
+async def import_vehicles(
+    request: Request,
+    filename: str = "",
+    commit: bool = False,
+    ctx=Depends(context),
+    db: Session = Depends(get_db),
+):
+    """Preview (default) or apply a bulk vehicle file; apply re-validates the same file."""
+    from app import vehicle_import
+
+    permit(ctx, "vehicle")
+    table = vehicle_import.read_table(await request.body(), filename)
+    rows, ignored = vehicle_import.build_rows(table)
+    rows = vehicle_import.plan(db, ctx, rows)
+    summary = vehicle_import.summarize(rows, ignored)
+    if commit:
+        if not summary["create"] and not summary["update"]:
+            raise HTTPException(400, "Aktarılacak yeni veya değişen araç yok.")
+        summary["result"] = vehicle_import.apply(db, ctx, rows)
+    return summary
+
+
+@router.post("/vehicles/{vid}/dealer")
+def dealer_status(
+    vid: str, data: DealerStatusInput, ctx=Depends(context), db: Session = Depends(get_db)
+):
+    """Bayide: bought and paid at the dealer, not yet picked up into the fleet."""
+    from app import main
+
+    permit(ctx, "vehicle")
+    v = vehicle(db, ctx, vid)
+    if data.at_dealer:
+        if v.status == "Bayide":
+            raise HTTPException(400, "Araç zaten bayide teslim bekliyor.")
+        active_rental = (
+            db.query(m.Rental)
+            .filter(
+                m.Rental.supplier_id == ctx["id"],
+                m.Rental.vehicle_id == vid,
+                m.Rental.status.notin_(["Tamamlandı", "İptal"]),
+            )
+            .first()
+        )
+        if (
+            not v.is_active
+            or v.customer_id
+            or active_rental
+            or v.vehicle_group == "Satışta"
+            or v.status not in {None, "", "Aktif", "Müsait", "Havuzda"}
+        ):
+            raise HTTPException(
+                400,
+                "Yalnızca boştaki (kirada, serviste veya satışta olmayan) araç "
+                "bayide işaretlenebilir.",
+            )
+        v.status = "Bayide"
+    else:
+        if v.status != "Bayide":
+            raise HTTPException(400, "Araç bayide değil.")
+        v.status = "Aktif"
+    db.commit()
+    db.refresh(v)
+    return main.vehicle_dict(v)
 
 
 @router.put("/vehicles/{vid}/assignment")

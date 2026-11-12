@@ -95,5 +95,69 @@ class PortalAccessTests(unittest.TestCase):
         self.db.commit()
         self.assertEqual(self.client.get("/uploads/vehicles/private-other.pdf").status_code, 404)
 
+    def _admin_token(self):
+        from app.auth import hash_password
+
+        admin = m.AdminUser(
+            email="root@fleetrent.test",
+            password_hash=hash_password("x"),
+            created_at="2026-01-01",
+        )
+        self.db.add(admin)
+        self.db.commit()
+        return admin, mint(self.db, "admin", admin.id)
+
+    def test_impersonation_opens_portal_logs_and_stops(self):
+        admin, admin_token = self._admin_token()
+        imp = "/api/admin/impersonate"
+
+        # Only an admin can impersonate.
+        supplier_body = {"portal": "supplier", "subject_id": 1}
+        self.assertEqual(self.client.post(imp, supplier_body).status_code, 403)
+        bad_portal = {"portal": "x", "subject_id": 1}
+        self.assertEqual(self.client.post(imp, bad_portal, token=admin_token).status_code, 422)
+        missing = {"portal": "supplier", "subject_id": 999}
+        self.assertEqual(self.client.post(imp, missing, token=admin_token).status_code, 404)
+
+        started = self.client.post(imp, {"portal": "supplier", "subject_id": 1}, token=admin_token)
+        self.assertEqual(started.status_code, 200, started.text)
+        data = started.json()
+        self.assertEqual(data["storage_key"], "fleetcar_supplier_token")
+        self.assertEqual(data["open_path"], "/supplier-portal")
+        self.assertEqual(data["subject_name"], "ABC Filo Kiralama")
+
+        # The minted token acts as that supplier and is marked with the admin id.
+        session = self.client.get("/api/supplier-workspace/session", token=data["token"])
+        self.assertEqual(session.status_code, 200, session.text)
+        row = self.db.query(m.SupplierSession).filter_by(impersonated_by=admin.id).one()
+        self.assertEqual(row.supplier_id, 1)
+        event = self.db.query(m.ImpersonationEvent).one()
+        self.assertEqual((event.portal, event.subject_id, event.ended_at), ("supplier", 1, None))
+
+        # Customer impersonation works through the customer routes.
+        customer_body = {"portal": "customer", "subject_id": 1}
+        cust = self.client.post(imp, customer_body, token=admin_token).json()
+        self.assertEqual(cust["storage_key"], "fleetcar_token")
+        self.assertEqual(self.client.get("/api/vehicles", token=cust["token"]).status_code, 200)
+        portal_sessions = self.db.query(m.PortalSession).filter_by(
+            impersonated_by=admin.id, kind="customer"
+        )
+        self.assertTrue(portal_sessions.count())
+
+        log = self.client.get("/api/admin/impersonation-log", token=admin_token).json()
+        self.assertEqual({r["portal"] for r in log}, {"supplier", "customer"})
+        self.assertTrue(all(r["active"] for r in log))
+
+        # Stopping ends the session and stamps the event; the token stops working.
+        stop = self.client.post(
+            "/api/admin/impersonate/stop", {"event_id": event.id}, token=admin_token
+        )
+        self.assertEqual(stop.status_code, 200, stop.text)
+        reused = self.client.get("/api/supplier-workspace/session", token=data["token"])
+        self.assertEqual(reused.status_code, 401)
+        self.db.refresh(event)
+        self.assertIsNotNone(event.ended_at)
+
+
 
 del SupplierWorkspaceTests

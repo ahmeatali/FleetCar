@@ -63,15 +63,21 @@
 }
 .sw-notification {
   position: relative;
+  display: inline-flex;
+  padding: 6px;
+  border-radius: 8px;
   font-size: 26px;
   margin-left: auto;
   text-decoration: none;
   color: #0064ff;
 }
+.sw-notification:hover {
+  background: #e7f0fc;
+}
 .sw-notification b {
   position: absolute;
-  top: -5px;
-  right: -8px;
+  top: -2px;
+  right: -4px;
   font-size: 9px;
   background: #ff4c60;
   color: white;
@@ -141,6 +147,11 @@
   background: #0064ff;
   border-color: #0064ff;
 }
+.sw-button.sw-ai-button {
+  color: #4b33d6;
+  border-color: #d9d2ff;
+  background: #f4f1ff;
+}
 .sw-button.danger {
   color: #d9374d;
   border-color: #f7d4da;
@@ -203,6 +214,10 @@
   background: #f2f3f6;
   color: #9aa6b6;
 }
+.sw-kpi-icon.teal {
+  background: #e3f6f8;
+  color: #1592a3;
+}
 .sw-kpi small {
   font-size: 10px;
   color: #60769c;
@@ -261,6 +276,15 @@
   display: grid;
   grid-template-columns: 1.1fr 1fr 1fr;
   gap: 16px;
+}
+.sw-dashboard-grid > .sw-dashboard-tasks {
+  grid-column: span 2;
+  display: flex;
+  flex-direction: column;
+}
+.sw-dashboard-grid > .sw-dashboard-tasks.fp-workspace .sw-card {
+  flex: 1;
+  margin-bottom: 0;
 }
 .sw-distribution {
   display: flex;
@@ -1056,6 +1080,9 @@
   }
   .sw-dashboard-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .sw-dashboard-grid > .sw-dashboard-tasks {
+    grid-column: 1 / -1;
   }
   .sw-distribution {
     justify-content: flex-start;

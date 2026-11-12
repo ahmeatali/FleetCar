@@ -116,6 +116,7 @@ test('operational status takes precedence over customer assignment', () => {
   assert.equal(fleetStatus({ ...vehicle, status: 'Serviste' }), 'Serviste')
   assert.equal(fleetStatus({ ...vehicle, customer_id: null }), 'Havuzda')
   assert.equal(fleetStatus({ ...vehicle, is_active: false }), 'Pasif')
+  assert.equal(fleetStatus({ ...vehicle, customer_id: null, status: 'Bayide' }), 'Dealer')
 })
 test('findings require evidence; absent mileage is not treated as low usage', () => {
   const data = { vehicles: [vehicle], settings: { low_usage_km: 500 } }

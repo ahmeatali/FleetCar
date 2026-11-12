@@ -2,6 +2,11 @@
   <div class="app-bg-glow"></div>
   <div class="portal-layout">
     <Sidebar :supplier="isSupplier" />
+    <SupplierVehicleImport
+      v-if="isSupplier && showImport"
+      @close="showImport = false"
+      @imported="fetchVehicles"
+    />
 
     <main class="portal-main fade-in-up fleet-page">
       <header class="fleet-topbar">
@@ -200,7 +205,11 @@
             </form>
             <div class="fleet-list-actions">
               <UiButton class="fleet-utility-button" @click="exportVehicles">⇩ Dışa Aktar</UiButton>
-              <UiButton class="btn btn-primary" @click="showAddModal = true">＋ Yeni Araç</UiButton>
+              <UiButton v-if="isSupplier" class="fleet-utility-button" @click="showImport = true"
+                >⇧ Toplu Araç Yükle</UiButton
+              ><UiButton class="btn btn-primary" @click="showAddModal = true"
+                >＋ Yeni Araç</UiButton
+              >
             </div>
           </div>
 
@@ -1251,6 +1260,7 @@ import { supplierApi, supplierFetch } from '../utils/supplierApi'
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'
+import SupplierVehicleImport from '../components/SupplierVehicleImport.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -1320,6 +1330,7 @@ const fuelForm = reactive({
 const loading = ref(true)
 const saving = ref(false)
 const showAddModal = ref(isSupplier.value && route.query.add === '1')
+const showImport = ref(isSupplier.value && route.query.import === '1')
 const showDetailsModal = ref(false)
 const selectedVehicle = ref({})
 const isEditingVehicle = ref(false)
