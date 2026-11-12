@@ -86,12 +86,23 @@ export const iconPaths = {
   driver: [circle(12, 12, 9), circle(12, 12, 2), 'M3.5 10.5 10 12', 'M14 12l6.5-1.5', 'M12 14v7'],
   briefcase: ['M3 8h18v12H3z', 'M8 8V5a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v3', 'M3 13h18'],
   store: ['M4 10v10h16V10', 'M3 10l2-6h14l2 6z', 'M9 20v-5h6v5'],
+  'x-circle': [circle(12, 12, 9), 'M9 9l6 6', 'M15 9l-6 6'],
+  trash: ['M4 7h16', 'M9 7V4h6v3', 'M6 7l1 13h10l1-13', 'M10 11v6', 'M14 11v6'],
+  camera: ['M4 8h3l2-3h6l2 3h3v11H4z', circle(12, 13, 3.5)],
   dot: [circle(12, 12, 3)],
 }
 
 // Labels are matched first; the old glyph is the fallback so nothing renders empty.
 const byLabel = [
   [/^ana sayfa/i, 'home'],
+  [/^filo$/i, 'car'],
+  [/^yönetim$/i, 'settings'],
+  // fleet status groups used on KPI cards
+  [/^kira$/i, 'calendar'],
+  [/^havuz$/i, 'layers'],
+  [/^2\. el$/i, 'tag'],
+  [/^dealer$/i, 'store'],
+  [/^toplam araç/i, 'car'],
   [/günlük operasyon|operasyon merkezi/i, 'check'],
   [/^operasyonlar/i, 'tools'],
   [/şube|lokasyon/i, 'branch'],

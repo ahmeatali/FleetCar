@@ -589,6 +589,7 @@
 </template>
 
 <script setup>
+import { notify } from '../utils/feedback.js'
 import { UiButton, UiField, UiModal } from '../components/ui/index.js'
 
 import { ref, reactive, computed } from 'vue'
@@ -683,11 +684,11 @@ const handleModalRegister = async () => {
       router.push('/dashboard/settings?tab=sirket_evraklari')
     } else {
       const errData = await res.json().catch(() => ({}))
-      alert(errData.detail || 'Kayıt yapılırken bir sorun oluştu.')
+      notify(errData.detail || 'Kayıt yapılırken bir sorun oluştu.')
     }
   } catch (err) {
     console.error('Modal register error:', err)
-    alert('Sunucuya bağlanılamadı.')
+    notify('Sunucuya bağlanılamadı.')
   } finally {
     submitting.value = false
   }
@@ -722,11 +723,11 @@ const handleModalLogin = async () => {
       router.push('/dashboard/quotes')
     } else {
       const errData = await res.json().catch(() => ({}))
-      alert(errData.detail || 'Giriş yapılamadı!')
+      notify(errData.detail || 'Giriş yapılamadı!')
     }
   } catch (err) {
     console.error('Modal login error:', err)
-    alert('Sunucuya bağlanılamadı.')
+    notify('Sunucuya bağlanılamadı.')
   } finally {
     submitting.value = false
   }

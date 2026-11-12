@@ -17,7 +17,7 @@
             ><span class="account-avatar">{{ initials }}</span
             ><span
               ><strong>{{ customerName }}</strong
-              ><small>Filo Yöneticisi</small></span
+              ><small>{{ customerRoleText }}</small></span
             ></router-link
           >
         </div>
@@ -34,7 +34,7 @@
       <UiAlert v-if="error" class="overview-alert" as="div" tone="error"
         >{{ error }} <UiButton @click="load">Tekrar Dene</UiButton></UiAlert
       >
-      <UiAlert v-if="loading" as="p" tone="info">Dashboard verileri yükleniyor…</UiAlert>
+      <UiAlert v-if="loading" as="p" tone="info">Pano verileri yükleniyor…</UiAlert>
       <section class="overview-stats" aria-label="Filo özeti">
         <router-link v-for="card in cards" :key="card.label" :to="card.to" class="overview-stat"
           ><span class="stat-symbol">{{ card.icon }}</span>
@@ -58,7 +58,7 @@
             <h2>⌖ Araçların Konumu</h2>
             <router-link to="/dashboard/reports?tab=location">Tümünü Gör ↗</router-link>
           </div>
-          <div class="location-preview">
+          <div :class="['location-preview', { 'is-empty': !locatedVehicles.length }]">
             <template v-if="locatedVehicles.length"
               ><iframe
                 class="dashboard-map"
@@ -81,11 +81,17 @@
               >
               <p class="location-note">Kayıtlı son GPS konumları</p></template
             >
-            <div v-else class="panel-empty">
-              ⌖
-              <p>Henüz kayıtlı araç konumu yok.</p>
-              <small>GPS verileri geldikçe burada görüntülenir.</small>
-            </div>
+            <EmptyState
+              v-else
+              compact
+              icon="map-pin"
+              title="Henüz kayıtlı araç konumu yok"
+              text="Tedarikçiniz araçlara GPS bağladığında son konumlar burada görünür."
+            >
+              <router-link class="overview-link-button" to="/dashboard/reports?tab=location"
+                >Araç Takip'e git</router-link
+              >
+            </EmptyState>
           </div>
           <div class="vehicle-status">
             <router-link
@@ -239,6 +245,10 @@
   </div>
 </template>
 <script setup>
+import { EmptyState } from '../components/ui/index.js'
+import { customerRoleLabel } from '../utils/customerIdentity.js'
+
+const customerRoleText = customerRoleLabel()
 import { UiAlert, UiButton } from '../components/ui/index.js'
 
 import NotificationBell from '../components/NotificationBell.vue'
@@ -1148,5 +1158,22 @@ i {
   .overview-topbar {
     margin-top: 10px;
   }
+}
+.location-preview.is-empty {
+  min-height: 0;
+  display: grid;
+  place-items: center;
+}
+.overview-link-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--fr-border-strong);
+  border-radius: var(--fr-radius-sm);
+  color: var(--fr-primary);
+  font-size: var(--fr-text-sm);
+  font-weight: 600;
+  text-decoration: none;
 }
 </style>

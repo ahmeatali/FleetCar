@@ -80,36 +80,41 @@
           <p v-if="!searchResults.length">Bu arama için kayıt bulunamadı.</p>
         </section>
         <section v-if="section === 'home'" class="sw-kpis">
-          <router-link class="sw-kpi" to="/supplier-portal/rentals?status=Teslim%20Bekliyor"
-            ><div>
-              <small>Teslim Bekleyen Kiralamalar</small
-              ><strong>{{
-                data.rentals.filter((r) => r.status === 'Teslim Bekliyor').length
-              }}</strong>
-            </div></router-link
-          ><router-link class="sw-kpi" to="/supplier-portal/returns"
-            ><div>
-              <small>İade / Mutabakat Bekleyen</small
-              ><strong>{{
-                data.records.filter(
-                  (r) => r.kind === 'return' && !['Tamamlandı', 'İptal'].includes(r.raw_status),
-                ).length
-              }}</strong>
-            </div></router-link
-          ><router-link class="sw-kpi" to="/supplier-portal/maintenance"
-            ><div>
-              <small>Bakım Önerileri</small
-              ><strong>{{
-                data.records.filter((r) => r.kind === 'maintenance' && r.raw_status === 'Önerildi')
-                  .length
-              }}</strong>
-            </div></router-link
-          ><router-link class="sw-kpi" to="/supplier-portal/fines"
-            ><div>
-              <small>Mali Eşleştirme Bekleyen</small
-              ><strong>{{ data.matching_queue.length }}</strong>
-            </div></router-link
-          >
+          <KpiCard
+            label="Teslim Bekleyen Kiralamalar"
+            icon="truck"
+            tone="amber"
+            to="/supplier-portal/rentals?status=Teslim%20Bekliyor"
+            :value="data.rentals.filter((r) => r.status === 'Teslim Bekliyor').length"
+          />
+          <KpiCard
+            label="İade / Mutabakat Bekleyen"
+            icon="return"
+            tone="violet"
+            to="/supplier-portal/returns"
+            :value="
+              data.records.filter(
+                (r) => r.kind === 'return' && !['Tamamlandı', 'İptal'].includes(r.raw_status),
+              ).length
+            "
+          />
+          <KpiCard
+            label="Bakım Önerileri"
+            icon="wrench"
+            tone="teal"
+            to="/supplier-portal/maintenance"
+            :value="
+              data.records.filter((r) => r.kind === 'maintenance' && r.raw_status === 'Önerildi')
+                .length
+            "
+          />
+          <KpiCard
+            label="Mali Eşleştirme Bekleyen"
+            icon="wallet"
+            tone="blue"
+            to="/supplier-portal/fines"
+            :value="data.matching_queue.length"
+          />
         </section>
         <section
           v-if="
@@ -119,18 +124,17 @@
           "
           class="sw-kpis"
         >
-          <UiButton
+          <KpiCard
             v-for="card in kpis"
             :key="card.label"
-            class="sw-kpi"
+            clickable
+            :label="card.label"
+            :value="card.value"
+            :note="card.note"
+            :tone="card.tone || 'blue'"
+            :icon="kpiIcon(card)"
             @click="card.to ? router.push(card.to) : (filters.status = card.status || '')"
-            ><span :class="['sw-kpi-icon', card.tone || 'blue']">{{ card.icon || cfg.icon }}</span>
-            <div>
-              <small>{{ card.label }}</small
-              ><strong>{{ card.value }}</strong
-              ><em>{{ card.note }}</em>
-            </div></UiButton
-          >
+          />
         </section>
         <SupplierAiInsights
           v-if="section === 'home'"
@@ -1524,12 +1528,13 @@
 </template>
 
 <script setup>
+import { iconForLabel } from '../utils/navIcons.js'
 import { usePagination } from '../composables/usePagination.js'
 
 import { formatMoney, formatDate } from '../utils/formatters.js'
 import { downloadApi } from '../utils/downloads.js'
 
-import { UiAlert, UiButton, UiField, UiModal, UiTable } from '../components/ui/index.js'
+import { KpiCard, UiAlert, UiButton, UiField, UiModal, UiTable } from '../components/ui/index.js'
 
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -1783,6 +1788,10 @@ const rows = computed(() => {
       : data.value[section.value] || []
   return data.value.records.filter((r) => r.kind === cfg.value.kind)
 })
+const kpiIcon = (card) => {
+  const byCard = iconForLabel(card.label)
+  return byCard !== 'dot' ? byCard : iconForLabel(cfg.value.label)
+}
 const hasActiveFilters = computed(() =>
   Object.values(filters).some((value) => String(value ?? '').trim()),
 )

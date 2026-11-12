@@ -18,9 +18,7 @@
               <span>{{ userInitials }}</span>
               <div>
                 <strong>{{ userName }}</strong
-                ><small
-                  >{{ companyName }} · {{ isSupplier ? 'Tedarikçi' : 'Filo Yöneticisi' }}</small
-                >
+                ><small>{{ companyName }} · {{ isSupplier ? 'Tedarikçi' : customerRole }}</small>
               </div>
               <UiButton aria-label="Profil menüsü">⌄</UiButton>
             </div>
@@ -175,11 +173,18 @@
                 <article class="detail-panel detail-information-card">
                   <h2>▦ &nbsp; Araç Bilgileri</h2>
                   <dl class="detail-information-list">
-                    <template v-for="field in generalFields" :key="field.label"
+                    <template v-for="field in shownGeneralFields" :key="field.label"
                       ><dt>{{ field.label }}</dt>
                       <dd>{{ field.value || '—' }}</dd></template
                     >
                   </dl>
+                  <p v-if="emptyGeneralCount" class="detail-missing-fields">
+                    {{ emptyGeneralCount }} alan boş.
+                    <button type="button" @click="showEmptyFields = !showEmptyFields">
+                      {{ showEmptyFields ? 'Boş alanları gizle' : 'Boş alanları göster' }}
+                    </button>
+                    <button type="button" @click="openEdit">Bilgileri tamamla</button>
+                  </p>
                 </article>
                 <div class="detail-general-center">
                   <article class="detail-panel detail-delivery-card">
@@ -858,6 +863,10 @@
 </template>
 
 <script setup>
+import { askText, confirmAction } from '../utils/feedback.js'
+import { customerRoleLabel } from '../utils/customerIdentity.js'
+
+const customerRole = customerRoleLabel()
 import {
   formatNumber,
   formatMoney,
@@ -994,6 +1003,18 @@ const generalFields = computed(() =>
     field('Kasko Bitiş', 'casco_insurance_expiry_date'),
     field('ERP ID', 'erp_id'),
   ].filter(Boolean),
+)
+
+// Show filled facts first; empty ones stay one click away instead of a long list of dashes.
+const showEmptyFields = ref(false)
+const isEmptyValue = (value) => value === null || value === undefined || String(value).trim() === ''
+const emptyGeneralCount = computed(
+  () => generalFields.value.filter((item) => isEmptyValue(item.value)).length,
+)
+const shownGeneralFields = computed(() =>
+  showEmptyFields.value
+    ? generalFields.value
+    : generalFields.value.filter((item) => !isEmptyValue(item.value)),
 )
 
 const editGroups = [
@@ -1347,7 +1368,7 @@ async function uploadFile(event, category) {
     }
     const documentType =
       category === 'document'
-        ? window.prompt(
+        ? await askText(
             'Belge türü (Ruhsat, Kasko, Trafik Sigortası, Sözleşme vb.)',
             file.type === 'application/pdf' ? 'Araç Belgesi' : 'Belge',
           )
@@ -1355,7 +1376,7 @@ async function uploadFile(event, category) {
     if (category === 'document' && documentType === null) continue
     const expiryDate =
       category === 'document'
-        ? window.prompt('Belge bitiş tarihi (YYYY-MM-DD), yoksa boş bırakın:', '')
+        ? await askText('Belge bitiş tarihi (YYYY-MM-DD), yoksa boş bırakın:', '')
         : null
     const query = new URLSearchParams({ category, original_name: file.name })
     if (documentType) query.set('document_type', documentType)
@@ -1380,7 +1401,8 @@ async function uploadFile(event, category) {
 }
 
 async function deleteFile(file) {
-  if (!window.confirm('“' + file.original_name + '” dosyasını silmek istiyor musunuz?')) return
+  if (!(await confirmAction('“' + file.original_name + '” dosyasını silmek istiyor musunuz?')))
+    return
   const response = await (isSupplier.value
     ? supplierFetch('/vehicles/' + encodeURIComponent(vehicle.value.id) + '/files/' + file.id, {
         method: 'DELETE',
@@ -1510,9 +1532,11 @@ function openLocation() {
 
 async function removeVehicle() {
   showActions.value = false
-  if (!window.confirm(vehicle.value.plate + ' plakalı aracı filodan çıkarmak istiyor musunuz?'))
+  if (
+    !(await confirmAction(vehicle.value.plate + ' plakalı aracı filodan çıkarmak istiyor musunuz?'))
+  )
     return
-  const reason = window.prompt('Araç çıkarma nedeni', 'Sözleşme Bitişi')
+  const reason = await askText('Araç çıkarma nedeni', 'Sözleşme Bitişi')
   if (reason === null) return
   const response = await (isSupplier.value
     ? supplierFetch('/vehicles/' + encodeURIComponent(vehicle.value.id) + '/remove', {
@@ -2844,5 +2868,19 @@ onMounted(loadDetails)
     width: 100%;
     max-width: 100%;
   }
+}
+.detail-missing-fields {
+  margin: 10px 0 0;
+  font-size: var(--fr-text-sm);
+  color: var(--fr-muted);
+}
+.detail-missing-fields button {
+  border: 0;
+  background: none;
+  padding: 0 0 0 8px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--fr-primary);
+  cursor: pointer;
 }
 </style>

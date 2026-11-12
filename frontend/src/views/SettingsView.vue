@@ -1004,6 +1004,7 @@
 </template>
 
 <script setup>
+import { askText, confirmAction, notify } from '../utils/feedback.js'
 import { UiButton, UiField, UiModal } from '../components/ui/index.js'
 
 import NotificationBell from '../components/NotificationBell.vue'
@@ -1073,7 +1074,7 @@ const loadIntegrationSettings = async () => {
 }
 
 const saveIntegrationSettings = async (key, value) => {
-  if (!customerId) return alert('Müşteri oturumu bulunamadı.')
+  if (!customerId) return notify('Müşteri oturumu bulunamadı.')
   try {
     const res = await fetch(`/api/customer/settings/${key}?customer_id=${customerId}`, {
       method: 'PUT',
@@ -1081,11 +1082,11 @@ const saveIntegrationSettings = async (key, value) => {
       body: JSON.stringify(value),
     })
     if (!res.ok) throw new Error('Ayar kaydedilemedi')
-    alert(
+    notify(
       'Ayarlar sunucuya kaydedildi. Sağlayıcı bağlantısı, geçerli erişim bilgileri ve entegrasyon adaptörü gerektirir.',
     )
   } catch (error) {
-    alert(error.message || 'Ayarlar kaydedilemedi.')
+    notify(error.message || 'Ayarlar kaydedilemedi.')
   }
 }
 const saveGpsSettings = () => saveIntegrationSettings('gps', gpsConfig)
@@ -1171,10 +1172,10 @@ const addUser = async () => {
       is_active: true,
     }),
   })
-  if (!res.ok) return alert('Kullanıcı kaydedilemedi.')
+  if (!res.ok) return notify('Kullanıcı kaydedilemedi.')
   const result = await res.json().catch(() => ({}))
   await loadUsers()
-  alert(
+  notify(
     result.email_sent
       ? `Yeni kullanıcı "${userForm.name}" kaydedildi. Giriş yapmadan önce e-posta doğrulaması gerekiyor.`
       : `Yeni kullanıcı "${userForm.name}" kaydedildi ancak doğrulama e-postası gönderilemedi. Kullanıcı giriş ekranından yeniden gönderebilir.`,
@@ -1196,10 +1197,10 @@ const toggleUserStatus = (user) => {
   }).then(loadUsers)
 }
 
-const editUser = (user) => {
-  const name = prompt('Ad Soyad', user.name)
+const editUser = async (user) => {
+  const name = await askText('Ad Soyad', user.name)
   if (name === null) return
-  const email = prompt('E-posta', user.email)
+  const email = await askText('E-posta', user.email)
   if (email === null) return
   fetch(`/api/customer/users/${user.id}?customer_id=${customerId}`, {
     method: 'PUT',
@@ -1236,10 +1237,10 @@ const addHandoverForm = async () => {
       km: formHandover.km,
     }),
   })
-  if (!res.ok) return alert('Teslim formu kaydedilemedi. Araç seçimini kontrol edin.')
+  if (!res.ok) return notify('Teslim formu kaydedilemedi. Araç seçimini kontrol edin.')
   await loadDeliveryForms()
   showAddFormModal.value = false
-  alert('Araç teslim formu kaydedildi!')
+  notify('Araç teslim formu kaydedildi!')
 }
 
 // Company Docs Data & Methods
@@ -1300,7 +1301,7 @@ const onDocFilePicked = (event) => {
 const saveCustomerDoc = async () => {
   const customerId = localStorage.getItem('fleetcar_customer_id')
   if (!customerId) {
-    alert('Müşteri oturumu bulunamadı. Lütfen tekrar giriş yapın.')
+    notify('Müşteri oturumu bulunamadı. Lütfen tekrar giriş yapın.')
     return
   }
 
@@ -1308,7 +1309,7 @@ const saveCustomerDoc = async () => {
   const file = pickedDocFile.value
   if (!file) {
     docSubmitting.value = false
-    alert('Lütfen bir dosya seçin.')
+    notify('Lütfen bir dosya seçin.')
     return
   }
 
@@ -1323,13 +1324,13 @@ const saveCustomerDoc = async () => {
       customerDocs.value = data.customer?.documents || {}
       documentsUploaded.value = Boolean(data.customer?.documents_uploaded)
       showUploadDocModal.value = false
-      alert('Şirket evrakı başarıyla yüklendi!')
+      notify('Şirket evrakı başarıyla yüklendi!')
     } else {
-      alert('Evrak yüklenirken bir sorun oluştu.')
+      notify('Evrak yüklenirken bir sorun oluştu.')
     }
   } catch (err) {
     console.error('Error saving customer doc:', err)
-    alert('Sunucuya bağlanılamadı.')
+    notify('Sunucuya bağlanılamadı.')
   } finally {
     docSubmitting.value = false
   }
@@ -1342,7 +1343,7 @@ const deleteCustomerDoc = async (key) => {
   const catObj = docCategories.find((c) => c.key === key)
   const title = catObj ? catObj.title : key
 
-  if (!confirm(`"${title}" evrakını silmek istediğinize emin misiniz?`)) return
+  if (!(await confirmAction(`"${title}" evrakını silmek istediğinize emin misiniz?`))) return
 
   try {
     const res = await fetch(`/api/customer/documents/${key}?customer_id=${customerId}`, {
@@ -1353,13 +1354,13 @@ const deleteCustomerDoc = async (key) => {
       const data = await res.json()
       customerDocs.value = data.customer?.documents || {}
       documentsUploaded.value = Boolean(data.customer?.documents_uploaded)
-      alert(`"${title}" belgesi başarıyla silindi.`)
+      notify(`"${title}" belgesi başarıyla silindi.`)
     } else {
-      alert('Belge silinirken bir sorun oluştu.')
+      notify('Belge silinirken bir sorun oluştu.')
     }
   } catch (err) {
     console.error('Error deleting doc:', err)
-    alert('Sunucuya bağlanılamadı.')
+    notify('Sunucuya bağlanılamadı.')
   }
 }
 
@@ -1381,7 +1382,7 @@ const viewCustomerDoc = (key) => {
 const downloadCustomerDoc = (key) => {
   const doc = customerDocs.value[key]
   if (!doc?.url)
-    return alert('Bu eski kayıtta dosyanın kendisi bulunmuyor; lütfen belgeyi yeniden yükleyin.')
+    return notify('Bu eski kayıtta dosyanın kendisi bulunmuyor; lütfen belgeyi yeniden yükleyin.')
   const link = document.createElement('a')
   link.href = doc.url
   link.download = doc.file_name || key

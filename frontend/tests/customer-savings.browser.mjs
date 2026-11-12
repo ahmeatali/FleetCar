@@ -45,7 +45,7 @@ try {
     },
   )
   await page.goto(webOrigin + '/dashboard/savings')
-  await page.getByRole('heading', { name: 'Tespitler ve Öneriler' }).waitFor()
+  await page.getByRole('heading', { name: 'Kural Tabanlı Tespitler' }).waitFor()
   assert.deepEqual(calls.sort(), ['/api/vehicle-expenses', '/api/vehicles'])
   assert.equal(await page.locator('tbody tr').count(), 3)
   assert.equal(

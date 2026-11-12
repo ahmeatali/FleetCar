@@ -252,6 +252,7 @@
 </template>
 
 <script setup>
+import { notify } from '../utils/feedback.js'
 import { UiButton, UiField } from '../components/ui/index.js'
 
 import { ref, computed, onMounted } from 'vue'
@@ -313,12 +314,12 @@ onMounted(async () => {
 
 const handleSetPassword = async () => {
   if (!password.value || password.value.length < 6) {
-    alert('Lütfen en az 6 karakterden oluşan bir şifre giriniz.')
+    notify('Lütfen en az 6 karakterden oluşan bir şifre giriniz.')
     return
   }
 
   if (password.value !== confirmPassword.value) {
-    alert('Şifreler birbiriyle uyuşmuyor! Lütfen kontrol edin.')
+    notify('Şifreler birbiriyle uyuşmuyor! Lütfen kontrol edin.')
     return
   }
 
@@ -339,11 +340,11 @@ const handleSetPassword = async () => {
       success.value = true
     } else {
       const errData = await res.json().catch(() => ({}))
-      alert(errData.detail || 'Şifre kaydedilirken bir hata oluştu.')
+      notify(errData.detail || 'Şifre kaydedilirken bir hata oluştu.')
     }
   } catch (err) {
     console.error('Set password error:', err)
-    alert('Sunucuya bağlanılamadı.')
+    notify('Sunucuya bağlanılamadı.')
   } finally {
     submitting.value = false
   }

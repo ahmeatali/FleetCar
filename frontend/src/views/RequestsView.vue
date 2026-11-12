@@ -4,35 +4,23 @@
     <Sidebar />
 
     <main class="portal-main fade-in-up">
-      <!-- Top Breadcrumb / Header -->
-      <div
-        style="
-          font-size: 0.85rem;
-          color: #64748b;
-          margin-bottom: 12px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        "
+      <PageHeader
+        icon="briefcase"
+        eyebrow="Servis Paneli"
+        title="Tedarikçi İşlemleri & Hizmet Talepleri"
+        description="Servis, lastik, ikame araç ve acil yol yardım taleplerinizi oluşturun ve takip edin."
       >
-        <router-link to="/dashboard" style="color: #64748b; text-decoration: none"
-          >← Geri</router-link
-        >
-        <span>/ Servis Paneli / {{ activeCategoryTitle }}</span>
-      </div>
-
-      <header class="dashboard-header" style="margin-bottom: 25px">
-        <div>
-          <h1>Tedarikçi İşlemleri & Hizmet Talepleri</h1>
-          <p style="color: var(--text-muted); font-size: 0.95rem">
-            Servis, lastik, ikame araç ve acil yol yardım taleplerinizi oluşturun ve takip edin.
-          </p>
-        </div>
-        <UiButton @click="activeTab = 'list'" class="btn btn-secondary" v-if="activeTab !== 'list'">
-          📋 Taleplerim Listesi
-        </UiButton>
-        <NotificationBell />
-      </header>
+        <template #actions>
+          <UiButton
+            v-if="activeTab !== 'list'"
+            class="btn btn-secondary"
+            @click="activeTab = 'list'"
+          >
+            <NavIcon name="document" size="16" /> Taleplerim Listesi
+          </UiButton>
+          <NotificationBell />
+        </template>
+      </PageHeader>
 
       <!-- Category Switcher Tabs (FleetRent Premium Tab Pill Bar) -->
       <div class="category-tabs-bar">
@@ -41,28 +29,28 @@
           class="tab-pill-btn"
           :class="{ 'active-tab-pill': activeTab === 'servis' }"
         >
-          <span>🛠️</span> Bakım / Onarım
+          <NavIcon name="wrench" size="16" /> Bakım / Onarım
         </UiButton>
         <UiButton
           @click="switchTab('lastik')"
           class="tab-pill-btn"
           :class="{ 'active-tab-pill': activeTab === 'lastik' }"
         >
-          <span>🛞</span> Lastik Hizmetleri
+          <NavIcon name="tire" size="16" /> Lastik Hizmetleri
         </UiButton>
         <UiButton
           @click="switchTab('ikame_arac')"
           class="tab-pill-btn"
           :class="{ 'active-tab-pill': activeTab === 'ikame_arac' }"
         >
-          <span>🚗</span> İkame Araç Tedariği
+          <NavIcon name="car" size="16" /> İkame Araç Tedariği
         </UiButton>
         <UiButton
           @click="switchTab('yol_yardim')"
           class="tab-pill-btn tab-danger"
           :class="{ 'active-tab-pill': activeTab === 'yol_yardim' }"
         >
-          <span>🚨</span> 7/24 Yol Yardım
+          <NavIcon name="lifebuoy" size="16" /> 7/24 Yol Yardım
         </UiButton>
         <UiButton
           @click="switchTab('list')"
@@ -70,7 +58,7 @@
           :class="{ 'active-tab-pill': activeTab === 'list' }"
           style="margin-left: auto"
         >
-          <span>📋</span> Tüm Talepler ({{ requests.length }})
+          <NavIcon name="document" size="16" /> Tüm Talepler ({{ requests.length }})
         </UiButton>
       </div>
 
@@ -726,6 +714,9 @@
 </template>
 
 <script setup>
+import { PageHeader } from '../components/ui/index.js'
+import NavIcon from '../components/NavIcon.vue'
+import { notify } from '../utils/feedback.js'
 import { UiButton, UiField } from '../components/ui/index.js'
 
 import NotificationBell from '../components/NotificationBell.vue'
@@ -936,7 +927,7 @@ const submitRequest = async (type) => {
       !dates.preferred_date_end ||
       dates.preferred_date_end < dates.preferred_date_start)
   ) {
-    alert('Geçerli bir başlangıç ve bitiş tarihi seçin.')
+    notify('Geçerli bir başlangıç ve bitiş tarihi seçin.')
     return
   }
   submitting.value = true
@@ -982,7 +973,7 @@ const submitRequest = async (type) => {
       )
       if (!upload.ok) {
         submitting.value = false
-        alert('Fotoğraf yüklenemedi. JPEG, PNG veya WebP dosyası seçin.')
+        notify('Fotoğraf yüklenemedi. JPEG, PNG veya WebP dosyası seçin.')
         return
       }
       const savedFile = await upload.json()
@@ -1004,11 +995,11 @@ const submitRequest = async (type) => {
       body: JSON.stringify(payload),
     })
     if (response.ok) {
-      alert('Talebiniz başarıyla iletildi!')
+      notify('Talebiniz başarıyla iletildi!')
       await fetchData()
       activeTab.value = 'list'
     } else {
-      alert('Talep oluşturulurken bir hata oluştu.')
+      notify('Talep oluşturulurken bir hata oluştu.')
     }
   } catch (err) {
     console.error('Error submitting request:', err)

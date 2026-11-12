@@ -139,6 +139,7 @@
 </template>
 
 <script setup>
+import { notify } from '../utils/feedback.js'
 import { UiButton, UiField } from '../components/ui/index.js'
 
 import { ref } from 'vue'
@@ -171,11 +172,11 @@ const handleForgotPassword = async () => {
       forgotSuccess.value =
         data.message || 'Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.'
     } else {
-      alert(data.detail || 'Bir hata oluştu.')
+      notify(data.detail || 'Bir hata oluştu.')
     }
   } catch (err) {
     console.error('Forgot password error:', err)
-    alert('Sunucuya bağlanılamadı.')
+    notify('Sunucuya bağlanılamadı.')
   } finally {
     forgotLoading.value = false
   }
@@ -202,14 +203,16 @@ const handleLogin = async () => {
       router.push('/admin-portal')
     } else {
       const errData = await res.json().catch(() => ({}))
-      alert(
+      notify(
         errData.detail ||
           `Giriş yapılamadı (Hata Kodu: ${res.status}). Lütfen kullanıcı bilgilerinizi ve sunucu durumunu kontrol edin.`,
       )
     }
   } catch (err) {
     console.error('Admin login error:', err)
-    alert('Sunucuya bağlanılamadı. Lütfen internet bağlantınızı ve backend servisini kontrol edin.')
+    notify(
+      'Sunucuya bağlanılamadı. Lütfen internet bağlantınızı ve backend servisini kontrol edin.',
+    )
   } finally {
     loading.value = false
   }
