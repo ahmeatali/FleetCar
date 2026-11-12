@@ -1,5 +1,5 @@
 <template>
-  <div v-if="session" class="imp-banner" role="status">
+  <div v-if="session" ref="bar" class="imp-banner" role="status">
     <span class="imp-dot" aria-hidden="true"></span>
     <span class="imp-text">
       Destek modu — <strong>{{ session.subjectName }}</strong> hesabındasınız. Bu hesabın
@@ -12,18 +12,42 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { activeImpersonation, stopImpersonation } from '../api/impersonation.js'
 
 const session = ref(null)
 const busy = ref(false)
+const bar = ref(null)
 const router = useRouter()
-const route = useRoute()
+const root = document.documentElement
+let observer = null
 
 function refresh() {
   session.value = activeImpersonation()
 }
+
+// The banner is fixed; push the page (and the fixed sidebar) down by its height.
+function setOffset(height) {
+  root.style.setProperty('--imp-h', `${Math.ceil(height)}px`)
+}
+watch(session, async (active) => {
+  observer?.disconnect()
+  observer = null
+  if (!active) {
+    root.classList.remove('imp-active')
+    root.style.removeProperty('--imp-h')
+    return
+  }
+  await nextTick()
+  if (!bar.value) return
+  setOffset(bar.value.offsetHeight)
+  root.classList.add('imp-active')
+  if (typeof ResizeObserver !== 'undefined') {
+    observer = new ResizeObserver(() => bar.value && setOffset(bar.value.offsetHeight))
+    observer.observe(bar.value)
+  }
+})
 
 async function exit() {
   busy.value = true
@@ -40,10 +64,14 @@ onMounted(() => {
   refresh()
   globalThis.addEventListener('impersonation-change', refresh)
 })
-onUnmounted(() => globalThis.removeEventListener('impersonation-change', refresh))
+onUnmounted(() => {
+  globalThis.removeEventListener('impersonation-change', refresh)
+  observer?.disconnect()
+  root.classList.remove('imp-active')
+  root.style.removeProperty('--imp-h')
+})
 // Re-check when navigating between portal pages.
 router.afterEach(() => refresh())
-void route
 </script>
 
 <style scoped>
@@ -111,5 +139,21 @@ void route
 .imp-exit:disabled {
   opacity: 0.6;
   cursor: default;
+}
+</style>
+
+<style>
+/* Global offsets while support mode is on (not scoped: they target the page layout).
+   Only the outer mount node is padded (App.vue's root also has id="app"). Sticky headers
+   scroll inside the portal layout, which already starts below the banner, so they need no
+   offset; only the viewport-fixed sidebar does. */
+html.imp-active body > #app {
+  padding-top: var(--imp-h, 44px);
+}
+html.imp-active .portal-sidebar,
+html.imp-active .portal-sidebar.customer-navigation {
+  top: var(--imp-h, 44px) !important;
+  height: calc(100dvh - var(--imp-h, 44px)) !important;
+  max-height: calc(100dvh - var(--imp-h, 44px)) !important;
 }
 </style>
