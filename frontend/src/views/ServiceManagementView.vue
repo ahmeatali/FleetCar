@@ -862,7 +862,7 @@ onUnmounted(() => clearInterval(refreshTimer))
   padding: 0 22px;
   background: #fff;
   border-bottom: 1px solid #e6edf5;
-  font-size: 10px;
+  font-size: 11px;
 }
 .topbar label {
   width: min(430px, 55%);
@@ -876,7 +876,7 @@ onUnmounted(() => clearInterval(refreshTimer))
   outline: 0;
   background: transparent;
   width: 90%;
-  font-size: 10px;
+  font-size: 11px;
 }
 .content {
   padding: 17px 19px;
@@ -895,7 +895,7 @@ onUnmounted(() => clearInterval(refreshTimer))
   color: #142f58;
 }
 .page-title p {
-  font-size: 9px;
+  font-size: 11px;
   color: #7889a0;
   margin: 4px 0;
 }
@@ -905,7 +905,7 @@ onUnmounted(() => clearInterval(refreshTimer))
   background: #1268e8;
   color: #fff;
   padding: 9px 13px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   cursor: pointer;
 }
@@ -946,7 +946,7 @@ onUnmounted(() => clearInterval(refreshTimer))
   background: #fff0f0;
 }
 .metrics small {
-  font-size: 9px;
+  font-size: 11px;
   color: #536b88;
 }
 .metrics b {
@@ -986,7 +986,7 @@ onUnmounted(() => clearInterval(refreshTimer))
   flex: 0.65;
 }
 .filters label small {
-  font-size: 7px;
+  font-size: 11px;
   color: #73849c;
 }
 .filters select,
@@ -997,7 +997,7 @@ onUnmounted(() => clearInterval(refreshTimer))
   border-radius: 4px;
   background: #fff;
   color: #3b5575;
-  font-size: 8px;
+  font-size: 11px;
   padding: 0 4px;
 }
 .filters .search {
@@ -1017,7 +1017,7 @@ onUnmounted(() => clearInterval(refreshTimer))
   width: 100%;
   border: 0;
   outline: 0;
-  font-size: 8px;
+  font-size: 11px;
 }
 .filter-button,
 .light-btn {
@@ -1027,7 +1027,7 @@ onUnmounted(() => clearInterval(refreshTimer))
   border: 1px solid #dce6f1;
   color: #2467b8;
   border-radius: 4px;
-  font-size: 8px;
+  font-size: 11px;
   cursor: pointer;
   white-space: nowrap;
 }
@@ -1045,7 +1045,7 @@ onUnmounted(() => clearInterval(refreshTimer))
   color: #536c8d;
   padding: 8px 10px;
   white-space: nowrap;
-  font-size: 8px;
+  font-size: 11px;
   cursor: pointer;
 }
 .tabs button.active {
@@ -1071,11 +1071,11 @@ onUnmounted(() => clearInterval(refreshTimer))
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 9px;
+  font-size: 11px;
   color: #19365c;
 }
 .panel > header select {
-  font-size: 8px;
+  font-size: 11px;
   border: 1px solid #e2e9f1;
   border-radius: 4px;
   padding: 4px;
@@ -1096,11 +1096,11 @@ td {
   padding: 7px 5px;
   border-bottom: 1px solid #eef2f7;
   white-space: nowrap;
-  font-size: 8px;
+  font-size: 11px;
   color: #354f70;
 }
 th {
-  font-size: 7px;
+  font-size: 11px;
   background: #fbfcfe;
   color: #71839a;
 }
@@ -1117,7 +1117,7 @@ tr.selected {
 .car-cell small,
 td small {
   display: block;
-  font-size: 7px;
+  font-size: 11px;
   color: #8795a8;
   margin-top: 2px;
 }
@@ -1125,7 +1125,7 @@ td small {
 .state {
   border-radius: 10px;
   padding: 4px 6px;
-  font-size: 7px;
+  font-size: 11px;
 }
 .pill.service,
 .pill.expertise {
@@ -1189,7 +1189,7 @@ td small {
   border-radius: 4px;
   background: #fff;
   color: #2869b9;
-  font-size: 8px;
+  font-size: 11px;
   padding: 6px;
   cursor: pointer;
 }
@@ -1199,7 +1199,7 @@ footer {
   align-items: center;
   padding: 8px 10px;
   color: #8090a5;
-  font-size: 7px;
+  font-size: 11px;
 }
 footer span button {
   border: 0;
@@ -1219,7 +1219,7 @@ footer span button {
   align-items: center;
 }
 .car span {
-  font-size: 7px;
+  font-size: 11px;
   color: #138b5e;
   background: #e0f8ee;
   padding: 4px 6px;
@@ -1229,7 +1229,7 @@ footer span button {
 .vehicle-panel > .plate {
   display: block;
   margin: 2px 11px;
-  font-size: 9px;
+  font-size: 11px;
 }
 .vehicle-panel .plate {
   color: #23558d;
@@ -1241,7 +1241,7 @@ footer span button {
   border-top: 1px solid #edf1f6;
   margin: 9px 0 5px;
   padding: 9px 11px;
-  font-size: 7px;
+  font-size: 11px;
 }
 .vehicle-panel dt {
   color: #8391a4;
@@ -1262,7 +1262,7 @@ footer span button {
   border: 0;
   background: none;
   color: #2867b8;
-  font-size: 8px;
+  font-size: 11px;
   cursor: pointer;
 }
 .due-list {
@@ -1288,11 +1288,11 @@ footer span button {
   display: block;
 }
 .due-list b {
-  font-size: 7px;
+  font-size: 11px;
   color: #314c6e;
 }
 .due-list small {
-  font-size: 7px;
+  font-size: 11px;
   color: #8492a6;
   margin-top: 3px;
 }
@@ -1302,7 +1302,7 @@ footer span button {
   color: #168d60;
   border-radius: 9px;
   padding: 4px 6px;
-  font-size: 7px;
+  font-size: 11px;
 }
 .quick {
   display: grid;
@@ -1318,7 +1318,7 @@ footer span button {
   color: #355171;
   text-align: left;
   padding: 7px;
-  font-size: 8px;
+  font-size: 11px;
   cursor: pointer;
 }
 .quick button:first-letter {
@@ -1327,7 +1327,7 @@ footer span button {
 .empty-note {
   padding: 12px;
   color: #8291a4;
-  font-size: 8px;
+  font-size: 11px;
 }
 .backdrop {
   position: fixed;
@@ -1354,7 +1354,7 @@ footer span button {
   margin-bottom: 14px;
 }
 .dialog header small {
-  font-size: 8px;
+  font-size: 11px;
   color: #2a72d2;
   letter-spacing: 0.1em;
 }
@@ -1377,7 +1377,7 @@ footer span button {
   flex-direction: column;
   gap: 5px;
   margin: 9px 0;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 650;
   color: #4a607a;
 }
@@ -1416,7 +1416,7 @@ footer span button {
   padding: 8px;
   background: #fff0f0;
   color: #b9323b;
-  font-size: 9px;
+  font-size: 11px;
 }
 .record-summary {
   display: flex;
@@ -1425,7 +1425,7 @@ footer span button {
   background: #f3f7fc;
   border-radius: 5px;
   padding: 9px;
-  font-size: 9px;
+  font-size: 11px;
 }
 .record-summary span {
   color: #71839b;
@@ -1434,7 +1434,7 @@ footer span button {
   border: 1px solid #e3eaf2;
   border-radius: 5px;
   padding: 9px;
-  font-size: 9px;
+  font-size: 11px;
 }
 .dialog summary {
   cursor: pointer;
@@ -1453,10 +1453,10 @@ footer span button {
 .supplier b,
 .supplier small {
   display: block;
-  font-size: 9px;
+  font-size: 11px;
 }
 .supplier small {
-  font-size: 8px;
+  font-size: 11px;
   color: #77889e;
   margin-top: 4px;
 }
@@ -1466,7 +1466,7 @@ footer span button {
   background: white;
   color: #2367b9;
   padding: 6px 10px;
-  font-size: 8px;
+  font-size: 11px;
   cursor: pointer;
 }
 @media (max-width: 1200px) {
@@ -1523,11 +1523,11 @@ footer span button {
     font-size: 15px;
   }
   .page-title p {
-    font-size: 8px;
+    font-size: 11px;
     line-height: 1.4;
   }
   .page-title .primary {
-    font-size: 8px;
+    font-size: 11px;
     padding: 8px;
   }
   .metrics article {
@@ -1540,7 +1540,7 @@ footer span button {
     font-size: 12px;
   }
   .metrics small {
-    font-size: 7px;
+    font-size: 11px;
   }
   .metrics b {
     font-size: 14px;
@@ -1554,7 +1554,7 @@ footer span button {
   }
   .tabs button {
     padding: 7px;
-    font-size: 7px;
+    font-size: 11px;
   }
   .right-col {
     display: flex;
@@ -1602,7 +1602,7 @@ footer span button {
 .service-account small {
   display: block;
   color: #7587a2;
-  font-size: 9px;
+  font-size: 11px;
   margin-top: 3px;
 }
 .service-avatar {
@@ -1617,7 +1617,7 @@ footer span button {
   color: #092968;
 }
 .page-title p {
-  font-size: 10px;
+  font-size: 11px;
 }
 .page-title {
   gap: 10px;
@@ -1663,12 +1663,12 @@ footer span button {
   height: 32px;
 }
 .filters small {
-  font-size: 9px;
+  font-size: 11px;
 }
 .filters select,
 .filters input[type='date'],
 .filters .search input {
-  font-size: 10px;
+  font-size: 11px;
   height: 31px;
 }
 .filter-button {
@@ -1677,7 +1677,7 @@ footer span button {
   height: 32px;
 }
 .tabs button {
-  font-size: 10px;
+  font-size: 11px;
   padding: 10px 8px;
 }
 .tabs button.active {
@@ -1693,27 +1693,27 @@ footer span button {
   font-size: 11px;
 }
 .panel > header select {
-  font-size: 10px;
+  font-size: 11px;
 }
 table {
   min-width: 760px;
 }
 th {
-  font-size: 9px;
+  font-size: 11px;
 }
 td {
-  font-size: 10px;
+  font-size: 11px;
   height: 44px;
   white-space: normal;
 }
 .pill,
 .state {
-  font-size: 9px;
+  font-size: 11px;
   display: inline-block;
   white-space: nowrap;
 }
 td small {
-  font-size: 9px;
+  font-size: 11px;
   margin-top: 4px;
 }
 .desc {
@@ -1747,7 +1747,7 @@ td small {
   background: transparent;
 }
 .car .vehicle-state {
-  font-size: 9px;
+  font-size: 11px;
 }
 .car .vehicle-state.inService {
   background: #fff1cf;
@@ -1766,7 +1766,7 @@ td small {
   font-size: 12px;
 }
 .vehicle-panel dl {
-  font-size: 10px;
+  font-size: 11px;
   gap: 9px 6px;
 }
 .vehicle-panel dd {
@@ -1775,10 +1775,10 @@ td small {
 }
 .due-list b,
 .due-list small {
-  font-size: 10px;
+  font-size: 11px;
 }
 .due-list i {
-  font-size: 9px;
+  font-size: 11px;
 }
 .due-list img {
   width: 32px;
@@ -1786,19 +1786,19 @@ td small {
   object-fit: contain;
 }
 .quick button {
-  font-size: 10px;
+  font-size: 11px;
   min-height: 45px;
   color: #1261bb;
 }
 .wide,
 .link-btn {
-  font-size: 10px;
+  font-size: 11px;
 }
 .empty-note {
   font-size: 11px;
 }
 footer {
-  font-size: 10px;
+  font-size: 11px;
 }
 .dialog form > label,
 .form-grid label {
@@ -1836,7 +1836,7 @@ footer {
 .readonly-detail li small {
   display: block;
   color: #7b8da3;
-  font-size: 10px;
+  font-size: 11px;
   margin-top: 4px;
 }
 .readonly-detail footer {
@@ -1889,19 +1889,19 @@ footer {
     font-size: 18px;
   }
   .page-title p {
-    font-size: 9px;
+    font-size: 11px;
   }
   .metrics b {
     font-size: 18px;
   }
   .metrics small {
-    font-size: 9px;
+    font-size: 11px;
   }
   .topbar input {
-    font-size: 10px;
+    font-size: 11px;
   }
   .service-account strong {
-    font-size: 9px;
+    font-size: 11px;
   }
   .service-avatar {
     padding: 8px;
@@ -1910,7 +1910,7 @@ footer {
     grid-template-columns: 100px 1fr;
   }
   .tabs button {
-    font-size: 9px;
+    font-size: 11px;
   }
 }
 </style>

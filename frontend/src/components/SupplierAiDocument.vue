@@ -601,7 +601,7 @@ function reset() {
   padding: 8px 10px;
 }
 .ad-facts dt {
-  font-size: 10px;
+  font-size: 11px;
   color: #6b7f9f;
 }
 .ad-facts dd {

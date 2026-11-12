@@ -545,7 +545,7 @@ function downloadTemplate() {
 .vi-badge {
   padding: 2px 8px;
   border-radius: 10px;
-  font-size: 10px;
+  font-size: 11px;
   background: #eef1f6;
   color: #6b7a92;
 }

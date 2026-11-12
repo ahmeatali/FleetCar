@@ -2693,7 +2693,7 @@ onMounted(async () => {
   font-size: 14px;
 }
 .supplier-customer-header .portal-title {
-  font-size: 10px;
+  font-size: 11px;
 }
 .supplier-customer-header .type-badge {
   font-size: 11px;
@@ -2709,7 +2709,7 @@ onMounted(async () => {
   margin-bottom: 22px;
 }
 .supplier-page-heading > div > span {
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 1px;
   color: #6c80a1;
 }
@@ -2734,7 +2734,7 @@ onMounted(async () => {
   font-size: 12px !important;
 }
 .supplier-customer-main .profile-meta-label {
-  font-size: 10px;
+  font-size: 11px;
 }
 .supplier-customer-main .stat-card-new {
   padding: 18px 14px;

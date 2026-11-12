@@ -706,7 +706,7 @@ onUnmounted(() => {
   padding: 0 20px;
   border-bottom: 1px solid #e6edf5;
   background: #fff;
-  font-size: 9px;
+  font-size: 11px;
 }
 .road-top label {
   width: min(420px, 55%);
@@ -720,7 +720,7 @@ onUnmounted(() => {
   border: 0;
   outline: 0;
   background: transparent;
-  font-size: 9px;
+  font-size: 11px;
 }
 .road-content {
   padding: 16px 18px;
@@ -739,7 +739,7 @@ onUnmounted(() => {
   color: #142e56;
 }
 .heading p {
-  font-size: 9px;
+  font-size: 11px;
   color: #7a8ba1;
   margin: 4px 0;
 }
@@ -749,7 +749,7 @@ onUnmounted(() => {
   background: #1268e8;
   color: #fff;
   padding: 9px 12px;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
   cursor: pointer;
 }
@@ -795,7 +795,7 @@ onUnmounted(() => {
   display: block;
 }
 .metrics small {
-  font-size: 8px;
+  font-size: 11px;
   color: #6d8199;
 }
 .metrics b {
@@ -835,7 +835,7 @@ onUnmounted(() => {
   flex: 0.65;
 }
 .filters small {
-  font-size: 7px;
+  font-size: 11px;
   color: #7688a0;
 }
 .filters select,
@@ -845,7 +845,7 @@ onUnmounted(() => {
   border-radius: 4px;
   background: #fff;
   color: #405b7c;
-  font-size: 8px;
+  font-size: 11px;
   padding: 0 5px;
   min-width: 0;
 }
@@ -866,7 +866,7 @@ onUnmounted(() => {
   min-width: 0;
   border: 0;
   outline: 0;
-  font-size: 8px;
+  font-size: 11px;
 }
 .filters > button,
 .export {
@@ -876,7 +876,7 @@ onUnmounted(() => {
   border: 1px solid #dbe5f1;
   border-radius: 4px;
   color: #2869b9;
-  font-size: 8px;
+  font-size: 11px;
   cursor: pointer;
   white-space: nowrap;
 }
@@ -894,7 +894,7 @@ onUnmounted(() => {
   color: #526b89;
   padding: 8px 11px;
   white-space: nowrap;
-  font-size: 8px;
+  font-size: 11px;
   cursor: pointer;
 }
 .tabs button.active {
@@ -920,7 +920,7 @@ onUnmounted(() => {
   justify-content: space-between;
   padding: 0 10px;
   border-bottom: 1px solid #edf1f6;
-  font-size: 9px;
+  font-size: 11px;
   color: #1c395d;
 }
 .scroll {
@@ -937,12 +937,12 @@ td {
   padding: 8px 6px;
   border-bottom: 1px solid #eff2f6;
   white-space: nowrap;
-  font-size: 8px;
+  font-size: 11px;
   color: #385271;
 }
 th {
   background: #fbfcfe;
-  font-size: 7px;
+  font-size: 11px;
   color: #7a8ba0;
 }
 td {
@@ -969,7 +969,7 @@ tr.selected {
 .vehicle-row b {
   display: block;
   color: #2c65ad;
-  font-size: 7px;
+  font-size: 11px;
   margin-top: 2px;
 }
 .loc {
@@ -981,7 +981,7 @@ tr.selected {
   display: inline-block;
   border-radius: 11px;
   padding: 4px 6px;
-  font-size: 7px;
+  font-size: 11px;
   white-space: nowrap;
 }
 .status.pending {
@@ -1025,7 +1025,7 @@ tr.selected {
   display: flex;
   justify-content: space-between;
   padding: 8px 10px;
-  font-size: 7px;
+  font-size: 11px;
   color: #8291a4;
 }
 .panel footer button {
@@ -1047,7 +1047,7 @@ tr.selected {
   background: #fff;
   color: #2768bb;
   padding: 6px 9px;
-  font-size: 8px;
+  font-size: 11px;
   cursor: pointer;
 }
 .vehicle-info {
@@ -1060,7 +1060,7 @@ tr.selected {
 .vehicle-info > b,
 .vehicle-info > strong {
   display: block;
-  font-size: 9px;
+  font-size: 11px;
   color: #17375f;
 }
 .vehicle-info > strong {
@@ -1075,7 +1075,7 @@ tr.selected {
   margin: 9px 0 0;
   padding-top: 8px;
   border-top: 1px solid #edf1f6;
-  font-size: 7px;
+  font-size: 11px;
 }
 .vehicle-info dt,
 .request-info dt {
@@ -1107,7 +1107,7 @@ tr.selected {
   padding: 5px;
   color: #2366b5;
   text-decoration: none;
-  font-size: 7px;
+  font-size: 11px;
 }
 .map-empty {
   height: 82px;
@@ -1120,13 +1120,13 @@ tr.selected {
 }
 .map-empty b {
   display: block;
-  font-size: 8px;
+  font-size: 11px;
 }
 .request-info {
   padding: 9px 11px;
 }
 .request-info h3 {
-  font-size: 9px;
+  font-size: 11px;
   margin: 0;
 }
 .request-info dl {
@@ -1146,7 +1146,7 @@ tr.selected {
   flex: 1;
   text-align: center;
   padding: 7px 3px;
-  font-size: 7px;
+  font-size: 11px;
   text-decoration: none;
   cursor: pointer;
 }
@@ -1181,7 +1181,7 @@ tr.selected {
   background: white;
   color: #2870d1;
   text-align: center;
-  font-size: 8px;
+  font-size: 11px;
   font-style: normal;
   line-height: 12px;
 }
@@ -1190,18 +1190,18 @@ tr.selected {
   display: block;
 }
 .timeline li b {
-  font-size: 8px;
+  font-size: 11px;
   color: #294765;
 }
 .timeline li small,
 .timeline li p {
-  font-size: 7px;
+  font-size: 11px;
   color: #8090a5;
   margin: 3px 0;
 }
 .empty-note {
   padding: 13px;
-  font-size: 8px;
+  font-size: 11px;
   color: #8392a5;
 }
 .overlay {
@@ -1229,7 +1229,7 @@ tr.selected {
   margin-bottom: 12px;
 }
 .dialog header small {
-  font-size: 8px;
+  font-size: 11px;
   color: #2873cf;
   letter-spacing: 0.1em;
 }
@@ -1251,7 +1251,7 @@ tr.selected {
   flex-direction: column;
   gap: 5px;
   margin: 9px 0;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 650;
   color: #4b6079;
 }
@@ -1290,13 +1290,13 @@ tr.selected {
   padding: 8px;
   background: #fff0f0;
   color: #b9313b;
-  font-size: 8px;
+  font-size: 11px;
 }
 .privacy {
   display: block;
   margin-top: 8px;
   color: #8391a4;
-  font-size: 7px;
+  font-size: 11px;
 }
 @media (max-width: 1200px) {
   .columns {
@@ -1352,17 +1352,17 @@ tr.selected {
     font-size: 16px;
   }
   .heading p {
-    font-size: 8px;
+    font-size: 11px;
   }
   .heading .primary {
     padding: 8px;
-    font-size: 7px;
+    font-size: 11px;
   }
   .metrics {
     grid-template-columns: 1fr 1fr;
   }
   .metrics small {
-    font-size: 7px;
+    font-size: 11px;
   }
   .metrics b {
     font-size: 14px;
@@ -1376,7 +1376,7 @@ tr.selected {
   }
   .tabs button {
     padding: 7px 8px;
-    font-size: 7px;
+    font-size: 11px;
   }
   .details-col {
     display: flex;
@@ -1424,7 +1424,7 @@ tr.selected {
 .road-account small {
   display: block;
   color: #7489a1;
-  font-size: 9px;
+  font-size: 11px;
   margin-top: 3px;
 }
 .road-avatar {
@@ -1439,7 +1439,7 @@ tr.selected {
   color: #092967;
 }
 .heading p {
-  font-size: 10px;
+  font-size: 11px;
 }
 .metrics {
   gap: 10px;
@@ -1449,7 +1449,7 @@ tr.selected {
   min-height: 45px;
 }
 .metrics small {
-  font-size: 9px;
+  font-size: 11px;
 }
 .metrics b {
   font-size: 21px;
@@ -1488,7 +1488,7 @@ tr.selected {
   min-height: 38px;
 }
 .tabs button {
-  font-size: 10px;
+  font-size: 11px;
   padding: 10px;
 }
 .tabs button.active {
@@ -1504,15 +1504,15 @@ table {
   min-width: 690px;
 }
 th {
-  font-size: 9px;
+  font-size: 11px;
 }
 td {
-  font-size: 10px;
+  font-size: 11px;
   height: 44px;
   white-space: normal;
 }
 .vehicle-row > span {
-  font-size: 10px;
+  font-size: 11px;
 }
 .vehicle-row img {
   width: 42px;
@@ -1524,18 +1524,18 @@ td {
   color: #4f6f94;
 }
 .vehicle-row b {
-  font-size: 9px;
+  font-size: 11px;
 }
 .case-link {
   border: 0;
   background: none;
   color: #0064df;
   cursor: pointer;
-  font-size: 9px;
+  font-size: 11px;
   padding: 0;
 }
 .status {
-  font-size: 9px;
+  font-size: 11px;
 }
 .bar {
   width: 65px;
@@ -1556,7 +1556,7 @@ td {
 }
 .vehicle-info dl,
 .request-info dl {
-  font-size: 10px;
+  font-size: 11px;
   gap: 9px 6px;
 }
 .map {
@@ -1572,7 +1572,7 @@ td {
   background: white;
   border-radius: 5px;
   padding: 7px;
-  font-size: 9px;
+  font-size: 11px;
   box-shadow: 0 2px 6px #152f5922;
 }
 .team-map-chip small {
@@ -1585,11 +1585,11 @@ td {
 }
 .actions a,
 .actions button {
-  font-size: 10px;
+  font-size: 11px;
   padding: 9px;
 }
 .location-share {
-  font-size: 9px;
+  font-size: 11px;
   color: #236fc2;
   background: #f1f7ff;
   border: 1px solid #dfebf9;
@@ -1599,11 +1599,11 @@ td {
   cursor: pointer;
 }
 .timeline li b {
-  font-size: 10px;
+  font-size: 11px;
 }
 .timeline li small,
 .timeline li p {
-  font-size: 9px;
+  font-size: 11px;
 }
 .timeline li {
   min-height: 42px;
@@ -1615,7 +1615,7 @@ td {
   font-size: 11px;
 }
 .panel footer {
-  font-size: 10px;
+  font-size: 11px;
 }
 .dialog label,
 .dialog .primary {
@@ -1628,12 +1628,12 @@ td {
   font-size: 11px;
 }
 .filters small {
-  font-size: 9px;
+  font-size: 11px;
 }
 .filters select,
 .filters input[type='date'],
 .filters .find input {
-  font-size: 10px;
+  font-size: 11px;
   height: 31px;
 }
 .filters .find {
@@ -1707,7 +1707,7 @@ td {
     font-size: 20px;
   }
   .road-account strong {
-    font-size: 9px;
+    font-size: 11px;
   }
   .road-avatar {
     padding: 8px;

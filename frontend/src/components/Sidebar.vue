@@ -54,9 +54,10 @@
         <li
           v-for="item in navigationEntries"
           :key="item.id || item.to || item.label"
-          :class="{ 'fleet-menu-group': item.children }"
+          :class="{ 'fleet-menu-group': item.children, 'fleet-menu-heading-row': item.heading }"
         >
-          <template v-if="item.children">
+          <span v-if="item.heading" class="fleet-menu-heading">{{ item.heading }}</span>
+          <template v-else-if="item.children">
             <UiButton
               type="button"
               class="fleet-nav-link fleet-group-toggle"
@@ -105,7 +106,9 @@
             :aria-label="item.label + ': Yakında'"
             aria-disabled="true"
             ><span class="unavailable-content"
-              ><NavIcon class="nav-glyph" :label="item.label" />{{ item.label }}</span
+              ><NavIcon class="nav-glyph" :label="item.label" /><span class="soon-label">{{
+                item.label
+              }}</span></span
             ><span class="coming-soon">Yakında</span></UiButton
           >
         </li>
@@ -208,11 +211,15 @@ const visibleLink = (item) => {
 }
 const navigationEntries = computed(() => {
   const source = props.supplier ? supplierNavigationGroups : customerItems
-  return source
+  const visible = source
     .map((item) =>
       item.children ? { ...item, children: item.children.filter(visibleLink) } : item,
     )
     .filter((item) => (item.children ? item.children.length : visibleLink(item)))
+  // Not-yet-available items go last under a "Yakında" heading so the working menu stays together.
+  const ready = visible.filter((item) => item.children || item.to)
+  const soon = visible.filter((item) => !item.children && !item.to)
+  return soon.length ? [...ready, { id: 'soon-heading', heading: 'Yakında' }, ...soon] : ready
 })
 const isSelected = (item) => {
   if (props.supplier) {
@@ -462,28 +469,41 @@ const logout = async () => {
 .unavailable {
   cursor: default;
 }
+.unavailable {
+  justify-content: space-between;
+}
 .unavailable-content {
   display: flex;
   gap: 12px;
   align-items: center;
-  filter: blur(0.7px);
-  opacity: 0.55;
+  min-width: 0;
+  opacity: 0.6;
+}
+.soon-label {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .coming-soon {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  opacity: 0;
-  background: #031826b3;
-  border-radius: 5px;
-  color: white;
-  font-size: 12px;
+  flex-shrink: 0;
+  margin-left: 8px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: #163047;
+  color: #a9c1d6;
+  font-size: 11px;
+  font-weight: 600;
 }
-.unavailable:hover .coming-soon,
-.unavailable:focus-visible .coming-soon {
-  opacity: 1;
+.fleet-menu-heading {
+  display: block;
+  margin: 8px 0 2px;
+  padding: 0 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #7f9bb3;
 }
 .fleet-support {
   margin-top: auto;

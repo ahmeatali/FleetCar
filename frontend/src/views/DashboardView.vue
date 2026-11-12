@@ -631,7 +631,7 @@ onMounted(load)
 }
 .overview-account small {
   display: block;
-  font-size: 10px;
+  font-size: 11px;
   color: #7282a0;
 }
 .account-avatar {
@@ -710,7 +710,7 @@ onMounted(load)
   margin: 5px 0;
 }
 .overview-stat small {
-  font-size: 10px;
+  font-size: 11px;
   color: #7c8aa5;
 }
 .overview-grid {
@@ -747,7 +747,7 @@ onMounted(load)
   border-radius: 4px;
   padding: 4px 8px;
   text-decoration: none;
-  font-size: 10px;
+  font-size: 11px;
   white-space: nowrap;
 }
 .locations-panel {
@@ -782,7 +782,7 @@ onMounted(load)
   display: block;
   margin-top: 4px;
   color: #617f93;
-  font-size: 10px;
+  font-size: 11px;
 }
 .location-pin {
   background: #14ad79;
@@ -793,7 +793,7 @@ onMounted(load)
 }
 .location-note {
   text-align: center;
-  font-size: 10px;
+  font-size: 11px;
   color: #70889d;
 }
 .vehicle-status {
@@ -801,7 +801,7 @@ onMounted(load)
   flex-wrap: wrap;
   gap: 12px;
   margin-top: 14px;
-  font-size: 10px;
+  font-size: 11px;
 }
 .vehicle-status a {
   display: flex;
@@ -847,7 +847,7 @@ i {
   font-size: 25px;
 }
 .fleet-donut small {
-  font-size: 10px;
+  font-size: 11px;
 }
 .distribution-legend {
   flex: 1;
@@ -887,7 +887,7 @@ i {
   min-width: 0;
 }
 .cost-value {
-  font-size: 8px;
+  font-size: 11px;
   color: #7d8ba3;
   margin-bottom: 4px;
 }
@@ -905,7 +905,7 @@ i {
   flex-shrink: 1;
 }
 .cost-column small {
-  font-size: 9px;
+  font-size: 11px;
   color: #697b9c;
   margin: 7px 0;
 }
@@ -914,7 +914,7 @@ i {
   gap: 10px;
   margin-top: 12px;
   flex-wrap: wrap;
-  font-size: 9px;
+  font-size: 11px;
   color: #71819a;
 }
 .cost-legend span {
@@ -925,7 +925,7 @@ i {
 .cost-total {
   display: flex;
   justify-content: space-between;
-  font-size: 10px;
+  font-size: 11px;
   margin-top: 12px;
 }
 .contract-bar {
@@ -967,7 +967,7 @@ i {
 .event-row small {
   display: block;
   color: #8390a6;
-  font-size: 9px;
+  font-size: 11px;
   margin-top: 3px;
 }
 .event-icon {
@@ -975,7 +975,7 @@ i {
   font-size: 20px;
 }
 .day-badge {
-  font-size: 9px;
+  font-size: 11px;
   color: #d08538;
   background: #fff2df;
   padding: 4px;
@@ -996,7 +996,7 @@ i {
   gap: 8px;
   text-decoration: none;
   color: #28406d;
-  font-size: 10px;
+  font-size: 11px;
   padding: 9px 0;
   border-bottom: 1px solid #f0f4f8;
 }
@@ -1006,7 +1006,7 @@ i {
 .activity-row small {
   display: block;
   color: #8290a6;
-  font-size: 9px;
+  font-size: 11px;
   margin-top: 4px;
 }
 .activity-row > span:first-child {
@@ -1028,7 +1028,7 @@ i {
   background: #e5f8ef;
   border-radius: 3px;
   padding: 3px 5px;
-  font-size: 9px;
+  font-size: 11px;
 }
 .empty-copy,
 .muted {
@@ -1047,7 +1047,7 @@ i {
   margin: 12px 0;
 }
 .panel-empty small {
-  font-size: 10px;
+  font-size: 11px;
 }
 .overview-alert {
   display: block;
@@ -1122,7 +1122,7 @@ i {
     font-size: 20px;
   }
   .primary-action {
-    font-size: 10px;
+    font-size: 11px;
     white-space: nowrap;
   }
   .overview-stats {

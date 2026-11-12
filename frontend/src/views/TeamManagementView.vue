@@ -908,7 +908,7 @@ onMounted(load)
 .role-badge,
 .status-badge {
   display: inline-block;
-  font-size: 10px;
+  font-size: 11px;
   border-radius: 6px;
   padding: 6px 8px;
   line-height: 1.4;

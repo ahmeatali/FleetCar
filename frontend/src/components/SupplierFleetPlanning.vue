@@ -1032,7 +1032,7 @@ onMounted(load)
 .fp-calendar td {
   min-width: 100px;
   text-align: center;
-  font-size: 10px;
+  font-size: 11px;
 }
 .fp-calendar .fp-booked {
   background: #e8f1ff;

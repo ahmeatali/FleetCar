@@ -77,8 +77,11 @@
                     <div class="detail-model-heading">
                       <div>
                         <h1>
-                          {{ vehicle.brand }} {{ vehicle.model
-                          }}<span v-if="vehicle.version"> {{ vehicle.version }}</span>
+                          {{
+                            [vehicle.brand, vehicle.model, vehicle.version]
+                              .filter(Boolean)
+                              .join(' ')
+                          }}
                         </h1>
                         <span class="detail-status-pill" :class="statusTone"
                           >● {{ vehicle.is_active ? vehicle.status : 'Filodan çıkarıldı' }}</span
@@ -1625,7 +1628,7 @@ onMounted(loadDetails)
   background: transparent;
   color: #173252;
   font: inherit;
-  font-size: 10px;
+  font-size: 11px;
 }
 .detail-profile {
   display: flex;
@@ -1640,7 +1643,7 @@ onMounted(loadDetails)
   border-radius: 50%;
   background: #1470e7;
   color: #fff;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
 }
 .detail-profile div {
@@ -1648,11 +1651,11 @@ onMounted(loadDetails)
   gap: 2px;
 }
 .detail-profile strong {
-  font-size: 9px;
+  font-size: 11px;
 }
 .detail-profile small {
   color: #8495a9;
-  font-size: 7px;
+  font-size: 11px;
 }
 .detail-profile button {
   border: 0;
@@ -1666,7 +1669,7 @@ onMounted(loadDetails)
   align-items: center;
   gap: 7px;
   color: #6c829c;
-  font-size: 9px;
+  font-size: 11px;
 }
 .detail-breadcrumb a {
   color: #526d8b;
@@ -1727,7 +1730,7 @@ onMounted(loadDetails)
 .detail-card-actions > a {
   color: #5e7692;
   text-decoration: none;
-  font-size: 8px;
+  font-size: 11px;
 }
 .detail-card-actions > div {
   display: flex;
@@ -1745,7 +1748,7 @@ onMounted(loadDetails)
   background: #fff;
   color: #4d6581;
   font: inherit;
-  font-size: 8px;
+  font-size: 11px;
   font-weight: 650;
   text-decoration: none;
   cursor: pointer;
@@ -1785,7 +1788,7 @@ onMounted(loadDetails)
   color: #405b79;
   text-align: left;
   font: inherit;
-  font-size: 8px;
+  font-size: 11px;
   cursor: pointer;
 }
 .detail-actions-menu button:hover {
@@ -1823,7 +1826,7 @@ onMounted(loadDetails)
   border-radius: 5px;
   background: #101e2ebf;
   color: white;
-  font-size: 7px;
+  font-size: 11px;
 }
 .detail-car-placeholder {
   display: grid;
@@ -1835,7 +1838,7 @@ onMounted(loadDetails)
   font-size: 36px;
 }
 .detail-car-placeholder small {
-  font-size: 8px;
+  font-size: 11px;
 }
 .detail-hero-content {
   min-width: 0;
@@ -1864,7 +1867,7 @@ onMounted(loadDetails)
   border-radius: 12px;
   background: #eaf8f1;
   color: #168960;
-  font-size: 7px;
+  font-size: 11px;
   white-space: nowrap;
 }
 .detail-status-pill.amber {
@@ -1892,12 +1895,12 @@ onMounted(loadDetails)
 .detail-hero-specs dt {
   margin-bottom: 2px;
   color: #8496aa;
-  font-size: 7px;
+  font-size: 11px;
 }
 .detail-hero-specs dd {
   overflow: hidden;
   color: #334f6f;
-  font-size: 8px;
+  font-size: 11px;
   font-weight: 650;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1916,7 +1919,7 @@ onMounted(loadDetails)
   background: #fff;
   color: #526d8c;
   font: inherit;
-  font-size: 7px;
+  font-size: 11px;
   cursor: pointer;
 }
 .detail-quick-links button:hover,
@@ -1945,7 +1948,7 @@ onMounted(loadDetails)
   background: transparent;
   color: #697f98;
   font: inherit;
-  font-size: 8px;
+  font-size: 11px;
   white-space: nowrap;
   cursor: pointer;
 }
@@ -1972,7 +1975,7 @@ onMounted(loadDetails)
 }
 .detail-panel h2 {
   color: #183959;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 750;
 }
 .detail-information-card h2 {
@@ -1985,12 +1988,12 @@ onMounted(loadDetails)
 }
 .detail-information-list dt {
   color: #8293a7;
-  font-size: 7px;
+  font-size: 11px;
 }
 .detail-information-list dd {
   overflow-wrap: anywhere;
   color: #3a5573;
-  font-size: 7px;
+  font-size: 11px;
   font-weight: 600;
 }
 .detail-general-center {
@@ -2016,13 +2019,13 @@ onMounted(loadDetails)
 .detail-delivery-grid small,
 .detail-contract-grid small {
   color: #8192a6;
-  font-size: 7px;
+  font-size: 11px;
 }
 .detail-delivery-grid strong,
 .detail-contract-grid strong {
   overflow-wrap: anywhere;
   color: #3b5777;
-  font-size: 7px;
+  font-size: 11px;
   font-weight: 650;
 }
 .inline-edit {
@@ -2031,7 +2034,7 @@ onMounted(loadDetails)
   background: transparent;
   color: #216bd4;
   font: inherit;
-  font-size: 7px;
+  font-size: 11px;
   cursor: pointer;
 }
 .detail-photo-strip {
@@ -2058,7 +2061,7 @@ onMounted(loadDetails)
 .detail-add-photo {
   border: 1px dashed #d6e0eb;
   color: #6c83a0;
-  font-size: 7px;
+  font-size: 11px;
 }
 .detail-add-photo input,
 .upload-compact input,
@@ -2068,7 +2071,7 @@ onMounted(loadDetails)
 .detail-notes {
   margin: 8px 0;
   color: #657b94;
-  font-size: 7px;
+  font-size: 11px;
   line-height: 1.5;
 }
 .detail-outline-link {
@@ -2081,7 +2084,7 @@ onMounted(loadDetails)
   background: white;
   color: #4d6d91;
   font: inherit;
-  font-size: 7px;
+  font-size: 11px;
   text-decoration: none;
   cursor: pointer;
 }
@@ -2096,7 +2099,7 @@ onMounted(loadDetails)
 .detail-notes-card p {
   margin-top: 8px;
   color: #75879c;
-  font-size: 7px;
+  font-size: 11px;
   line-height: 1.45;
 }
 .detail-notes-card .inline-edit {
@@ -2122,7 +2125,7 @@ onMounted(loadDetails)
 .detail-section-heading p {
   margin-top: 4px;
   color: #7a8ea4;
-  font-size: 7px;
+  font-size: 11px;
 }
 .upload-compact {
   position: relative;
@@ -2138,7 +2141,7 @@ onMounted(loadDetails)
 .detail-empty {
   padding: 16px 9px;
   color: #8495a8;
-  font-size: 8px;
+  font-size: 11px;
   line-height: 1.55;
 }
 .detail-contract-grid {
@@ -2168,7 +2171,7 @@ onMounted(loadDetails)
   border-radius: 4px;
   background: #e9f0ff;
   color: #4075cc;
-  font-size: 6px;
+  font-size: 11px;
   font-weight: 800;
 }
 .detail-file-icon.pdf {
@@ -2184,14 +2187,14 @@ onMounted(loadDetails)
 .detail-file-name strong {
   overflow: hidden;
   color: #3e5c7c;
-  font-size: 7px;
+  font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .detail-file-name small {
   overflow: hidden;
   color: #8b9bad;
-  font-size: 6px;
+  font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -2247,7 +2250,7 @@ onMounted(loadDetails)
 }
 .usage-ring small {
   color: #7589a1;
-  font-size: 6px;
+  font-size: 11px;
 }
 .detail-condition-body dl,
 .detail-hgs-card dl {
@@ -2263,12 +2266,12 @@ onMounted(loadDetails)
 .detail-condition-body dt,
 .detail-hgs-card dt {
   color: #7d8fa3;
-  font-size: 7px;
+  font-size: 11px;
 }
 .detail-condition-body dd,
 .detail-hgs-card dd {
   color: #395675;
-  font-size: 7px;
+  font-size: 11px;
   font-weight: 650;
   text-align: right;
 }
@@ -2285,7 +2288,7 @@ onMounted(loadDetails)
   background: none;
   color: #236dcc;
   font: inherit;
-  font-size: 7px;
+  font-size: 11px;
   cursor: pointer;
 }
 .detail-aside-gallery {
@@ -2316,7 +2319,7 @@ onMounted(loadDetails)
   border: 1px dashed #d7e1ec;
   border-radius: 5px;
   color: #6e84a0;
-  font-size: 8px;
+  font-size: 11px;
   cursor: pointer;
 }
 .detail-insurance-grid {
@@ -2344,13 +2347,13 @@ onMounted(loadDetails)
 }
 .detail-insurance-grid strong {
   color: #496582;
-  font-size: 7px;
+  font-size: 11px;
 }
 .detail-insurance-grid small {
   max-width: 100%;
   overflow-wrap: anywhere;
   color: #8a9aac;
-  font-size: 6px;
+  font-size: 11px;
 }
 .detail-insurance-grid button {
   width: 100%;
@@ -2361,7 +2364,7 @@ onMounted(loadDetails)
   color: #507195;
   padding: 5px 2px;
   font: inherit;
-  font-size: 6px;
+  font-size: 11px;
   cursor: pointer;
 }
 .detail-hgs-pill {
@@ -2369,7 +2372,7 @@ onMounted(loadDetails)
   background: #ebf8f3;
   color: #16936b;
   padding: 3px 6px;
-  font-size: 7px;
+  font-size: 11px;
   font-weight: 800;
 }
 .detail-hgs-card dl {
@@ -2392,14 +2395,14 @@ onMounted(loadDetails)
 }
 .detail-mini-history strong {
   color: #48627f;
-  font-size: 7px;
+  font-size: 11px;
 }
 .detail-mini-history small {
   color: #8595a7;
-  font-size: 6px;
+  font-size: 11px;
 }
 .detail-mini-history .record-status {
-  font-size: 6px;
+  font-size: 11px;
 }
 .detail-empty.compact {
   padding: 8px 0;
@@ -2431,7 +2434,7 @@ onMounted(loadDetails)
   border-radius: 50%;
   background: #eaf2ff;
   color: #4277cf;
-  font-size: 8px;
+  font-size: 11px;
   font-weight: 750;
 }
 .record-icon.service {
@@ -2445,7 +2448,7 @@ onMounted(loadDetails)
 .record-icon.hgs {
   background: #e8f6f1;
   color: #128568;
-  font-size: 6px;
+  font-size: 11px;
 }
 .record-icon.roadside {
   background: #fff1e8;
@@ -2460,18 +2463,18 @@ onMounted(loadDetails)
 }
 .detail-record strong {
   color: #365471;
-  font-size: 8px;
+  font-size: 11px;
 }
 .detail-record p {
   margin-top: 3px;
   color: #70859d;
-  font-size: 7px;
+  font-size: 11px;
 }
 .detail-record small {
   display: block;
   margin-top: 3px;
   color: #91a0af;
-  font-size: 6px;
+  font-size: 11px;
 }
 .record-status {
   align-self: start;
@@ -2480,12 +2483,12 @@ onMounted(loadDetails)
   border-radius: 10px;
   background: #ecf8f1;
   color: #148b64;
-  font-size: 7px;
+  font-size: 11px;
   white-space: nowrap;
 }
 .detail-record > b {
   color: #375779;
-  font-size: 8px;
+  font-size: 11px;
   white-space: nowrap;
 }
 .detail-record > b.positive {
@@ -2500,7 +2503,7 @@ onMounted(loadDetails)
   border-radius: 5px;
   background: #f7f9fc;
   color: #70839a;
-  font-size: 7px;
+  font-size: 11px;
 }
 .detail-expense-summary {
   display: flex;
@@ -2518,7 +2521,7 @@ onMounted(loadDetails)
 .detail-expense-summary span,
 .detail-expense-summary small {
   color: #74889f;
-  font-size: 8px;
+  font-size: 11px;
 }
 .detail-entry-form {
   display: grid;
@@ -2534,7 +2537,7 @@ onMounted(loadDetails)
   display: grid;
   gap: 4px;
   color: #6a8099;
-  font-size: 7px;
+  font-size: 11px;
 }
 .detail-entry-form input,
 .detail-entry-form select {
@@ -2547,7 +2550,7 @@ onMounted(loadDetails)
   color: #35516e;
   padding: 5px 7px;
   font: inherit;
-  font-size: 8px;
+  font-size: 11px;
 }
 .detail-map-wrap {
   height: 220px;
@@ -2570,7 +2573,7 @@ onMounted(loadDetails)
   border-radius: 5px;
   background: white;
   color: #235d9e;
-  font-size: 8px;
+  font-size: 11px;
   text-decoration: none;
 }
 .detail-photo-gallery {
@@ -2604,7 +2607,7 @@ onMounted(loadDetails)
   gap: 5px;
   padding: 6px;
   color: #5d748e;
-  font-size: 7px;
+  font-size: 11px;
 }
 .detail-photo-gallery figcaption span {
   overflow: hidden;
@@ -2661,7 +2664,7 @@ onMounted(loadDetails)
 }
 .detail-eyebrow {
   color: #8798ac;
-  font-size: 7px;
+  font-size: 11px;
   font-weight: 750;
   letter-spacing: 0.08em;
 }
@@ -2683,7 +2686,7 @@ onMounted(loadDetails)
 .detail-edit-group h3 {
   margin-bottom: 9px;
   color: #315373;
-  font-size: 9px;
+  font-size: 11px;
 }
 .detail-edit-grid {
   display: grid;
@@ -2695,7 +2698,7 @@ onMounted(loadDetails)
   align-content: start;
   gap: 4px;
   color: #70849a;
-  font-size: 7px;
+  font-size: 11px;
 }
 .detail-edit-grid input:not([type='checkbox']) {
   width: 100%;
@@ -2707,7 +2710,7 @@ onMounted(loadDetails)
   color: #365573;
   padding: 5px 7px;
   font: inherit;
-  font-size: 8px;
+  font-size: 11px;
 }
 .detail-edit-grid input[type='checkbox'] {
   width: 14px;
@@ -2736,7 +2739,7 @@ onMounted(loadDetails)
   background: #153657;
   color: white;
   box-shadow: 0 8px 28px #102b4828;
-  font-size: 10px;
+  font-size: 11px;
 }
 .detail-primary-column > .detail-tab-panel:nth-child(n) {
   min-width: 0;
