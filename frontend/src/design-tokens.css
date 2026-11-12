@@ -1,0 +1,77 @@
+/*
+ * FleetRent design tokens: one source for color, type, spacing, radius and elevation.
+ * New and migrated UI uses these (via the shared PageHeader, KpiCard and EmptyState
+ * components); older page styles still carry their own values until they are moved over.
+ * Text colors are chosen to reach at least 4.5:1 contrast on white.
+ */
+:root {
+  /* Brand and surfaces */
+  --fr-navy: #031826;
+  --fr-navy-2: #0b2a4a;
+  --fr-primary: #0064ff;
+  --fr-primary-soft: #eaf2ff;
+  --fr-bg: #f3f8fd;
+  --fr-surface: #ffffff;
+  --fr-border: #e3ebf5;
+  --fr-border-strong: #cfdbea;
+
+  /* Text */
+  --fr-ink: #10254c; /* headings, values */
+  --fr-text: #2b4166; /* body */
+  --fr-muted: #5a6e90; /* secondary text, 5.2:1 on white */
+
+  /* Status */
+  --fr-success: #0e7a44;
+  --fr-success-soft: #e8f6ee;
+  --fr-warning: #b45309;
+  --fr-warning-soft: #fff5e6;
+  --fr-danger: #c62839;
+  --fr-danger-soft: #fdecee;
+  --fr-info: #1f5fbf;
+  --fr-info-soft: #eaf2ff;
+  --fr-teal: #0f7f8c;
+  --fr-teal-soft: #e6f6f8;
+  --fr-violet: #5b3fd6;
+  --fr-violet-soft: #f0edff;
+
+  /* Type scale (minimum 11px) */
+  --fr-text-xs: 11px;
+  --fr-text-sm: 12px;
+  --fr-text-md: 13px;
+  --fr-text-lg: 15px;
+  --fr-text-xl: 20px;
+  --fr-text-2xl: 26px;
+
+  /* Spacing, radius, elevation */
+  --fr-space-1: 4px;
+  --fr-space-2: 8px;
+  --fr-space-3: 12px;
+  --fr-space-4: 16px;
+  --fr-space-5: 20px;
+  --fr-space-6: 24px;
+  --fr-radius-sm: 5px;
+  --fr-radius: 8px;
+  --fr-radius-lg: 12px;
+  --fr-shadow-sm: 0 1px 2px rgba(15, 37, 76, 0.06);
+  --fr-shadow: 0 6px 18px rgba(15, 37, 76, 0.08);
+
+  /* Focus */
+  --fr-focus: #0064ff;
+}
+
+/*
+ * Visible keyboard focus everywhere. Several older styles remove the outline on :focus; this
+ * restores a ring for keyboard users only (:focus-visible), without touching text inputs,
+ * which keep their own focus styles.
+ */
+:where(
+  a,
+  button,
+  summary,
+  [role='button'],
+  [role='tab'],
+  [tabindex]:not([tabindex='-1'])
+):focus-visible {
+  outline: 2px solid var(--fr-focus) !important;
+  outline-offset: 2px !important;
+}

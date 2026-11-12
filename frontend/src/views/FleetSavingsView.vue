@@ -2,18 +2,20 @@
   <div class="portal-layout">
     <Sidebar />
     <main class="portal-main savings-page" :aria-busy="loading">
-      <header class="savings-heading">
-        <div>
-          <h1>Filo Kontrol & Tasarruf Merkezi</h1>
-          <p>Filonuzdaki kullanım, bakım ve gider kayıtlarından inceleme önerileri.</p>
-        </div>
-        <UiButton
-          class="btn btn-blue"
-          :disabled="loading || !!error || !findings.length"
-          @click="exportFindings"
-          >CSV İndir</UiButton
-        >
-      </header>
+      <PageHeader
+        icon="savings"
+        title="Filo Kontrol & Tasarruf Merkezi"
+        description="Filonuzdaki kullanım, bakım ve gider kayıtlarından inceleme önerileri."
+      >
+        <template #actions>
+          <UiButton
+            class="btn btn-blue"
+            :disabled="loading || !!error || !findings.length"
+            @click="exportFindings"
+            >CSV İndir</UiButton
+          >
+        </template>
+      </PageHeader>
       <UiAlert v-if="loading" tone="info">Filo verileriniz yükleniyor…</UiAlert>
       <UiAlert v-else-if="error" tone="error">
         {{ error }} <UiButton class="btn" @click="load">Tekrar Dene</UiButton>
@@ -107,6 +109,7 @@
   </div>
 </template>
 <script setup>
+import { PageHeader } from '../components/ui/index.js'
 import { computed, onMounted, reactive, ref } from 'vue'
 import Sidebar from '../components/Sidebar.vue'
 import { UiAlert, UiButton, UiField, UiTable } from '../components/ui/index.js'

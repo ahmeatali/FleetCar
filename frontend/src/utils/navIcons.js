@@ -97,6 +97,12 @@ const byLabel = [
   [/^ana sayfa/i, 'home'],
   [/^filo$/i, 'car'],
   [/^yönetim$/i, 'settings'],
+  // fleet status groups used on KPI cards
+  [/^kira$/i, 'calendar'],
+  [/^havuz$/i, 'layers'],
+  [/^2\. el$/i, 'tag'],
+  [/^dealer$/i, 'store'],
+  [/^toplam araç/i, 'car'],
   [/günlük operasyon|operasyon merkezi/i, 'check'],
   [/^operasyonlar/i, 'tools'],
   [/şube|lokasyon/i, 'branch'],

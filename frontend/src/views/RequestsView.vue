@@ -4,35 +4,23 @@
     <Sidebar />
 
     <main class="portal-main fade-in-up">
-      <!-- Top Breadcrumb / Header -->
-      <div
-        style="
-          font-size: 0.85rem;
-          color: #64748b;
-          margin-bottom: 12px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        "
+      <PageHeader
+        icon="briefcase"
+        eyebrow="Servis Paneli"
+        title="Tedarikçi İşlemleri & Hizmet Talepleri"
+        description="Servis, lastik, ikame araç ve acil yol yardım taleplerinizi oluşturun ve takip edin."
       >
-        <router-link to="/dashboard" style="color: #64748b; text-decoration: none"
-          >← Geri</router-link
-        >
-        <span>/ Servis Paneli / {{ activeCategoryTitle }}</span>
-      </div>
-
-      <header class="dashboard-header" style="margin-bottom: 25px">
-        <div>
-          <h1>Tedarikçi İşlemleri & Hizmet Talepleri</h1>
-          <p style="color: var(--text-muted); font-size: 0.95rem">
-            Servis, lastik, ikame araç ve acil yol yardım taleplerinizi oluşturun ve takip edin.
-          </p>
-        </div>
-        <UiButton @click="activeTab = 'list'" class="btn btn-secondary" v-if="activeTab !== 'list'">
-          <NavIcon name="document" size="16" /> Taleplerim Listesi
-        </UiButton>
-        <NotificationBell />
-      </header>
+        <template #actions>
+          <UiButton
+            v-if="activeTab !== 'list'"
+            class="btn btn-secondary"
+            @click="activeTab = 'list'"
+          >
+            <NavIcon name="document" size="16" /> Taleplerim Listesi
+          </UiButton>
+          <NotificationBell />
+        </template>
+      </PageHeader>
 
       <!-- Category Switcher Tabs (FleetRent Premium Tab Pill Bar) -->
       <div class="category-tabs-bar">
@@ -726,6 +714,7 @@
 </template>
 
 <script setup>
+import { PageHeader } from '../components/ui/index.js'
 import NavIcon from '../components/NavIcon.vue'
 import { notify } from '../utils/feedback.js'
 import { UiButton, UiField } from '../components/ui/index.js'
