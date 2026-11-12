@@ -114,6 +114,7 @@ async def impersonate(request: Request, db: Session = Depends(get_db)):
         "portal": portal,
         "storage_key": STORAGE_KEY[portal],
         "open_path": PORTAL_PATH[portal],
+        "subject_id": subject_id,
         "subject_name": subject_name,
         "event_id": event.id,
     }

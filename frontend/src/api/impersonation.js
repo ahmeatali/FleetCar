@@ -5,6 +5,13 @@ import { apiRequest } from './http.js'
 
 const FLAG = 'fleetcar_impersonation'
 
+// Portal pages read the company id/name from localStorage to scope their requests
+// (e.g. /api/vehicles?customer_id=...), so impersonation must set them like a real login.
+const IDENTITY_KEYS = {
+  customer: { id: 'fleetcar_customer_id', name: 'fleetcar_customer_name' },
+  supplier: { id: 'fleetcar_supplier_id', name: 'fleetcar_supplier_name' },
+}
+
 function notify() {
   globalThis.dispatchEvent?.(new CustomEvent('impersonation-change'))
 }
@@ -24,6 +31,13 @@ export async function startImpersonation(portal, subjectId, userId = null, stora
     body: { portal, subject_id: subjectId, user_id: userId },
   })
   storage.setItem(data.storage_key, data.token)
+  const idKeys = IDENTITY_KEYS[data.portal]
+  const setKeys = [data.storage_key]
+  if (idKeys) {
+    storage.setItem(idKeys.id, String(data.subject_id))
+    storage.setItem(idKeys.name, data.subject_name || '')
+    setKeys.push(idKeys.id, idKeys.name)
+  }
   storage.setItem(
     FLAG,
     JSON.stringify({
@@ -32,6 +46,7 @@ export async function startImpersonation(portal, subjectId, userId = null, stora
       eventId: data.event_id,
       storageKey: data.storage_key,
       openPath: data.open_path,
+      keys: setKeys,
     }),
   )
   notify()
@@ -50,7 +65,7 @@ export async function stopImpersonation(storage = localStorage) {
   } catch {
     // The portal session may already be gone; clearing locally is enough.
   }
-  storage.removeItem(flag.storageKey)
+  for (const key of flag.keys || [flag.storageKey]) storage.removeItem(key)
   storage.removeItem(FLAG)
   notify()
 }

@@ -125,6 +125,7 @@ class PortalAccessTests(unittest.TestCase):
         self.assertEqual(data["storage_key"], "fleetcar_supplier_token")
         self.assertEqual(data["open_path"], "/supplier-portal")
         self.assertEqual(data["subject_name"], "ABC Filo Kiralama")
+        self.assertEqual(data["subject_id"], 1)
 
         # The minted token acts as that supplier and is marked with the admin id.
         session = self.client.get("/api/supplier-workspace/session", token=data["token"])
@@ -138,6 +139,7 @@ class PortalAccessTests(unittest.TestCase):
         customer_body = {"portal": "customer", "subject_id": 1}
         cust = self.client.post(imp, customer_body, token=admin_token).json()
         self.assertEqual(cust["storage_key"], "fleetcar_token")
+        self.assertEqual(cust["subject_id"], 1)
         self.assertEqual(self.client.get("/api/vehicles", token=cust["token"]).status_code, 200)
         portal_sessions = self.db.query(m.PortalSession).filter_by(
             impersonated_by=admin.id, kind="customer"
