@@ -324,6 +324,11 @@ onUnmounted(() => {
 }
 .notification-text span {
   font-size: 12px;
+  white-space: pre-line;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .notification-text small {
   font-size: 11px;

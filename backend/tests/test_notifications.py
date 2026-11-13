@@ -174,6 +174,66 @@ class NotificationTests(unittest.TestCase):
         self.assertIn("5 gün kaldı", notice.title)
         self.assertEqual(n.run_reminders(bind, date.today() + timedelta(days=5)), 2)  # due day
 
+    def ai_row(self, insights, day, trigger="daily"):
+        row = m.SupplierAiInsight(
+            supplier_id=1,
+            kind="fleet",
+            input_hash=day,
+            model="test",
+            payload={"summary": "", "insights": insights},
+            usage={"trigger": trigger},
+            created_at=f"{day}T04:00:00+00:00",
+        )
+        self.db.add(row)
+        self.db.commit()
+        return row
+
+    def finding(self, kind, plates, title, severity="orta", impact=0):
+        return {
+            "type": kind,
+            "plates": plates,
+            "title": title,
+            "severity": severity,
+            "recommendation": "",
+            "rationale": "",
+            "estimated_monthly_impact_try": impact,
+        }
+
+    def test_morning_digest_lists_only_new_findings(self):
+        today = date.today()
+        yesterday = (today - timedelta(days=1)).isoformat()
+        self.ai_row([self.finding("km_asimi", ["34 ABC 123"], "Km aşımı")], yesterday)
+        # Same issue reworded today, plus two new ones.
+        self.ai_row(
+            [
+                self.finding("km_asimi", ["34 ABC 123"], "Kilometre limiti aşılıyor"),
+                self.finding("dusuk_kullanim", ["34 XYZ 456"], "Düşük kullanım", "dusuk"),
+                self.finding("muayene_bakim", ["34 ABC 123"], "Muayene yaklaşıyor", "yuksek", 1500),
+            ],
+            today.isoformat(),
+        )
+        bind = self.db.get_bind()
+        self.assertEqual(n.run_ai_digest(bind, today), 1)
+        notice = self.notices("supplier", 1, "ai_daily")[0]
+        self.assertEqual(notice.title, "AI 2 yeni bulgu tespit etti")
+        lines = notice.body.splitlines()
+        self.assertTrue(lines[1].startswith("• Muayene yaklaşıyor"))  # highest severity first
+        self.assertIn("aylık ~₺1.500", lines[1])
+        self.assertNotIn("Kilometre", notice.body)
+        self.assertEqual(n.run_ai_digest(bind, today), 0)  # once a day
+        page = n._email_html("supplier", notice.title, notice.body, notice.link)
+        self.assertEqual(page.count("<li"), 2)
+
+    def test_morning_digest_is_silent_without_new_findings(self):
+        today = date.today()
+        same = [self.finding("km_asimi", ["34 ABC 123"], "Km aşımı")]
+        self.ai_row(same, (today - timedelta(days=1)).isoformat())
+        self.ai_row(same, today.isoformat())
+        self.assertEqual(n.run_ai_digest(self.db.get_bind(), today), 0)
+        # A manual analysis this morning is not the daily summary.
+        self.ai_row([self.finding("iade", ["34 XYZ 456"], "İade")], today.isoformat(), "manual")
+        self.assertEqual(n.run_ai_digest(self.db.get_bind(), today), 0)
+
     def test_email_html_escapes_and_links_settings(self):
         page = n._email_html("customer", "Başlık <b>", "Gövde & metin", "/dashboard/quotes")
         self.assertIn("Başlık &lt;b&gt;", page)

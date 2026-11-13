@@ -107,8 +107,8 @@ CATALOG = {
         {
             "key": "ai",
             "label": "AI Önerileri",
-            "description": "Her sabah hazırlanan filo analizi.",
-            "topics": {"ai_daily": "Günlük AI filo analizi hazır"},
+            "description": "Her sabah 09:00'da, bir önceki analizde olmayan yeni AI bulguları.",
+            "topics": {"ai_daily": "AI'ın yeni bulguları"},
         },
     ],
     "supplier": [
@@ -186,8 +186,8 @@ CATALOG = {
         {
             "key": "ai",
             "label": "AI Önerileri",
-            "description": "Her sabah hazırlanan filo analizi.",
-            "topics": {"ai_daily": "Günlük AI filo analizi hazır"},
+            "description": "Her sabah 09:00'da, bir önceki analizde olmayan yeni AI bulguları.",
+            "topics": {"ai_daily": "AI'ın yeni bulguları"},
         },
     ],
     "service": [
@@ -253,8 +253,6 @@ TRACKED = {
     "fleet_reservations": (m.FleetReservation, "status"),
     "team_invitations": (m.TeamInvitation, "accepted_at"),
     "vehicles": (m.Vehicle, "customer_id"),
-    "customer_ai_insights": (m.CustomerAiInsight, None),
-    "supplier_ai_insights": (m.SupplierAiInsight, None),
 }
 MODEL_TABLE = {model: table for table, (model, _) in TRACKED.items()}
 # Envelope attestations change without a status change; watch them as well.
@@ -953,25 +951,6 @@ def _vehicle(db, ev):
     ]
 
 
-def _insight(db, ev, portal, owner):
-    r = ev["row"]
-    if not ev["new"] or (r.get("usage") or {}).get("trigger") != "daily":
-        return []
-    link = "/dashboard" if portal == "customer" else "/supplier-portal"
-    return [
-        _notice(
-            portal,
-            r[owner],
-            "ai_daily",
-            "Günlük AI filo analizi hazır",
-            "Bu sabahki analizde öne çıkan önerileri ana sayfada görebilirsiniz.",
-            link,
-            key=f"ai:{(r.get('created_at') or '')[:10]}",
-            self_ok=True,
-        )
-    ]
-
-
 RULES = {
     "supplier_operations": _operation,
     "requests": _request,
@@ -983,8 +962,6 @@ RULES = {
     "fleet_reservations": _reservation,
     "team_invitations": _invitation,
     "vehicles": _vehicle,
-    "customer_ai_insights": lambda db, ev: _insight(db, ev, "customer", "customer_id"),
-    "supplier_ai_insights": lambda db, ev: _insight(db, ev, "supplier", "supplier_id"),
 }
 
 
@@ -1043,6 +1020,32 @@ def _recipient(db, portal, tenant_id):
     return address if address and _deliverable(address) else None
 
 
+def _email_body(body):
+    """Plain notice text to HTML: "• " lines become a list, other lines paragraphs."""
+    out, items = [], []
+    para = '<p style="margin:0 0 12px;font-size:15px;line-height:1.55;color:#33476a">{}</p>'
+    for line in (body or "").splitlines():
+        if line.startswith("• "):
+            items.append(f'<li style="margin:0 0 8px">{html.escape(line[2:])}</li>')
+            continue
+        if items:
+            out.append(
+                '<ul style="margin:0 0 12px;padding-left:20px;font-size:14px;line-height:1.5;color:#33476a">'
+                + "".join(items)
+                + "</ul>"
+            )
+            items = []
+        if line.strip():
+            out.append(para.format(html.escape(line)))
+    if items:
+        out.append(
+            '<ul style="margin:0 0 12px;padding-left:20px;font-size:14px;line-height:1.5;color:#33476a">'
+            + "".join(items)
+            + "</ul>"
+        )
+    return "".join(out) + '<div style="height:8px"></div>'
+
+
 def _email_html(portal, title, body, link):
     base = os.environ.get("APP_BASE_URL", "https://fleetrent.com.tr").rstrip("/")
     target = base + (link or HOME[portal])
@@ -1053,7 +1056,7 @@ def _email_html(portal, title, body, link):
 <div style="padding:18px 24px;background:#0b1a33;color:#fff;font-weight:700;font-size:18px">FleetRent</div>
 <div style="padding:24px">
 <h1 style="margin:0 0 10px;font-size:20px;line-height:1.3">{html.escape(title)}</h1>
-<p style="margin:0 0 20px;font-size:15px;line-height:1.55;color:#33476a">{html.escape(body)}</p>
+{_email_body(body)}
 <a href="{html.escape(target)}" style="display:inline-block;padding:11px 20px;background:#0064ff;color:#fff;
 text-decoration:none;border-radius:8px;font-weight:600">FleetRent'te aç</a>
 </div>
@@ -1343,6 +1346,108 @@ def reminders(db, today=None):
     return out
 
 
+# ─────────────────── Morning AI digest ──────────────────────────────────────
+
+SEVERITY_ORDER = {"yuksek": 0, "orta": 1, "dusuk": 2}
+SEVERITY_LABEL = {"yuksek": "yüksek", "orta": "orta", "dusuk": "düşük"}
+DIGEST_LINES = 6
+
+
+def finding_key(item):
+    """A finding is the same issue when its type and vehicles match; wording changes daily."""
+    return (item.get("type"), tuple(sorted(item.get("plates") or [])))
+
+
+def new_findings(current, previous):
+    seen = {finding_key(i) for i in (previous or {}).get("insights", [])}
+    fresh = [i for i in (current or {}).get("insights", []) if finding_key(i) not in seen]
+    return sorted(
+        fresh,
+        key=lambda i: (
+            SEVERITY_ORDER.get(i.get("severity"), 3),
+            -(i.get("estimated_monthly_impact_try") or 0),
+        ),
+    )
+
+
+def _finding_line(item):
+    parts = [item.get("title", "").strip()]
+    if item.get("plates"):
+        parts.append(", ".join(item["plates"][:4]) + ("…" if len(item["plates"]) > 4 else ""))
+    parts.append(f"{SEVERITY_LABEL.get(item.get('severity'), '')} öncelik".strip())
+    impact = item.get("estimated_monthly_impact_try") or 0
+    if impact:
+        parts.append(f"aylık ~{_money(impact)}")
+    return "• " + " · ".join(p for p in parts if p)
+
+
+def ai_digest(db, today=None):
+    """Notices for accounts whose analysis this morning found issues the previous one did not."""
+    from app.ai_daily import local_date
+
+    today = today or datetime.now(BUSINESS_TIMEZONE).date()
+    out = []
+    accounts = (
+        ("supplier", m.SupplierAiInsight, "supplier_id", "/supplier-portal"),
+        ("customer", m.CustomerAiInsight, "customer_id", "/dashboard"),
+    )
+    for portal, model, owner, link in accounts:
+        for (oid,) in db.query(getattr(model, owner)).distinct().all():
+            rows = (
+                db.query(model)
+                .filter_by(kind="fleet", **{owner: oid})
+                .order_by(model.id.desc())
+                .limit(20)
+                .all()
+            )
+            index = next(
+                (
+                    n
+                    for n, r in enumerate(rows)
+                    if (r.usage or {}).get("trigger") == "daily"
+                    and local_date(r.created_at) == today
+                ),
+                None,
+            )
+            if index is None:
+                continue
+            latest = rows[index]
+            previous = rows[index + 1] if index + 1 < len(rows) else None
+            fresh = new_findings(latest.payload, previous.payload if previous else None)
+            if not fresh:
+                continue
+            lines = [_finding_line(i) for i in fresh[:DIGEST_LINES]]
+            if len(fresh) > DIGEST_LINES:
+                lines.append(f"… ve {len(fresh) - DIGEST_LINES} bulgu daha")
+            lead = (
+                "Bu sabahki filo analizinde bir öncekinde olmayan bulgular:"
+                if previous
+                else "İlk filo analiziniz şu bulguları çıkardı:"
+            )
+            out.append(
+                _notice(
+                    portal,
+                    oid,
+                    "ai_daily",
+                    f"AI {len(fresh)} yeni bulgu tespit etti",
+                    "\n".join([lead, *lines]),
+                    link,
+                    key=f"ai_digest:{today.isoformat()}",
+                    self_ok=True,
+                )
+            )
+    return out
+
+
+def run_ai_digest(bind, today=None):
+    db = Session(bind=bind)
+    db.info["fr_off"] = True
+    try:
+        return deliver(db, ai_digest(db, today))
+    finally:
+        db.close()
+
+
 def run_reminders(bind, today=None):
     db = Session(bind=bind)
     db.info["fr_off"] = True
@@ -1352,31 +1457,40 @@ def run_reminders(bind, today=None):
         db.close()
 
 
-REMINDER_HOUR = 7
+# Istanbul time: date reminders at 07:00, the AI digest at 09:00 (after the 06:00 analysis).
+DAILY_JOBS = ((7, "reminders"), (9, "ai_digest"))
 
 
-def _reminder_loop(bind):
+def _daily_loop(bind):
+    done = {}
+    runners = {"reminders": run_reminders, "ai_digest": run_ai_digest}
     while True:
         now = datetime.now(BUSINESS_TIMEZONE)
-        if now.hour >= REMINDER_HOUR:
-            try:
-                run_reminders(bind, now.date())
-            except Exception:
-                log.exception("Daily notification reminders failed")
-        target = now.replace(hour=REMINDER_HOUR, minute=0, second=0, microsecond=0)
-        if now >= target:
-            target += timedelta(days=1)
-        time.sleep(max(60, (target - datetime.now(BUSINESS_TIMEZONE)).total_seconds()))
+        for hour, name in DAILY_JOBS:
+            # A server that was down at the hour catches up; dedupe keys stop repeats.
+            if now.hour >= hour and done.get(name) != now.date():
+                try:
+                    runners[name](bind, now.date())
+                except Exception:
+                    log.exception("Daily notification job %s failed", name)
+                done[name] = now.date()
+        targets = []
+        for hour, _ in DAILY_JOBS:
+            target = now.replace(hour=hour, minute=0, second=0, microsecond=0)
+            if now >= target:
+                target += timedelta(days=1)
+            targets.append(target)
+        time.sleep(max(60, (min(targets) - datetime.now(BUSINESS_TIMEZONE)).total_seconds()))
 
 
 def start(session_factory):
-    """Daily reminders at 07:00 Istanbul time. FLEETCAR_NOTIFICATIONS=0 turns notifications off."""
+    """Daily jobs (see DAILY_JOBS). FLEETCAR_NOTIFICATIONS=0 turns notifications off."""
     if not enabled():
         return None
     bind = session_factory.kw.get("bind") if hasattr(session_factory, "kw") else None
     if bind is None:
         return None
-    thread = threading.Thread(target=_reminder_loop, args=(bind,), name="notify-daily", daemon=True)
+    thread = threading.Thread(target=_daily_loop, args=(bind,), name="notify-daily", daemon=True)
     thread.start()
     return thread
 
