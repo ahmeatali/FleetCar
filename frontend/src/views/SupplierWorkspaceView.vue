@@ -79,7 +79,7 @@
           >
           <p v-if="!searchResults.length">Bu arama için kayıt bulunamadı.</p>
         </section>
-        <section v-if="section === 'home'" class="sw-kpis">
+        <section v-if="section === 'home'" class="sw-kpis sw-kpis-primary">
           <KpiCard
             label="Teslim Bekleyen Kiralamalar"
             icon="truck"
@@ -116,13 +116,22 @@
             :value="data.matching_queue.length"
           />
         </section>
+        <button
+          v-if="section === 'home' && kpis.length"
+          type="button"
+          class="sw-kpi-toggle"
+          :aria-expanded="showAllKpis"
+          @click="showAllKpis = !showAllKpis"
+        >
+          {{ showAllKpis ? 'Göstergeleri gizle' : `Tüm göstergeler (${kpis.length})` }}
+        </button>
         <section
           v-if="
             !['settings', 'users', 'operations', 'branches', 'reservations', 'approvals'].includes(
               section,
             )
           "
-          class="sw-kpis"
+          :class="['sw-kpis', { 'sw-kpis-secondary': section === 'home', 'is-open': showAllKpis }]"
         >
           <KpiCard
             v-for="card in kpis"
@@ -1575,6 +1584,8 @@ const aiDocType = computed(
       section.value
     ] || '',
 )
+// Phone width shows only the four action KPIs on home; the rest open on demand.
+const showAllKpis = ref(false)
 const showAiDocument = ref(false)
 const settingsTab = ref('general')
 const reportTab = ref('Genel Bakış'),

@@ -373,7 +373,7 @@ function downloadTemplate() {
 }
 .vi-empty {
   text-align: center;
-  color: #8a9ab3;
+  color: #627696;
   padding: 20px !important;
 }
 .vi-modal {
@@ -402,7 +402,7 @@ function downloadTemplate() {
 .vi-muted {
   margin: 0;
   font-size: 12px;
-  color: #6b7f9f;
+  color: #627697;
 }
 .vi-close {
   border: 0;
@@ -410,7 +410,7 @@ function downloadTemplate() {
   font-size: 24px;
   line-height: 1;
   cursor: pointer;
-  color: #6b7f9f;
+  color: #627697;
 }
 .vi-drop {
   border: 2px dashed #c9d8ec;
@@ -427,7 +427,7 @@ function downloadTemplate() {
   background: #eef5ff;
 }
 .vi-drop small {
-  color: #6b7f9f;
+  color: #627697;
   font-size: 11px;
 }
 .vi-pick input {
@@ -455,7 +455,7 @@ function downloadTemplate() {
   padding: 10px 12px;
   border-radius: 6px;
   background: #e8f8f0;
-  color: #138a65;
+  color: #047857;
   font-size: 12px;
 }
 .vi-stats {
@@ -478,10 +478,10 @@ function downloadTemplate() {
 }
 .vi-stat small {
   font-size: 11px;
-  color: #6b7f9f;
+  color: #627697;
 }
 .vi-stat.create strong {
-  color: #138a65;
+  color: #047857;
 }
 .vi-stat.update strong {
   color: #0064ff;
@@ -531,7 +531,7 @@ function downloadTemplate() {
 }
 .vi-table td small {
   display: block;
-  color: #7f91ad;
+  color: #607596;
   max-width: 220px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -547,11 +547,11 @@ function downloadTemplate() {
   border-radius: 10px;
   font-size: 11px;
   background: #eef1f6;
-  color: #6b7a92;
+  color: #67758c;
 }
 .vi-badge.create {
   background: #e8f8f0;
-  color: #138a65;
+  color: #047857;
 }
 .vi-badge.update {
   background: #eaf2ff;

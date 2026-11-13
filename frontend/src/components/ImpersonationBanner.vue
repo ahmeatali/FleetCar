@@ -2,8 +2,9 @@
   <div v-if="session" ref="bar" class="imp-banner" role="status">
     <span class="imp-dot" aria-hidden="true"></span>
     <span class="imp-text">
-      Destek modu — <strong>{{ session.subjectName }}</strong> hesabındasınız. Bu hesabın
-      kullanıcıları bunu görmez.
+      Destek modu<span class="imp-long"> —</span><span class="imp-short">:</span>
+      <strong>{{ session.subjectName }}</strong
+      ><span class="imp-long"> hesabındasınız. Bu hesabın kullanıcıları bunu görmez.</span>
     </span>
     <button type="button" class="imp-exit" :disabled="busy" @click="exit">
       {{ busy ? 'Çıkılıyor…' : 'Destekten Çık' }}
@@ -139,6 +140,30 @@ router.afterEach(() => refresh())
 .imp-exit:disabled {
   opacity: 0.6;
   cursor: default;
+}
+.imp-short {
+  display: none;
+}
+/* Phone width: one line — "Destek modu: <account>", the rest is said on desktop. */
+@media (max-width: 640px) {
+  .imp-banner {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+  .imp-text {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .imp-long {
+    display: none;
+  }
+  .imp-short {
+    display: inline;
+  }
+  .imp-exit {
+    padding: 4px 10px;
+  }
 }
 </style>
 

@@ -776,7 +776,7 @@
 
         <div class="grid-2" style="gap: 20px; font-size: 0.95rem">
           <div>
-            <h4 style="color: var(--secondary); margin-bottom: 10px">📋 Kimlik & Tescil</h4>
+            <h4 style="color: var(--fr-primary); margin-bottom: 10px">📋 Kimlik & Tescil</h4>
             <p style="margin-bottom: 8px">
               <strong>Şase / Sicil No:</strong>
               <span
@@ -830,7 +830,7 @@
             </p>
           </div>
           <div>
-            <h4 style="color: var(--secondary); margin-bottom: 10px">⚙️ Durum & Operasyon</h4>
+            <h4 style="color: var(--fr-primary); margin-bottom: 10px">⚙️ Durum & Operasyon</h4>
             <p style="margin-bottom: 8px">
               <strong>Güncel Kilometre:</strong> {{ selectedVehicle.mileage?.toLocaleString() }} km
             </p>
@@ -849,7 +849,7 @@
               {{ selectedVehicle.last_service_mileage?.toLocaleString() }} km
             </p>
 
-            <h4 style="color: var(--secondary); margin-bottom: 10px; margin-top: 15px">
+            <h4 style="color: var(--fr-primary); margin-bottom: 10px; margin-top: 15px">
               📡 GPS & UTTS Entegrasyonu
             </h4>
             <p style="margin-bottom: 8px">
@@ -871,7 +871,7 @@
               <span
                 style="
                   font-family: monospace;
-                  color: #059669;
+                  color: #047857;
                   background: #ecfdf5;
                   padding: 2px 8px;
                   border-radius: 4px;
@@ -1918,7 +1918,7 @@ onMounted(() => {
   margin-top: 24px;
 }
 .supplier-unassigned {
-  color: #8995a7;
+  color: #68768b;
 }
 .assignment-note {
   line-height: 1.6;
@@ -1984,7 +1984,7 @@ onMounted(() => {
   border: 1px solid #edf2f8;
   border-radius: 10px;
   background: #f6f9fd;
-  color: #7c91aa;
+  color: #5f7692;
   padding: 8px 12px;
   font-size: 20px;
 }
@@ -2041,7 +2041,7 @@ onMounted(() => {
   font-size: 11px;
 }
 .fleet-eyebrow {
-  color: #91a1b5;
+  color: #617691;
   font-size: 11px;
   font-weight: 750;
   letter-spacing: 0.1em;
@@ -2120,11 +2120,11 @@ onMounted(() => {
 }
 .fleet-stat-icon.green {
   background: #e8f8f1;
-  color: #12a26c;
+  color: #047857;
 }
 .fleet-stat-icon.amber {
   background: #fff5e2;
-  color: #ed9c14;
+  color: #b45309;
 }
 .fleet-stat-icon.red {
   background: #fff0f0;
@@ -2248,7 +2248,7 @@ onMounted(() => {
   padding: 10px 6px;
   border-bottom: 1px solid var(--fleet-line);
   background: #fbfcfe;
-  color: #8292a6;
+  color: #64768c;
   font-size: 11px;
   font-weight: 700;
   white-space: nowrap;
@@ -2279,7 +2279,7 @@ onMounted(() => {
   vertical-align: middle;
 }
 .fleet-index {
-  color: #9ba9b8 !important;
+  color: #63778c !important;
 }
 .fleet-plate {
   text-decoration: none;
@@ -2309,7 +2309,7 @@ onMounted(() => {
   font-weight: 700;
 }
 .fleet-vehicle-cell small {
-  color: #708399;
+  color: #64768c;
   font-size: 11px;
 }
 .fleet-car-thumb {
@@ -2322,7 +2322,7 @@ onMounted(() => {
   font-size: 16px;
 }
 .tone-silver {
-  color: #8090a0;
+  color: #657688;
 }
 .tone-blue {
   color: #266dd2;
@@ -2340,7 +2340,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 4px;
-  color: #708399;
+  color: #64768c;
 }
 .fleet-color i {
   width: 7px;
@@ -2369,20 +2369,20 @@ onMounted(() => {
   white-space: nowrap;
 }
 .fleet-vin {
-  color: #697f98 !important;
+  color: #61768e !important;
   font-family: monospace;
 }
 .fleet-row-menu {
   border: 0;
   background: none;
-  color: #73859a;
+  color: #64768a;
   font-size: 13px;
   cursor: pointer;
 }
 .fleet-empty {
   height: 86px !important;
   text-align: center;
-  color: #8697aa !important;
+  color: #63778d !important;
 }
 .fleet-table-footer {
   min-height: 37px;
@@ -2391,7 +2391,7 @@ onMounted(() => {
   justify-content: space-between;
   gap: 10px;
   padding: 6px 10px;
-  color: #8696a8;
+  color: #64768b;
   font-size: 11px;
 }
 .fleet-pagination {
@@ -2405,7 +2405,7 @@ onMounted(() => {
   border: 0;
   border-radius: 5px;
   background: white;
-  color: #657b94;
+  color: #61768e;
   cursor: pointer;
   font-size: 11px;
 }
@@ -2434,7 +2434,7 @@ onMounted(() => {
 .fleet-close {
   border: 0;
   background: none;
-  color: #8999aa;
+  color: #64768a;
   cursor: pointer;
   font-size: 17px;
 }
@@ -2462,7 +2462,7 @@ onMounted(() => {
 }
 .fleet-detail-subtitle {
   margin-top: 2px;
-  color: #667e99;
+  color: #607690;
   font-size: 11px;
 }
 .fleet-specs {
@@ -2489,7 +2489,7 @@ onMounted(() => {
   font-size: 11px;
 }
 .fleet-info-section dt {
-  color: #8494a7;
+  color: #64768c;
 }
 .fleet-info-section dd {
   min-width: 0;
@@ -2561,7 +2561,7 @@ onMounted(() => {
 .fleet-history li small,
 .fleet-history li p {
   margin: 0;
-  color: #8797a9;
+  color: #64778c;
   font-size: 11px;
 }
 .fleet-history-dot {
@@ -2584,7 +2584,7 @@ onMounted(() => {
   background: #e25056;
 }
 .fleet-history-empty {
-  color: #8797a9;
+  color: #64778c;
   font-size: 11px;
 }
 .fleet-detail-footer {
@@ -2611,7 +2611,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  color: #6e829a;
+  color: #63778e;
   text-align: center;
 }
 .fleet-no-selection > span {
@@ -2649,7 +2649,7 @@ onMounted(() => {
 }
 .fleet-map-card p {
   margin-top: 8px;
-  color: #75879b;
+  color: #64768a;
   font-size: 11px;
 }
 
@@ -2797,7 +2797,7 @@ onMounted(() => {
 
 .form-section-title {
   font-size: 1rem;
-  color: var(--secondary);
+  color: var(--fr-primary);
   margin-bottom: 15px;
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 5px;

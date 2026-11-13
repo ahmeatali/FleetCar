@@ -75,3 +75,25 @@
   outline: 2px solid var(--fr-focus) !important;
   outline-offset: 2px !important;
 }
+
+/*
+ * Search boxes whose <input> has no border or outline of its own: ring the whole box while
+ * the input has keyboard focus, so the focus position stays visible.
+ */
+:where(
+  .sw-global-search,
+  .fleetrent-nav-search,
+  .overview-search,
+  .top-search,
+  .filter-search,
+  .fleet-search,
+  .fuel-search,
+  .detail-search,
+  .filters .search,
+  .filters .find,
+  .topbar > label,
+  .road-top > label
+):has(input:focus-visible) {
+  outline: 2px solid var(--fr-focus);
+  outline-offset: 1px;
+}

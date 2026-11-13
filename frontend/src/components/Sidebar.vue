@@ -584,7 +584,8 @@ nav {
   .mobile-navigation-bar {
     display: flex;
     position: sticky;
-    top: 0;
+    /* below the fixed support banner when one is showing */
+    top: var(--imp-h, 0px);
     z-index: 100;
     height: 60px;
     min-height: 60px;

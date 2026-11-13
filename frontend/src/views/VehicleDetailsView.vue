@@ -1640,7 +1640,7 @@ onMounted(loadDetails)
   border: 1px solid #edf1f6;
   border-radius: 7px;
   background: #f7f9fc;
-  color: #6e86a3;
+  color: #5e7794;
 }
 .detail-search span {
   font-size: 18px;
@@ -1678,13 +1678,13 @@ onMounted(loadDetails)
   font-size: 11px;
 }
 .detail-profile small {
-  color: #8495a9;
+  color: #63768d;
   font-size: 11px;
 }
 .detail-profile button {
   border: 0;
   background: transparent;
-  color: #7890aa;
+  color: #5c7693;
   cursor: pointer;
 }
 .detail-breadcrumb {
@@ -1692,7 +1692,7 @@ onMounted(loadDetails)
   display: flex;
   align-items: center;
   gap: 7px;
-  color: #6c829c;
+  color: #617790;
   font-size: 11px;
 }
 .detail-breadcrumb a {
@@ -1709,7 +1709,7 @@ onMounted(loadDetails)
   border: 1px solid #e5ebf2;
   border-radius: 9px;
   background: #fff;
-  color: #6e8298;
+  color: #63778c;
   font-size: 12px;
 }
 .detail-error h2 {
@@ -1856,7 +1856,7 @@ onMounted(loadDetails)
   display: grid;
   justify-items: center;
   gap: 5px;
-  color: #7f93a9;
+  color: #60778f;
 }
 .detail-car-placeholder span {
   font-size: 36px;
@@ -1918,7 +1918,7 @@ onMounted(loadDetails)
 }
 .detail-hero-specs dt {
   margin-bottom: 2px;
-  color: #8496aa;
+  color: #61768d;
   font-size: 11px;
 }
 .detail-hero-specs dd {
@@ -1970,7 +1970,7 @@ onMounted(loadDetails)
   border: 0;
   border-bottom: 2px solid transparent;
   background: transparent;
-  color: #697f98;
+  color: #61768e;
   font: inherit;
   font-size: 11px;
   white-space: nowrap;
@@ -2011,7 +2011,7 @@ onMounted(loadDetails)
   gap: 6px 7px;
 }
 .detail-information-list dt {
-  color: #8293a7;
+  color: #64778d;
   font-size: 11px;
 }
 .detail-information-list dd {
@@ -2042,7 +2042,7 @@ onMounted(loadDetails)
 }
 .detail-delivery-grid small,
 .detail-contract-grid small {
-  color: #8192a6;
+  color: #63768c;
   font-size: 11px;
 }
 .detail-delivery-grid strong,
@@ -2084,7 +2084,7 @@ onMounted(loadDetails)
 }
 .detail-add-photo {
   border: 1px dashed #d6e0eb;
-  color: #6c83a0;
+  color: #5f7693;
   font-size: 11px;
 }
 .detail-add-photo input,
@@ -2094,7 +2094,7 @@ onMounted(loadDetails)
 }
 .detail-notes {
   margin: 8px 0;
-  color: #657b94;
+  color: #61768e;
   font-size: 11px;
   line-height: 1.5;
 }
@@ -2122,7 +2122,7 @@ onMounted(loadDetails)
 }
 .detail-notes-card p {
   margin-top: 8px;
-  color: #75879c;
+  color: #64768c;
   font-size: 11px;
   line-height: 1.45;
 }
@@ -2148,7 +2148,7 @@ onMounted(loadDetails)
 }
 .detail-section-heading p {
   margin-top: 4px;
-  color: #7a8ea4;
+  color: #62778f;
   font-size: 11px;
 }
 .upload-compact {
@@ -2164,7 +2164,7 @@ onMounted(loadDetails)
 }
 .detail-empty {
   padding: 16px 9px;
-  color: #8495a8;
+  color: #63768c;
   font-size: 11px;
   line-height: 1.55;
 }
@@ -2217,7 +2217,7 @@ onMounted(loadDetails)
 }
 .detail-file-name small {
   overflow: hidden;
-  color: #8b9bad;
+  color: #64778d;
   font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2228,7 +2228,7 @@ onMounted(loadDetails)
   border: 0;
   border-radius: 50%;
   background: #f5f7fa;
-  color: #8496a8;
+  color: #62768a;
   cursor: pointer;
 }
 .detail-condition-card,
@@ -2273,7 +2273,7 @@ onMounted(loadDetails)
   font-size: 11px;
 }
 .usage-ring small {
-  color: #7589a1;
+  color: #61768f;
   font-size: 11px;
 }
 .detail-condition-body dl,
@@ -2289,7 +2289,7 @@ onMounted(loadDetails)
 }
 .detail-condition-body dt,
 .detail-hgs-card dt {
-  color: #7d8fa3;
+  color: #63778c;
   font-size: 11px;
 }
 .detail-condition-body dd,
@@ -2342,7 +2342,7 @@ onMounted(loadDetails)
   place-items: center;
   border: 1px dashed #d7e1ec;
   border-radius: 5px;
-  color: #6e84a0;
+  color: #607692;
   font-size: 11px;
   cursor: pointer;
 }
@@ -2376,7 +2376,7 @@ onMounted(loadDetails)
 .detail-insurance-grid small {
   max-width: 100%;
   overflow-wrap: anywhere;
-  color: #8a9aac;
+  color: #63768c;
   font-size: 11px;
 }
 .detail-insurance-grid button {
@@ -2422,7 +2422,7 @@ onMounted(loadDetails)
   font-size: 11px;
 }
 .detail-mini-history small {
-  color: #8595a7;
+  color: #64768b;
   font-size: 11px;
 }
 .detail-mini-history .record-status {
@@ -2491,13 +2491,13 @@ onMounted(loadDetails)
 }
 .detail-record p {
   margin-top: 3px;
-  color: #70859d;
+  color: #62778f;
   font-size: 11px;
 }
 .detail-record small {
   display: block;
   margin-top: 3px;
-  color: #91a0af;
+  color: #64778a;
   font-size: 11px;
 }
 .record-status {
@@ -2526,7 +2526,7 @@ onMounted(loadDetails)
   padding: 6px;
   border-radius: 5px;
   background: #f7f9fc;
-  color: #70839a;
+  color: #64768d;
   font-size: 11px;
 }
 .detail-expense-summary {
@@ -2544,7 +2544,7 @@ onMounted(loadDetails)
 }
 .detail-expense-summary span,
 .detail-expense-summary small {
-  color: #74889f;
+  color: #62768e;
   font-size: 11px;
 }
 .detail-entry-form {
@@ -2560,7 +2560,7 @@ onMounted(loadDetails)
 .detail-entry-form label {
   display: grid;
   gap: 4px;
-  color: #6a8099;
+  color: #62778f;
   font-size: 11px;
 }
 .detail-entry-form input,
@@ -2682,12 +2682,12 @@ onMounted(loadDetails)
   border: 0;
   border-radius: 50%;
   background: #f2f5f8;
-  color: #627b96;
+  color: #5f7791;
   cursor: pointer;
   font-size: 17px;
 }
 .detail-eyebrow {
-  color: #8798ac;
+  color: #62778e;
   font-size: 11px;
   font-weight: 750;
   letter-spacing: 0.08em;
@@ -2721,7 +2721,7 @@ onMounted(loadDetails)
   display: grid;
   align-content: start;
   gap: 4px;
-  color: #70849a;
+  color: #62768b;
   font-size: 11px;
 }
 .detail-edit-grid input:not([type='checkbox']) {

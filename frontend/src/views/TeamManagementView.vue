@@ -752,7 +752,7 @@ onMounted(load)
   font-size: 28px;
 }
 .team-heading p {
-  color: #72839a;
+  color: #65768d;
   margin: 0;
 }
 .eyebrow {
@@ -786,7 +786,7 @@ onMounted(load)
   padding: 20px;
 }
 .team-stats span {
-  color: #6b7e98;
+  color: #647690;
   font-size: 12px;
 }
 .team-stats strong {
@@ -804,7 +804,7 @@ onMounted(load)
   border-bottom: 3px solid transparent;
   background: transparent;
   padding: 12px 16px;
-  color: #72839a;
+  color: #65768d;
   font: inherit;
   cursor: pointer;
 }
@@ -868,7 +868,7 @@ onMounted(load)
 }
 .team-table th {
   background: #f7faff;
-  color: #71849e;
+  color: #637690;
   font-size: 11px;
 }
 .team-table td,
@@ -879,7 +879,7 @@ onMounted(load)
 .team-table small,
 .user-identity small {
   display: block;
-  color: #7f90a8;
+  color: #637691;
   font-size: 11px;
   margin-top: 5px;
   overflow-wrap: anywhere;
@@ -913,7 +913,7 @@ onMounted(load)
   padding: 6px 8px;
   line-height: 1.4;
   background: #f1f4f9;
-  color: #687b94;
+  color: #64768e;
 }
 .role-badge {
   color: #1260bd;
@@ -928,7 +928,7 @@ onMounted(load)
   align-items: center;
   justify-content: space-between;
   font-size: 12px;
-  color: #71849e;
+  color: #637690;
   padding-top: 16px;
 }
 .team-pagination > div {
@@ -946,7 +946,7 @@ onMounted(load)
 }
 .team-hint {
   font-size: 12px;
-  color: #72839a;
+  color: #65768d;
   line-height: 1.7;
 }
 .team-empty {
@@ -958,7 +958,7 @@ onMounted(load)
   color: #0064ff;
 }
 .team-empty p {
-  color: #8b99ae;
+  color: #647690;
   font-size: 13px;
   line-height: 1.7;
 }

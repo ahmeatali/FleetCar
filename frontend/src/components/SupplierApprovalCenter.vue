@@ -861,7 +861,7 @@ async function saveMatrix() {
   display: block;
   font-size: 11px;
   font-style: normal;
-  color: #788cac;
+  color: #5f759a;
   overflow-wrap: anywhere;
 }
 .ac-kpi-icon {
@@ -877,7 +877,7 @@ async function saveMatrix() {
 }
 .ac-kpi-icon.green {
   background: #e8f8f0;
-  color: #14ac7e;
+  color: #047857;
 }
 .ac-kpi-icon.red {
   background: #ffe9ed;
@@ -959,7 +959,7 @@ async function saveMatrix() {
 .ac-table td small,
 .ac-history td small {
   display: block;
-  color: #7f91ad;
+  color: #607596;
   font-size: 11px;
 }
 .ac-table tbody tr {
@@ -999,7 +999,7 @@ async function saveMatrix() {
 }
 .ac-type.sale {
   background: #e8f8f0;
-  color: #138a65;
+  color: #047857;
 }
 .ac-priority {
   font-size: 11px;
@@ -1020,7 +1020,7 @@ async function saveMatrix() {
 }
 .ac-priority.low {
   background: #eef1f6;
-  color: #6b7a92;
+  color: #67758c;
 }
 .ac-stage {
   color: #4c6690;
@@ -1056,7 +1056,7 @@ async function saveMatrix() {
 }
 .ac-waiting {
   font-size: 11px;
-  color: #8a9ab3;
+  color: #627696;
 }
 .ac-bulk {
   display: flex;
@@ -1096,7 +1096,7 @@ async function saveMatrix() {
 }
 .ac-donut small {
   font-size: 11px;
-  color: #7587a6;
+  color: #627698;
 }
 .ac-summary ul {
   list-style: none;
@@ -1126,7 +1126,7 @@ async function saveMatrix() {
 }
 .ac-summary li em {
   font-style: normal;
-  color: #7587a6;
+  color: #627698;
 }
 .ac-quick {
   display: grid;
@@ -1160,7 +1160,7 @@ async function saveMatrix() {
   color: #0064ff;
 }
 .ac-quick b {
-  color: #8a9ab3;
+  color: #627696;
 }
 .ac-urgent {
   border-color: #f8cdd5;
@@ -1230,7 +1230,7 @@ async function saveMatrix() {
 }
 .ac-flow-title span {
   display: block;
-  color: #7587a6;
+  color: #627698;
 }
 .ac-steps {
   list-style: none;
@@ -1283,12 +1283,12 @@ async function saveMatrix() {
   font-style: normal;
   font-weight: 400;
   font-size: 11px;
-  color: #7f91ad;
+  color: #607596;
   margin-left: 4px;
 }
 .ac-steps small {
   display: block;
-  color: #7f91ad;
+  color: #607596;
   font-size: 11px;
 }
 .ac-note {
@@ -1309,7 +1309,7 @@ async function saveMatrix() {
 }
 .ac-status.ok {
   background: #e8f8f0;
-  color: #138a65;
+  color: #047857;
 }
 .ac-status.no {
   background: #ffe9ed;

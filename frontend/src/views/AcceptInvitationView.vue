@@ -120,7 +120,7 @@ async function accept() {
   color: #0d284b;
 }
 .invitation-card p {
-  color: #71849f;
+  color: #627692;
   line-height: 1.7;
 }
 .invitation-card :deep(label) {

@@ -110,7 +110,7 @@
                     placeholder="45.426 km"
                     readonly
                   />
-                  <span style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px"
+                  <span style="font-size: 0.75rem; color: #627793; margin-top: 4px"
                     >Araç kaydındaki kilometredir; GPS bağlanınca otomatik alınır.</span
                   >
                 </div>
@@ -219,7 +219,7 @@
 
             <div class="side-gray-box">
               <h4>Geçmiş Talepler</h4>
-              <div style="text-align: center; color: #94a3b8; font-size: 0.88rem; padding: 15px 0">
+              <div style="text-align: center; color: #627793; font-size: 0.88rem; padding: 15px 0">
                 Geçmiş talep yok
               </div>
             </div>
@@ -308,7 +308,7 @@
                     placeholder="45.426 km"
                     readonly
                   />
-                  <span style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px"
+                  <span style="font-size: 0.75rem; color: #627793; margin-top: 4px"
                     >Araç kaydındaki kilometredir; GPS bağlanınca otomatik alınır.</span
                   >
                 </div>
@@ -390,7 +390,7 @@
 
             <div class="side-gray-box">
               <h4>Geçmiş Talepler</h4>
-              <div style="text-align: center; color: #94a3b8; font-size: 0.88rem; padding: 15px 0">
+              <div style="text-align: center; color: #627793; font-size: 0.88rem; padding: 15px 0">
                 Geçmiş talep yok
               </div>
             </div>
@@ -599,7 +599,7 @@
               <div class="form-group" style="margin-bottom: 24px">
                 <UiField class="form-label"
                   >Fotoğraf Yükle *
-                  <span style="color: #94a3b8; font-weight: normal">(zorunlu)</span></UiField
+                  <span style="color: #627793; font-weight: normal">(zorunlu)</span></UiField
                 >
 
                 <div class="upload-dropzone" @click="triggerPhotoUpload">
@@ -607,7 +607,7 @@
                   <div style="font-weight: 600; color: #0f172a; font-size: 0.95rem">
                     Fotoğraf seçmek için tıklayın
                   </div>
-                  <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 4px">
+                  <div style="font-size: 0.8rem; color: #627793; margin-top: 4px">
                     veya sürükleyip bırakın
                   </div>
                   <div
@@ -638,7 +638,7 @@
                 🚨 {{ submitting ? 'Yol Yardım Ekibi Çağrılıyor...' : 'Yol Yardım İste !' }}
               </UiButton>
 
-              <p style="text-align: center; font-size: 0.8rem; color: #94a3b8; margin-top: 12px">
+              <p style="text-align: center; font-size: 0.8rem; color: #627793; margin-top: 12px">
                 Plaka bilginize bağlı konum otomatik olarak yol yardım ekibine iletilir.
               </p>
             </form>

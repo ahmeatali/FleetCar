@@ -190,7 +190,7 @@ async function logout() {
 }
 .pm-trigger i {
   font-style: normal;
-  color: #617da6;
+  color: #5a77a0;
 }
 .pm-menu {
   position: absolute;
@@ -220,7 +220,7 @@ async function logout() {
 }
 .pm-head small {
   font-size: 11px;
-  color: #7587a6;
+  color: #627698;
   overflow-wrap: anywhere;
 }
 .pm-menu button,

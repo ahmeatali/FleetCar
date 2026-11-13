@@ -490,14 +490,14 @@ function reset() {
 .ad-muted {
   margin: 0;
   font-size: 12px;
-  color: #6b7f9f;
+  color: #627697;
 }
 .ad-close {
   border: 0;
   background: none;
   font-size: 24px;
   cursor: pointer;
-  color: #6b7f9f;
+  color: #627697;
 }
 .ad-drop {
   border: 2px dashed #cfd6f3;
@@ -513,7 +513,7 @@ function reset() {
   border-color: #6a4cff;
 }
 .ad-drop small {
-  color: #6b7f9f;
+  color: #627697;
   font-size: 11px;
 }
 .ad-drop input {
@@ -602,7 +602,7 @@ function reset() {
 }
 .ad-facts dt {
   font-size: 11px;
-  color: #6b7f9f;
+  color: #627697;
 }
 .ad-facts dd {
   margin: 2px 0 0;
@@ -638,10 +638,10 @@ function reset() {
 }
 .ad-table td small {
   display: block;
-  color: #7f91ad;
+  color: #607596;
 }
 .ad-ok {
-  color: #138a65;
+  color: #047857;
 }
 .ad-warn {
   color: #b8730c;

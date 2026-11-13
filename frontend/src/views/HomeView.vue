@@ -534,7 +534,7 @@
           <router-link to="/supplier-login" class="login-role-tile tile-supplier">
             <span class="tile-icon">🏭</span>
             <span class="tile-title">Tedarikçi Girişi</span>
-            <span style="font-size: 0.75rem; color: #10b981; margin-top: 4px; font-weight: 600"
+            <span style="font-size: 0.75rem; color: #047857; margin-top: 4px; font-weight: 600"
               >Araba Sağlayıcı & Kiralama</span
             >
           </router-link>

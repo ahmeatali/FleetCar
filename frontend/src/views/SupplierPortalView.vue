@@ -31,7 +31,7 @@
             class="type-badge"
             :style="{
               background: isServiceAccount ? 'rgba(37,99,235,0.1)' : 'rgba(16,185,129,0.1)',
-              color: isServiceAccount ? '#2563eb' : '#10b981',
+              color: isServiceAccount ? '#2563eb' : '#047857',
               border: isServiceAccount
                 ? '1px solid rgba(37,99,235,0.2)'
                 : '1px solid rgba(16,185,129,0.2)',
@@ -123,7 +123,7 @@
               <span class="profile-meta-label">🏢 Firma Türü</span>
               <div
                 class="profile-meta-value"
-                style="font-weight: 600; font-size: 0.95rem; color: #10b981; margin-top: 3px"
+                style="font-weight: 600; font-size: 0.95rem; color: #047857; margin-top: 3px"
               >
                 Filo Kiralama Tedarikçisi
               </div>
@@ -135,7 +135,7 @@
                   class="service-tag"
                   style="
                     background: rgba(16, 185, 129, 0.1);
-                    color: #10b981;
+                    color: #047857;
                     border-color: rgba(16, 185, 129, 0.2);
                   "
                   >İkame Araç</span
@@ -144,7 +144,7 @@
                   class="service-tag"
                   style="
                     background: rgba(16, 185, 129, 0.1);
-                    color: #10b981;
+                    color: #047857;
                     border-color: rgba(16, 185, 129, 0.2);
                   "
                   >Uzun Dönem Kiralama</span
@@ -153,7 +153,7 @@
                   class="service-tag"
                   style="
                     background: rgba(16, 185, 129, 0.1);
-                    color: #10b981;
+                    color: #047857;
                     border-color: rgba(16, 185, 129, 0.2);
                   "
                   >Kısa Dönem Kiralama</span
@@ -262,7 +262,7 @@
                 <div class="stat-icon-wrapper quote-blue"><span>⚙️</span></div>
                 <div class="stat-info">
                   <span class="stat-label">Müşteriye Atanan Araçlar</span>
-                  <div class="stat-val-new" style="color: #3b82f6">
+                  <div class="stat-val-new" style="color: #2563eb">
                     {{ myDeliveredVehicles.length }}
                   </div>
                 </div>
@@ -271,7 +271,7 @@
                 <div class="stat-icon-wrapper quote-green"><span>✅</span></div>
                 <div class="stat-info">
                   <span class="stat-label">Kabul Edilen Teklifler</span>
-                  <div class="stat-val-new" style="color: #10b981">{{ acceptedBidsCount }}</div>
+                  <div class="stat-val-new" style="color: #047857">{{ acceptedBidsCount }}</div>
                 </div>
               </div>
             </div>
@@ -364,7 +364,7 @@
                   <tbody>
                     <tr v-for="q in openQuotes" :key="q.id">
                       <td>
-                        <strong style="color: #10b981">#{{ q.id }}</strong>
+                        <strong style="color: #047857">#{{ q.id }}</strong>
                       </td>
                       <td>
                         <strong>{{ q.vehicle_segment }} Segment</strong> - {{ q.vehicle_type }}
@@ -374,7 +374,7 @@
                           class="plate-badge"
                           style="
                             background: rgba(16, 185, 129, 0.1);
-                            color: #10b981;
+                            color: #047857;
                             font-weight: bold;
                             border: 1px solid rgba(16, 185, 129, 0.2);
                           "
@@ -425,7 +425,7 @@
                               padding: 6px 12px;
                               font-size: 0.85rem;
                               background: rgba(16, 185, 129, 0.05);
-                              color: #10b981;
+                              color: #047857;
                               border-color: rgba(16, 185, 129, 0.2);
                             "
                           >
@@ -499,7 +499,7 @@
                   <tbody>
                     <tr v-for="req in filteredRequests" :key="req.id">
                       <td>
-                        <strong style="color: #10b981">#{{ req.id }}</strong>
+                        <strong style="color: #047857">#{{ req.id }}</strong>
                       </td>
                       <td>
                         <span class="plate-badge">{{ req.vehicle_plate }}</span>
@@ -592,7 +592,7 @@
               <div class="stat-icon-wrapper quote-red"><span>⏳</span></div>
               <div class="stat-info">
                 <span class="stat-label">Bekleyen Servis Talepleri</span>
-                <div class="stat-val-new" style="color: #ef4444">{{ pendingRequestsCount }}</div>
+                <div class="stat-val-new" style="color: #dc2626">{{ pendingRequestsCount }}</div>
               </div>
             </div>
             <div class="glass-panel stat-card-new">
@@ -606,7 +606,7 @@
               <div class="stat-icon-wrapper quote-green"><span>✅</span></div>
               <div class="stat-info">
                 <span class="stat-label">Tamamlanan Bakım / Onarımlar</span>
-                <div class="stat-val-new" style="color: #10b981">{{ completedRequestsCount }}</div>
+                <div class="stat-val-new" style="color: #047857">{{ completedRequestsCount }}</div>
               </div>
             </div>
           </div>
@@ -725,7 +725,7 @@
                         </div>
                         <div
                           v-if="req.details?.entry_date"
-                          style="color: #10b981; font-weight: bold"
+                          style="color: #047857; font-weight: bold"
                         >
                           Servise Girdi: {{ formatDate(req.details.entry_date) }}
                         </div>
@@ -1009,7 +1009,7 @@
                             style="
                               padding: 4px 8px;
                               font-size: 0.78rem;
-                              background: #10b981;
+                              background: #047857;
                               border: none;
                             "
                           >
@@ -1099,7 +1099,7 @@
                       <td>
                         <strong
                           v-if="req.details?.invoice_amount"
-                          style="color: #10b981; font-size: 1rem"
+                          style="color: #047857; font-size: 1rem"
                         >
                           ₺{{ req.details.invoice_amount.toLocaleString() }}
                         </strong>
@@ -1183,7 +1183,7 @@
                   >
                     Ort. Periyodik Bakım Süresi
                   </h4>
-                  <div style="font-size: 1.8rem; font-weight: 800; color: #10b981; margin-top: 5px">
+                  <div style="font-size: 1.8rem; font-weight: 800; color: #047857; margin-top: 5px">
                     {{ durationLabel(measuredServiceMetrics.maintenance.days) }}
                   </div>
                   <small>{{ measuredServiceMetrics.maintenance.count }} tamamlanmış kayıt</small>
@@ -1212,7 +1212,7 @@
   <UiModal v-if="showBidModal" class="modal-overlay" @close="showBidModal = false">
     <div class="glass-panel modal-content fade-in-up" style="max-width: 480px; padding: 30px">
       <h2
-        style="margin-bottom: 10px; color: #10b981; display: flex; align-items: center; gap: 10px"
+        style="margin-bottom: 10px; color: #047857; display: flex; align-items: center; gap: 10px"
       >
         <span>🏢</span> Araç Kiralama Karşı Teklifi İlet
       </h2>
@@ -1263,7 +1263,7 @@
             type="submit"
             class="btn btn-primary"
             style="
-              background: #10b981;
+              background: #047857;
               color: #fff;
               border: none;
               box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
@@ -1291,7 +1291,7 @@
         "
       >
         <h2
-          :style="{ color: isServiceAccount ? '#2563eb' : '#10b981' }"
+          :style="{ color: isServiceAccount ? '#2563eb' : '#047857' }"
           style="display: flex; align-items: center; gap: 8px"
         >
           <span>🔍</span> Araç Detayı & Servis Kartı
@@ -1630,7 +1630,7 @@
                       style="
                         background: none;
                         border: none;
-                        color: #ef4444;
+                        color: #dc2626;
                         cursor: pointer;
                         font-weight: bold;
                       "
@@ -1693,7 +1693,7 @@
   <!-- Service Invoice Modal -->
   <UiModal v-if="showInvoiceModal" class="modal-overlay" @close="showInvoiceModal = false">
     <div class="glass-panel modal-content fade-in-up" style="max-width: 500px; padding: 30px">
-      <h2 style="margin-bottom: 10px; color: #10b981; display: flex; align-items: center; gap: 8px">
+      <h2 style="margin-bottom: 10px; color: #047857; display: flex; align-items: center; gap: 8px">
         <span>🧾</span> Servis Faturası & Belge Yükleme
       </h2>
       <p
@@ -1734,7 +1734,7 @@
             v-model.number="invoiceForm.invoice_amount"
             required
             class="form-input"
-            style="font-weight: bold; font-size: 1.1rem; color: #10b981"
+            style="font-weight: bold; font-size: 1.1rem; color: #047857"
           />
         </div>
 
@@ -1748,7 +1748,7 @@
           />
           <div
             v-if="invoiceForm.file_name"
-            style="font-size: 0.8rem; color: #10b981; margin-top: 4px; font-weight: 500"
+            style="font-size: 0.8rem; color: #047857; margin-top: 4px; font-weight: 500"
           >
             📄 Seçilen Belge: {{ invoiceForm.file_name }}
           </div>
@@ -1780,7 +1780,7 @@
             type="submit"
             class="btn btn-primary"
             style="
-              background: #10b981;
+              background: #047857;
               color: #fff;
               border: none;
               box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
@@ -2712,7 +2712,7 @@ onMounted(async () => {
 .supplier-page-heading > div > span {
   font-size: 11px;
   letter-spacing: 1px;
-  color: #6c80a1;
+  color: #617698;
 }
 .supplier-page-heading h1 {
   font-size: 25px;
@@ -2721,7 +2721,7 @@ onMounted(async () => {
 }
 .supplier-page-heading p {
   font-size: 12px;
-  color: #6b7b9a;
+  color: #657594;
 }
 .supplier-page-heading .btn {
   font-size: 12px;
@@ -2779,7 +2779,7 @@ onMounted(async () => {
 }
 .supplier-overview-panels article > p {
   font-size: 12px;
-  color: #7c8ba4;
+  color: #657692;
 }
 .supplier-overview-panels article > a {
   color: #0064ff;
@@ -2861,7 +2861,7 @@ onMounted(async () => {
 
 .tag-supplier {
   background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
+  color: #047857;
   padding: 2px 8px;
   border-radius: 6px;
   font-size: 0.75rem;
@@ -2923,12 +2923,12 @@ onMounted(async () => {
 
 .quote-green {
   background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
+  color: #047857;
 }
 
 .quote-red {
   background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  color: #dc2626;
 }
 
 .stat-info {
@@ -2975,7 +2975,7 @@ onMounted(async () => {
 
 .badge-contracted {
   background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
+  color: #047857;
   border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
@@ -2991,7 +2991,7 @@ onMounted(async () => {
 
 .btn-danger-hover:hover {
   background: rgba(239, 68, 68, 0.1) !important;
-  color: #ef4444 !important;
+  color: #dc2626 !important;
   border-color: rgba(239, 68, 68, 0.2) !important;
 }
 
@@ -3009,7 +3009,7 @@ onMounted(async () => {
 }
 
 .tab-btn.active {
-  color: #10b981 !important;
+  color: #047857 !important;
 }
 
 .tab-btn.active::after {
@@ -3019,7 +3019,7 @@ onMounted(async () => {
   left: 0;
   right: 0;
   height: 2px;
-  background: #10b981;
+  background: #047857;
 }
 
 .tab-btn.active-service {
@@ -3160,7 +3160,7 @@ onMounted(async () => {
 }
 .roadside-service-dialog p {
   font-size: 12px;
-  color: #637b96;
+  color: #607791;
   margin: 10px 0;
 }
 .roadside-service-dialog label {

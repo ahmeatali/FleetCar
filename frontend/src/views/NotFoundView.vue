@@ -133,7 +133,7 @@
 
         <p
           style="
-            color: #94a3b8;
+            color: #627793;
             font-size: 0.98rem;
             line-height: 1.6;
             margin-bottom: 35px;

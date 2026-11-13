@@ -716,7 +716,7 @@ onUnmounted(() => {
   padding: 8px;
   background: #f1f6fc;
   border-radius: 5px;
-  color: #607da1;
+  color: #5b779a;
 }
 .road-top input {
   width: 90%;
@@ -743,7 +743,7 @@ onUnmounted(() => {
 }
 .heading p {
   font-size: 11px;
-  color: #7a8ba1;
+  color: #64768e;
   margin: 4px 0;
 }
 .primary {
@@ -799,7 +799,7 @@ onUnmounted(() => {
 }
 .metrics small {
   font-size: 11px;
-  color: #6d8199;
+  color: #63778e;
 }
 .metrics b {
   font-size: 16px;
@@ -839,7 +839,7 @@ onUnmounted(() => {
 }
 .filters small {
   font-size: 11px;
-  color: #7688a0;
+  color: #63768f;
 }
 .filters select,
 .filters input[type='date'] {
@@ -862,7 +862,7 @@ onUnmounted(() => {
   padding: 0 8px;
   border: 1px solid #dce6f1;
   border-radius: 4px;
-  color: #7890ae;
+  color: #5b7698;
 }
 .filters .find input {
   width: 100%;
@@ -907,7 +907,7 @@ onUnmounted(() => {
 }
 .tabs b {
   margin-left: 4px;
-  color: #8695a9;
+  color: #64768d;
 }
 .panel {
   background: #fff;
@@ -946,7 +946,7 @@ td {
 th {
   background: #fbfcfe;
   font-size: 11px;
-  color: #7a8ba0;
+  color: #64768d;
 }
 td {
   height: 35px;
@@ -1029,7 +1029,7 @@ tr.selected {
   justify-content: space-between;
   padding: 8px 10px;
   font-size: 11px;
-  color: #8291a4;
+  color: #65768b;
 }
 .panel footer button {
   border: 0;
@@ -1039,7 +1039,7 @@ tr.selected {
 }
 .empty {
   text-align: center !important;
-  color: #8492a5 !important;
+  color: #66768b !important;
   height: 115px;
 }
 .empty button {
@@ -1082,7 +1082,7 @@ tr.selected {
 }
 .vehicle-info dt,
 .request-info dt {
-  color: #8391a5;
+  color: #66768c;
 }
 .vehicle-info dd,
 .request-info dd {
@@ -1118,7 +1118,7 @@ tr.selected {
   place-content: center;
   text-align: center;
   background: #f1f6fb;
-  color: #7790ad;
+  color: #5b7696;
   font-size: 16px;
 }
 .map-empty b {
@@ -1199,13 +1199,13 @@ tr.selected {
 .timeline li small,
 .timeline li p {
   font-size: 11px;
-  color: #8090a5;
+  color: #64768e;
   margin: 3px 0;
 }
 .empty-note {
   padding: 13px;
   font-size: 11px;
-  color: #8392a5;
+  color: #65768b;
 }
 .overlay {
   position: fixed;
@@ -1298,7 +1298,7 @@ tr.selected {
 .privacy {
   display: block;
   margin-top: 8px;
-  color: #8391a4;
+  color: #66768b;
   font-size: 11px;
 }
 @media (max-width: 1200px) {
@@ -1426,7 +1426,7 @@ tr.selected {
 }
 .road-account small {
   display: block;
-  color: #7489a1;
+  color: #617790;
   font-size: 11px;
   margin-top: 3px;
 }

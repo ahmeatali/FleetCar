@@ -37,7 +37,7 @@
             @click="downloadExcel"
             class="btn"
             style="
-              background: #10b981;
+              background: #047857;
               color: #ffffff;
               padding: 10px 18px;
               font-size: 0.88rem;
@@ -322,7 +322,7 @@
             class="glass-panel stat-card text-center"
             style="padding: 16px; background: #fefce8; border: 1px solid #fef08a"
           >
-            <div style="font-size: 1.5rem; font-weight: 800; color: #d97706">
+            <div style="font-size: 1.5rem; font-weight: 800; color: #b45309">
               {{ money(costTotals.lastik) }}
             </div>
             <div style="font-size: 0.8rem; color: #b45309; margin-top: 4px">Lastik</div>
@@ -372,7 +372,7 @@
             text-align: center;
           "
         >
-          <div style="font-size: 2.2rem; font-weight: 900; color: #16a34a">
+          <div style="font-size: 2.2rem; font-weight: 900; color: #15803d">
             {{ money(costTotals.toplam) }}
           </div>
           <div style="font-size: 0.95rem; font-weight: 700; color: #15803d; margin-top: 4px">
@@ -465,7 +465,7 @@
                   <span>{{ idx + 1 }}. {{ item.name }}</span>
                   <span style="color: #2563eb">{{ item.duration }}</span>
                 </div>
-                <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 6px">
+                <div style="font-size: 0.75rem; color: #627793; margin-top: 6px">
                   Sabah: {{ item.sabah }} | Öğle: {{ item.ogle }} | Akşam: {{ item.aksam }}
                 </div>
               </div>
@@ -506,7 +506,7 @@
                   <span>{{ idx + 1 }}. {{ item.name }}</span>
                   <span style="color: #2563eb">{{ item.duration }}</span>
                 </div>
-                <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 6px">
+                <div style="font-size: 0.75rem; color: #627793; margin-top: 6px">
                   Sabah: {{ item.sabah }} | Öğle: {{ item.ogle }} | Akşam: {{ item.aksam }}
                 </div>
               </div>
@@ -545,7 +545,7 @@
                   <span>{{ idx + 1 }}. {{ item.name }}</span>
                   <span>{{ item.duration }}</span>
                 </div>
-                <div style="font-size: 0.75rem; color: #3b82f6; margin-top: 6px">
+                <div style="font-size: 0.75rem; color: #2563eb; margin-top: 6px">
                   Sabah: {{ item.sabah }} | Öğle: {{ item.ogle }} | Akşam: {{ item.aksam }}
                 </div>
               </div>
@@ -700,7 +700,7 @@
                   <td>{{ row.user }}</td>
                   <td v-for="(val, idx) in row.months" :key="idx">{{ val }}</td>
                   <td>
-                    <strong style="color: #10b981">{{ row.avg }}</strong>
+                    <strong style="color: #047857">{{ row.avg }}</strong>
                   </td>
                 </tr>
               </tbody>
@@ -720,7 +720,7 @@
               border-radius: 14px;
             "
           >
-            <h4 style="color: #16a34a; font-size: 1.1rem; margin-bottom: 12px">{{ row.plate }}</h4>
+            <h4 style="color: #15803d; font-size: 1.1rem; margin-bottom: 12px">{{ row.plate }}</h4>
             <div
               style="
                 display: flex;
@@ -741,7 +741,7 @@
               "
             >
               <span style="color: #475569">Ortalama Günlük:</span>
-              <strong style="color: #16a34a">{{ row.avg }}</strong>
+              <strong style="color: #15803d">{{ row.avg }}</strong>
             </div>
             <div
               style="
@@ -821,7 +821,7 @@
             class="glass-panel text-center"
             style="padding: 20px; background: #fefce8; border: 1px solid #fef08a"
           >
-            <div style="font-size: 1.8rem; font-weight: 800; color: #d97706">0 Araç</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #b45309">0 Araç</div>
             <div style="font-size: 0.85rem; color: #b45309; margin-top: 4px">
               Şu An Serviste Bekleyen
             </div>
@@ -831,7 +831,7 @@
             class="glass-panel text-center"
             style="padding: 20px; background: #f0fdf4; border: 1px solid #bbf7d0"
           >
-            <div style="font-size: 1.8rem; font-weight: 800; color: #16a34a">0 Gün</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #15803d">0 Gün</div>
             <div style="font-size: 0.85rem; color: #15803d; margin-top: 4px">
               Kullanılan İkame Araç Süresi
             </div>
@@ -925,7 +925,7 @@
               border-radius: 16px;
             "
           >
-            <div style="font-size: 2rem; font-weight: 900; color: #d97706">
+            <div style="font-size: 2rem; font-weight: 900; color: #b45309">
               {{ money(userTotals.lastik) }}
             </div>
             <div style="font-size: 0.9rem; font-weight: 700; color: #b45309; margin-top: 4px">
@@ -1427,7 +1427,7 @@ const downloadPDF = () => {
             .join('')}
         </tbody>
       </table>
-      <div style="margin-top: 20px; font-size: 18px; font-weight: bold; color: #16a34a; text-align: right;">
+      <div style="margin-top: 20px; font-size: 18px; font-weight: bold; color: #15803d; text-align: right;">
         Genel Toplam Maliyet: ${money(costTotals.value.toplam)}
       </div>
     `
