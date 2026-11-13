@@ -283,7 +283,7 @@ onMounted(load)
 .ai-muted {
   margin: 0;
   font-size: 11px;
-  color: #6b7f9f;
+  color: #627697;
 }
 .ai-actions {
   display: flex;
@@ -400,7 +400,7 @@ onMounted(load)
 .ai-impact {
   margin-left: auto;
   font-size: 12px;
-  color: #138a65;
+  color: #047857;
 }
 .ai-rec {
   margin: 8px 0 4px;

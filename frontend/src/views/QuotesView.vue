@@ -74,7 +74,7 @@
               gap: 8px;
               font-weight: 700;
               font-size: 1.1rem;
-              color: #a78bfa;
+              color: #7c3aed;
               margin-bottom: 6px;
             "
           >
@@ -209,7 +209,7 @@
                   font-size: 0.8rem;
                   text-transform: uppercase;
                   font-weight: 700;
-                  color: #a78bfa;
+                  color: #7c3aed;
                   letter-spacing: 0.05em;
                 "
                 >TALEP ID: #{{ quote.id }}</span
@@ -221,7 +221,7 @@
                   style="
                     font-size: 0.85rem;
                     background: rgba(124, 58, 237, 0.15);
-                    color: #a78bfa;
+                    color: #7c3aed;
                     padding: 2px 10px;
                     border-radius: 12px;
                     margin-left: 8px;
@@ -235,7 +235,7 @@
                   style="
                     font-size: 0.8rem;
                     background: rgba(16, 185, 129, 0.15);
-                    color: #10b981;
+                    color: #047857;
                     padding: 2px 10px;
                     border-radius: 12px;
                     margin-left: 6px;
@@ -266,7 +266,7 @@
                 style="
                   background: rgba(239, 68, 68, 0.1);
                   border: 1px solid rgba(239, 68, 68, 0.25);
-                  color: #ef4444;
+                  color: #dc2626;
                   padding: 6px 12px;
                   border-radius: 8px;
                   font-weight: 700;
@@ -323,7 +323,7 @@
                     <span
                       style="
                         background: rgba(124, 58, 237, 0.2);
-                        color: #a78bfa;
+                        color: #7c3aed;
                         font-weight: 700;
                         width: 26px;
                         height: 26px;
@@ -367,7 +367,7 @@
                     border-radius: 8px;
                   "
                 >
-                  <span style="font-weight: 800; color: #c084fc">📋 Gruba Özel Şartlar:</span>
+                  <span style="font-weight: 800; color: #9333ea">📋 Gruba Özel Şartlar:</span>
                   <span v-if="getAllBrandsForItem(item).length > 0"
                     >Marka:
                     <strong style="color: #fff">{{
@@ -387,7 +387,7 @@
                     }}</strong></span
                   >
                   <span v-if="item.details.imm_limit"
-                    >İMM: <strong style="color: #10b981">{{ item.details.imm_limit }}</strong></span
+                    >İMM: <strong style="color: #047857">{{ item.details.imm_limit }}</strong></span
                   >
                   <span v-if="item.details.payment_term"
                     >Vade:
@@ -416,7 +416,7 @@
               style="
                 font-size: 0.85rem;
                 text-transform: uppercase;
-                color: #a78bfa;
+                color: #7c3aed;
                 font-weight: 800;
                 margin-bottom: 12px;
                 display: flex;
@@ -472,7 +472,7 @@
 
               <div v-if="quote.details.imm_limit">
                 <span style="color: var(--text-muted)">İMM Limiti:</span>
-                <div style="font-weight: 700; color: #10b981">{{ quote.details.imm_limit }}</div>
+                <div style="font-weight: 700; color: #047857">{{ quote.details.imm_limit }}</div>
               </div>
 
               <div v-if="quote.details.periodic_maintenance">
@@ -514,7 +514,7 @@
                 style="
                   font-size: 1.05rem;
                   font-weight: 700;
-                  color: #a78bfa;
+                  color: #7c3aed;
                   display: flex;
                   align-items: center;
                   gap: 8px;
@@ -526,7 +526,7 @@
                   style="
                     font-size: 0.8rem;
                     background: rgba(124, 58, 237, 0.2);
-                    color: #a78bfa;
+                    color: #7c3aed;
                     padding: 2px 8px;
                     border-radius: 12px;
                     font-weight: 600;
@@ -545,7 +545,7 @@
                 border: 1px solid rgba(239, 68, 68, 0.2);
                 padding: 12px;
                 border-radius: 10px;
-                color: #ef4444;
+                color: #dc2626;
                 font-weight: 600;
                 font-size: 0.88rem;
               "
@@ -624,7 +624,7 @@
                         v-if="bid.status === 'Onaylandı'"
                         style="
                           font-size: 0.75rem;
-                          background: #10b981;
+                          background: #047857;
                           color: #fff;
                           padding: 2px 8px;
                           border-radius: 10px;
@@ -638,7 +638,7 @@
                         style="
                           font-size: 0.75rem;
                           background: rgba(239, 68, 68, 0.2);
-                          color: #ef4444;
+                          color: #dc2626;
                           padding: 2px 8px;
                           border-radius: 10px;
                           font-weight: 600;
@@ -675,7 +675,7 @@
                       "
                       >Aylık Teklif Tutar</span
                     >
-                    <div style="font-weight: 800; font-size: 1.3rem; color: #a78bfa">
+                    <div style="font-weight: 800; font-size: 1.3rem; color: #7c3aed">
                       ₺{{ bid.monthly_price_try?.toLocaleString() }}
                       <span style="font-size: 0.75rem; font-weight: 500; color: var(--text-muted)"
                         >+ KDV</span
@@ -693,7 +693,7 @@
                         font-size: 0.82rem;
                         font-weight: 700;
                         border-color: rgba(124, 58, 237, 0.3);
-                        color: #a78bfa;
+                        color: #7c3aed;
                         background: rgba(124, 58, 237, 0.08);
                       "
                     >
@@ -713,7 +713,7 @@
                         padding: 8px 14px;
                         font-size: 0.82rem;
                         font-weight: 700;
-                        background: linear-gradient(135deg, #10b981, #059669);
+                        background: linear-gradient(135deg, #059669, #047857);
                         border: none;
                         box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
                       "
@@ -731,7 +731,7 @@
                         font-size: 0.82rem;
                         font-weight: 700;
                         border-color: rgba(239, 68, 68, 0.25);
-                        color: #ef4444;
+                        color: #dc2626;
                         background: rgba(239, 68, 68, 0.05);
                       "
                     >
@@ -2616,7 +2616,7 @@
 
             <div v-if="getAllBrandsForItem(item).length > 0">
               <strong>🏷️ Marka Tercihleri:</strong>
-              <span style="color: #2583e9; font-weight: 700">{{
+              <span style="color: #1d6fd1; font-weight: 700">{{
                 getAllBrandsForItem(item).join(', ')
               }}</span>
             </div>
@@ -2657,7 +2657,7 @@
 
             <div v-if="item.details.valet_services?.length">
               <strong>🛎️ Vale Hizmeti Kapsamı:</strong>
-              <span style="color: #2583e9; font-weight: 700">{{
+              <span style="color: #1d6fd1; font-weight: 700">{{
                 item.details.valet_services.join(', ')
               }}</span>
             </div>
@@ -2759,7 +2759,7 @@
           @click="confirmAndSubmitQuote"
           class="btn btn-primary"
           style="
-            background: linear-gradient(135deg, #10b981, #059669);
+            background: linear-gradient(135deg, #059669, #047857);
             color: #ffffff;
             border: none;
             font-weight: 800;
@@ -2876,7 +2876,7 @@
         </div>
         <span
           style="
-            background: #10b981;
+            background: #047857;
             color: #fff;
             font-weight: 800;
             font-size: 0.85rem;
@@ -2947,7 +2947,7 @@
               gap: 6px;
             "
           >
-            <span style="color: #10b981">✓</span> 7/24 Yol Yardım ve Asistans
+            <span style="color: #047857">✓</span> 7/24 Yol Yardım ve Asistans
           </div>
           <div
             style="
@@ -2962,7 +2962,7 @@
               gap: 6px;
             "
           >
-            <span style="color: #10b981">✓</span> Periyodik Bakım & Onarım
+            <span style="color: #047857">✓</span> Periyodik Bakım & Onarım
           </div>
           <div
             style="
@@ -2977,7 +2977,7 @@
               gap: 6px;
             "
           >
-            <span style="color: #10b981">✓</span> Kış Lastiği Temini & Saklama
+            <span style="color: #047857">✓</span> Kış Lastiği Temini & Saklama
           </div>
           <div
             style="
@@ -2992,7 +2992,7 @@
               gap: 6px;
             "
           >
-            <span style="color: #10b981">✓</span> Kesintisiz İkame Araç
+            <span style="color: #047857">✓</span> Kesintisiz İkame Araç
           </div>
         </div>
       </div>
@@ -3084,7 +3084,7 @@
           @click="approveBid(selectedBid.id, selectedQuoteForBid)"
           class="btn btn-primary"
           style="
-            background: linear-gradient(135deg, #10b981, #059669);
+            background: linear-gradient(135deg, #059669, #047857);
             color: #fff;
             border: none;
             font-weight: 800;
@@ -3169,7 +3169,7 @@
           <span style="color: #64748b">Durum:</span>
           <span
             style="
-              color: #2583e9;
+              color: #1d6fd1;
               font-weight: 700;
               background: #eaf3ff;
               padding: 2px 10px;
@@ -3878,13 +3878,13 @@ onMounted(async () => {
 
 .active-step .step-icon {
   background: rgba(124, 58, 237, 0.1);
-  color: #a78bfa;
+  color: #7c3aed;
   border-color: #2583e9;
 }
 
 .active-step:last-child .step-icon {
   background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
+  color: #047857;
   border-color: #10b981;
 }
 

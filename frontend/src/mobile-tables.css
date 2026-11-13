@@ -1,0 +1,96 @@
+/*
+ * Phone width: list tables (marked .fr-cards by utils/tableCards.js) show one card per row,
+ * each value under its column name, instead of a table that scrolls sideways. Rules start
+ * with #app so they outrank the views' scoped table styles.
+ */
+@media (max-width: 640px) {
+  #app table.fr-cards,
+  #app table.fr-cards tbody {
+    display: block;
+    width: 100%;
+    min-width: 0 !important;
+  }
+  #app table.fr-cards thead {
+    display: none;
+  }
+  #app table.fr-cards tbody {
+    display: grid;
+    gap: 10px;
+    padding: 4px 0;
+  }
+  #app table.fr-cards tbody tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 14px;
+    padding: 12px 14px;
+    border: 1px solid var(--fr-border);
+    border-radius: var(--fr-radius);
+    background: var(--fr-surface) !important;
+    box-shadow: var(--fr-shadow-sm);
+  }
+  #app table.fr-cards td {
+    display: block;
+    min-width: 0;
+    max-width: none !important;
+    height: auto !important;
+    padding: 0 !important;
+    border: 0 !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    text-align: left !important;
+    font-size: var(--fr-text-sm);
+  }
+  #app table.fr-cards td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 2px;
+    font-size: var(--fr-text-xs);
+    font-weight: 500;
+    color: var(--fr-muted);
+  }
+  #app table.fr-cards td.fr-card-skip {
+    display: none;
+  }
+  /* The first real column names the row (plate, company, request no): full width, larger. */
+  #app table.fr-cards td.fr-card-title,
+  #app table.fr-cards td[colspan],
+  #app table.fr-cards td:not([data-label]) {
+    grid-column: 1 / -1;
+  }
+  #app table.fr-cards td.fr-card-title {
+    font-size: var(--fr-text-md);
+    font-weight: 600;
+  }
+  /* Action cells: buttons side by side, wrapping, at a touch-friendly size. */
+  #app table.fr-cards td:last-child:has(button, a.btn, .btn) {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 6px !important;
+    border-top: 1px solid var(--fr-border) !important;
+  }
+  #app table.fr-cards td:last-child:has(button, a.btn, .btn)::before {
+    display: none;
+  }
+  /* Buttons may sit in a wrapper inside the cell: lay that out the same way. */
+  #app table.fr-cards td:last-child:has(button, a.btn, .btn) > div {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+  }
+  #app table.fr-cards td:last-child :is(button, .btn) {
+    flex: 1 1 auto;
+    min-height: 36px;
+    white-space: nowrap;
+  }
+  /* Desktop widths set on cell content (inline min-width) must not push the card wider. */
+  #app table.fr-cards td > * {
+    min-width: 0 !important;
+    max-width: 100%;
+  }
+  #app table.fr-cards td[colspan] {
+    text-align: center !important;
+  }
+}

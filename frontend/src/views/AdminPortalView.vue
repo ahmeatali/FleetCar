@@ -11,7 +11,7 @@
         <div class="avatar"><NavIcon name="settings" size="20" /></div>
         <div>
           <h4 style="font-size: 0.85rem; font-weight: 600">Yönetici Paneli</h4>
-          <span style="font-size: 0.7rem; color: #34d399; font-weight: 600"
+          <span style="font-size: 0.7rem; color: #047857; font-weight: 600"
             >✓ Tam Yetkili Yönetici</span
           >
         </div>
@@ -107,19 +107,19 @@
             </div>
             <div class="stat-info">
               <span class="stat-label">Kabul / İmzalandı</span>
-              <div class="stat-val-new" style="color: #10b981">{{ acceptedQuotesCount }} Adet</div>
+              <div class="stat-val-new" style="color: #047857">{{ acceptedQuotesCount }} Adet</div>
             </div>
           </div>
           <div class="glass-panel stat-card-new">
             <div
               class="stat-icon-wrapper"
-              style="background: rgba(239, 68, 68, 0.1); color: #ef4444"
+              style="background: rgba(239, 68, 68, 0.1); color: #dc2626"
             >
               <NavIcon name="x-circle" size="22" />
             </div>
             <div class="stat-info">
               <span class="stat-label">Reddedilen Teklif</span>
-              <div class="stat-val-new" style="color: #ef4444">{{ rejectedQuotesCount }} Adet</div>
+              <div class="stat-val-new" style="color: #dc2626">{{ rejectedQuotesCount }} Adet</div>
             </div>
           </div>
           <div class="glass-panel stat-card-new">
@@ -219,7 +219,7 @@
                     <strong>#{{ quote.id }}</strong>
                     <div
                       v-if="quote.status === 'İstek Silindi' || quote.status === 'Silindi'"
-                      style="font-size: 0.7rem; color: #ef4444; font-weight: 700; margin-top: 2px"
+                      style="font-size: 0.7rem; color: #dc2626; font-weight: 700; margin-top: 2px"
                     >
                       🗑️ Silindi
                     </div>
@@ -261,7 +261,7 @@
                       <span
                         style="
                           background: rgba(16, 185, 129, 0.1);
-                          color: #059669;
+                          color: #047857;
                           border: 1px solid rgba(16, 185, 129, 0.25);
                           font-size: 0.72rem;
                           font-weight: 700;
@@ -275,7 +275,7 @@
                         🏢 {{ quote.bids.length }} Tedarikçi Teklifi Verildi
                       </span>
                     </div>
-                    <div v-else style="font-size: 0.72rem; color: #94a3b8; margin-top: 4px">
+                    <div v-else style="font-size: 0.72rem; color: #627793; margin-top: 4px">
                       ⏳ Tedarikçi Teklifi Yok
                     </div>
                   </td>
@@ -340,7 +340,7 @@
             @click="showAddCustomerModal = true"
             class="btn btn-primary"
             style="
-              background: linear-gradient(135deg, #10b981, #059669);
+              background: linear-gradient(135deg, #059669, #047857);
               border: none;
               box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25);
             "
@@ -375,7 +375,7 @@
             </div>
             <div class="stat-info">
               <span class="stat-label">Toplam Aktif Ciro</span>
-              <div class="stat-val-new" style="color: #10b981">
+              <div class="stat-val-new" style="color: #047857">
                 ₺{{ totalCustomerRevenue.toLocaleString('tr-TR') }}
               </div>
             </div>
@@ -453,7 +453,7 @@
                           width: 36px;
                           height: 36px;
                           border-radius: 50%;
-                          background: linear-gradient(135deg, #10b981, #059669);
+                          background: linear-gradient(135deg, #059669, #047857);
                           display: flex;
                           align-items: center;
                           justify-content: center;
@@ -514,7 +514,7 @@
                         "
                       >
                         <span style="color: var(--text-muted)">Tanımlı</span>
-                        <span style="font-weight: 700; color: #10b981"
+                        <span style="font-weight: 700; color: #047857"
                           >{{ c.actual_vehicle_count }} araç</span
                         >
                       </div>
@@ -530,8 +530,8 @@
                           padding: 2px 6px;
                         "
                       >
-                        <span style="color: #f87171">Eksik</span>
-                        <span style="font-weight: 700; color: #f87171"
+                        <span style="color: #dc2626">Eksik</span>
+                        <span style="font-weight: 700; color: #dc2626"
                           >{{ c.vehicle_deficit }} araç</span
                         >
                       </div>
@@ -547,13 +547,13 @@
                           padding: 2px 6px;
                         "
                       >
-                        <span style="color: #10b981">✓ Tam</span>
-                        <span style="font-weight: 700; color: #10b981">Eksiksiz</span>
+                        <span style="color: #047857">✓ Tam</span>
+                        <span style="font-weight: 700; color: #047857">Eksiksiz</span>
                       </div>
                     </div>
                   </td>
                   <td>
-                    <strong style="color: #10b981"
+                    <strong style="color: #047857"
                       >₺{{ c.contract_amount?.toLocaleString() }}</strong
                     >
                   </td>
@@ -634,7 +634,7 @@
                           padding: 6px 10px;
                           font-size: 0.78rem;
                           border-color: rgba(239, 68, 68, 0.3);
-                          color: #ef4444;
+                          color: #dc2626;
                           background: rgba(239, 68, 68, 0.06);
                           font-weight: 600;
                         "
@@ -880,7 +880,7 @@
             </div>
             <div class="stat-info">
               <span class="stat-label">Aktif Kullanımda</span>
-              <div class="stat-val-new" style="color: #10b981">{{ activeVehiclesCount }} Adet</div>
+              <div class="stat-val-new" style="color: #047857">{{ activeVehiclesCount }} Adet</div>
             </div>
           </div>
           <div class="glass-panel stat-card-new">
@@ -889,7 +889,7 @@
             </div>
             <div class="stat-info">
               <span class="stat-label">Serviste / Bakımda</span>
-              <div class="stat-val-new" style="color: #3b82f6">{{ serviceVehiclesCount }} Adet</div>
+              <div class="stat-val-new" style="color: #2563eb">{{ serviceVehiclesCount }} Adet</div>
             </div>
           </div>
         </div>
@@ -1120,13 +1120,13 @@
             </div>
             <div class="cd-hero-badge cd-badge-green">
               <div class="cd-badge-label">Yakıt / Segment</div>
-              <div class="cd-badge-value" style="font-size: 1rem; color: #10b981">
+              <div class="cd-badge-value" style="font-size: 1rem; color: #047857">
                 {{ selectedVehicleDetails.fuel }} / {{ selectedVehicleDetails.vehicle_segment }}
               </div>
             </div>
             <div class="cd-hero-badge cd-badge-blue">
               <div class="cd-badge-label">Muayene Tarihi</div>
-              <div class="cd-badge-value" style="font-size: 0.95rem; color: #3b82f6">
+              <div class="cd-badge-value" style="font-size: 0.95rem; color: #2563eb">
                 {{ selectedVehicleDetails.inspection_date || 'Belirtilmemiş' }}
               </div>
             </div>
@@ -1157,7 +1157,7 @@
               </div>
               <div class="cd-vehicle-row">
                 <span class="cd-vd-label">Kiralama Durumu</span>
-                <span class="cd-vd-val" style="color: #10b981; font-weight: 600"
+                <span class="cd-vd-val" style="color: #047857; font-weight: 600"
                   >Aktif Sözleşmeli Kiralama</span
                 >
               </div>
@@ -1172,7 +1172,7 @@
               style="
                 font-size: 1rem;
                 margin-bottom: 15px;
-                color: #3b82f6;
+                color: #2563eb;
                 display: flex;
                 align-items: center;
                 gap: 8px;
@@ -1310,7 +1310,7 @@
             </div>
             <div class="stat-info">
               <span class="stat-label">Yetkili Servisler</span>
-              <div class="stat-val-new" style="color: #10b981">
+              <div class="stat-val-new" style="color: #047857">
                 {{ authorizedSuppliersCount }} Adet
               </div>
             </div>
@@ -1321,7 +1321,7 @@
             </div>
             <div class="stat-info">
               <span class="stat-label">Anlaşmalı Servisler</span>
-              <div class="stat-val-new" style="color: #3b82f6">
+              <div class="stat-val-new" style="color: #2563eb">
                 {{ contractedSuppliersCount }} Adet
               </div>
             </div>
@@ -1512,7 +1512,7 @@
                           padding: 6px 10px;
                           font-size: 0.78rem;
                           border-color: rgba(239, 68, 68, 0.3);
-                          color: #ef4444;
+                          color: #dc2626;
                           background: rgba(239, 68, 68, 0.06);
                           font-weight: 600;
                         "
@@ -1828,7 +1828,7 @@
     @close="showEditCustomerModal = false"
   >
     <div class="glass-panel modal-content fade-in-up" style="max-width: 550px; padding: 30px">
-      <h2 style="margin-bottom: 20px; color: #10b981">🏢 Müşteri Bilgilerini Düzenle</h2>
+      <h2 style="margin-bottom: 20px; color: #047857">🏢 Müşteri Bilgilerini Düzenle</h2>
 
       <form @submit.prevent="submitEditCustomer">
         <div class="form-group" style="margin-bottom: 15px">
@@ -1896,7 +1896,7 @@
             type="submit"
             class="btn btn-primary"
             style="
-              background: #10b981;
+              background: #047857;
               color: #fff;
               border: none;
               box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
@@ -1913,7 +1913,7 @@
   <UiModal v-if="showAmountModal" class="modal-overlay" @close="cancelContractSigning">
     <div class="glass-panel modal-content fade-in-up" style="max-width: 450px; padding: 30px">
       <h2
-        style="margin-bottom: 10px; color: #10b981; display: flex; align-items: center; gap: 10px"
+        style="margin-bottom: 10px; color: #047857; display: flex; align-items: center; gap: 10px"
       >
         <span>📝</span> Sözleşme İmzalama İşlemi
       </h2>
@@ -1951,7 +1951,7 @@
             type="submit"
             class="btn btn-primary"
             style="
-              background: #10b981;
+              background: #047857;
               color: #fff;
               border: none;
               box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
@@ -2006,7 +2006,7 @@
                 <strong>{{ bid.supplier_name }}</strong>
               </td>
               <td>
-                <strong style="color: #10b981"
+                <strong style="color: #047857"
                   >₺{{ bid.monthly_price_try?.toLocaleString() }}</strong
                 >
               </td>
@@ -2032,7 +2032,7 @@
                       padding: 4px 8px;
                       font-size: 0.75rem;
                       background: rgba(16, 185, 129, 0.1);
-                      color: #10b981;
+                      color: #047857;
                       border-color: rgba(16, 185, 129, 0.2);
                     "
                   >
@@ -2045,7 +2045,7 @@
                       padding: 4px 8px;
                       font-size: 0.75rem;
                       background: rgba(239, 68, 68, 0.1);
-                      color: #ef4444;
+                      color: #dc2626;
                       border-color: rgba(239, 68, 68, 0.2);
                     "
                   >
@@ -2277,7 +2277,7 @@
           margin-bottom: 22px;
         "
       >
-        <h2 style="color: #10b981; margin: 0; display: flex; align-items: center; gap: 10px">
+        <h2 style="color: #047857; margin: 0; display: flex; align-items: center; gap: 10px">
           🏢 Yeni Müşteri Kaydı Ekle
         </h2>
         <UiButton
@@ -2418,7 +2418,7 @@
           <UiButton
             type="submit"
             class="btn btn-primary"
-            style="background: linear-gradient(135deg, #10b981, #059669); border: none"
+            style="background: linear-gradient(135deg, #059669, #047857); border: none"
           >
             Müşteriyi Kaydet ➔
           </UiButton>
@@ -2483,7 +2483,7 @@
       >
         <span style="font-size: 1.6rem">✅</span>
         <div>
-          <strong style="color: #10b981; font-size: 0.92rem"
+          <strong style="color: #047857; font-size: 0.92rem"
             >E-Posta Adresine Başarıyla Gönderildi!</strong
           >
           <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px">
@@ -2507,7 +2507,7 @@
       >
         <span style="font-size: 1.6rem; line-height: 1">💡</span>
         <div>
-          <strong style="color: #d97706; font-size: 0.92rem"
+          <strong style="color: #b45309; font-size: 0.92rem"
             >Davet Bağlantısı Hazırlandı (Manuel İletilebilir)</strong
           >
           <div
@@ -3633,12 +3633,12 @@ onMounted(async () => {
 
 .quote-blue {
   background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
+  color: #2563eb;
 }
 
 .quote-green {
   background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
+  color: #047857;
 }
 
 .stat-info {
@@ -3727,13 +3727,13 @@ onMounted(async () => {
 
 .badge-auth {
   background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
+  color: #047857;
   border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 .badge-contracted {
   background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
+  color: #2563eb;
   border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
@@ -3802,7 +3802,7 @@ onMounted(async () => {
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: linear-gradient(135deg, #059669, #047857);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3865,16 +3865,16 @@ onMounted(async () => {
   font-weight: 800;
 }
 .cd-badge-green .cd-badge-value {
-  color: #10b981;
+  color: #047857;
 }
 .cd-badge-purple .cd-badge-value {
   color: #7c3aed;
 }
 .cd-badge-blue .cd-badge-value {
-  color: #3b82f6;
+  color: #2563eb;
 }
 .cd-badge-amber .cd-badge-value {
-  color: #f59e0b;
+  color: #b45309;
 }
 
 /* Tabs */
@@ -3901,7 +3901,7 @@ onMounted(async () => {
   color: var(--text-primary);
 }
 .cd-tab-active {
-  color: #10b981 !important;
+  color: #047857 !important;
   border-bottom-color: #10b981;
 }
 
@@ -4013,7 +4013,7 @@ onMounted(async () => {
   align-items: center;
   gap: 5px;
   background: rgba(124, 58, 237, 0.15);
-  color: #c084fc;
+  color: #9333ea;
   border: 1px solid rgba(124, 58, 237, 0.25);
   border-radius: 20px;
   padding: 3px 10px;
@@ -4023,7 +4023,7 @@ onMounted(async () => {
 .chip-remove {
   background: transparent;
   border: none;
-  color: #c084fc;
+  color: #9333ea;
   cursor: pointer;
   font-size: 0.75rem;
   padding: 0;
@@ -4087,13 +4087,13 @@ onMounted(async () => {
 }
 .filter-pill:hover {
   border-color: #7c3aed;
-  color: #c084fc;
+  color: #9333ea;
   background: rgba(124, 58, 237, 0.08);
 }
 .filter-pill-active {
   background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(59, 130, 246, 0.15)) !important;
   border-color: #7c3aed !important;
-  color: #c084fc !important;
+  color: #9333ea !important;
   font-weight: 700;
 }
 .filter-input {

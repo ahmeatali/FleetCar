@@ -261,7 +261,7 @@
               >
             </div>
             <UiTable class="table-scroll"
-              ><table>
+              ><table class="fuel-table">
                 <thead>
                   <tr>
                     <th>
@@ -1522,7 +1522,7 @@ td {
 }
 th {
   background: #f4f9ff;
-  color: #617da3;
+  color: #5b779c;
   font-size: 11px;
   font-weight: 600;
 }
@@ -1761,7 +1761,7 @@ td.empty {
   gap: 12px;
 }
 .fuel-dialog dt {
-  color: #6d83a8;
+  color: #5e769e;
 }
 .fuel-dialog dd {
   margin: 0;

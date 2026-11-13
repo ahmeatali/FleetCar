@@ -300,7 +300,7 @@ watch(
 
 .spam-hint {
   font-size: 0.78rem;
-  color: #94a3b8;
+  color: #627793;
   margin: 0;
 }
 

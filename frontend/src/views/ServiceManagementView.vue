@@ -899,7 +899,7 @@ onUnmounted(() => clearInterval(refreshTimer))
 }
 .page-title p {
   font-size: 11px;
-  color: #7889a0;
+  color: #64768e;
   margin: 4px 0;
 }
 .primary {
@@ -990,7 +990,7 @@ onUnmounted(() => clearInterval(refreshTimer))
 }
 .filters label small {
   font-size: 11px;
-  color: #73849c;
+  color: #65768e;
 }
 .filters select,
 .filters input[type='date'] {
@@ -1013,7 +1013,7 @@ onUnmounted(() => clearInterval(refreshTimer))
   height: 28px;
   border: 1px solid #dfe8f2;
   border-radius: 4px;
-  color: #8093aa;
+  color: #617791;
 }
 .filters .search input {
   min-width: 0;
@@ -1058,7 +1058,7 @@ onUnmounted(() => clearInterval(refreshTimer))
 }
 .tabs b {
   margin-left: 4px;
-  color: #8997aa;
+  color: #65758c;
 }
 .panel {
   background: #fff;
@@ -1105,7 +1105,7 @@ td {
 th {
   font-size: 11px;
   background: #fbfcfe;
-  color: #71839a;
+  color: #64768d;
 }
 td {
   height: 34px;
@@ -1121,7 +1121,7 @@ tr.selected {
 td small {
   display: block;
   font-size: 11px;
-  color: #8795a8;
+  color: #66768c;
   margin-top: 2px;
 }
 .pill,
@@ -1178,7 +1178,7 @@ td small {
 .empty {
   text-align: center;
   height: 120px;
-  color: #8091a6;
+  color: #63768d;
 }
 .empty b,
 .empty small {
@@ -1201,7 +1201,7 @@ footer {
   justify-content: space-between;
   align-items: center;
   padding: 8px 10px;
-  color: #8090a5;
+  color: #64768e;
   font-size: 11px;
 }
 footer span button {
@@ -1247,7 +1247,7 @@ footer span button {
   font-size: 11px;
 }
 .vehicle-panel dt {
-  color: #8391a4;
+  color: #66768b;
 }
 .vehicle-panel dd {
   margin: 0;
@@ -1296,7 +1296,7 @@ footer span button {
 }
 .due-list small {
   font-size: 11px;
-  color: #8492a6;
+  color: #66768c;
   margin-top: 3px;
 }
 .due-list i {
@@ -1329,7 +1329,7 @@ footer span button {
 }
 .empty-note {
   padding: 12px;
-  color: #8291a4;
+  color: #65768b;
   font-size: 11px;
 }
 .backdrop {
@@ -1431,7 +1431,7 @@ footer span button {
   font-size: 11px;
 }
 .record-summary span {
-  color: #71839b;
+  color: #64768e;
 }
 .dialog details {
   border: 1px solid #e3eaf2;
@@ -1460,7 +1460,7 @@ footer span button {
 }
 .supplier small {
   font-size: 11px;
-  color: #77889e;
+  color: #64768d;
   margin-top: 4px;
 }
 .supplier button {
@@ -1604,7 +1604,7 @@ footer span button {
 }
 .service-account small {
   display: block;
-  color: #7587a2;
+  color: #637693;
   font-size: 11px;
   margin-top: 3px;
 }
@@ -1758,7 +1758,7 @@ td small {
 }
 .car .vehicle-state.inactive {
   background: #eef0f4;
-  color: #738198;
+  color: #67768d;
 }
 .vehicle-name {
   display: block;
@@ -1822,7 +1822,7 @@ footer {
   margin: 20px 0;
 }
 .readonly-detail dt {
-  color: #7588a1;
+  color: #627690;
 }
 .readonly-detail dd {
   margin: 0;
@@ -1838,7 +1838,7 @@ footer {
 }
 .readonly-detail li small {
   display: block;
-  color: #7b8da3;
+  color: #63768d;
   font-size: 11px;
   margin-top: 4px;
 }

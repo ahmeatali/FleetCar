@@ -162,7 +162,7 @@
                     >
                       {{ user.assigned_plate }}
                     </span>
-                    <span v-else style="color: #94a3b8; font-size: 0.85rem">— Tahsis Yok</span>
+                    <span v-else style="color: #627793; font-size: 0.85rem">— Tahsis Yok</span>
                   </td>
                   <td>{{ user.created_at }}</td>
                   <td>
@@ -239,7 +239,7 @@
               border-radius: 16px;
             "
           >
-            <div style="font-size: 1.8rem; font-weight: 800; color: #16a34a">
+            <div style="font-size: 1.8rem; font-weight: 800; color: #15803d">
               {{ activeUsersCount }} Aktif
             </div>
             <div style="font-size: 0.85rem; color: #15803d; margin-top: 4px">
@@ -255,7 +255,7 @@
               border-radius: 16px;
             "
           >
-            <div style="font-size: 1.8rem; font-weight: 800; color: #d97706">
+            <div style="font-size: 1.8rem; font-weight: 800; color: #b45309">
               {{ driverUsersCount }} Sürücü
             </div>
             <div style="font-size: 0.85rem; color: #b45309; margin-top: 4px">
@@ -485,7 +485,7 @@
                     >
                       📁 {{ customerDocs[cat.key].file_name }}
                     </div>
-                    <div v-else style="font-size: 0.8rem; color: #94a3b8; margin-top: 4px">
+                    <div v-else style="font-size: 0.8rem; color: #627793; margin-top: 4px">
                       {{ cat.required ? '*Zorunlu Belge' : 'Opsiyonel Belge' }}
                     </div>
                   </div>
@@ -636,7 +636,7 @@
                     align-items: center;
                   "
                 >
-                  <span style="font-size: 0.82rem; font-weight: 700; color: #16a34a"
+                  <span style="font-size: 0.82rem; font-weight: 700; color: #15803d"
                     >🟢 GPS Servisi Bağlı</span
                   >
                   <UiButton
@@ -662,7 +662,7 @@
                 style="
                   font-size: 1.1rem;
                   font-weight: 800;
-                  color: #059669;
+                  color: #047857;
                   margin-bottom: 16px;
                   display: flex;
                   align-items: center;
@@ -717,7 +717,7 @@
                     align-items: center;
                   "
                 >
-                  <span style="font-size: 0.82rem; font-weight: 700; color: #16a34a"
+                  <span style="font-size: 0.82rem; font-weight: 700; color: #15803d"
                     >🟢 UTTS Servisi Aktif</span
                   >
                   <UiButton
@@ -921,7 +921,7 @@
             v-if="uploadFileName"
             style="
               font-size: 0.8rem;
-              color: #16a34a;
+              color: #15803d;
               margin-top: 4px;
               display: block;
               font-weight: 600;

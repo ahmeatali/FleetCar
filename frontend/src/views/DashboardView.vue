@@ -642,7 +642,7 @@ onMounted(load)
 .overview-account small {
   display: block;
   font-size: 11px;
-  color: #7282a0;
+  color: #647594;
 }
 .account-avatar {
   background: #0064ff;
@@ -672,7 +672,7 @@ onMounted(load)
 }
 .overview-heading p {
   margin: 0;
-  color: #6b7b9a;
+  color: #657594;
   font-size: 12px;
 }
 .primary-action {
@@ -721,7 +721,7 @@ onMounted(load)
 }
 .overview-stat small {
   font-size: 11px;
-  color: #7c8aa5;
+  color: #657593;
 }
 .overview-grid {
   display: grid;
@@ -791,7 +791,7 @@ onMounted(load)
 .location-row small {
   display: block;
   margin-top: 4px;
-  color: #617f93;
+  color: #5c788b;
   font-size: 11px;
 }
 .location-pin {
@@ -804,7 +804,7 @@ onMounted(load)
 .location-note {
   text-align: center;
   font-size: 11px;
-  color: #70889d;
+  color: #60778c;
 }
 .vehicle-status {
   display: flex;
@@ -876,7 +876,7 @@ i {
   margin-left: auto;
 }
 .distribution-legend small {
-  color: #8190a9;
+  color: #647693;
 }
 .cost-chart {
   display: flex;
@@ -898,7 +898,7 @@ i {
 }
 .cost-value {
   font-size: 11px;
-  color: #7d8ba3;
+  color: #65758f;
   margin-bottom: 4px;
 }
 .cost-bar {
@@ -916,7 +916,7 @@ i {
 }
 .cost-column small {
   font-size: 11px;
-  color: #697b9c;
+  color: #637596;
   margin: 7px 0;
 }
 .cost-legend {
@@ -925,7 +925,7 @@ i {
   margin-top: 12px;
   flex-wrap: wrap;
   font-size: 11px;
-  color: #71819a;
+  color: #65768f;
 }
 .cost-legend span {
   display: flex;
@@ -976,7 +976,7 @@ i {
 }
 .event-row small {
   display: block;
-  color: #8390a6;
+  color: #67768f;
   font-size: 11px;
   margin-top: 3px;
 }
@@ -1015,7 +1015,7 @@ i {
 }
 .activity-row small {
   display: block;
-  color: #8290a6;
+  color: #66768f;
   font-size: 11px;
   margin-top: 4px;
 }
@@ -1043,13 +1043,13 @@ i {
 .empty-copy,
 .muted {
   font-size: 11px;
-  color: #8190a9;
+  color: #647693;
   padding: 18px 0;
 }
 .panel-empty {
   text-align: center;
   padding: 75px 8px;
-  color: #7b97aa;
+  color: #5b798d;
   font-size: 28px;
 }
 .panel-empty p {

@@ -940,7 +940,7 @@ onUnmounted(() => clearInterval(refreshTimer))
   border-radius: 8px;
   width: min(440px, 50%);
   padding: 8px 12px;
-  color: #5d7ba7;
+  color: #5876a2;
 }
 .top-search input,
 .filter-search input {
@@ -964,7 +964,7 @@ onUnmounted(() => clearInterval(refreshTimer))
 }
 .top-user small {
   font-size: 11px;
-  color: #8392a8;
+  color: #64758f;
   margin-top: 2px;
 }
 .avatar {
@@ -1021,7 +1021,7 @@ onUnmounted(() => clearInterval(refreshTimer))
 .page-heading p {
   margin: 3px 0 0 34px;
   font-size: 11px;
-  color: #74859e;
+  color: #64768f;
 }
 .primary-btn {
   background: #1167e8;
@@ -1090,7 +1090,7 @@ onUnmounted(() => clearInterval(refreshTimer))
 .metric-card em {
   margin-left: auto;
   font-style: normal;
-  color: #7589a3;
+  color: #617691;
   font-size: 11px;
   white-space: nowrap;
 }
@@ -1122,7 +1122,7 @@ onUnmounted(() => clearInterval(refreshTimer))
   padding: 0 8px;
   flex: 1.35;
   min-width: 145px;
-  color: #8092aa;
+  color: #627792;
 }
 .filter-bar label:not(.filter-search) {
   display: flex;
@@ -1133,7 +1133,7 @@ onUnmounted(() => clearInterval(refreshTimer))
 }
 .filter-bar label small {
   font-size: 11px;
-  color: #70829a;
+  color: #65778e;
 }
 .filter-bar select,
 .filter-bar input[type='date'] {
@@ -1217,7 +1217,7 @@ td {
 }
 th {
   font-size: 11px;
-  color: #6d809b;
+  color: #637691;
   font-weight: 600;
   background: #fbfcfe;
 }
@@ -1244,7 +1244,7 @@ td {
 .car-cell small {
   display: block;
   font-size: 11px;
-  color: #8190a4;
+  color: #65768d;
   margin-top: 2px;
 }
 .plate-link {
@@ -1304,7 +1304,7 @@ td {
 .empty-state {
   height: 155px;
   text-align: center !important;
-  color: #8392a7 !important;
+  color: #64768d !important;
 }
 .empty-state b,
 .empty-state small {
@@ -1317,7 +1317,7 @@ td {
   align-items: center;
   justify-content: space-between;
   padding: 0 11px;
-  color: #788ba4;
+  color: #627691;
   font-size: 11px;
 }
 .pagination {
@@ -1330,7 +1330,7 @@ td {
   border: 0;
   border-radius: 4px;
   background: #fff;
-  color: #647c9a;
+  color: #607794;
   font-size: 11px;
   cursor: pointer;
 }
@@ -1360,7 +1360,7 @@ td {
 }
 .brand-row b {
   text-align: right;
-  color: #6b7f9b;
+  color: #627692;
   font-weight: 500;
 }
 .bar {
@@ -1392,7 +1392,7 @@ td {
 }
 .season-item span {
   font-size: 13px;
-  color: #edb43d;
+  color: #b45309;
 }
 .season-item b {
   font-size: 12px;
@@ -1400,11 +1400,11 @@ td {
 .season-item small,
 .season-item em {
   font-size: 11px;
-  color: #8090a4;
+  color: #65768c;
 }
 .season-item em {
   font-style: normal;
-  color: #17a270;
+  color: #047857;
 }
 .tip-card {
   display: flex;
@@ -1468,7 +1468,7 @@ td {
 }
 .donut small {
   font-size: 11px;
-  color: #8292a7;
+  color: #64768d;
 }
 .legend {
   flex: 1;
@@ -1504,7 +1504,7 @@ td {
 }
 .legend small {
   font-size: 11px;
-  color: #8795a8;
+  color: #66768c;
 }
 .timeline {
   list-style: none;
@@ -1540,7 +1540,7 @@ td {
 .timeline li p {
   display: block;
   font-size: 11px;
-  color: #7386a0;
+  color: #637792;
   margin: 3px 0 0;
 }
 .timeline li p {
@@ -1555,7 +1555,7 @@ td {
 .timeline .no-timeline {
   border: 0;
   min-height: 38px;
-  color: #8090a5;
+  color: #64768e;
   font-size: 11px;
 }
 .outline-wide {
@@ -1576,7 +1576,7 @@ td {
 }
 .muted-empty {
   padding: 15px;
-  color: #8392a7;
+  color: #64768d;
   font-size: 11px;
 }
 .modal-backdrop {
@@ -1713,7 +1713,7 @@ td {
 }
 .history-list article small,
 .history-list article p {
-  color: #71839a;
+  color: #64768d;
   font-size: 11px;
   margin: 4px 0;
 }
@@ -1931,7 +1931,7 @@ td {
 }
 .brand-row small {
   font-size: 11px;
-  color: #6e819a;
+  color: #63768e;
 }
 .timeline li {
   background: transparent !important;
@@ -1985,7 +1985,7 @@ td {
 td small {
   display: block;
   font-size: 11px;
-  color: #7b8da6;
+  color: #627691;
   margin-top: 3px;
 }
 table {

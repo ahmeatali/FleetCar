@@ -209,7 +209,7 @@ async function resendVerification() {
 
 <style scoped>
 .partner-login {
-  --primary: #10b981;
+  --primary: #047857;
   --partner-border: #a7f3d0;
   min-height: 100vh;
   background: #f8fafc;

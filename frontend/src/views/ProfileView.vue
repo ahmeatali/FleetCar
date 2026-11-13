@@ -89,7 +89,7 @@
             </div>
             <div class="user-info-box">
               <span class="info-label">Kullanıcı Rolü</span>
-              <strong class="info-val" style="color: var(--secondary)">{{ customerRole }}</strong>
+              <strong class="info-val" style="color: var(--fr-primary)">{{ customerRole }}</strong>
             </div>
             <div class="user-info-box">
               <span class="info-label">Giriş Yapan Kullanıcı</span>
