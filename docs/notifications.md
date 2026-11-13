@@ -67,9 +67,9 @@ Davet ettiğiniz kullanıcıların hesaba katılması.
 
 ### AI Önerileri
 
-Her sabah hazırlanan filo analizi.
+Her sabah 09:00'da, bir önceki analizde olmayan yeni AI bulguları.
 
-- Günlük AI filo analizi hazır (`ai_daily`)
+- AI'ın yeni bulguları (`ai_daily`)
 
 ## Tedarikçi Portalı
 
@@ -135,9 +135,9 @@ Davet ettiğiniz kullanıcıların hesaba katılması.
 
 ### AI Önerileri
 
-Her sabah hazırlanan filo analizi.
+Her sabah 09:00'da, bir önceki analizde olmayan yeni AI bulguları.
 
-- Günlük AI filo analizi hazır (`ai_daily`)
+- AI'ın yeni bulguları (`ai_daily`)
 
 ## Servis Portalı
 
@@ -163,3 +163,10 @@ Tarihe bağlı hatırlatmalar her sabah 07:00'de (İstanbul saati) hesaplanır. 
 - **Planlı bakım:** 14 gün kala, 3 gün kala ve günü gelince.
 - **Teslimat ve iade:** bir gün önce ve günü gelince.
 - **Görevler:** son günü gelince ya da geçince.
+
+## Sabah AI özeti
+
+AI filo analizi her sabah 06:00'da çalışır. Saat 09:00'da bu analiz, hesabın bir önceki analiziyle karşılaştırılır. Bir bulgu, türü ve ilgili plakalar aynıysa "aynı" sayılır; AI'ın her gün farklı kelimeler kullanması yeni bulgu sayılmaz.
+
+Yalnızca yeni bulgular bildirime ve e-postaya girer. Önce önceliği yüksek olanlar, sonra tahmini aylık etkisi büyük olanlar listelenir; en fazla 6 satır gösterilir. Yeni bulgu yoksa bildirim ve e-posta gönderilmez. Elle başlatılan analizler bu özete dahil değildir.
+

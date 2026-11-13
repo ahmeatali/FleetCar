@@ -436,6 +436,7 @@ onMounted(() => {
   font-weight: 500;
 }
 .nt-text p {
+  white-space: pre-line;
   margin: 3px 0;
   font-size: var(--fr-text-sm);
   color: var(--fr-text);
