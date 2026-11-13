@@ -148,6 +148,26 @@ class Vehicle(Base):
     customer_id = Column(Integer, ForeignKey("customers.id"), nullable=True)
     gps_device_id = Column(String, nullable=True)
     utts_code = Column(String, nullable=True)
+    # Purchase, registration and technical details from the add-vehicle form.
+    # reserved_*: the vehicle is earmarked for one buyer (sale only to that customer).
+    trim_code = Column(String, nullable=True)
+    drive_type = Column(String, nullable=True)
+    entry_mileage = Column(Integer, nullable=True)
+    fuel_level = Column(String, nullable=True)
+    engine_cc = Column(Integer, nullable=True)
+    weight_kg = Column(Integer, nullable=True)
+    tire_season = Column(String, nullable=True)
+    purchase_date = Column(String, nullable=True)
+    supply_type = Column(String, nullable=True)
+    registration_owner = Column(String, nullable=True)
+    purchase_vat_rate = Column(Float, nullable=True)
+    purchase_interest_rate = Column(Float, nullable=True)
+    purchased_from = Column(String, nullable=True)
+    notes = Column(Text, nullable=True)
+    reserved_buyer_type = Column(String, nullable=True)
+    reserved_customer_id = Column(Integer, ForeignKey("customers.id"), nullable=True)
+    reserved_buyer_name = Column(String, nullable=True)
+    reserved_km = Column(Integer, nullable=True)
 
 
 class Quote(Base):

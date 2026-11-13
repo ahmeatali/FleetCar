@@ -13,6 +13,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app import models as m
+from app.common.plates import compact_plate, normalize_plate
 from app.auth import hash_password
 from app.common.security import session_expired, token_digest
 from app.common.time import stamp
@@ -255,7 +256,9 @@ def save_member(db, ctx, data, user=None):
     if data.permissions is not None:
         permissions = validate_permissions(portal, base, data.permissions)
     if portal == "customer" and data.assigned_plate:
-        if not db.query(m.Vehicle).filter_by(customer_id=tenant, plate=data.assigned_plate).first():
+        wanted = compact_plate(data.assigned_plate)
+        owned = db.query(m.Vehicle.plate).filter_by(customer_id=tenant).all()
+        if not any(compact_plate(plate) == wanted for (plate,) in owned):
             raise HTTPException(422, "Araç bu müşteriye ait değil.")
     if portal == "customer" and base == "Sürücü" and not data.assigned_plate:
         raise HTTPException(422, "Sürücü için tahsis edilmiş araç seçin.")
@@ -286,7 +289,7 @@ def save_member(db, ctx, data, user=None):
     user.is_active = data.is_active
     if portal == "customer":
         user.phone = data.phone
-        user.assigned_plate = data.assigned_plate or None
+        user.assigned_plate = normalize_plate(data.assigned_plate) or None
     access.department = data.department.strip()
     access.role_id = rid
     access.permissions = data.permissions

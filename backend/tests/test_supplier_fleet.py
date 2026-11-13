@@ -202,5 +202,97 @@ class SupplierFleetTests(unittest.TestCase):
         )
 
 
+class VehicleFormFieldTests(unittest.TestCase):
+    """The add-vehicle form: purchase and technical details, plates stored one way."""
+
+    setUp = SupplierFleetTests.setUp
+    tearDown = SupplierFleetTests.tearDown
+
+    def test_plate_spacing_and_purchase_details(self):
+        response = self.client.post(
+            "/api/vehicles",
+            json={
+                "plate": "34abc123",
+                "brand": "Audi",
+                "model": "A6",
+                "year": 2026,
+                "fuel": "Benzin",
+                "mileage": 15,
+                "chassis_no": "VIN-A6",
+                "license_serial_no": "GA123456",
+                "inspection_date": "2029-10-15",
+                "vehicle_segment": "E",
+                "vehicle_type": "Sedan",
+                "supplier_id": 1,
+                "entry_mileage": 10,
+                "engine_cc": 1984,
+                "drive_type": "Dört Çeker (4x4)",
+                "fuel_level": "Dolu",
+                "tire_season": "Dört Mevsim",
+                "purchase_date": "2026-10-15",
+                "supply_type": "Satın Alma",
+                "purchase_vat_rate": 20,
+                "purchase_interest_rate": 1.5,
+                "reserved_buyer_type": "Kurumsal",
+                "reserved_customer_id": 2,
+                "notes": "Demo aracı",
+            },
+        )
+        self.assertEqual(response.status_code, 200, response.text)
+        car = response.json()
+        self.assertEqual(car["plate"], "34 ABC 123")
+        self.assertEqual(car["engine_cc"], 1984)
+        self.assertEqual(car["reserved_customer_id"], 2)
+        # No service history yet: it starts on the purchase day at the entry kilometre.
+        self.assertEqual(car["last_service_date"], "2026-10-15")
+        self.assertEqual(car["last_service_mileage"], 10)
+        self.assertEqual(car["tire_change_date"], "2026-10-15")
+
+        edited = self.client.request(
+            "PUT", f"/api/vehicles/{car['id']}", json_body={"plate": "06 xy 4567"}
+        )
+        self.assertEqual(edited.json()["plate"], "06 XY 4567")
+
+    def test_unknown_reserved_customer_is_refused(self):
+        payload = {
+            "plate": "34 ABC 124",
+            "brand": "Audi",
+            "model": "A6",
+            "year": 2026,
+            "fuel": "Benzin",
+            "mileage": 0,
+            "chassis_no": "VIN-A7",
+            "license_serial_no": "GA1",
+            "inspection_date": "2029-10-15",
+            "vehicle_segment": "E",
+            "vehicle_type": "Sedan",
+            "supplier_id": 1,
+            "reserved_customer_id": 999,
+        }
+        self.assertEqual(self.client.post("/api/vehicles", json=payload).status_code, 404)
+
+    def test_stored_plates_are_respaced_once(self):
+        self.db.add(models.Vehicle(id="old", chassis_no="old", plate="34XYZ99", supplier_id=1))
+        self.db.add(
+            models.CustomerPortalUser(
+                customer_id=1,
+                name="Sürücü",
+                email="d@example.test",
+                password_hash="x",
+                role="Sürücü",
+                assigned_plate="34xyz99",
+                created_at="2026-01-01T00:00:00",
+            )
+        )
+        self.db.commit()
+        main.normalize_stored_plates(self.db)
+        main.normalize_stored_plates(self.db)
+        self.assertEqual(self.db.get(models.Vehicle, "old").plate, "34 XYZ 99")
+        user = self.db.query(models.CustomerPortalUser).filter_by(email="d@example.test").one()
+        self.assertEqual(user.assigned_plate, "34 XYZ 99")
+        # Plates that are not Turkish-format are kept as entered.
+        self.assertEqual(self.db.get(models.Vehicle, "other").plate, "06 OTHER")
+
+
 if __name__ == "__main__":
     unittest.main()

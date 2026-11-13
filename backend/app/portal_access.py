@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from starlette.datastructures import QueryParams
 
 from app import models as m
+from app.common.plates import compact_plate
 from app.common.security import issue_session, session_expired, token_digest
 from app.common.time import stamp
 from app.database import get_db
@@ -129,7 +130,7 @@ def check_vehicle(db, p, vid):
     if (
         p["kind"] == "customer"
         and car.customer_id == p["id"]
-        and (not p.get("plate") or car.plate == p["plate"])
+        and (not p.get("plate") or compact_plate(car.plate) == compact_plate(p["plate"]))
     ):
         return car
     if p["kind"] == "supplier" and car.supplier_id == p["id"]:
