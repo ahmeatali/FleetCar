@@ -80,6 +80,12 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/dashboard/notifications',
+    name: 'Notifications',
+    component: () => import('../views/NotificationsView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/dashboard/requests',
     name: 'Requests',
     component: RequestsView,
@@ -182,6 +188,12 @@ const routes = [
     meta: { requiresSupplierAuth: true },
   },
   {
+    path: '/supplier-portal/notifications',
+    name: 'SupplierNotifications',
+    component: () => import('../views/NotificationsView.vue'),
+    meta: { requiresSupplierAuth: true },
+  },
+  {
     path: '/supplier-portal/:section',
     name: 'SupplierWorkspace',
     component: () => import('../views/SupplierWorkspaceView.vue'),
@@ -214,6 +226,12 @@ const routes = [
         'users',
         'settings',
       ].includes(to.params.section) || { name: 'NotFound' },
+  },
+  {
+    path: '/service-portal/notifications',
+    name: 'ServiceNotifications',
+    component: () => import('../views/NotificationsView.vue'),
+    meta: { requiresSupplierAuth: true },
   },
   {
     path: '/service-portal',

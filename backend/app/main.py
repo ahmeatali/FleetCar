@@ -249,6 +249,9 @@ def startup():
     from app import ai_daily
 
     ai_daily.start(SessionLocal)
+    from app import notifications
+
+    notifications.start(SessionLocal)
 
 
 # ─────────────────── HELPERS ───────────────────────────────────────────────
@@ -4491,8 +4494,10 @@ app.include_router(supplier_workspace_router, dependencies=[Depends(enforce_acce
 
 from app.customer_ai import router as customer_ai_router
 from app.impersonation import router as impersonation_router
+from app.notifications import router as notifications_router
 
 app.include_router(impersonation_router)
+app.include_router(notifications_router)
 app.include_router(customer_ai_router, dependencies=[Depends(enforce_access)])
 
 app.include_router(supplier_integrations_router, dependencies=[Depends(enforce_access)])

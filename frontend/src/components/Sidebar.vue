@@ -197,6 +197,7 @@ const customerItems = [
     id: 'customer-admin',
     label: 'Yönetim',
     children: [
+      { label: 'Bildirimler', to: '/dashboard/notifications' },
       { label: 'Kullanıcılar ve Yetkiler', to: '/dashboard/users' },
       { label: 'Ayarlar', to: '/dashboard/settings' },
     ],
@@ -206,7 +207,6 @@ const customerItems = [
   { label: 'Faturalar' },
   { label: 'HGS & Cezalar' },
   { label: 'Şoförlü Araçlar' },
-  { label: 'Bildirimler' },
 ]
 const customerLinks = customerItems.flatMap((item) => item.children || [item])
 const items = computed(() =>

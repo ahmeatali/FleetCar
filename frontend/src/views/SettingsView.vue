@@ -93,6 +93,9 @@
         >
           <span>📡</span> API & Entegrasyonlar
         </UiButton>
+        <router-link to="/dashboard/notifications?tab=settings" class="tab-pill-btn"
+          ><span>🔔</span> Bildirimler</router-link
+        >
       </div>
 
       <!-- ============================================================== -->

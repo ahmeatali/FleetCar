@@ -2554,3 +2554,12 @@ button.login-role-tile {
   gap: 12px;
   margin-left: auto;
 }
+
+/* Tab pills that link to another page (Settings → Bildirimler). */
+a.tab-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: inherit;
+  text-decoration: none;
+}

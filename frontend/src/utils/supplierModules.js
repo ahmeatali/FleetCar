@@ -370,11 +370,15 @@ export const supplierModules = {
   },
   marketplace: { label: 'Kiralama İhaleleri', icon: '▤' },
 }
-export const supplierNavigation = Object.entries(supplierModules).map(([key, value]) => ({
-  label: value.label,
-  icon: value.icon,
-  to: key === 'home' ? '/supplier-portal' : `/supplier-portal/${key}`,
-}))
+export const supplierNavigation = [
+  ...Object.entries(supplierModules).map(([key, value]) => ({
+    label: value.label,
+    icon: value.icon,
+    to: key === 'home' ? '/supplier-portal' : `/supplier-portal/${key}`,
+  })),
+  // Own page (NotificationsView), not a workspace section.
+  { label: 'Bildirimler', icon: 'bell', to: '/supplier-portal/notifications' },
+]
 export const detailLabels = Object.fromEntries(
   Object.values(supplierModules)
     .flatMap((m) => m.fields || [])

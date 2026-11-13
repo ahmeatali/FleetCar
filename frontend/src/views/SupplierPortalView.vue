@@ -39,6 +39,7 @@
           >
             {{ getTypeName(supplierType) }}
           </span>
+          <NotificationBell :portal="isServiceAccount ? 'service' : 'supplier'" />
           <UiButton @click="handleLogout" class="btn btn-secondary btn-danger-hover">
             Çıkış Yap ➔
           </UiButton>
@@ -1941,6 +1942,7 @@
 <script setup>
 import { notify } from '../utils/feedback.js'
 import { UiAlert, UiButton, UiField, UiModal } from '../components/ui/index.js'
+import NotificationBell from '../components/NotificationBell.vue'
 
 import { hasPreferredDates, preferredDateRange } from '../utils/preferredDates'
 import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'

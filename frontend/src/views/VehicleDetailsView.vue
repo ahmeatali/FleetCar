@@ -13,7 +13,7 @@
               @keydown.enter="returnToList"
           /></UiField>
           <div class="customer-header-actions">
-            <NotificationBell v-if="!isSupplier" />
+            <NotificationBell />
             <div class="detail-profile">
               <span>{{ userInitials }}</span>
               <div>
