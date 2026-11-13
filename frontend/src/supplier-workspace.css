@@ -61,28 +61,9 @@
   font-size: 11px;
   margin-top: 4px;
 }
+/* The shared NotificationBell sits at the right end of the top bar. */
 .sw-notification {
-  position: relative;
-  display: inline-flex;
-  padding: 6px;
-  border-radius: 8px;
-  font-size: 26px;
   margin-left: auto;
-  text-decoration: none;
-  color: #0064ff;
-}
-.sw-notification:hover {
-  background: #e7f0fc;
-}
-.sw-notification b {
-  position: absolute;
-  top: -2px;
-  right: -4px;
-  font-size: 11px;
-  background: #ff4c60;
-  color: white;
-  border-radius: 20px;
-  padding: 3px 5px;
 }
 .sw-heading {
   display: flex;
@@ -1367,4 +1348,10 @@
     font-weight: 600;
     cursor: pointer;
   }
+}
+
+a.sw-button {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
 }

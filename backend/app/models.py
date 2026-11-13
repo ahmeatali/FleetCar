@@ -942,3 +942,35 @@ class TeamActivity(Base):
     action = Column(String, nullable=False)
     target = Column(String, nullable=False)
     created_at = Column(String, nullable=False)
+
+
+class Notification(Base):
+    """One notice for one account (portal + tenant). dedupe_key stops repeats (daily reminders)."""
+
+    __tablename__ = "notifications"
+    __table_args__ = (UniqueConstraint("portal", "tenant_id", "dedupe_key"),)
+    id = Column(Integer, primary_key=True)
+    portal = Column(String, nullable=False)  # customer | supplier | service
+    tenant_id = Column(Integer, nullable=False, index=True)
+    topic = Column(String, nullable=False)
+    title = Column(String, nullable=False)
+    body = Column(Text, nullable=False, default="")
+    link = Column(String, nullable=True)
+    plate = Column(String, nullable=True)  # drivers only see their own vehicle's notices
+    dedupe_key = Column(String, nullable=True)
+    email_status = Column(
+        String, nullable=True
+    )  # sent | off | not_configured | failed | no_address
+    created_at = Column(String, nullable=False)
+    read_at = Column(String, nullable=True)
+
+
+class NotificationPreference(Base):
+    __tablename__ = "notification_preferences"
+    __table_args__ = (UniqueConstraint("portal", "tenant_id", "group_key"),)
+    id = Column(Integer, primary_key=True)
+    portal = Column(String, nullable=False)
+    tenant_id = Column(Integer, nullable=False, index=True)
+    group_key = Column(String, nullable=False)
+    in_app = Column(Boolean, nullable=False, default=True)
+    email = Column(Boolean, nullable=False, default=True)

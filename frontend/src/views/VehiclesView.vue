@@ -18,7 +18,7 @@
             placeholder="Araç plakası, marka, model veya şasi no ara..."
         /></UiField>
         <div class="customer-header-actions">
-          <NotificationBell v-if="!isSupplier" />
+          <NotificationBell />
           <div class="fleet-account">
             <span class="fleet-avatar">{{ userInitials }}</span
             ><span

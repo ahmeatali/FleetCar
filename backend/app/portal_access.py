@@ -55,6 +55,12 @@ def identify(request, value):
 
 
 def principal(request: Request, db):
+    from app.notifications import remember_actor
+
+    return remember_actor(db, _principal(request, db))
+
+
+def _principal(request: Request, db):
     header = request.headers.get("authorization", "")
     token = (
         header[7:]

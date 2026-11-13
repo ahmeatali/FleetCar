@@ -11,15 +11,7 @@
             placeholder="Plaka, müşteri, sözleşme, fatura, rapor ara..."
             @keydown.enter="searchAll"
         /></UiField>
-        <router-link
-          to="/supplier-portal/approvals"
-          class="sw-notification"
-          :aria-label="`Bildirimler: ${pendingApprovals} bekleyen onay`"
-          :title="`${pendingApprovals} bekleyen onay`"
-          ><NavIcon name="bell" size="24" /><b v-if="pendingApprovals">{{
-            pendingApprovals
-          }}</b></router-link
-        >
+        <NotificationBell portal="supplier" class="sw-notification" />
         <SupplierAiDocument
           v-if="showAiDocument && aiDocType && data"
           :doc-type="aiDocType"
@@ -641,6 +633,8 @@
               aria-controls="settings-integrations"
               @click="settingsTab = 'integrations'"
               >Entegrasyonlar</UiButton
+            ><router-link class="sw-button" to="/supplier-portal/notifications?tab=settings"
+              >Bildirimler</router-link
             >
           </div>
           <div
@@ -1556,6 +1550,7 @@ import SupplierApprovalCenter from '../components/SupplierApprovalCenter.vue'
 import SupplierProfileMenu from '../components/SupplierProfileMenu.vue'
 import NavIcon from '../components/NavIcon.vue'
 import SupplierAiInsights from '../components/SupplierAiInsights.vue'
+import NotificationBell from '../components/NotificationBell.vue'
 import SupplierAiDocument from '../components/SupplierAiDocument.vue'
 import { supplierApi, downloadSupplierCsv } from '../utils/supplierApi'
 import { supplierModules, roleLabels } from '../utils/supplierModules'
@@ -1769,11 +1764,6 @@ const currentMonthlyRent = computed(() =>
   analytics.value.cars
     .filter((v) => v.is_active && v.customer_id)
     .reduce((sum, v) => sum + num(v.monthly_rent), 0),
-)
-const pendingApprovals = computed(
-  () =>
-    data.value?.records.filter((r) => r.kind === 'approval' && r.status === 'Beklemede').length ||
-    0,
 )
 const dueServiceCars = computed(() =>
   analytics.value.cars.filter(
