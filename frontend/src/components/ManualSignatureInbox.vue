@@ -100,26 +100,75 @@ onMounted(load)
 </script>
 <style scoped>
 .manual-signature-inbox {
-  padding: 22px;
-  margin: 20px 0;
+  margin: var(--fr-space-4) 0;
+  padding: var(--fr-space-4) var(--fr-space-5);
+  background: var(--fr-surface) !important;
+  border: 1px solid var(--fr-border) !important;
+  border-radius: var(--fr-radius-lg) !important;
+  box-shadow: var(--fr-shadow-sm) !important;
+  color: var(--fr-text);
 }
 .manual-signature-inbox header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--fr-space-3);
+}
+.manual-signature-inbox h2 {
+  margin: 0;
+  font-size: var(--fr-text-lg);
+  font-weight: 700;
+  color: var(--fr-ink);
+}
+.manual-signature-inbox > p {
+  margin: 4px 0 var(--fr-space-3);
+  font-size: var(--fr-text-sm);
+  color: var(--fr-muted);
 }
 .manual-signature-inbox article {
-  padding: 14px;
-  margin: 12px 0;
-  border: 1px solid var(--border-color, #dde7f4);
-  border-radius: 10px;
-  font-size: 12px;
+  margin: var(--fr-space-3) 0 0;
+  padding: var(--fr-space-3) var(--fr-space-4);
+  border: 1px solid var(--fr-border);
+  border-radius: var(--fr-radius);
+  font-size: var(--fr-text-sm);
+}
+.manual-signature-inbox article strong {
+  color: var(--fr-ink);
 }
 .manual-signature-inbox p {
+  margin: 2px 0;
   overflow-wrap: anywhere;
-  line-height: 1.6;
+  line-height: 1.55;
+}
+.manual-signature-inbox summary {
+  margin: 4px 0;
+  color: var(--fr-primary);
+  font-weight: 600;
+  cursor: pointer;
 }
 .manual-signature-inbox button {
-  margin: 8px 8px 0 0;
+  min-height: 34px;
+  margin: 10px 8px 0 0;
+  padding: 0 12px;
+  border: 1px solid var(--fr-border-strong);
+  border-radius: var(--fr-radius);
+  background: var(--fr-surface);
+  color: var(--fr-ink);
+  font: inherit;
+  font-size: var(--fr-text-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+.manual-signature-inbox header button {
+  margin: 0;
+}
+.manual-signature-inbox button.btn-primary {
+  border-color: var(--fr-primary);
+  background: var(--fr-primary);
+  color: #fff;
+}
+.manual-signature-inbox button:disabled {
+  opacity: 0.55;
+  cursor: default;
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
   <header class="mobile-navigation-bar">
-    <router-link :to="supplier ? '/supplier-portal' : '/dashboard'" class="mobile-brand"
+    <router-link :to="homePath" class="mobile-brand"
       ><img
         class="customer-logo customer-logo--mobile"
         src="/fleetrent-logo-dark.png"
@@ -13,7 +13,7 @@
       class="mobile-menu-toggle"
       aria-controls="customer-menu"
       :aria-expanded="mobileOpen"
-      :aria-label="supplier ? 'Tedarikçi menüsünü aç' : 'Müşteri menüsünü aç'"
+      :aria-label="`${portalName} menüsünü aç`"
       @click="mobileOpen = true"
       >☰</UiButton
     >
@@ -28,11 +28,11 @@
     id="customer-menu"
     ref="menuPanel"
     class="portal-sidebar customer-navigation"
-    :class="{ 'mobile-open': mobileOpen, 'supplier-navigation': supplier }"
+    :class="{ 'mobile-open': mobileOpen, 'supplier-navigation': supplier || admin }"
     :inert="isMobile && !mobileOpen"
     :role="isMobile ? 'dialog' : undefined"
     :aria-modal="isMobile && mobileOpen ? 'true' : undefined"
-    :aria-label="supplier ? 'Tedarikçi menüsü' : 'Müşteri menüsü'"
+    :aria-label="`${portalName} menüsü`"
   >
     <UiButton
       ref="closeButton"
@@ -41,7 +41,7 @@
       @click="closeMenu"
       >×</UiButton
     >
-    <router-link :to="supplier ? '/supplier-portal' : '/dashboard'" class="fleet-brand"
+    <router-link :to="homePath" class="fleet-brand"
       ><img
         class="customer-logo"
         src="/fleetrent-logo-dark.png"
@@ -49,7 +49,7 @@
         width="188"
         height="46"
     /></router-link>
-    <nav :aria-label="supplier ? 'Tedarikçi menüsü' : 'Müşteri menüsü'">
+    <nav :aria-label="`${portalName} menüsü`">
       <ul class="fleet-menu">
         <li
           v-for="item in navigationEntries"
@@ -98,7 +98,9 @@
             class="fleet-nav-link"
             :class="{ selected: isSelected(item) }"
             :aria-current="isSelected(item) ? 'page' : undefined"
-            ><NavIcon class="nav-glyph" :label="item.label" />{{ item.label }}</router-link
+            ><NavIcon class="nav-glyph" :name="item.icon" :label="item.label" />{{
+              item.label
+            }}</router-link
           >
           <UiButton
             v-else
@@ -115,8 +117,9 @@
       </ul>
     </nav>
     <div class="account-actions">
-      <router-link v-if="!supplier" to="/profile">Profilim</router-link
-      ><span v-else>Tedarikçi Portalı</span><UiButton @click="logout">Çıkış Yap</UiButton>
+      <router-link v-if="!supplier && !admin" to="/profile">Profilim</router-link
+      ><span v-else>{{ portalName }}</span
+      ><UiButton @click="logout">Çıkış Yap</UiButton>
     </div>
   </aside>
 </template>
@@ -132,7 +135,21 @@ import { apiRequest } from '../api/http.js'
 import { supplierApi } from '../utils/supplierApi'
 import { clearSupplierSession } from '../api/partnerSession.js'
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
-const props = defineProps({ supplier: Boolean })
+const props = defineProps({ supplier: Boolean, admin: Boolean })
+// The admin portal's sections are tabs of one page, addressed by ?tab=.
+const adminItems = [
+  { label: 'Gelen Teklifler', icon: 'document', to: '/admin-portal' },
+  { label: 'Aktif Müşteriler', icon: 'users', to: '/admin-portal?tab=customers' },
+  { label: 'Araçlar', icon: 'car', to: '/admin-portal?tab=vehicles' },
+  { label: 'Tedarikçiler', icon: 'store', to: '/admin-portal?tab=suppliers' },
+  { label: 'Destek Kayıtları', icon: 'shield', to: '/admin-portal?tab=support' },
+]
+const portalName = computed(() =>
+  props.admin ? 'Yönetici Paneli' : props.supplier ? 'Tedarikçi Portalı' : 'Müşteri Portalı',
+)
+const homePath = computed(() =>
+  props.admin ? '/admin-portal' : props.supplier ? '/supplier-portal' : '/dashboard',
+)
 const route = useRoute(),
   router = useRouter()
 const expandedGroup = ref(null)
@@ -192,7 +209,9 @@ const customerItems = [
   { label: 'Bildirimler' },
 ]
 const customerLinks = customerItems.flatMap((item) => item.children || [item])
-const items = computed(() => (props.supplier ? supplierNavigation : customerLinks))
+const items = computed(() =>
+  props.admin ? adminItems : props.supplier ? supplierNavigation : customerLinks,
+)
 const accessPermissions = ref(null),
   canManageTeam = ref(true)
 const moduleForLink = (item) => {
@@ -236,6 +255,7 @@ const visibleLink = (item) => {
   return !accessPermissions.value || !module || accessPermissions.value[module]?.view
 }
 const navigationEntries = computed(() => {
+  if (props.admin) return adminItems
   const source = props.supplier ? supplierNavigationGroups : customerItems
   const visible = source
     .map((item) =>
@@ -248,6 +268,10 @@ const navigationEntries = computed(() => {
   return soon.length ? [...ready, { id: 'soon-heading', heading: 'Yakında' }, ...soon] : ready
 })
 const isSelected = (item) => {
+  if (props.admin) {
+    const tab = new URLSearchParams(item.to.split('?')[1] || '').get('tab') || 'quotes'
+    return route.path === '/admin-portal' && (route.query.tab || 'quotes') === tab
+  }
   if (props.supplier) {
     const [path, query] = item.to.split('?')
     if (query)
@@ -267,9 +291,7 @@ const isSelected = (item) => {
   )
 }
 const currentLabel = computed(
-  () =>
-    items.value.find((item) => item.to && isSelected(item))?.label ||
-    (props.supplier ? 'Tedarikçi Portalı' : 'Müşteri Portalı'),
+  () => items.value.find((item) => item.to && isSelected(item))?.label || portalName.value,
 )
 watch(
   () => [props.supplier, route.fullPath],
@@ -323,6 +345,8 @@ watch(
   },
 )
 async function loadAccess() {
+  // Admins see every section; there is no team policy to load.
+  if (props.admin) return
   const supplierPortal = props.supplier
   try {
     const access = await apiRequest(
@@ -357,6 +381,17 @@ onUnmounted(() => {
   if (mobileOpen.value) document.body.style.overflow = previousOverflow
 })
 const logout = async () => {
+  if (props.admin) {
+    try {
+      await apiRequest('/api/auth/logout', { method: 'POST', account: 'admin' })
+    } catch {
+      // An expired or unavailable server session must not prevent local logout.
+    }
+    localStorage.removeItem('fleetcar_admin_token')
+    localStorage.removeItem('fleetcar_admin_user')
+    router.push('/admin-login')
+    return
+  }
   if (props.supplier) {
     try {
       await supplierApi('/logout', { method: 'POST' })
