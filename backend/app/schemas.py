@@ -120,13 +120,31 @@ class VehicleCreate(BaseModel):
     inspection_date: str
     vehicle_segment: str
     vehicle_type: str
-    tire_change_date: str
-    last_service_date: str
-    last_service_mileage: int
+    tire_change_date: Optional[str] = None
+    last_service_date: Optional[str] = None
+    last_service_mileage: Optional[int] = None
     supplier_id: Optional[int] = None
     customer_id: Optional[int] = None
     gps_device_id: Optional[str] = None
     utts_code: Optional[str] = None
+    trim_code: Optional[str] = None
+    drive_type: Optional[str] = None
+    entry_mileage: Optional[int] = None
+    fuel_level: Optional[str] = None
+    engine_cc: Optional[int] = None
+    weight_kg: Optional[int] = None
+    tire_season: Optional[str] = None
+    purchase_date: Optional[str] = None
+    supply_type: Optional[str] = None
+    registration_owner: Optional[str] = None
+    purchase_vat_rate: Optional[float] = None
+    purchase_interest_rate: Optional[float] = None
+    purchased_from: Optional[str] = None
+    notes: Optional[str] = None
+    reserved_buyer_type: Optional[str] = None
+    reserved_customer_id: Optional[int] = None
+    reserved_buyer_name: Optional[str] = None
+    reserved_km: Optional[int] = None
 
 
 class VehicleResponse(BaseModel):
@@ -197,6 +215,24 @@ class VehicleResponse(BaseModel):
     removed_at: Optional[str] = None
     gps_device_id: Optional[str] = None
     utts_code: Optional[str] = None
+    trim_code: Optional[str] = None
+    drive_type: Optional[str] = None
+    entry_mileage: Optional[int] = None
+    fuel_level: Optional[str] = None
+    engine_cc: Optional[int] = None
+    weight_kg: Optional[int] = None
+    tire_season: Optional[str] = None
+    purchase_date: Optional[str] = None
+    supply_type: Optional[str] = None
+    registration_owner: Optional[str] = None
+    purchase_vat_rate: Optional[float] = None
+    purchase_interest_rate: Optional[float] = None
+    purchased_from: Optional[str] = None
+    notes: Optional[str] = None
+    reserved_buyer_type: Optional[str] = None
+    reserved_customer_id: Optional[int] = None
+    reserved_buyer_name: Optional[str] = None
+    reserved_km: Optional[int] = None
 
 
 class VehicleRemoval(BaseModel):
@@ -262,6 +298,24 @@ class VehicleUpdate(BaseModel):
     last_service_mileage: Optional[int] = None
     gps_device_id: Optional[str] = None
     utts_code: Optional[str] = None
+    trim_code: Optional[str] = None
+    drive_type: Optional[str] = None
+    entry_mileage: Optional[int] = None
+    fuel_level: Optional[str] = None
+    engine_cc: Optional[int] = None
+    weight_kg: Optional[int] = None
+    tire_season: Optional[str] = None
+    purchase_date: Optional[str] = None
+    supply_type: Optional[str] = None
+    registration_owner: Optional[str] = None
+    purchase_vat_rate: Optional[float] = None
+    purchase_interest_rate: Optional[float] = None
+    purchased_from: Optional[str] = None
+    notes: Optional[str] = None
+    reserved_buyer_type: Optional[str] = None
+    reserved_customer_id: Optional[int] = None
+    reserved_buyer_name: Optional[str] = None
+    reserved_km: Optional[int] = None
 
 
 class VehicleExpenseCreate(BaseModel):

@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from app import models
 from app.auth import hash_password, verify_password
+from app.common.plates import normalize_plate
 from app.database import SessionLocal, get_db
 from app.email_utils import (
     APP_BASE_URL,
@@ -131,6 +132,26 @@ app.add_middleware(
 )
 
 
+def normalize_stored_plates(db):
+    """One spelling for every stored plate ("34 ABC 123"). Idempotent; plates that are not
+    Turkish-format are left as they are. Driver assignments are compared without spaces."""
+    changed = False
+    for row in db.query(models.Vehicle).all():
+        fixed = normalize_plate(row.plate)
+        if fixed and fixed != row.plate:
+            row.plate = fixed
+            changed = True
+    for user in db.query(models.CustomerPortalUser).filter(
+        models.CustomerPortalUser.assigned_plate.isnot(None)
+    ):
+        fixed = normalize_plate(user.assigned_plate)
+        if fixed != user.assigned_plate:
+            user.assigned_plate = fixed
+            changed = True
+    if changed:
+        db.commit()
+
+
 def check_database_columns():
     db = SessionLocal()
     try:
@@ -144,6 +165,12 @@ def check_database_columns():
             if existing and "impersonated_by" not in existing:
                 db.execute(text(f"ALTER TABLE {table} ADD COLUMN impersonated_by INTEGER;"))
                 db.commit()
+        existing = [r[1] for r in db.execute(text("PRAGMA table_info(vehicles);")).fetchall()]
+        for column, kind in VEHICLE_EXTRA_FIELDS.items():
+            if existing and column not in existing:
+                db.execute(text(f"ALTER TABLE vehicles ADD COLUMN {column} {kind};"))
+        db.commit()
+        normalize_stored_plates(db)
     except Exception as e:
         print("Column migration notice:", e)
     finally:
@@ -270,6 +297,29 @@ def supplier_dict(s: models.Supplier) -> dict:
     }
 
 
+# Columns added after the original vehicle schema; listed once for the dict and the migration.
+VEHICLE_EXTRA_FIELDS = {
+    "trim_code": "VARCHAR",
+    "drive_type": "VARCHAR",
+    "entry_mileage": "INTEGER",
+    "fuel_level": "VARCHAR",
+    "engine_cc": "INTEGER",
+    "weight_kg": "INTEGER",
+    "tire_season": "VARCHAR",
+    "purchase_date": "VARCHAR",
+    "supply_type": "VARCHAR",
+    "registration_owner": "VARCHAR",
+    "purchase_vat_rate": "FLOAT",
+    "purchase_interest_rate": "FLOAT",
+    "purchased_from": "VARCHAR",
+    "notes": "TEXT",
+    "reserved_buyer_type": "VARCHAR",
+    "reserved_customer_id": "INTEGER",
+    "reserved_buyer_name": "VARCHAR",
+    "reserved_km": "INTEGER",
+}
+
+
 def vehicle_dict(v: models.Vehicle, db: Session = None) -> dict:
     d = {
         "id": v.id,
@@ -338,6 +388,8 @@ def vehicle_dict(v: models.Vehicle, db: Session = None) -> dict:
         "gps_device_id": getattr(v, "gps_device_id", None),
         "utts_code": getattr(v, "utts_code", None),
     }
+    for field in VEHICLE_EXTRA_FIELDS:
+        d[field] = getattr(v, field, None)
     if db:
         if v.customer_id:
             c = db.query(models.Customer).filter(models.Customer.id == v.customer_id).first()
@@ -824,11 +876,26 @@ def create_vehicle(vehicle: VehicleCreate, db: Session = Depends(get_db)):
             raise HTTPException(status_code=400, detail="Geçerli bir kiralama tedarikçisi seçin.")
     if cid is not None and not db.query(models.Customer).filter_by(id=cid).first():
         raise HTTPException(status_code=404, detail="Müşteri bulunamadı.")
+    reserved = vehicle.reserved_customer_id
+    if reserved is not None and not db.query(models.Customer).filter_by(id=reserved).first():
+        raise HTTPException(status_code=404, detail="Özel bilgilerdeki müşteri bulunamadı.")
+    # A vehicle that has not been serviced yet: its service and tyre history start on the day
+    # it joined the fleet, at the kilometre it came with.
+    start_day = (
+        vehicle.purchase_date or vehicle.registration_date or datetime.date.today().isoformat()
+    )
+    start_km = vehicle.entry_mileage if vehicle.entry_mileage is not None else vehicle.mileage
+    if not vehicle.last_service_date:
+        vehicle.last_service_date = start_day
+    if vehicle.last_service_mileage is None:
+        vehicle.last_service_mileage = start_km
+    if not vehicle.tire_change_date:
+        vehicle.tire_change_date = start_day
 
     v = models.Vehicle(
         id=vehicle.chassis_no,
         chassis_no=vehicle.chassis_no,
-        plate=vehicle.plate.upper(),
+        plate=normalize_plate(vehicle.plate),
         brand=vehicle.brand,
         model=vehicle.model,
         year=vehicle.year,
@@ -856,7 +923,7 @@ def create_vehicle(vehicle: VehicleCreate, db: Session = Depends(get_db)):
     for field, value in vehicle.model_dump(exclude_unset=True).items():
         if hasattr(v, field):
             setattr(v, field, value)
-    v.plate = vehicle.plate.strip().upper()
+    v.plate = normalize_plate(vehicle.plate)
     db.add(v)
     db.flush()
     db.add(
@@ -886,6 +953,8 @@ def update_vehicle(
     if supplier_id is not None and v.supplier_id != supplier_id:
         raise HTTPException(status_code=404, detail="Araç bulunamadı.")
     update_data = vehicle_update.model_dump(exclude_unset=True)
+    if update_data.get("plate"):
+        update_data["plate"] = normalize_plate(update_data["plate"])
     if supplier_id is not None:
         update_data.pop("supplier_id", None)
         update_data.pop("customer_id", None)
@@ -3047,7 +3116,7 @@ def create_customer_user(payload: dict, db: Session = Depends(get_db)):
         password_hash=hash_password(payload["password"]),
         phone=payload.get("phone"),
         role=payload.get("role", "Sürücü"),
-        assigned_plate=payload.get("assigned_plate"),
+        assigned_plate=normalize_plate(payload.get("assigned_plate")) or None,
         is_active=payload.get("is_active", True),
         is_email_verified=False,
         verification_token=verification_token,
@@ -3099,7 +3168,10 @@ def update_customer_user(
         email_changed = False
     for key in ("name", "email", "phone", "role", "assigned_plate", "is_active"):
         if key in payload:
-            setattr(user, key, payload[key])
+            value = payload[key]
+            if key == "assigned_plate":
+                value = normalize_plate(value) or None
+            setattr(user, key, value)
     if payload.get("password"):
         if len(payload["password"]) < 8:
             raise HTTPException(status_code=422, detail="Şifre en az 8 karakter olmalıdır.")

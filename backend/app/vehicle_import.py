@@ -16,6 +16,7 @@ from xml.etree import ElementTree as ET
 from fastapi import HTTPException
 
 from app import models as m
+from app.common.plates import normalize_plate
 from app.common.time import stamp
 
 MAX_BYTES = 5 * 1024 * 1024
@@ -198,10 +199,6 @@ def parse_int(value):
         return "invalid"
 
 
-def normalize_plate(value):
-    raw = re.sub(r"\s+", "", str(value or "")).upper().replace("İ", "I")
-    match = re.fullmatch(r"(\d{2})([A-Z]{1,3})(\d{2,5})", raw)
-    return " ".join(match.groups()) if match else raw
 
 
 def split_type(text, year):

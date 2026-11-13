@@ -441,289 +441,27 @@
     </section>
   </UiModal>
   <!-- Add Vehicle Modal -->
-  <UiModal v-if="showAddModal" class="modal-overlay" @close="showAddModal = false">
-    <div class="glass-panel modal-content fade-in-up" style="max-width: 650px; padding: 30px">
-      <h2 class="gradient-brand" style="margin-bottom: 20px">Yeni Araç Ekle</h2>
-
-      <p v-if="isSupplier" class="assignment-note">
-        Araç önce tedarikçi filonuza kaydedilir. Ardından Müşteriye Ata işlemiyle müşterinizi
-        seçebilirsiniz.
-      </p>
-      <form @submit.prevent="addVehicle">
-        <div style="max-height: 65vh; overflow-y: auto; padding-right: 10px">
-          <!-- Section 1: Genel Bilgiler -->
-          <h3 class="form-section-title">🚗 Genel Bilgiler</h3>
-          <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr">
-            <div class="form-group">
-              <UiField class="form-label">Plaka</UiField>
-              <input
-                type="text"
-                v-model="newVehicleForm.plate"
-                required
-                class="form-input"
-                placeholder="34 AAA 000"
-                style="text-transform: uppercase"
-              />
-            </div>
-            <div class="form-group">
-              <UiField class="form-label">Üretim Yılı</UiField>
-              <input
-                type="number"
-                min="2010"
-                max="2027"
-                v-model.number="newVehicleForm.year"
-                required
-                class="form-input"
-                placeholder="2024"
-              />
-            </div>
-          </div>
-
-          <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr">
-            <div class="form-group">
-              <UiField class="form-label">Marka</UiField>
-              <input
-                type="text"
-                v-model="newVehicleForm.brand"
-                required
-                class="form-input"
-                placeholder="Renault"
-              />
-            </div>
-            <div class="form-group">
-              <UiField class="form-label">Model</UiField>
-              <input
-                type="text"
-                v-model="newVehicleForm.model"
-                required
-                class="form-input"
-                placeholder="Clio"
-              />
-            </div>
-          </div>
-          <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr">
-            <div class="form-group">
-              <UiField class="form-label">Versiyon</UiField
-              ><input
-                v-model="newVehicleForm.version"
-                class="form-input"
-                placeholder="1.5 Passion X-Pack"
-              />
-            </div>
-            <div class="form-group">
-              <UiField class="form-label">Motor No</UiField
-              ><input
-                v-model="newVehicleForm.engine_no"
-                class="form-input"
-                placeholder="22R-1234567"
-              />
-            </div>
-          </div>
-          <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr">
-            <div class="form-group">
-              <UiField class="form-label">Renk</UiField
-              ><input v-model="newVehicleForm.color" class="form-input" placeholder="Beyaz" />
-            </div>
-            <div class="form-group">
-              <UiField class="form-label">Sözleşme Başlangıcı</UiField
-              ><input v-model="newVehicleForm.contract_start_date" type="date" class="form-input" />
-            </div>
-          </div>
-          <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr">
-            <div class="form-group">
-              <UiField class="form-label">Sözleşme Bitişi</UiField
-              ><input v-model="newVehicleForm.contract_end_date" type="date" class="form-input" />
-            </div>
-            <div class="form-group">
-              <UiField class="form-label">Aylık Kira Bedeli (TL)</UiField
-              ><input
-                v-model.number="newVehicleForm.monthly_rent"
-                type="number"
-                min="0"
-                step="0.01"
-                class="form-input"
-              />
-            </div>
-          </div>
-          <div class="form-group">
-            <UiField class="form-label">Aylık Km Limiti</UiField
-            ><input
-              v-model.number="newVehicleForm.monthly_km_limit"
-              type="number"
-              min="0"
-              class="form-input"
-            />
-          </div>
-
-          <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr">
-            <div class="form-group">
-              <UiField class="form-label">Araç Segmenti</UiField>
-              <select v-model="newVehicleForm.vehicle_segment" class="form-select">
-                <option value="A">A Segmenti</option>
-                <option value="B">B Segmenti</option>
-                <option value="C">C Segmenti</option>
-                <option value="D">D Segmenti</option>
-                <option value="E">E Segmenti</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <UiField class="form-label">Araç Tipi</UiField>
-              <select v-model="newVehicleForm.vehicle_type" class="form-select">
-                <option value="Sedan">Sedan</option>
-                <option value="SUV">SUV</option>
-                <option value="Hatchback">Hatchback</option>
-                <option value="Hafif Ticari">Hafif Ticari</option>
-                <option value="Station Wagon">Station Wagon</option>
-              </select>
-            </div>
-          </div>
-
-          <div
-            class="grid-2"
-            style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px"
-          >
-            <div class="form-group">
-              <UiField class="form-label">Yakıt Tipi</UiField>
-              <select v-model="newVehicleForm.fuel" class="form-select">
-                <option value="Benzin">Benzin</option>
-                <option value="Dizel">Dizel</option>
-                <option value="Hibrit">Hibrit</option>
-                <option value="Elektrik">Elektrik</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <UiField class="form-label">Güncel KM</UiField>
-              <input
-                type="number"
-                min="0"
-                v-model.number="newVehicleForm.mileage"
-                required
-                class="form-input"
-                placeholder="15000"
-              />
-            </div>
-          </div>
-
-          <!-- Section 2: Tescil ve Hukuki -->
-          <h3 class="form-section-title">📋 Tescil & Muayene Bilgileri</h3>
-          <div class="grid-2" style="gap: 15px; grid-template-columns: 1fr 1fr">
-            <div class="form-group">
-              <UiField class="form-label">Şase Numarası (Sicil No / Benzersiz ID)</UiField>
-              <input
-                type="text"
-                v-model="newVehicleForm.chassis_no"
-                required
-                class="form-input"
-                placeholder="VF3RENAULTME..."
-                style="text-transform: uppercase"
-              />
-            </div>
-            <div class="form-group">
-              <UiField class="form-label">Ruhsat Seri No</UiField>
-              <input
-                type="text"
-                v-model="newVehicleForm.license_serial_no"
-                required
-                class="form-input"
-                placeholder="AA123456"
-                style="text-transform: uppercase"
-              />
-            </div>
-          </div>
-
-          <div class="form-group" style="margin-bottom: 15px">
-            <UiField class="form-label">Muayene Tarihi</UiField>
-            <input
-              type="date"
-              v-model="newVehicleForm.inspection_date"
-              required
-              class="form-input"
-            />
-          </div>
-
-          <!-- Section 3: Bakım ve Lastik -->
-          <h3 class="form-section-title">⚙️ Servis & Lastik Durumu</h3>
-          <div
-            class="grid-3"
-            style="gap: 15px; grid-template-columns: 1fr 1fr 1fr; margin-bottom: 15px"
-          >
-            <div class="form-group">
-              <UiField class="form-label">Lastik Değ. Tarihi</UiField>
-              <input
-                type="date"
-                v-model="newVehicleForm.tire_change_date"
-                required
-                class="form-input"
-              />
-            </div>
-            <div class="form-group">
-              <UiField class="form-label">Son Servis Tarihi</UiField>
-              <input
-                type="date"
-                v-model="newVehicleForm.last_service_date"
-                required
-                class="form-input"
-              />
-            </div>
-            <div class="form-group">
-              <UiField class="form-label">Son Servis KM</UiField>
-              <input
-                type="number"
-                min="0"
-                v-model.number="newVehicleForm.last_service_mileage"
-                required
-                class="form-input"
-                placeholder="10000"
-              />
-            </div>
-          </div>
-
-          <!-- Section 4: GPS & UTTS Entegrasyon Bilgileri -->
-          <h3 class="form-section-title">📡 GPS & UTTS Entegrasyon Bilgileri</h3>
-          <div
-            class="grid-2"
-            style="gap: 15px; grid-template-columns: 1fr 1fr; margin-bottom: 15px"
-          >
-            <div class="form-group">
-              <UiField class="form-label">GPS Cihaz Kodu / IMEI (Harita Takip)</UiField>
-              <input
-                type="text"
-                v-model="newVehicleForm.gps_device_id"
-                class="form-input"
-                placeholder="Örn: GPS-TR-884920"
-              />
-            </div>
-            <div class="form-group">
-              <UiField class="form-label">UTTS Kodu (Ulusal Taşıt Tanıma Birimi ID)</UiField>
-              <input
-                type="text"
-                v-model="newVehicleForm.utts_code"
-                class="form-input"
-                placeholder="Örn: UTTS-34-89201"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div
-          style="
-            display: flex;
-            gap: 15px;
-            justify-content: flex-end;
-            margin-top: 20px;
-            border-top: 1px solid var(--border-color);
-            padding-top: 15px;
-          "
-        >
-          <UiButton type="button" @click="showAddModal = false" class="btn btn-secondary"
-            >İptal</UiButton
-          >
-          <UiButton type="submit" class="btn btn-primary" :disabled="saving">
-            {{ saving ? 'Kaydediliyor...' : 'Kaydet' }}
-          </UiButton>
-        </div>
-      </form>
-    </div>
+  <UiModal
+    v-if="showAddModal"
+    class="modal-overlay"
+    :busy="saving"
+    label="Yeni araç ekle"
+    @close="showAddModal = false"
+  >
+    <VehicleForm
+      :note="
+        isSupplier
+          ? 'Araç önce filonuza kaydedilir; ardından Müşteriye Ata ile müşterinize atayabilirsiniz.'
+          : ''
+      "
+      :is-supplier="isSupplier"
+      :saving="saving"
+      :branches="branches"
+      :customers="customers"
+      :initial="addPrefill"
+      @submit="addVehicle"
+      @cancel="showAddModal = false"
+    />
   </UiModal>
 
   <!-- Details / Edit Modal -->
@@ -1265,6 +1003,7 @@ import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'
 import SupplierVehicleImport from '../components/SupplierVehicleImport.vue'
+import VehicleForm from '../components/vehicles/VehicleForm.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -1422,31 +1161,31 @@ const filters = reactive({
   assignment: '',
 })
 
-const newVehicleForm = reactive({
-  plate: '',
-  brand: '',
-  model: '',
-  version: '',
-  engine_no: '',
-  year: 2024,
-  fuel: 'Benzin',
-  color: '',
-  contract_start_date: '',
-  contract_end_date: '',
-  monthly_rent: 0,
-  monthly_km_limit: 0,
-  mileage: 0,
-  chassis_no: '',
-  license_serial_no: '',
-  inspection_date: '',
-  vehicle_segment: 'C',
-  vehicle_type: 'Sedan',
-  tire_change_date: '',
-  last_service_date: '',
-  last_service_mileage: 0,
-  gps_device_id: '',
-  utts_code: '',
+// Supplier branches for the add form's location field (loaded when the form opens).
+const branches = ref([])
+// Segment and body type can be preset from a link (?add=1&segment=C&vehicle_type=SUV).
+const addPrefill = computed(() => {
+  const prefill = {}
+  if (!isSupplier.value || route.query.add !== '1') return prefill
+  if (['A', 'B', 'C', 'D', 'E', 'F'].includes(route.query.segment))
+    prefill.vehicle_segment = route.query.segment
+  if (typeof route.query.vehicle_type === 'string' && route.query.vehicle_type)
+    prefill.vehicle_type = route.query.vehicle_type
+  return prefill
 })
+watch(
+  showAddModal,
+  async (open) => {
+    if (!open || !isSupplier.value) return
+    try {
+      const overview = await supplierApi('/fleet/overview')
+      branches.value = (overview.branches || []).filter((b) => b.is_active !== false)
+    } catch {
+      branches.value = []
+    }
+  },
+  { immediate: true },
+)
 
 const fetchVehicles = async () => {
   loading.value = true
@@ -1486,12 +1225,12 @@ const fetchVehicles = async () => {
   }
 }
 
-const addVehicle = async () => {
+const addVehicle = async (formPayload, branchId = null) => {
   saving.value = true
   try {
     const customerId =
       localStorage.getItem('fleetcar_customer_id') || localStorage.getItem('customer_id')
-    const payload = { ...newVehicleForm }
+    const payload = { ...formPayload }
     if (isSupplier.value) {
       if (!supplierId) throw new Error('Tedarikçi bilgisi bulunamadı.')
       payload.supplier_id = supplierId
@@ -1515,7 +1254,16 @@ const addVehicle = async () => {
       vehicles.value.push(addedVehicle)
       focusedVehicleId.value = addedVehicle.id
       showAddModal.value = false
-      resetForm()
+      if (isSupplier.value && branchId) {
+        try {
+          await supplierApi(`/fleet/locations/${encodeURIComponent(addedVehicle.id)}`, {
+            method: 'PUT',
+            body: { home_branch_id: branchId, current_branch_id: branchId, version: 0 },
+          })
+        } catch {
+          notify('Araç kaydedildi ancak lokasyonu atanamadı. Lokasyonlar bölümünden atayın.')
+        }
+      }
       if (isSupplier.value) {
         feedback.value = `${addedVehicle.plate} filonuza eklendi. Müşteriye Ata işlemiyle atayabilirsiniz.`
         const target = customers.value.find((c) => String(c.id) === String(route.query.customer_id))
@@ -1534,32 +1282,6 @@ const addVehicle = async () => {
   } finally {
     saving.value = false
   }
-}
-
-const resetForm = () => {
-  newVehicleForm.plate = ''
-  newVehicleForm.brand = ''
-  newVehicleForm.model = ''
-  newVehicleForm.version = ''
-  newVehicleForm.engine_no = ''
-  newVehicleForm.year = 2024
-  newVehicleForm.fuel = 'Benzin'
-  newVehicleForm.color = ''
-  newVehicleForm.contract_start_date = ''
-  newVehicleForm.contract_end_date = ''
-  newVehicleForm.monthly_rent = 0
-  newVehicleForm.monthly_km_limit = 0
-  newVehicleForm.mileage = 0
-  newVehicleForm.chassis_no = ''
-  newVehicleForm.license_serial_no = ''
-  newVehicleForm.inspection_date = ''
-  newVehicleForm.vehicle_segment = 'C'
-  newVehicleForm.vehicle_type = 'Sedan'
-  newVehicleForm.tire_change_date = ''
-  newVehicleForm.last_service_date = ''
-  newVehicleForm.last_service_mileage = 0
-  newVehicleForm.gps_device_id = ''
-  newVehicleForm.utts_code = ''
 }
 
 const startEditingVehicle = () => {
@@ -1881,16 +1603,6 @@ const exportVehicles = () => {
 }
 
 onMounted(() => {
-  if (isSupplier.value && route.query.add === '1') {
-    if (['A', 'B', 'C', 'D', 'E'].includes(route.query.segment))
-      newVehicleForm.vehicle_segment = route.query.segment
-    if (
-      ['Sedan', 'SUV', 'Hatchback', 'Hafif Ticari', 'Station Wagon'].includes(
-        route.query.vehicle_type,
-      )
-    )
-      newVehicleForm.vehicle_type = route.query.vehicle_type
-  }
   fetchVehicles()
 })
 </script>
