@@ -90,6 +90,17 @@ export const iconPaths = {
   trash: ['M4 7h16', 'M9 7V4h6v3', 'M6 7l1 13h10l1-13', 'M10 11v6', 'M14 11v6'],
   camera: ['M4 8h3l2-3h6l2 3h3v11H4z', circle(12, 13, 3.5)],
   dot: [circle(12, 12, 3)],
+  plus: ['M12 5v14', 'M5 12h14'],
+  edit: ['M4 20h4l10-10-4-4L4 16z', 'M13.5 6.5l4 4'],
+  mail: ['M4 6h16v12H4z', 'M4 7l8 6 8-6'],
+  login: ['M10 4h9v16h-9', 'M4 12h10', 'M11 8l4 4-4 4'],
+  search: [circle(11, 11, 6.5), 'M16 16l4 4'],
+  refresh: ['M20 11a8 8 0 1 0-2.3 5.7', 'M20 5v6h-6'],
+  'arrow-left': ['M19 12H5', 'M11 6l-6 6 6 6'],
+  phone: [
+    'M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2',
+  ],
+  pin: ['M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z', circle(12, 10, 2.5)],
 }
 
 // Labels are matched first; the old glyph is the fallback so nothing renders empty.

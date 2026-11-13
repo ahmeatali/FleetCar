@@ -1,964 +1,589 @@
 <template>
-  <div class="app-bg-glow"></div>
-  <div class="portal-layout">
-    <!-- Admin Sidebar -->
-    <aside class="portal-sidebar admin-sidebar">
-      <router-link to="/admin-portal" class="nav-logo" style="margin-bottom: 25px">
-        <img class="brand-logo-image" src="/fleetrent-logo.jpeg" alt="FleetRent" />
-      </router-link>
+  <div class="portal-layout fleet-dashboard admin-portal">
+    <Sidebar admin />
 
-      <div class="admin-profile">
-        <div class="avatar"><NavIcon name="settings" size="20" /></div>
-        <div>
-          <h4 style="font-size: 0.85rem; font-weight: 600">Yönetici Paneli</h4>
-          <span style="font-size: 0.7rem; color: #047857; font-weight: 600"
-            >✓ Tam Yetkili Yönetici</span
-          >
-        </div>
-      </div>
-
-      <ul class="sidebar-menu">
-        <li v-for="tab in adminTabs" :key="tab.id">
-          <a
-            href="#"
-            @click.prevent="openTab(tab.id)"
-            class="sidebar-link"
-            :class="{ 'active-admin': activeTab === tab.id }"
-            :aria-current="activeTab === tab.id ? 'page' : undefined"
-          >
-            <NavIcon class="icon" :name="tab.icon" size="18" />
-            <span>{{ tab.label }}</span>
-          </a>
-        </li>
-      </ul>
-
-      <div style="margin-top: auto">
-        <UiButton
-          @click="logout"
-          class="sidebar-link"
-          style="
-            width: 100%;
-            border: none;
-            background: transparent;
-            cursor: pointer;
-            text-align: left;
-            color: #fecdd3;
-          "
+    <main class="portal-main adm">
+      <!-- 1. QUOTES -->
+      <template v-if="activeTab === 'quotes'">
+        <PageHeader
+          eyebrow="Yönetici Paneli"
+          title="Müşteri Kiralama Teklifleri"
+          description="Ana sayfadan gelen teklif taleplerini inceleyin, tedarikçi tekliflerini görün veya yeni talep oluşturun."
         >
-          <NavIcon class="icon" name="return" size="18" />
-          <span>Çıkış Yap</span>
-        </UiButton>
-      </div>
-    </aside>
-
-    <!-- Main Content Area -->
-    <main class="portal-main fade-in-up">
-      <!-- 1. QUOTES TAB -->
-      <div v-if="activeTab === 'quotes'">
-        <header class="dashboard-header">
-          <div>
-            <h1>Müşteri Kiralama Teklifleri</h1>
-            <p style="color: var(--text-muted); font-size: 0.95rem">
-              Anasayfadan gelen dinamik teklif taleplerini inceleyin veya manuel yeni talep
-              oluşturun.
-            </p>
-          </div>
-          <UiButton
-            @click="showAddQuoteModal = true"
-            class="btn btn-primary"
-            style="
-              background: linear-gradient(135deg, #7c3aed, #db2777);
-              border: none;
-              box-shadow: 0 4px 15px rgba(124, 58, 237, 0.2);
-            "
-          >
-            ➕ Yeni Teklif Talebi Ekle
-          </UiButton>
-        </header>
-
-        <!-- Stats Summary cards -->
-        <div
-          class="grid-4"
-          style="margin-top: 25px; gap: 15px; grid-template-columns: repeat(5, 1fr)"
-        >
-          <div class="glass-panel stat-card-new">
-            <div class="stat-icon-wrapper quote-purple">
-              <NavIcon name="document" size="22" />
-            </div>
-            <div class="stat-info">
-              <span class="stat-label">Toplam Talep</span>
-              <div class="stat-val-new">{{ quotes.length }} Adet</div>
-            </div>
-          </div>
-          <div class="glass-panel stat-card-new">
-            <div class="stat-icon-wrapper quote-blue">
-              <NavIcon name="store" size="22" />
-            </div>
-            <div class="stat-info">
-              <span class="stat-label">Gelen Tedarikçi Teklifi</span>
-              <div class="stat-val-new" style="color: #2563eb">
-                {{ totalSupplierBidsCount }} Adet
-              </div>
-            </div>
-          </div>
-          <div class="glass-panel stat-card-new">
-            <div class="stat-icon-wrapper quote-green">
-              <NavIcon name="check" size="22" />
-            </div>
-            <div class="stat-info">
-              <span class="stat-label">Kabul / İmzalandı</span>
-              <div class="stat-val-new" style="color: #047857">{{ acceptedQuotesCount }} Adet</div>
-            </div>
-          </div>
-          <div class="glass-panel stat-card-new">
-            <div
-              class="stat-icon-wrapper"
-              style="background: rgba(239, 68, 68, 0.1); color: #dc2626"
+          <template #actions>
+            <UiButton class="adm-btn primary" @click="showAddQuoteModal = true"
+              ><NavIcon name="plus" size="16" />Yeni Teklif Talebi</UiButton
             >
-              <NavIcon name="x-circle" size="22" />
-            </div>
-            <div class="stat-info">
-              <span class="stat-label">Reddedilen Teklif</span>
-              <div class="stat-val-new" style="color: #dc2626">{{ rejectedQuotesCount }} Adet</div>
-            </div>
-          </div>
-          <div class="glass-panel stat-card-new">
-            <div
-              class="stat-icon-wrapper"
-              style="background: rgba(100, 116, 139, 0.1); color: #64748b"
-            >
-              <NavIcon name="trash" size="22" />
-            </div>
-            <div class="stat-info">
-              <span class="stat-label">Silinen Talepler</span>
-              <div class="stat-val-new" style="color: #64748b">{{ deletedQuotesCount }} Adet</div>
-            </div>
-          </div>
+          </template>
+        </PageHeader>
+
+        <div class="adm-kpis">
+          <KpiCard label="Toplam Talep" :value="quotes.length" icon="document" tone="blue" />
+          <KpiCard
+            label="Gelen Tedarikçi Teklifi"
+            :value="totalSupplierBidsCount"
+            icon="store"
+            tone="teal"
+          />
+          <KpiCard
+            label="Kabul / İmzalandı"
+            :value="acceptedQuotesCount"
+            icon="check"
+            tone="green"
+          />
+          <KpiCard label="Reddedilen" :value="rejectedQuotesCount" icon="x-circle" tone="red" />
+          <KpiCard label="Silinen" :value="deletedQuotesCount" icon="trash" tone="gray" />
         </div>
 
-        <!-- Quotes Filter Bar -->
-        <div class="filter-bar glass-panel" style="margin-top: 20px">
-          <div class="filter-bar-inner">
-            <div class="filter-group">
-              <span class="filter-label">🔍</span>
+        <section class="adm-panel">
+          <div class="adm-toolbar">
+            <label class="adm-search">
+              <NavIcon name="search" size="16" />
               <input
                 v-model="quoteFilter.search"
-                class="filter-input"
-                placeholder="Şirket adı veya e-posta ara..."
+                type="search"
+                aria-label="Teklif ara"
+                placeholder="Şirket adı veya e-posta ara"
               />
-            </div>
-            <div class="filter-group">
-              <span class="filter-label">📊 Durum</span>
-              <div class="filter-pills" style="flex-wrap: wrap; gap: 4px">
-                <UiButton
-                  v-for="s in [
-                    'Tümü',
-                    'Teklif Bekleniyor',
-                    'Teklif Geldi',
-                    'Sözleşme Yapıldı',
-                    'Silinen',
-                  ]"
-                  :key="s"
-                  :class="['filter-pill', { 'filter-pill-active': quoteFilter.status === s }]"
-                  @click="quoteFilter.status = s"
-                  >{{ s }}</UiButton
-                >
-              </div>
-            </div>
-            <div class="filter-group">
-              <span class="filter-label">🚗 Segment</span>
-              <div class="filter-pills">
-                <UiButton
-                  v-for="seg in ['Tümü', 'A', 'B', 'C', 'D', 'E']"
-                  :key="seg"
-                  :class="['filter-pill', { 'filter-pill-active': quoteFilter.segment === seg }]"
-                  @click="quoteFilter.segment = seg"
-                  >{{ seg }}</UiButton
-                >
-              </div>
-            </div>
-            <div class="filter-group" style="margin-left: auto">
-              <span class="filter-result-count"
-                >{{ filteredQuotes.length }} / {{ quotes.length }} teklif</span
+            </label>
+            <div class="adm-chips" role="group" aria-label="Durum">
+              <span class="adm-chips-label">Durum</span>
+              <button
+                v-for="s in [
+                  'Tümü',
+                  'Teklif Bekleniyor',
+                  'Teklif Geldi',
+                  'Sözleşme Yapıldı',
+                  'Silinen',
+                ]"
+                :key="s"
+                type="button"
+                class="adm-chip"
+                :aria-pressed="quoteFilter.status === s"
+                @click="quoteFilter.status = s"
               >
+                {{ s }}
+              </button>
             </div>
+            <div class="adm-chips" role="group" aria-label="Segment">
+              <span class="adm-chips-label">Segment</span>
+              <button
+                v-for="seg in ['Tümü', 'A', 'B', 'C', 'D', 'E']"
+                :key="seg"
+                type="button"
+                class="adm-chip"
+                :aria-pressed="quoteFilter.segment === seg"
+                @click="quoteFilter.segment = seg"
+              >
+                {{ seg }}
+              </button>
+            </div>
+            <span class="adm-count">{{ filteredQuotes.length }} / {{ quotes.length }} teklif</span>
           </div>
-        </div>
 
-        <!-- Proposals Table -->
-        <div class="glass-panel" style="margin-top: 20px; padding: 15px">
-          <div v-if="loading" class="text-center" style="padding: 40px 0">Yükleniyor...</div>
-          <div v-else-if="filteredQuotes.length === 0" class="empty-state">
-            <p>Kriterlere uygun teklif bulunamadı.</p>
-          </div>
-          <div v-else class="custom-table-container">
-            <table class="custom-table">
+          <p v-if="loading" class="adm-loading">Yükleniyor…</p>
+          <EmptyState
+            v-else-if="filteredQuotes.length === 0"
+            icon="document"
+            title="Kriterlere uygun teklif yok"
+            :text="
+              quotes.length ? 'Filtreleri değiştirmeyi deneyin.' : 'Henüz teklif talebi gelmedi.'
+            "
+          />
+          <div v-else class="adm-table-wrap">
+            <table class="custom-table adm-table">
               <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Şirket Adı</th>
-                  <th>İletişim</th>
-                  <th>Araç Adedi</th>
-                  <th>Segment & Tip</th>
-                  <th>Süre & Yıllık KM</th>
-                  <th>Aylık Bedel & Tedarikçi Teklifleri</th>
+                  <th>Şirket</th>
+                  <th>Talep</th>
+                  <th>Süre / KM</th>
+                  <th>Aylık Bedel</th>
                   <th>Durum</th>
-                  <th>İşlemler</th>
+                  <th class="adm-actions-col">İşlemler</th>
                 </tr>
               </thead>
               <tbody>
                 <tr
                   v-for="quote in filteredQuotes"
                   :key="quote.id"
-                  :style="{
-                    opacity:
-                      quote.status === 'İstek Silindi' || quote.status === 'Silindi' ? 0.7 : 1,
-                  }"
+                  :class="{ 'is-muted': isDeletedQuote(quote) }"
                 >
                   <td>
-                    <strong>#{{ quote.id }}</strong>
-                    <div
-                      v-if="quote.status === 'İstek Silindi' || quote.status === 'Silindi'"
-                      style="font-size: 0.7rem; color: #dc2626; font-weight: 700; margin-top: 2px"
-                    >
-                      🗑️ Silindi
+                    <div class="adm-cell-title">{{ quote.company_name }}</div>
+                    <div class="adm-cell-sub">#{{ quote.id }} · {{ quote.email }}</div>
+                    <div v-if="quote.phone" class="adm-cell-sub">{{ quote.phone }}</div>
+                  </td>
+                  <td>
+                    <span class="adm-badge tone-blue">{{ quote.vehicle_count }} araç</span>
+                    <div class="adm-cell-sub">
+                      {{ quote.vehicle_segment }} · {{ quote.vehicle_type }}
                     </div>
                   </td>
                   <td>
-                    <strong>{{ quote.company_name }}</strong>
-                  </td>
-                  <td>
-                    <div style="font-size: 0.85rem; font-weight: 500">{{ quote.email }}</div>
-                    <div style="font-size: 0.75rem; color: var(--text-dark)">{{ quote.phone }}</div>
-                  </td>
-                  <td>
-                    <span
-                      class="plate-badge"
-                      style="
-                        background: rgba(124, 58, 237, 0.1);
-                        color: #7c3aed;
-                        font-weight: bold;
-                        border: 1px solid rgba(124, 58, 237, 0.2);
-                      "
-                      >{{ quote.vehicle_count }} Araç</span
-                    >
-                  </td>
-                  <td>
-                    <span style="font-weight: 700">{{ quote.vehicle_segment }}</span> -
-                    {{ quote.vehicle_type }}
-                  </td>
-                  <td>
-                    <div>{{ quote.duration_months }} Ay</div>
-                    <div style="font-size: 0.75rem; color: var(--text-dark)">
-                      {{ quote.estimated_annual_mileage?.toLocaleString() }} km/yıl
+                    <div>{{ quote.duration_months }} ay</div>
+                    <div class="adm-cell-sub">
+                      {{ quote.estimated_annual_mileage?.toLocaleString('tr-TR') }} km/yıl
                     </div>
                   </td>
                   <td>
-                    <strong style="color: #7c3aed"
-                      >₺{{ quote.monthly_price_try?.toLocaleString() }}</strong
-                    >
-                    <div v-if="quote.bids && quote.bids.length > 0" style="margin-top: 4px">
-                      <span
-                        style="
-                          background: rgba(16, 185, 129, 0.1);
-                          color: #047857;
-                          border: 1px solid rgba(16, 185, 129, 0.25);
-                          font-size: 0.72rem;
-                          font-weight: 700;
-                          padding: 2px 8px;
-                          border-radius: 12px;
-                          display: inline-flex;
-                          align-items: center;
-                          gap: 4px;
-                        "
-                      >
-                        🏢 {{ quote.bids.length }} Tedarikçi Teklifi Verildi
-                      </span>
-                    </div>
-                    <div v-else style="font-size: 0.72rem; color: #627793; margin-top: 4px">
-                      ⏳ Tedarikçi Teklifi Yok
+                    <div class="adm-money">{{ money(quote.monthly_price_try) }}</div>
+                    <div class="adm-cell-sub">
+                      {{
+                        quote.bids?.length
+                          ? `${quote.bids.length} tedarikçi teklifi`
+                          : 'Tedarikçi teklifi yok'
+                      }}
                     </div>
                   </td>
                   <td>
                     <select
                       v-model="quote.status"
+                      class="adm-status"
+                      :class="`tone-${quoteTone(quote.status)}`"
+                      :aria-label="`${quote.company_name} teklif durumu`"
                       @change="onStatusChange(quote.id, quote.status)"
-                      class="form-select status-select"
-                      :class="getStatusClass(quote.status)"
                     >
-                      <option value="Teklif Bekleniyor">⏳ Teklif Bekleniyor</option>
-                      <option value="Teklif Verildi">📩 Teklif Verildi</option>
-                      <option value="Değerlendirmede">🔍 Değerlendirmede</option>
-                      <option value="Kabul Edildi">✅ Kabul Edildi</option>
-                      <option value="Sözleşme İmzalandı">📝 Sözleşme İmzalandı</option>
-                      <option value="Reddedildi">❌ Reddedildi</option>
-                      <option value="İstek Silindi">🗑️ İstek Silindi</option>
+                      <option v-for="s in QUOTE_STATUSES" :key="s" :value="s">{{ s }}</option>
                     </select>
                   </td>
-                  <td>
-                    <div style="display: flex; gap: 8px">
+                  <td class="adm-actions-col">
+                    <div class="adm-actions">
+                      <UiButton class="adm-btn sm" @click="openQuoteBidsModal(quote)"
+                        ><NavIcon name="store" size="15" />Teklifler ({{
+                          quote.bids?.length || 0
+                        }})</UiButton
+                      >
                       <UiButton
+                        class="adm-btn sm ghost"
+                        :aria-label="`${quote.company_name} talebini düzenle`"
                         @click="openEditQuoteModal(quote)"
-                        class="btn btn-secondary"
-                        style="padding: 6px 12px; font-size: 0.8rem"
+                        ><NavIcon name="edit" size="15" />Düzenle</UiButton
                       >
-                        ⚙️ Düzenle
-                      </UiButton>
-                      <UiButton
-                        @click="openQuoteBidsModal(quote)"
-                        class="btn btn-secondary"
-                        style="
-                          padding: 6px 12px;
-                          font-size: 0.8rem;
-                          background: rgba(124, 58, 237, 0.08);
-                          color: #6d28d9;
-                          border-color: rgba(124, 58, 237, 0.25);
-                          font-weight: 700;
-                        "
-                      >
-                        🏢 Tedarikçi Teklifleri ({{ quote.bids ? quote.bids.length : 0 }})
-                      </UiButton>
                     </div>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
-        </div>
-      </div>
+        </section>
+      </template>
 
-      <!-- 2. CUSTOMERS TAB -->
-      <div v-if="activeTab === 'customers' && !showCustomerDetailsModal">
-        <header class="dashboard-header">
-          <div>
-            <h1>Aktif Müşteriler (Sözleşmeli Portföy)</h1>
-            <p style="color: var(--text-muted); font-size: 0.95rem">
-              Sadece kiralama sözleşmesi imzalanmış ve onaylanmış aktif kurumsal müşteriler.
-            </p>
-          </div>
-          <UiButton
-            @click="showAddCustomerModal = true"
-            class="btn btn-primary"
-            style="
-              background: linear-gradient(135deg, #059669, #047857);
-              border: none;
-              box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25);
-            "
-          >
-            ➕ Yeni Müşteri Ekle
-          </UiButton>
-        </header>
+      <!-- 2. CUSTOMERS -->
+      <template v-if="activeTab === 'customers' && !showCustomerDetailsModal">
+        <PageHeader
+          eyebrow="Yönetici Paneli"
+          title="Aktif Müşteriler"
+          description="Kiralama sözleşmesi imzalanmış ve onaylanmış kurumsal müşteriler."
+        >
+          <template #actions>
+            <UiButton class="adm-btn primary" @click="showAddCustomerModal = true"
+              ><NavIcon name="plus" size="16" />Yeni Müşteri</UiButton
+            >
+          </template>
+        </PageHeader>
 
-        <!-- Stats cards for customers -->
-        <div class="grid-3" style="margin-top: 25px; gap: 20px">
-          <div class="glass-panel stat-card-new">
-            <div class="stat-icon-wrapper quote-purple">
-              <NavIcon name="store" size="22" />
-            </div>
-            <div class="stat-info">
-              <span class="stat-label">Aktif Sözleşmeli Şirket</span>
-              <div class="stat-val-new">{{ customers.length }} Şirket</div>
-            </div>
-          </div>
-          <div class="glass-panel stat-card-new">
-            <div class="stat-icon-wrapper quote-blue">
-              <NavIcon name="car" size="22" />
-            </div>
-            <div class="stat-info">
-              <span class="stat-label">Toplam Filo Aracı</span>
-              <div class="stat-val-new">{{ totalCustomerVehicles }} Araç</div>
-            </div>
-          </div>
-          <div class="glass-panel stat-card-new">
-            <div class="stat-icon-wrapper quote-green">
-              <span>₺</span>
-            </div>
-            <div class="stat-info">
-              <span class="stat-label">Toplam Aktif Ciro</span>
-              <div class="stat-val-new" style="color: #047857">
-                ₺{{ totalCustomerRevenue.toLocaleString('tr-TR') }}
-              </div>
-            </div>
-          </div>
+        <div class="adm-kpis">
+          <KpiCard
+            label="Sözleşmeli Şirket"
+            :value="customers.length"
+            icon="briefcase"
+            tone="blue"
+          />
+          <KpiCard
+            label="Toplam Filo Aracı"
+            :value="totalCustomerVehicles"
+            icon="car"
+            tone="teal"
+          />
+          <KpiCard
+            label="Aylık Sözleşme Cirosu"
+            :value="`₺${totalCustomerRevenue.toLocaleString('tr-TR')}`"
+            icon="wallet"
+            tone="green"
+          />
         </div>
 
-        <!-- Customer Filter Bar -->
-        <div class="filter-bar glass-panel" style="margin-top: 20px">
-          <div class="filter-bar-inner">
-            <div class="filter-group">
-              <span class="filter-label">🔍</span>
+        <section class="adm-panel">
+          <div class="adm-toolbar">
+            <label class="adm-search">
+              <NavIcon name="search" size="16" />
               <input
                 v-model="customerFilter.search"
-                class="filter-input"
-                placeholder="Şirket adı, e-posta veya telefon..."
+                type="search"
+                aria-label="Müşteri ara"
+                placeholder="Şirket adı, e-posta veya telefon"
               />
-            </div>
-            <div class="filter-group">
-              <span class="filter-label">📦 Filo</span>
-              <div class="filter-pills">
-                <UiButton
-                  v-for="f in ['Tümü', 'Eksikli', 'Tam']"
-                  :key="f"
-                  :class="[
-                    'filter-pill',
-                    { 'filter-pill-active': customerFilter.fleetStatus === f },
-                  ]"
-                  @click="customerFilter.fleetStatus = f"
-                  >{{ f }}</UiButton
-                >
-              </div>
-            </div>
-            <div class="filter-group" style="margin-left: auto">
-              <span class="filter-result-count"
-                >{{ filteredCustomers.length }} / {{ customers.length }} müşteri</span
+            </label>
+            <div class="adm-chips" role="group" aria-label="Filo durumu">
+              <span class="adm-chips-label">Filo</span>
+              <button
+                v-for="f in ['Tümü', 'Eksikli', 'Tam']"
+                :key="f"
+                type="button"
+                class="adm-chip"
+                :aria-pressed="customerFilter.fleetStatus === f"
+                @click="customerFilter.fleetStatus = f"
               >
+                {{ f }}
+              </button>
             </div>
+            <span class="adm-count"
+              >{{ filteredCustomers.length }} / {{ customers.length }} müşteri</span
+            >
           </div>
-        </div>
 
-        <!-- Customers Table -->
-        <div class="glass-panel" style="margin-top: 20px; padding: 15px">
-          <div v-if="loading" class="text-center" style="padding: 40px 0">Yükleniyor...</div>
-          <div v-else-if="filteredCustomers.length === 0" class="empty-state">
-            <p>Kriterlere uygun müşteri bulunamadı.</p>
-          </div>
-          <div v-else class="custom-table-container">
-            <table class="custom-table">
+          <p v-if="loading" class="adm-loading">Yükleniyor…</p>
+          <EmptyState
+            v-else-if="filteredCustomers.length === 0"
+            icon="users"
+            title="Kriterlere uygun müşteri yok"
+            :text="
+              customers.length
+                ? 'Filtreleri değiştirmeyi deneyin.'
+                : 'Sözleşmesi imzalanan müşteriler burada listelenir.'
+            "
+          />
+          <div v-else class="adm-table-wrap">
+            <table class="custom-table adm-table">
               <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Şirket Adı</th>
-                  <th>Ticari Unvan</th>
+                  <th>Şirket</th>
                   <th>İletişim</th>
-                  <th>Filo Durumu</th>
-                  <th>Sözleşme Bedeli (Aylık)</th>
-                  <th>İmza Tarihi</th>
-                  <th>Portal Davet Durumu</th>
-                  <th style="width: 220px; text-align: right">İşlemler</th>
+                  <th>Filo</th>
+                  <th>Aylık Bedel</th>
+                  <th>Portal</th>
+                  <th class="adm-actions-col">İşlemler</th>
                 </tr>
               </thead>
               <tbody>
                 <tr
                   v-for="c in filteredCustomers"
                   :key="c.id"
-                  class="customer-row"
+                  class="is-clickable"
                   @click="openCustomerDetails(c)"
-                  style="cursor: pointer"
                 >
-                  <td>#{{ c.id }}</td>
                   <td>
-                    <div style="display: flex; align-items: center; gap: 10px">
-                      <div
-                        style="
-                          width: 36px;
-                          height: 36px;
-                          border-radius: 50%;
-                          background: linear-gradient(135deg, #059669, #047857);
-                          display: flex;
-                          align-items: center;
-                          justify-content: center;
-                          font-size: 0.9rem;
-                          font-weight: 700;
-                          color: #fff;
-                          flex-shrink: 0;
-                        "
-                      >
-                        {{ c.company_name?.charAt(0) }}
-                      </div>
-                      <div>
-                        <div style="font-weight: 700; color: var(--text-primary)">
+                    <div class="adm-entity">
+                      <span class="adm-avatar" aria-hidden="true">{{
+                        c.company_name?.charAt(0)
+                      }}</span>
+                      <span>
+                        <button type="button" class="adm-link" @click.stop="openCustomerDetails(c)">
                           {{ c.company_name }}
-                        </div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted)">
-                          Detayları gör →
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td
-                    style="
-                      font-size: 0.85rem;
-                      max-width: 150px;
-                      overflow: hidden;
-                      text-overflow: ellipsis;
-                      white-space: nowrap;
-                    "
-                  >
-                    {{ c.legal_title }}
-                  </td>
-                  <td>
-                    <div style="font-size: 0.85rem; font-weight: 500">{{ c.email }}</div>
-                    <div style="font-size: 0.75rem; color: var(--text-dark)">{{ c.phone }}</div>
-                  </td>
-                  <td>
-                    <div style="display: flex; flex-direction: column; gap: 4px; min-width: 140px">
-                      <div
-                        style="
-                          display: flex;
-                          justify-content: space-between;
-                          align-items: center;
-                          font-size: 0.8rem;
-                        "
-                      >
-                        <span style="color: var(--text-muted)">Sözleşme</span>
-                        <span style="font-weight: 700; color: var(--text-primary)"
-                          >{{ c.registered_vehicles_count }} araç</span
+                        </button>
+                        <span class="adm-cell-sub"
+                          >#{{ c.id
+                          }}<template v-if="c.legal_title"> · {{ c.legal_title }}</template></span
                         >
-                      </div>
-                      <div
-                        style="
-                          display: flex;
-                          justify-content: space-between;
-                          align-items: center;
-                          font-size: 0.8rem;
-                        "
-                      >
-                        <span style="color: var(--text-muted)">Tanımlı</span>
-                        <span style="font-weight: 700; color: #047857"
-                          >{{ c.actual_vehicle_count }} araç</span
-                        >
-                      </div>
-                      <div
-                        v-if="c.vehicle_deficit > 0"
-                        style="
-                          display: flex;
-                          justify-content: space-between;
-                          align-items: center;
-                          font-size: 0.8rem;
-                          background: rgba(239, 68, 68, 0.08);
-                          border-radius: 6px;
-                          padding: 2px 6px;
-                        "
-                      >
-                        <span style="color: #dc2626">Eksik</span>
-                        <span style="font-weight: 700; color: #dc2626"
-                          >{{ c.vehicle_deficit }} araç</span
-                        >
-                      </div>
-                      <div
-                        v-else
-                        style="
-                          display: flex;
-                          justify-content: space-between;
-                          align-items: center;
-                          font-size: 0.8rem;
-                          background: rgba(16, 185, 129, 0.08);
-                          border-radius: 6px;
-                          padding: 2px 6px;
-                        "
-                      >
-                        <span style="color: #047857">✓ Tam</span>
-                        <span style="font-weight: 700; color: #047857">Eksiksiz</span>
-                      </div>
+                      </span>
                     </div>
                   </td>
                   <td>
-                    <strong style="color: #047857"
-                      >₺{{ c.contract_amount?.toLocaleString() }}</strong
-                    >
+                    <div>{{ c.email }}</div>
+                    <div class="adm-cell-sub">{{ c.phone }}</div>
                   </td>
-                  <td>{{ formatDate(c.signed_at) }}</td>
                   <td>
-                    <span
-                      v-if="c.invitation_status === 'Aktif'"
-                      class="badge badge-active"
-                      style="font-size: 0.78rem"
+                    <div>{{ c.actual_vehicle_count }} / {{ c.registered_vehicles_count }} araç</div>
+                    <span v-if="c.vehicle_deficit > 0" class="adm-badge tone-amber"
+                      >{{ c.vehicle_deficit }} eksik</span
                     >
-                      ✓ Aktif (Şifre Koydu)
-                    </span>
-                    <span
-                      v-else-if="c.invitation_status === 'Davet Gönderildi'"
-                      class="badge badge-roadside"
-                      style="font-size: 0.78rem"
-                    >
-                      📧 Davet Edildi
-                    </span>
-                    <span
-                      v-else
-                      class="badge"
-                      style="
-                        background: rgba(148, 163, 184, 0.1);
-                        color: #64748b;
-                        font-size: 0.78rem;
-                      "
-                    >
-                      Davet Edilmedi
-                    </span>
+                    <span v-else class="adm-badge tone-green">Tam</span>
                   </td>
-                  <td style="text-align: right">
-                    <div style="display: flex; gap: 6px; justify-content: flex-end">
+                  <td>
+                    <div class="adm-money">{{ money(c.contract_amount) }}</div>
+                    <div v-if="c.signed_at" class="adm-cell-sub">
+                      İmza {{ formatDate(c.signed_at) }}
+                    </div>
+                  </td>
+                  <td>
+                    <span class="adm-badge" :class="`tone-${inviteTone(c.invitation_status)}`">{{
+                      inviteLabel(c.invitation_status)
+                    }}</span>
+                  </td>
+                  <td class="adm-actions-col">
+                    <div class="adm-actions">
                       <UiButton
-                        @click.stop="enterAccount('customer', c.id, c.company_name)"
-                        class="btn btn-secondary"
-                        style="
-                          padding: 6px 12px;
-                          font-size: 0.78rem;
-                          border-color: #0d9488;
-                          color: #ffffff;
-                          background: #0d9488;
-                          font-weight: 700;
-                        "
+                        class="adm-btn sm teal"
                         title="Destek için bu müşterinin portalına gir"
+                        @click.stop="enterAccount('customer', c.id, c.company_name)"
+                        ><NavIcon name="login" size="15" />Hesaba Gir</UiButton
                       >
-                        Hesaba Gir
-                      </UiButton>
-                      <UiButton
-                        @click.stop="sendCustomerInvite(c)"
-                        class="btn btn-secondary"
-                        style="
-                          padding: 6px 10px;
-                          font-size: 0.78rem;
-                          border-color: rgba(124, 58, 237, 0.3);
-                          color: #7c3aed;
-                          background: rgba(124, 58, 237, 0.06);
-                          font-weight: 600;
-                        "
+                      <UiButton class="adm-btn sm ghost" @click.stop="sendCustomerInvite(c)"
+                        ><NavIcon name="mail" size="15" />{{
+                          c.invitation_status === 'Davet Gönderildi' ? 'Yeniden Davet' : 'Davet Et'
+                        }}</UiButton
                       >
-                        {{
-                          c.invitation_status === 'Davet Gönderildi'
-                            ? '🔄 Yeniden Davet Et'
-                            : '✉️ Davet Et'
-                        }}
-                      </UiButton>
                       <UiButton
+                        class="adm-btn sm ghost icon"
+                        :aria-label="`${c.company_name} müşterisini düzenle`"
+                        title="Düzenle"
                         @click.stop="openEditCustomerModal(c)"
-                        class="btn btn-secondary"
-                        style="padding: 6px 10px; font-size: 0.78rem"
-                      >
-                        ⚙️ Düzenle
-                      </UiButton>
+                        ><NavIcon name="edit" size="15"
+                      /></UiButton>
                       <UiButton
+                        class="adm-btn sm danger icon"
+                        :aria-label="`${c.company_name} müşterisini sil`"
+                        title="Sil"
                         @click.stop="deleteCustomer(c)"
-                        class="btn btn-secondary"
-                        style="
-                          padding: 6px 10px;
-                          font-size: 0.78rem;
-                          border-color: rgba(239, 68, 68, 0.3);
-                          color: #dc2626;
-                          background: rgba(239, 68, 68, 0.06);
-                          font-weight: 600;
-                        "
-                      >
-                        🗑️ Sil
-                      </UiButton>
+                        ><NavIcon name="trash" size="15"
+                      /></UiButton>
                     </div>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
-        </div>
-      </div>
+        </section>
+      </template>
 
-      <!-- CUSTOMER DETAIL DASHBOARD (fullscreen panel) -->
-      <div
-        v-if="showCustomerDetailsModal && selectedCustomerDetails"
-        class="customer-detail-dashboard fade-in-up"
+      <!-- Customer detail -->
+      <template
+        v-if="activeTab === 'customers' && showCustomerDetailsModal && selectedCustomerDetails"
       >
-        <!-- Back Header -->
-        <div class="cd-topbar">
-          <UiButton @click="closeCustomerDetails" class="cd-back-btn">
-            ← Müşteri Listesine Dön
-          </UiButton>
-          <div class="cd-topbar-actions">
+        <button type="button" class="adm-back" @click="closeCustomerDetails">
+          <NavIcon name="arrow-left" size="16" />Müşteri listesi
+        </button>
+        <PageHeader
+          :title="selectedCustomerDetails.company_name"
+          :description="selectedCustomerDetails.legal_title"
+          eyebrow="Müşteri"
+        >
+          <template #actions>
             <UiButton
-              @click.stop="openEditCustomerModal(selectedCustomerDetails)"
-              class="btn btn-secondary"
-              style="font-size: 0.85rem"
+              class="adm-btn teal"
+              @click="
+                enterAccount(
+                  'customer',
+                  selectedCustomerDetails.id,
+                  selectedCustomerDetails.company_name,
+                )
+              "
+              ><NavIcon name="login" size="16" />Hesaba Gir</UiButton
             >
-              ⚙️ Müşteri Düzenle
-            </UiButton>
-          </div>
+            <UiButton class="adm-btn ghost" @click="openEditCustomerModal(selectedCustomerDetails)"
+              ><NavIcon name="edit" size="16" />Düzenle</UiButton
+            >
+          </template>
+        </PageHeader>
+        <ul class="adm-contact">
+          <li v-if="selectedCustomerDetails.email">
+            <NavIcon name="mail" size="15" />{{ selectedCustomerDetails.email }}
+          </li>
+          <li v-if="selectedCustomerDetails.phone">
+            <NavIcon name="phone" size="15" />{{ selectedCustomerDetails.phone }}
+          </li>
+          <li v-if="selectedCustomerDetails.address">
+            <NavIcon name="pin" size="15" />{{ selectedCustomerDetails.address }}
+          </li>
+        </ul>
+        <div class="adm-kpis">
+          <KpiCard label="Kayıtlı Araç" :value="customerVehicles.length" icon="car" tone="blue" />
+          <KpiCard
+            label="Aylık Sözleşme"
+            :value="`₺${(selectedCustomerDetails.contract_amount || 0).toLocaleString('tr-TR')}`"
+            icon="wallet"
+            tone="green"
+          />
+          <KpiCard
+            label="İmza Tarihi"
+            :value="formatDate(selectedCustomerDetails.signed_at)"
+            icon="calendar"
+            tone="violet"
+          />
+          <KpiCard
+            label="Servis Kaydı"
+            :value="customerServices.length"
+            icon="wrench"
+            tone="amber"
+          />
         </div>
 
-        <!-- Company Hero -->
-        <div class="cd-hero glass-panel">
-          <div class="cd-hero-avatar">{{ selectedCustomerDetails.company_name?.charAt(0) }}</div>
-          <div class="cd-hero-info">
-            <h2 class="cd-company-name">{{ selectedCustomerDetails.company_name }}</h2>
-            <p class="cd-legal-title">{{ selectedCustomerDetails.legal_title }}</p>
-            <div class="cd-contact-row">
-              <span>✉️ {{ selectedCustomerDetails.email }}</span>
-              <span>📞 {{ selectedCustomerDetails.phone }}</span>
-              <span v-if="selectedCustomerDetails.address"
-                >📍 {{ selectedCustomerDetails.address }}</span
-              >
-            </div>
+        <section class="adm-panel">
+          <div class="adm-tabs" role="tablist" aria-label="Müşteri ayrıntıları">
+            <button
+              type="button"
+              role="tab"
+              :aria-selected="detailTab === 'vehicles'"
+              class="adm-tab"
+              @click="detailTab = 'vehicles'"
+            >
+              Araçlar <span>{{ customerVehicles.length }}</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              :aria-selected="detailTab === 'services'"
+              class="adm-tab"
+              @click="detailTab = 'services'"
+            >
+              Servis Geçmişi <span>{{ customerServices.length }}</span>
+            </button>
           </div>
-          <div class="cd-hero-badges">
-            <div class="cd-hero-badge cd-badge-green">
-              <div class="cd-badge-label">Kayıtlı Araç</div>
-              <div class="cd-badge-value">{{ customerVehicles.length }}</div>
-            </div>
-            <div class="cd-hero-badge cd-badge-purple">
-              <div class="cd-badge-label">Aylık Sözleşme</div>
-              <div class="cd-badge-value">
-                ₺{{ selectedCustomerDetails.contract_amount?.toLocaleString('tr-TR') }}
-              </div>
-            </div>
-            <div class="cd-hero-badge cd-badge-blue">
-              <div class="cd-badge-label">İmza Tarihi</div>
-              <div class="cd-badge-value">{{ formatDate(selectedCustomerDetails.signed_at) }}</div>
-            </div>
-            <div class="cd-hero-badge cd-badge-amber">
-              <div class="cd-badge-label">Toplam Servis</div>
-              <div class="cd-badge-value">{{ customerServices.length }}</div>
-            </div>
-          </div>
-        </div>
 
-        <!-- Tabs -->
-        <div class="cd-tabs">
-          <UiButton
-            :class="['cd-tab', { 'cd-tab-active': detailTab === 'vehicles' }]"
-            @click="detailTab = 'vehicles'"
-          >
-            🚗 Araçlar ({{ customerVehicles.length }})
-          </UiButton>
-          <UiButton
-            :class="['cd-tab', { 'cd-tab-active': detailTab === 'services' }]"
-            @click="detailTab = 'services'"
-          >
-            🔧 Servis Geçmişi ({{ customerServices.length }})
-          </UiButton>
-        </div>
-
-        <!-- VEHICLES TAB -->
-        <div v-if="detailTab === 'vehicles'" class="cd-tab-content">
-          <div v-if="customerVehicles.length === 0" class="empty-state">
-            <p>Bu müşteriye ait kayıtlı araç bulunamadı.</p>
-          </div>
-          <div v-else class="cd-vehicle-grid">
-            <div v-for="v in customerVehicles" :key="v.id" class="cd-vehicle-card glass-panel">
-              <div class="cd-vehicle-header">
-                <div class="cd-plate">{{ v.plate }}</div>
-                <span
-                  class="badge"
-                  :class="
-                    v.status === 'Aktif'
-                      ? 'badge-active'
-                      : v.status === 'Serviste'
-                        ? 'badge-service'
-                        : 'badge-roadside'
-                  "
-                  style="font-size: 0.75rem"
-                  >{{ v.status }}</span
-                >
-              </div>
-              <div class="cd-vehicle-title">{{ v.brand }} {{ v.model }} ({{ v.year }})</div>
-              <div class="cd-vehicle-details">
-                <div class="cd-vehicle-row">
-                  <span class="cd-vd-label">Segment / Tip</span>
-                  <span class="cd-vd-val">{{ v.vehicle_segment }} / {{ v.vehicle_type }}</span>
-                </div>
-                <div class="cd-vehicle-row">
-                  <span class="cd-vd-label">Yakıt</span>
-                  <span class="cd-vd-val">{{ v.fuel }}</span>
-                </div>
-                <div class="cd-vehicle-row">
-                  <span class="cd-vd-label">Kilometre</span>
-                  <span class="cd-vd-val" style="color: #7c3aed; font-weight: 700"
-                    >{{ v.mileage?.toLocaleString('tr-TR') }} km</span
-                  >
-                </div>
-                <div class="cd-vehicle-row">
-                  <span class="cd-vd-label">Muayene Tarihi</span>
-                  <span class="cd-vd-val">{{ v.inspection_date || '—' }}</span>
-                </div>
-                <div class="cd-vehicle-row">
-                  <span class="cd-vd-label">Son Servis</span>
-                  <span class="cd-vd-val">{{ v.last_service_date || '—' }}</span>
-                </div>
-                <div class="cd-vehicle-row">
-                  <span class="cd-vd-label">Şase No</span>
-                  <span class="cd-vd-val" style="font-family: monospace; font-size: 0.78rem">{{
-                    v.chassis_no
+          <template v-if="detailTab === 'vehicles'">
+            <EmptyState
+              v-if="customerVehicles.length === 0"
+              icon="car"
+              title="Bu müşteriye ait kayıtlı araç yok"
+            />
+            <div v-else class="adm-vehicle-grid">
+              <article v-for="v in customerVehicles" :key="v.id" class="adm-vehicle">
+                <header>
+                  <span class="adm-plate">{{ v.plate }}</span>
+                  <span class="adm-badge" :class="`tone-${vehicleTone(v.status)}`">{{
+                    v.status
                   }}</span>
-                </div>
-              </div>
+                </header>
+                <h3>
+                  {{ v.brand }} {{ v.model }} <small>{{ v.year }}</small>
+                </h3>
+                <dl>
+                  <dt>Segment / Tip</dt>
+                  <dd>{{ v.vehicle_segment }} / {{ v.vehicle_type }}</dd>
+                  <dt>Yakıt</dt>
+                  <dd>{{ v.fuel }}</dd>
+                  <dt>Kilometre</dt>
+                  <dd>{{ v.mileage?.toLocaleString('tr-TR') }} km</dd>
+                  <dt>Muayene</dt>
+                  <dd>{{ v.inspection_date || '—' }}</dd>
+                  <dt>Son Servis</dt>
+                  <dd>{{ v.last_service_date || '—' }}</dd>
+                  <dt>Şase No</dt>
+                  <dd class="adm-mono">{{ v.chassis_no }}</dd>
+                </dl>
+              </article>
             </div>
-          </div>
+          </template>
+
+          <template v-else>
+            <EmptyState
+              v-if="customerServices.length === 0"
+              icon="wrench"
+              title="Bu müşteriye ait servis kaydı yok"
+            />
+            <div v-else class="adm-table-wrap">
+              <table class="custom-table adm-table">
+                <thead>
+                  <tr>
+                    <th>Araç</th>
+                    <th>Tedarikçi / Servis</th>
+                    <th>Hizmet</th>
+                    <th>Açıklama</th>
+                    <th>Durum</th>
+                    <th>Tarih</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="s in customerServices" :key="s.id">
+                    <td>
+                      <div class="adm-cell-title">{{ s.vehicle_plate }}</div>
+                      <div class="adm-cell-sub">#{{ s.id }} · {{ s.vehicle_brand_model }}</div>
+                    </td>
+                    <td>{{ s.supplier_name }}</td>
+                    <td>
+                      <span class="adm-badge" :class="`tone-${categoryTone(s.type)}`">{{
+                        getTypeName(s.type)
+                      }}</span>
+                    </td>
+                    <td class="adm-wrap">{{ s.description }}</td>
+                    <td>
+                      <span class="adm-badge" :class="`tone-${serviceTone(s.status)}`">{{
+                        s.status
+                      }}</span>
+                    </td>
+                    <td>{{ s.created_at }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </template>
+        </section>
+      </template>
+
+      <!-- 3. VEHICLES -->
+      <template v-if="activeTab === 'vehicles' && !showVehicleDetailsModal">
+        <PageHeader
+          eyebrow="Yönetici Paneli"
+          title="Tüm Araçlar"
+          description="Sistemdeki araçların kiralama, servis ve kullanım durumu."
+        />
+
+        <div class="adm-kpis">
+          <KpiCard label="Kayıtlı Araç" :value="vehicles.length" icon="car" tone="blue" />
+          <KpiCard
+            label="Aktif Kullanımda"
+            :value="activeVehiclesCount"
+            icon="check"
+            tone="green"
+          />
+          <KpiCard
+            label="Serviste / Bakımda"
+            :value="serviceVehiclesCount"
+            icon="wrench"
+            tone="amber"
+          />
         </div>
 
-        <!-- SERVICES TAB -->
-        <div v-if="detailTab === 'services'" class="cd-tab-content">
-          <div v-if="customerServices.length === 0" class="empty-state">
-            <p>Bu müşteriye ait servis kaydı bulunamadı.</p>
-          </div>
-          <div v-else class="custom-table-container">
-            <table class="custom-table">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Araç</th>
-                  <th>Tedarikçi / Servis</th>
-                  <th>Hizmet Türü</th>
-                  <th>Açıklama</th>
-                  <th>Durum</th>
-                  <th>Tarih</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="s in customerServices" :key="s.id">
-                  <td style="color: var(--text-muted)">#{{ s.id }}</td>
-                  <td>
-                    <div style="font-weight: 600">{{ s.vehicle_plate }}</div>
-                    <div style="font-size: 0.78rem; color: var(--text-muted)">
-                      {{ s.vehicle_brand_model }}
-                    </div>
-                  </td>
-                  <td>
-                    <div style="font-weight: 600">{{ s.supplier_name }}</div>
-                  </td>
-                  <td>
-                    <span
-                      class="badge"
-                      :class="getCategoryBadgeClass(s.type)"
-                      style="font-size: 0.78rem; padding: 4px 10px"
-                    >
-                      {{ getTypeName(s.type) }}
-                    </span>
-                  </td>
-                  <td
-                    style="
-                      font-size: 0.85rem;
-                      max-width: 220px;
-                      white-space: normal;
-                      line-height: 1.4;
-                    "
-                  >
-                    {{ s.description }}
-                  </td>
-                  <td>
-                    <span
-                      class="badge"
-                      :class="
-                        s.status === 'Tamamlandı'
-                          ? 'badge-active'
-                          : s.status === 'Beklemede'
-                            ? 'badge-roadside'
-                            : 'badge-service'
-                      "
-                      style="font-size: 0.75rem"
-                    >
-                      {{ s.status }}
-                    </span>
-                  </td>
-                  <td style="font-size: 0.82rem">{{ s.created_at }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- 2.5. VEHICLES TAB -->
-      <div v-if="activeTab === 'vehicles' && !showVehicleDetailsModal">
-        <header class="dashboard-header">
-          <div>
-            <h1>Sistemdeki Tüm Araçlar</h1>
-            <p style="color: var(--text-muted); font-size: 0.95rem">
-              Filodaki araçların güncel konum, kiralama, servis ve kullanım bilgileri.
-            </p>
-          </div>
-        </header>
-
-        <!-- Stats cards for vehicles -->
-        <div class="grid-3" style="margin-top: 25px; gap: 20px">
-          <div class="glass-panel stat-card-new">
-            <div class="stat-icon-wrapper quote-purple">
-              <NavIcon name="car" size="22" />
-            </div>
-            <div class="stat-info">
-              <span class="stat-label">Toplam Kayıtlı Araç</span>
-              <div class="stat-val-new">{{ vehicles.length }} Adet</div>
-            </div>
-          </div>
-          <div class="glass-panel stat-card-new">
-            <div class="stat-icon-wrapper quote-green">
-              <NavIcon name="shield" size="22" />
-            </div>
-            <div class="stat-info">
-              <span class="stat-label">Aktif Kullanımda</span>
-              <div class="stat-val-new" style="color: #047857">{{ activeVehiclesCount }} Adet</div>
-            </div>
-          </div>
-          <div class="glass-panel stat-card-new">
-            <div class="stat-icon-wrapper quote-blue">
-              <NavIcon name="wrench" size="22" />
-            </div>
-            <div class="stat-info">
-              <span class="stat-label">Serviste / Bakımda</span>
-              <div class="stat-val-new" style="color: #2563eb">{{ serviceVehiclesCount }} Adet</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Vehicles Filter Bar -->
-        <div class="filter-bar glass-panel" style="margin-top: 20px">
-          <div class="filter-bar-inner">
-            <div class="filter-group">
-              <span class="filter-label">🔍</span>
+        <section class="adm-panel">
+          <div class="adm-toolbar">
+            <label class="adm-search">
+              <NavIcon name="search" size="16" />
               <input
                 v-model="vehicleFilter.search"
-                class="filter-input"
-                placeholder="Plaka, marka veya model ara..."
+                type="search"
+                aria-label="Araç ara"
+                placeholder="Plaka, marka veya model ara"
               />
-            </div>
-            <div class="filter-group">
-              <span class="filter-label">📊 Durum</span>
-              <div class="filter-pills">
-                <UiButton
-                  v-for="st in [
-                    'Tümü',
-                    'Aktif',
-                    'Serviste',
-                    'Lastik Değişiminde',
-                    'Yol Yardımında',
-                  ]"
-                  :key="st"
-                  :class="['filter-pill', { 'filter-pill-active': vehicleFilter.status === st }]"
-                  @click="vehicleFilter.status = st"
-                  >{{ st }}</UiButton
-                >
-              </div>
-            </div>
-            <div class="filter-group">
-              <span class="filter-label">⚡ Yakıt</span>
-              <div class="filter-pills">
-                <UiButton
-                  v-for="f in ['Tümü', 'Elektrik', 'Hibrit', 'Dizel', 'Benzin']"
-                  :key="f"
-                  :class="['filter-pill', { 'filter-pill-active': vehicleFilter.fuel === f }]"
-                  @click="vehicleFilter.fuel = f"
-                  >{{ f }}</UiButton
-                >
-              </div>
-            </div>
-            <div class="filter-group" style="margin-left: auto">
-              <span class="filter-result-count"
-                >{{ filteredVehicles.length }} / {{ vehicles.length }} araç</span
+            </label>
+            <div class="adm-chips" role="group" aria-label="Durum">
+              <span class="adm-chips-label">Durum</span>
+              <button
+                v-for="st in ['Tümü', 'Aktif', 'Serviste', 'Lastik Değişiminde', 'Yol Yardımında']"
+                :key="st"
+                type="button"
+                class="adm-chip"
+                :aria-pressed="vehicleFilter.status === st"
+                @click="vehicleFilter.status = st"
               >
+                {{ st }}
+              </button>
             </div>
+            <div class="adm-chips" role="group" aria-label="Yakıt">
+              <span class="adm-chips-label">Yakıt</span>
+              <button
+                v-for="f in ['Tümü', 'Elektrik', 'Hibrit', 'Dizel', 'Benzin']"
+                :key="f"
+                type="button"
+                class="adm-chip"
+                :aria-pressed="vehicleFilter.fuel === f"
+                @click="vehicleFilter.fuel = f"
+              >
+                {{ f }}
+              </button>
+            </div>
+            <span class="adm-count"
+              >{{ filteredVehicles.length }} / {{ vehicles.length }} araç</span
+            >
           </div>
-        </div>
 
-        <!-- Vehicles Table -->
-        <div class="glass-panel" style="margin-top: 20px; padding: 15px">
-          <div v-if="loading" class="text-center" style="padding: 40px 0">Yükleniyor...</div>
-          <div v-else-if="filteredVehicles.length === 0" class="empty-state">
-            <p>Kriterlere uygun araç bulunamadı.</p>
-          </div>
-          <div v-else class="custom-table-container">
-            <table class="custom-table">
+          <p v-if="loading" class="adm-loading">Yükleniyor…</p>
+          <EmptyState
+            v-else-if="filteredVehicles.length === 0"
+            icon="car"
+            title="Kriterlere uygun araç yok"
+            :text="
+              vehicles.length ? 'Filtreleri değiştirmeyi deneyin.' : 'Sisteme henüz araç eklenmedi.'
+            "
+          />
+          <div v-else class="adm-table-wrap">
+            <table class="custom-table adm-table">
               <thead>
                 <tr>
                   <th>Plaka</th>
-                  <th>Araç Bilgisi</th>
-                  <th>Kiralayan Müşteri</th>
-                  <th>Sağlayıcı Tedarikçi</th>
+                  <th>Araç</th>
+                  <th>Müşteri</th>
+                  <th>Tedarikçi</th>
                   <th>Kilometre</th>
-                  <th>Segment / Yakıt</th>
                   <th>Durum</th>
                 </tr>
               </thead>
@@ -966,266 +591,118 @@
                 <tr
                   v-for="v in filteredVehicles"
                   :key="v.id"
+                  class="is-clickable"
                   @click="openVehicleDetails(v)"
-                  style="cursor: pointer"
                 >
                   <td>
-                    <span
-                      class="plate-badge"
-                      style="
-                        font-size: 0.9rem;
-                        font-family: monospace;
-                        font-weight: bold;
-                        background: #0f172a;
-                        color: #fff;
-                        border: 2px solid #334155;
-                        border-radius: 6px;
-                        padding: 4px 10px;
-                        display: inline-block;
-                      "
+                    <button
+                      type="button"
+                      class="adm-plate adm-plate-btn"
+                      @click.stop="openVehicleDetails(v)"
                     >
                       {{ v.plate }}
-                    </span>
+                    </button>
                   </td>
                   <td>
-                    <strong>{{ v.brand }} {{ v.model }}</strong>
-                    <div style="font-size: 0.78rem; color: var(--text-muted)">
-                      Yıl: {{ v.year }} · Şase: {{ v.chassis_no }}
+                    <div class="adm-cell-title">{{ v.brand }} {{ v.model }}</div>
+                    <div class="adm-cell-sub">
+                      {{ v.year }} · {{ v.vehicle_segment }} segment · {{ v.fuel }}
                     </div>
                   </td>
+                  <td>{{ v.customer_name || '—' }}</td>
+                  <td>{{ v.supplier_name || '—' }}</td>
+                  <td>{{ v.mileage?.toLocaleString('tr-TR') }} km</td>
                   <td>
-                    <span v-if="v.customer_name" style="font-weight: 600; color: #7c3aed"
-                      >🏢 {{ v.customer_name }}</span
-                    >
-                    <span v-else style="color: var(--text-muted); font-size: 0.85rem">-</span>
-                  </td>
-                  <td>
-                    <span v-if="v.supplier_name" style="font-weight: 500"
-                      >🤝 {{ v.supplier_name }}</span
-                    >
-                    <span v-else style="color: var(--text-muted); font-size: 0.85rem">-</span>
-                  </td>
-                  <td>
-                    <strong style="color: var(--text-primary)"
-                      >{{ v.mileage?.toLocaleString('tr-TR') }} km</strong
-                    >
-                  </td>
-                  <td>
-                    <div style="font-size: 0.85rem">{{ v.vehicle_segment }} Segment</div>
-                    <div style="font-size: 0.78rem; color: var(--text-muted)">{{ v.fuel }}</div>
-                  </td>
-                  <td>
-                    <span
-                      class="badge"
-                      :class="
-                        v.status === 'Aktif'
-                          ? 'badge-active'
-                          : v.status === 'Serviste'
-                            ? 'badge-service'
-                            : v.status === 'Lastik Değişiminde'
-                              ? 'badge-tire'
-                              : 'badge-roadside'
-                      "
-                      style="font-size: 0.75rem"
-                    >
-                      {{ v.status }}
-                    </span>
+                    <span class="adm-badge" :class="`tone-${vehicleTone(v.status)}`">{{
+                      v.status
+                    }}</span>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
-        </div>
-      </div>
+        </section>
+      </template>
 
-      <!-- VEHICLE DETAIL MODAL -->
-      <div
-        v-if="showVehicleDetailsModal && selectedVehicleDetails"
-        class="customer-detail-dashboard fade-in-up"
+      <!-- Vehicle detail -->
+      <template
+        v-if="activeTab === 'vehicles' && showVehicleDetailsModal && selectedVehicleDetails"
       >
-        <div class="cd-topbar">
-          <UiButton @click="closeVehicleDetails" class="cd-back-btn">
-            ← Araç Listesine Dön
-          </UiButton>
-        </div>
-
-        <div
-          class="cd-hero glass-panel"
-          style="
-            border-top-color: #3b82f6 !important;
-            background: linear-gradient(
-              135deg,
-              rgba(59, 130, 246, 0.05) 0%,
-              rgba(124, 58, 237, 0.05) 100%
-            );
-          "
-        >
-          <div
-            class="cd-hero-avatar"
-            style="
-              background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-              font-size: 1.5rem;
-              width: 64px;
-              height: 64px;
-            "
-          >
-            🚗
-          </div>
-          <div class="cd-hero-info">
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px">
-              <span
-                class="plate-badge"
-                style="
-                  font-family: monospace;
-                  font-size: 1.15rem;
-                  font-weight: 800;
-                  background: #0f172a;
-                  color: #fff;
-                  border: 2px solid #334155;
-                  border-radius: 6px;
-                  padding: 4px 12px;
-                "
-              >
-                {{ selectedVehicleDetails.plate }}
-              </span>
-              <span
-                class="badge"
-                :class="
-                  selectedVehicleDetails.status === 'Aktif'
-                    ? 'badge-active'
-                    : selectedVehicleDetails.status === 'Serviste'
-                      ? 'badge-service'
-                      : 'badge-roadside'
-                "
-                style="font-size: 0.75rem"
-              >
-                {{ selectedVehicleDetails.status }}
-              </span>
-            </div>
-            <h2 class="cd-company-name" style="font-size: 1.4rem">
-              {{ selectedVehicleDetails.brand }} {{ selectedVehicleDetails.model }}
-            </h2>
-            <p class="cd-legal-title" style="margin-bottom: 0">
-              Şase No:
-              <span style="font-family: monospace">{{ selectedVehicleDetails.chassis_no }}</span> ·
-              Yıl: {{ selectedVehicleDetails.year }}
+        <button type="button" class="adm-back" @click="closeVehicleDetails">
+          <NavIcon name="arrow-left" size="16" />Araç listesi
+        </button>
+        <header class="adm-vehicle-head">
+          <span class="adm-plate lg">{{ selectedVehicleDetails.plate }}</span>
+          <div>
+            <h1>{{ selectedVehicleDetails.brand }} {{ selectedVehicleDetails.model }}</h1>
+            <p>
+              {{ selectedVehicleDetails.year }} · Şase
+              <span class="adm-mono">{{ selectedVehicleDetails.chassis_no }}</span>
             </p>
           </div>
-          <div class="cd-hero-badges">
-            <div class="cd-hero-badge cd-badge-purple">
-              <div class="cd-badge-label">Mevcut Kilometre</div>
-              <div class="cd-badge-value">
-                {{ selectedVehicleDetails.mileage?.toLocaleString('tr-TR') }} km
-              </div>
-            </div>
-            <div class="cd-hero-badge cd-badge-green">
-              <div class="cd-badge-label">Yakıt / Segment</div>
-              <div class="cd-badge-value" style="font-size: 1rem; color: #047857">
-                {{ selectedVehicleDetails.fuel }} / {{ selectedVehicleDetails.vehicle_segment }}
-              </div>
-            </div>
-            <div class="cd-hero-badge cd-badge-blue">
-              <div class="cd-badge-label">Muayene Tarihi</div>
-              <div class="cd-badge-value" style="font-size: 0.95rem; color: #2563eb">
-                {{ selectedVehicleDetails.inspection_date || 'Belirtilmemiş' }}
-              </div>
-            </div>
-          </div>
+          <span class="adm-badge" :class="`tone-${vehicleTone(selectedVehicleDetails.status)}`">{{
+            selectedVehicleDetails.status
+          }}</span>
+        </header>
+        <div class="adm-kpis">
+          <KpiCard
+            label="Kilometre"
+            :value="`${(selectedVehicleDetails.mileage || 0).toLocaleString('tr-TR')} km`"
+            icon="road"
+            tone="blue"
+          />
+          <KpiCard
+            label="Yakıt / Segment"
+            :value="`${selectedVehicleDetails.fuel} / ${selectedVehicleDetails.vehicle_segment}`"
+            icon="fuel"
+            tone="teal"
+          />
+          <KpiCard
+            label="Muayene"
+            :value="selectedVehicleDetails.inspection_date || 'Belirtilmemiş'"
+            icon="calendar"
+            tone="violet"
+          />
         </div>
 
-        <div class="grid-2" style="gap: 20px; margin-bottom: 25px">
-          <!-- Kiralama & Tedarik Bilgileri -->
-          <div class="glass-panel" style="padding: 20px">
-            <h3
-              style="
-                font-size: 1rem;
-                margin-bottom: 15px;
-                color: #7c3aed;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-              "
-            >
-              🏢 Kiralama & Sözleşme Bilgisi
-            </h3>
-            <div v-if="selectedVehicleDetails.customer_name" class="cd-vehicle-details">
-              <div class="cd-vehicle-row">
-                <span class="cd-vd-label">Kiracı Müşteri</span>
-                <span class="cd-vd-val" style="font-weight: 700">{{
-                  selectedVehicleDetails.customer_name
-                }}</span>
-              </div>
-              <div class="cd-vehicle-row">
-                <span class="cd-vd-label">Kiralama Durumu</span>
-                <span class="cd-vd-val" style="color: #047857; font-weight: 600"
-                  >Aktif Sözleşmeli Kiralama</span
-                >
-              </div>
-            </div>
-            <div v-else class="text-center" style="padding: 20px 0; color: var(--text-muted)">
-              Bu araç şu anda herhangi bir müşteriye kiralanmamış.
-            </div>
-          </div>
-
-          <div class="glass-panel" style="padding: 20px">
-            <h3
-              style="
-                font-size: 1rem;
-                margin-bottom: 15px;
-                color: #2563eb;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-              "
-            >
-              🤝 Tedarik & Servis Sağlayıcı
-            </h3>
-            <div v-if="selectedVehicleDetails.supplier_name" class="cd-vehicle-details">
-              <div class="cd-vehicle-row">
-                <span class="cd-vd-label">Tedarikçi Firma</span>
-                <span class="cd-vd-val" style="font-weight: 700">{{
-                  selectedVehicleDetails.supplier_name
-                }}</span>
-              </div>
-              <div class="cd-vehicle-row">
-                <span class="cd-vd-label">Temin Türü</span>
-                <span class="cd-vd-val">Tedarikçi Ortaklığı</span>
-              </div>
-            </div>
-            <div v-else class="text-center" style="padding: 20px 0; color: var(--text-muted)">
-              Bu araç için atanmış harici bir tedarikçi bulunmuyor.
-            </div>
-          </div>
+        <div class="adm-two">
+          <section class="adm-panel">
+            <h2 class="adm-panel-title">Kiralama</h2>
+            <dl v-if="selectedVehicleDetails.customer_name" class="adm-dl">
+              <dt>Kiracı müşteri</dt>
+              <dd>{{ selectedVehicleDetails.customer_name }}</dd>
+              <dt>Durum</dt>
+              <dd>Sözleşmeli kiralama</dd>
+            </dl>
+            <p v-else class="adm-muted">Bu araç şu anda bir müşteriye kiralanmamış.</p>
+          </section>
+          <section class="adm-panel">
+            <h2 class="adm-panel-title">Tedarikçi</h2>
+            <dl v-if="selectedVehicleDetails.supplier_name" class="adm-dl">
+              <dt>Tedarikçi firma</dt>
+              <dd>{{ selectedVehicleDetails.supplier_name }}</dd>
+              <dt>Temin türü</dt>
+              <dd>Tedarikçi ortaklığı</dd>
+            </dl>
+            <p v-else class="adm-muted">Bu araç için atanmış bir tedarikçi yok.</p>
+          </section>
         </div>
 
-        <!-- Servis Geçmişi Tablosu -->
-        <div class="glass-panel" style="padding: 20px">
-          <h3
-            style="
-              font-size: 1rem;
-              margin-bottom: 15px;
-              color: var(--text-main);
-              display: flex;
-              align-items: center;
-              gap: 8px;
-            "
-          >
-            🔧 Aracın Servis ve Hizmet Geçmişi
-          </h3>
-          <div
+        <section class="adm-panel">
+          <h2 class="adm-panel-title">Servis ve Hizmet Geçmişi</h2>
+          <EmptyState
             v-if="vehicleServices.length === 0"
-            class="text-center"
-            style="padding: 40px 0; color: var(--text-muted)"
-          >
-            Araca ait herhangi bir servis arıza veya bakım kaydı bulunamadı.
-          </div>
-          <div v-else class="custom-table-container">
-            <table class="custom-table">
+            icon="wrench"
+            title="Servis, arıza veya bakım kaydı yok"
+            compact
+          />
+          <div v-else class="adm-table-wrap">
+            <table class="custom-table adm-table">
               <thead>
                 <tr>
-                  <th>Talep ID</th>
+                  <th>Talep</th>
                   <th>Servis / Tedarikçi</th>
-                  <th>Hizmet Türü</th>
+                  <th>Hizmet</th>
                   <th>Açıklama</th>
                   <th>Tarih</th>
                   <th>Durum</th>
@@ -1234,354 +711,237 @@
               <tbody>
                 <tr v-for="s in vehicleServices" :key="s.id">
                   <td>#{{ s.id }}</td>
+                  <td class="adm-cell-title">{{ s.supplier_name }}</td>
                   <td>
-                    <strong>{{ s.supplier_name }}</strong>
+                    <span class="adm-badge" :class="`tone-${categoryTone(s.type)}`">{{
+                      getTypeName(s.type)
+                    }}</span>
                   </td>
-                  <td>
-                    <span
-                      class="badge"
-                      :class="getCategoryBadgeClass(s.type)"
-                      style="font-size: 0.78rem"
-                    >
-                      {{ getTypeName(s.type) }}
-                    </span>
-                  </td>
-                  <td>{{ s.description }}</td>
+                  <td class="adm-wrap">{{ s.description }}</td>
                   <td>{{ formatDate(s.created_at) }}</td>
                   <td>
-                    <span
-                      class="badge"
-                      :class="
-                        s.status === 'Tamamlandı'
-                          ? 'badge-active'
-                          : s.status === 'Beklemede'
-                            ? 'badge-roadside'
-                            : 'badge-service'
-                      "
-                      style="font-size: 0.75rem"
-                    >
-                      {{ s.status }}
-                    </span>
+                    <span class="adm-badge" :class="`tone-${serviceTone(s.status)}`">{{
+                      s.status
+                    }}</span>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
-        </div>
-      </div>
+        </section>
+      </template>
 
-      <!-- 3. SUPPLIERS TAB -->
-      <div v-if="activeTab === 'suppliers'">
-        <header class="dashboard-header">
-          <div>
-            <h1>Entegre Tedarikçiler Listesi</h1>
-            <p style="color: var(--text-muted); font-size: 0.95rem">
-              Sistemde entegre çalışan yetkili/anlaşmalı servis, lastik, yol yardım ve ikame araç
-              sağlayıcıları.
-            </p>
-          </div>
-          <UiButton
-            @click="showAddSupplierModal = true"
-            class="btn btn-primary"
-            style="
-              background: linear-gradient(135deg, #7c3aed, #3b82f6);
-              border: none;
-              box-shadow: 0 4px 15px rgba(124, 58, 237, 0.25);
-            "
-          >
-            ➕ Yeni Tedarikçi Ekle
-          </UiButton>
-        </header>
+      <!-- 4. SUPPLIERS -->
+      <template v-if="activeTab === 'suppliers'">
+        <PageHeader
+          eyebrow="Yönetici Paneli"
+          title="Tedarikçiler"
+          description="Sistemde çalışan servis, lastik, yol yardım ve ikame araç sağlayıcıları."
+        >
+          <template #actions>
+            <UiButton class="adm-btn primary" @click="showAddSupplierModal = true"
+              ><NavIcon name="plus" size="16" />Yeni Tedarikçi</UiButton
+            >
+          </template>
+        </PageHeader>
 
-        <!-- Stats cards for suppliers -->
-        <div class="grid-3" style="margin-top: 25px; gap: 20px">
-          <div class="glass-panel stat-card-new">
-            <div class="stat-icon-wrapper quote-purple">
-              <NavIcon name="store" size="22" />
-            </div>
-            <div class="stat-info">
-              <span class="stat-label">Toplam Entegre Tedarikçi</span>
-              <div class="stat-val-new">{{ suppliers.length }} Tedarikçi</div>
-            </div>
-          </div>
-          <div class="glass-panel stat-card-new">
-            <div class="stat-icon-wrapper quote-blue">
-              <NavIcon name="shield" size="22" />
-            </div>
-            <div class="stat-info">
-              <span class="stat-label">Yetkili Servisler</span>
-              <div class="stat-val-new" style="color: #047857">
-                {{ authorizedSuppliersCount }} Adet
-              </div>
-            </div>
-          </div>
-          <div class="glass-panel stat-card-new">
-            <div class="stat-icon-wrapper quote-green">
-              <NavIcon name="users" size="22" />
-            </div>
-            <div class="stat-info">
-              <span class="stat-label">Anlaşmalı Servisler</span>
-              <div class="stat-val-new" style="color: #2563eb">
-                {{ contractedSuppliersCount }} Adet
-              </div>
-            </div>
-          </div>
+        <div class="adm-kpis">
+          <KpiCard label="Toplam Tedarikçi" :value="suppliers.length" icon="store" tone="blue" />
+          <KpiCard label="Yetkili" :value="authorizedSuppliersCount" icon="shield" tone="green" />
+          <KpiCard
+            label="Anlaşmalı"
+            :value="contractedSuppliersCount"
+            icon="briefcase"
+            tone="teal"
+          />
         </div>
 
-        <!-- Supplier Filter Bar -->
-        <div class="filter-bar glass-panel" style="margin-top: 20px">
-          <div class="filter-bar-inner">
-            <div class="filter-group">
-              <span class="filter-label">🔍</span>
+        <section class="adm-panel">
+          <div class="adm-toolbar">
+            <label class="adm-search">
+              <NavIcon name="search" size="16" />
               <input
                 v-model="supplierFilter.search"
-                class="filter-input"
-                placeholder="Tedarikçi adı, il veya ilçe..."
+                type="search"
+                aria-label="Tedarikçi ara"
+                placeholder="Tedarikçi adı, il veya ilçe"
               />
-            </div>
-            <div class="filter-group">
-              <span class="filter-label">🏷️ Kategori</span>
-              <div class="filter-pills">
-                <UiButton
-                  v-for="t in [
-                    { k: 'Tümü', l: 'Tümü' },
-                    { k: 'servis', l: '🔧 Servis' },
-                    { k: 'lastik', l: '🛞 Lastik' },
-                    { k: 'yol_yardim', l: '🚨 Yol Yardım' },
-                    { k: 'ikame_arac', l: '🚗 İkame Araç' },
-                  ]"
-                  :key="t.k"
-                  :class="['filter-pill', { 'filter-pill-active': supplierFilter.type === t.k }]"
-                  @click="supplierFilter.type = t.k"
-                  >{{ t.l }}</UiButton
-                >
-              </div>
-            </div>
-            <div class="filter-group">
-              <span class="filter-label">🤝 Sözleşme</span>
-              <div class="filter-pills">
-                <UiButton
-                  v-for="ct in ['Tümü', 'Yetkili', 'Anlaşmalı']"
-                  :key="ct"
-                  :class="[
-                    'filter-pill',
-                    { 'filter-pill-active': supplierFilter.contractType === ct },
-                  ]"
-                  @click="supplierFilter.contractType = ct"
-                  >{{ ct }}</UiButton
-                >
-              </div>
-            </div>
-            <div class="filter-group" style="margin-left: auto">
-              <span class="filter-result-count"
-                >{{ filteredSuppliers.length }} / {{ suppliers.length }} tedarikçi</span
+            </label>
+            <div class="adm-chips" role="group" aria-label="Kategori">
+              <span class="adm-chips-label">Kategori</span>
+              <button
+                v-for="t in [
+                  { k: 'Tümü', l: 'Tümü' },
+                  { k: 'servis', l: 'Servis' },
+                  { k: 'lastik', l: 'Lastik' },
+                  { k: 'yol_yardim', l: 'Yol Yardım' },
+                  { k: 'ikame_arac', l: 'İkame Araç' },
+                ]"
+                :key="t.k"
+                type="button"
+                class="adm-chip"
+                :aria-pressed="supplierFilter.type === t.k"
+                @click="supplierFilter.type = t.k"
               >
+                {{ t.l }}
+              </button>
             </div>
+            <div class="adm-chips" role="group" aria-label="Sözleşme">
+              <span class="adm-chips-label">Sözleşme</span>
+              <button
+                v-for="ct in ['Tümü', 'Yetkili', 'Anlaşmalı']"
+                :key="ct"
+                type="button"
+                class="adm-chip"
+                :aria-pressed="supplierFilter.contractType === ct"
+                @click="supplierFilter.contractType = ct"
+              >
+                {{ ct }}
+              </button>
+            </div>
+            <span class="adm-count"
+              >{{ filteredSuppliers.length }} / {{ suppliers.length }} tedarikçi</span
+            >
           </div>
-        </div>
 
-        <!-- Suppliers Table -->
-        <div class="glass-panel" style="margin-top: 20px; padding: 15px">
-          <div v-if="loading" class="text-center" style="padding: 40px 0">Yükleniyor...</div>
-          <div v-else-if="filteredSuppliers.length === 0" class="empty-state">
-            <p>Kriterlere uygun tedarikçi bulunamadı.</p>
-          </div>
-          <div v-else class="custom-table-container">
-            <table class="custom-table">
+          <p v-if="loading" class="adm-loading">Yükleniyor…</p>
+          <EmptyState
+            v-else-if="filteredSuppliers.length === 0"
+            icon="store"
+            title="Kriterlere uygun tedarikçi yok"
+            :text="
+              suppliers.length ? 'Filtreleri değiştirmeyi deneyin.' : 'Henüz tedarikçi eklenmedi.'
+            "
+          />
+          <div v-else class="adm-table-wrap">
+            <table class="custom-table adm-table">
               <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Tedarikçi Adı</th>
+                  <th>Tedarikçi</th>
                   <th>Kategori</th>
-                  <th>Servis Tipi</th>
-                  <th>İl / İlçe</th>
-                  <th>İletişim & E-posta</th>
-                  <th>Portal Davet Durumu</th>
+                  <th>Konum</th>
+                  <th>İletişim</th>
+                  <th>Portal</th>
                   <th>Hizmetler</th>
-                  <th style="width: 140px; text-align: right">Aksiyon</th>
+                  <th class="adm-actions-col">İşlemler</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="s in filteredSuppliers" :key="s.id">
-                  <td>#{{ s.id }}</td>
                   <td>
-                    <strong>{{ s.name }}</strong>
-                  </td>
-                  <td>
-                    <span
-                      class="badge"
-                      :class="getCategoryBadgeClass(s.type)"
-                      style="font-size: 0.8rem; padding: 5px 10px"
-                    >
-                      {{ getTypeName(s.type) }}
-                    </span>
-                  </td>
-                  <td>
-                    <span
-                      class="badge"
-                      :class="s.contract_type === 'Yetkili' ? 'badge-auth' : 'badge-contracted'"
-                    >
-                      {{ s.contract_type }} Servis
-                    </span>
-                  </td>
-                  <td style="font-size: 0.85rem; font-weight: 500">
-                    {{ s.city }} / {{ s.district }}
-                  </td>
-                  <td style="font-size: 0.85rem">
-                    <div style="font-family: monospace">{{ s.phone }}</div>
-                    <div v-if="s.email" style="color: #7c3aed; font-size: 0.8rem; font-weight: 500">
-                      ✉️ {{ s.email }}
-                    </div>
-                    <div v-else style="color: var(--text-muted); font-size: 0.78rem">
-                      (E-posta yok)
+                    <div class="adm-cell-title">{{ s.name }}</div>
+                    <div class="adm-cell-sub">
+                      #{{ s.id
+                      }}<template v-if="s.contract_type"> · {{ s.contract_type }}</template>
                     </div>
                   </td>
                   <td>
-                    <span
-                      v-if="s.invitation_status === 'Aktif'"
-                      class="badge badge-active"
-                      style="font-size: 0.78rem"
-                    >
-                      ✓ Aktif (Şifre Koydu)
-                    </span>
-                    <span
-                      v-else-if="s.invitation_status === 'Davet Gönderildi'"
-                      class="badge badge-roadside"
-                      style="font-size: 0.78rem"
-                    >
-                      📧 Davet Edildi
-                    </span>
-                    <span
-                      v-else
-                      class="badge"
-                      style="
-                        background: rgba(148, 163, 184, 0.1);
-                        color: #64748b;
-                        font-size: 0.78rem;
-                      "
-                    >
-                      Davet Edilmedi
-                    </span>
+                    <span class="adm-badge" :class="`tone-${categoryTone(s.type)}`">{{
+                      getTypeName(s.type)
+                    }}</span>
+                  </td>
+                  <td>{{ [s.city, s.district].filter(Boolean).join(' / ') || '—' }}</td>
+                  <td>
+                    <div>{{ s.phone || '—' }}</div>
+                    <div class="adm-cell-sub">{{ s.email || 'E-posta yok' }}</div>
                   </td>
                   <td>
-                    <div style="display: flex; gap: 4px; flex-wrap: wrap; max-width: 250px">
-                      <span class="service-tag" v-for="serv in s.services" :key="serv">
-                        {{ serv }}
-                      </span>
+                    <span class="adm-badge" :class="`tone-${inviteTone(s.invitation_status)}`">{{
+                      inviteLabel(s.invitation_status)
+                    }}</span>
+                  </td>
+                  <td>
+                    <div class="adm-tags">
+                      <span v-for="serv in s.services" :key="serv" class="adm-tag">{{ serv }}</span>
                     </div>
                   </td>
-                  <td style="text-align: right">
-                    <div style="display: flex; gap: 6px; justify-content: flex-end">
+                  <td class="adm-actions-col">
+                    <div class="adm-actions">
                       <UiButton
-                        @click="enterAccount('supplier', s.id, s.name)"
-                        class="btn btn-secondary"
-                        style="
-                          padding: 6px 12px;
-                          font-size: 0.78rem;
-                          border-color: #0d9488;
-                          color: #ffffff;
-                          background: #0d9488;
-                          font-weight: 700;
-                        "
+                        class="adm-btn sm teal"
                         title="Destek için bu tedarikçinin portalına gir"
+                        @click="enterAccount('supplier', s.id, s.name)"
+                        ><NavIcon name="login" size="15" />Hesaba Gir</UiButton
                       >
-                        Hesaba Gir
-                      </UiButton>
-                      <UiButton
-                        @click="sendSupplierInvite(s)"
-                        class="btn btn-secondary"
-                        style="
-                          padding: 6px 10px;
-                          font-size: 0.78rem;
-                          border-color: rgba(124, 58, 237, 0.3);
-                          color: #7c3aed;
-                          background: rgba(124, 58, 237, 0.06);
-                          font-weight: 600;
-                        "
+                      <UiButton class="adm-btn sm ghost" @click="sendSupplierInvite(s)"
+                        ><NavIcon name="mail" size="15" />{{
+                          s.invitation_status === 'Davet Gönderildi' ? 'Yeniden Davet' : 'Davet Et'
+                        }}</UiButton
                       >
-                        {{
-                          s.invitation_status === 'Davet Gönderildi'
-                            ? '🔄 Yeniden Davet Et'
-                            : '📧 Davetiye Gönder'
-                        }}
-                      </UiButton>
                       <UiButton
+                        class="adm-btn sm danger icon"
+                        :aria-label="`${s.name} tedarikçisini sil`"
+                        title="Sil"
                         @click="deleteSupplier(s)"
-                        class="btn btn-secondary"
-                        style="
-                          padding: 6px 10px;
-                          font-size: 0.78rem;
-                          border-color: rgba(239, 68, 68, 0.3);
-                          color: #dc2626;
-                          background: rgba(239, 68, 68, 0.06);
-                          font-weight: 600;
-                        "
-                        title="Tedarikçiyi Sil"
-                      >
-                        🗑️ Sil
-                      </UiButton>
+                        ><NavIcon name="trash" size="15"
+                      /></UiButton>
                     </div>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
-        </div>
-      </div>
-      <!-- 4. SUPPORT ACCESS LOG -->
-      <div v-if="activeTab === 'support'">
-        <header class="dashboard-header">
-          <div>
-            <h1>Destek Kayıtları</h1>
-            <p style="color: var(--text-muted); font-size: 0.95rem">
-              Yöneticilerin destek için girdiği firma hesapları. Bu kayıtları firmalar görmez.
-            </p>
+        </section>
+      </template>
+
+      <!-- 5. SUPPORT ACCESS LOG -->
+      <template v-if="activeTab === 'support'">
+        <PageHeader
+          eyebrow="Yönetici Paneli"
+          title="Destek Kayıtları"
+          description="Yöneticilerin destek için girdiği firma hesapları. Bu kayıtları firmalar görmez."
+        >
+          <template #actions>
+            <UiButton class="adm-btn ghost" :disabled="supportLoading" @click="loadSupportLog"
+              ><NavIcon name="refresh" size="16" />Yenile</UiButton
+            >
+          </template>
+        </PageHeader>
+        <p v-if="supportError" class="admin-support-error" role="alert">{{ supportError }}</p>
+        <section class="adm-panel">
+          <p v-if="supportLoading && !supportLog.length" class="adm-loading">Yükleniyor…</p>
+          <EmptyState
+            v-else-if="!supportLog.length"
+            icon="shield"
+            title="Henüz destek girişi yapılmadı"
+            text="Bir firmanın hesabına Hesaba Gir ile girdiğinizde kayıt burada görünür."
+          />
+          <div v-else class="adm-table-wrap">
+            <table class="data-table adm-table">
+              <thead>
+                <tr>
+                  <th>Firma</th>
+                  <th>Portal</th>
+                  <th>Yönetici</th>
+                  <th>Giriş</th>
+                  <th>Durum</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="row in supportLog" :key="row.id">
+                  <td class="adm-cell-title">{{ row.subject_name || '#' + row.subject_id }}</td>
+                  <td>{{ row.portal === 'supplier' ? 'Tedarikçi' : 'Müşteri' }}</td>
+                  <td>{{ row.admin_email }}</td>
+                  <td>{{ formatDateTime(row.started_at) }}</td>
+                  <td>
+                    <span class="adm-badge" :class="row.active ? 'tone-amber' : 'tone-gray'">{{
+                      row.active ? 'Açık' : `Kapandı · ${formatDateTime(row.ended_at)}`
+                    }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-          <UiButton class="btn btn-secondary" :disabled="supportLoading" @click="loadSupportLog"
-            >Yenile</UiButton
-          >
-        </header>
-        <p v-if="supportError" class="admin-support-error">{{ supportError }}</p>
-        <div class="glass-panel" style="padding: 0; overflow-x: auto">
-          <table class="data-table admin-support-table">
-            <thead>
-              <tr>
-                <th>Giriş</th>
-                <th>Yönetici</th>
-                <th>Portal</th>
-                <th>Firma</th>
-                <th>Durum</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="row in supportLog" :key="row.id">
-                <td>{{ formatDateTime(row.started_at) }}</td>
-                <td>{{ row.admin_email }}</td>
-                <td>{{ row.portal === 'supplier' ? 'Tedarikçi' : 'Müşteri' }}</td>
-                <td>{{ row.subject_name || '#' + row.subject_id }}</td>
-                <td>
-                  <span :class="['admin-support-state', { active: row.active }]">{{
-                    row.active ? 'Açık' : `Kapandı · ${formatDateTime(row.ended_at)}`
-                  }}</span>
-                </td>
-              </tr>
-              <tr v-if="!supportLog.length && !supportLoading">
-                <td colspan="5" style="text-align: center; color: var(--text-muted)">
-                  Henüz destek girişi yapılmadı.
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+        </section>
+      </template>
       <ManualSignatureInbox v-if="activeTab !== 'support'" account="admin" />
     </main>
   </div>
 
   <!-- Add Quote Modal -->
   <UiModal v-if="showAddQuoteModal" class="modal-overlay" @close="showAddQuoteModal = false">
-    <div class="glass-panel modal-content fade-in-up" style="max-width: 550px; padding: 30px">
-      <h2 style="margin-bottom: 20px; color: #7c3aed">➕ Yeni Teklif Talebi Oluştur</h2>
+    <div class="glass-panel modal-content adm-modal" style="max-width: 550px; padding: 30px">
+      <h2 class="adm-modal-title">Yeni Teklif Talebi Oluştur</h2>
 
       <form @submit.prevent="addQuote">
         <div class="form-group" style="margin-bottom: 15px">
@@ -1694,7 +1054,7 @@
           <UiButton
             type="submit"
             class="btn btn-primary"
-            style="background: #7c3aed; color: #fff; border: none"
+            style="background: var(--fr-primary); color: #fff; border: none"
           >
             Teklifi Kaydet
           </UiButton>
@@ -1705,8 +1065,8 @@
 
   <!-- Edit Quote Modal -->
   <UiModal v-if="showEditQuoteModal" class="modal-overlay" @close="showEditQuoteModal = false">
-    <div class="glass-panel modal-content fade-in-up" style="max-width: 550px; padding: 30px">
-      <h2 style="margin-bottom: 20px; color: #7c3aed">📝 Teklif Talebi Düzenle</h2>
+    <div class="glass-panel modal-content adm-modal" style="max-width: 550px; padding: 30px">
+      <h2 class="adm-modal-title">Teklif Talebi Düzenle</h2>
 
       <form @submit.prevent="submitEditQuote">
         <div class="form-group" style="margin-bottom: 15px">
@@ -1812,7 +1172,7 @@
           <UiButton
             type="submit"
             class="btn btn-primary"
-            style="background: #7c3aed; color: #fff; border: none"
+            style="background: var(--fr-primary); color: #fff; border: none"
           >
             Değişiklikleri Kaydet
           </UiButton>
@@ -1827,8 +1187,8 @@
     class="modal-overlay"
     @close="showEditCustomerModal = false"
   >
-    <div class="glass-panel modal-content fade-in-up" style="max-width: 550px; padding: 30px">
-      <h2 style="margin-bottom: 20px; color: #047857">🏢 Müşteri Bilgilerini Düzenle</h2>
+    <div class="glass-panel modal-content adm-modal" style="max-width: 550px; padding: 30px">
+      <h2 class="adm-modal-title">Müşteri Bilgilerini Düzenle</h2>
 
       <form @submit.prevent="submitEditCustomer">
         <div class="form-group" style="margin-bottom: 15px">
@@ -1895,12 +1255,7 @@
           <UiButton
             type="submit"
             class="btn btn-primary"
-            style="
-              background: #047857;
-              color: #fff;
-              border: none;
-              box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
-            "
+            style="background: #047857; color: #fff; border: none"
           >
             Değişiklikleri Kaydet
           </UiButton>
@@ -1911,12 +1266,8 @@
 
   <!-- Contract Amount Prompt Modal -->
   <UiModal v-if="showAmountModal" class="modal-overlay" @close="cancelContractSigning">
-    <div class="glass-panel modal-content fade-in-up" style="max-width: 450px; padding: 30px">
-      <h2
-        style="margin-bottom: 10px; color: #047857; display: flex; align-items: center; gap: 10px"
-      >
-        <span>📝</span> Sözleşme İmzalama İşlemi
-      </h2>
+    <div class="glass-panel modal-content adm-modal" style="max-width: 450px; padding: 30px">
+      <h2 class="adm-modal-title">Sözleşme İmzalama İşlemi</h2>
       <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 20px">
         Teklif onaylandı ve sözleşme imzalanma aşamasına geçildi. Lütfen sözleşmenin kesinleşen
         **Aylık Toplam İmza Tutarını (₺)** giriniz:
@@ -1950,12 +1301,7 @@
           <UiButton
             type="submit"
             class="btn btn-primary"
-            style="
-              background: #047857;
-              color: #fff;
-              border: none;
-              box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
-            "
+            style="background: #047857; color: #fff; border: none"
           >
             Sözleşmeyi İmzala & Müşteriyi Aktifleştir
           </UiButton>
@@ -1966,7 +1312,7 @@
 
   <!-- Supplier Bids List Modal (Admin view) -->
   <UiModal v-if="showBidsModal" class="modal-overlay" @close="showBidsModal = false">
-    <div class="glass-panel modal-content fade-in-up" style="max-width: 800px; padding: 30px">
+    <div class="glass-panel modal-content adm-modal" style="max-width: 800px; padding: 30px">
       <div
         style="
           border-bottom: 1px solid var(--border-color);
@@ -1974,7 +1320,7 @@
           margin-bottom: 20px;
         "
       >
-        <h2 style="color: #7c3aed">🏢 Tedarikçi Teklifleri (Bids)</h2>
+        <h2 class="adm-modal-title">Tedarikçi Teklifleri (Bids)</h2>
         <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 5px">
           <strong>{{ selectedQuoteForBids?.company_name }}</strong> firmasının
           {{ selectedQuoteForBids?.vehicle_count }} adet
@@ -2036,7 +1382,7 @@
                       border-color: rgba(16, 185, 129, 0.2);
                     "
                   >
-                    ✓ Kabul Et
+                    Kabul Et
                   </UiButton>
                   <UiButton
                     @click="rejectSupplierBid(bid.id)"
@@ -2075,7 +1421,7 @@
 
   <!-- Add Supplier Modal -->
   <UiModal v-if="showAddSupplierModal" class="modal-overlay" @close="closeAddSupplierModal">
-    <div class="glass-panel modal-content fade-in-up" style="max-width: 620px; padding: 30px">
+    <div class="glass-panel modal-content adm-modal" style="max-width: 620px; padding: 30px">
       <div
         style="
           display: flex;
@@ -2084,9 +1430,7 @@
           margin-bottom: 22px;
         "
       >
-        <h2 style="color: #7c3aed; margin: 0; display: flex; align-items: center; gap: 10px">
-          🏢 Yeni Tedarikçi Ekle
-        </h2>
+        <h2 class="adm-modal-title">Yeni Tedarikçi Ekle</h2>
         <UiButton
           @click="closeAddSupplierModal"
           style="
@@ -2120,18 +1464,18 @@
             <UiField class="form-label">Kategori *</UiField>
             <select v-model="newSupplierForm.type" required class="form-select">
               <option value="">Seçiniz...</option>
-              <option value="servis">🔧 Yetkili / Anlaşmalı Servis</option>
-              <option value="lastik">🛞 Lastik Bayi</option>
-              <option value="yol_yardim">🚨 Yol Yardım</option>
-              <option value="ikame_arac">🚗 İkame Araç</option>
+              <option value="servis">Yetkili / Anlaşmalı Servis</option>
+              <option value="lastik">Lastik Bayi</option>
+              <option value="yol_yardim">Yol Yardım</option>
+              <option value="ikame_arac">İkame Araç</option>
             </select>
           </div>
           <div class="form-group">
             <UiField class="form-label">Sözleşme Tipi *</UiField>
             <select v-model="newSupplierForm.contract_type" required class="form-select">
               <option value="">Seçiniz...</option>
-              <option value="Yetkili">🛡️ Yetkili Servis</option>
-              <option value="Anlaşmalı">🤝 Anlaşmalı Servis</option>
+              <option value="Yetkili">Yetkili Servis</option>
+              <option value="Anlaşmalı">Anlaşmalı Servis</option>
             </select>
           </div>
         </div>
@@ -2189,10 +1533,10 @@
           class="form-group"
           style="
             margin-bottom: 18px;
-            background: rgba(124, 58, 237, 0.05);
+            background: rgba(0, 100, 255, 0.05);
             padding: 12px 16px;
             border-radius: 10px;
-            border: 1px solid rgba(124, 58, 237, 0.15);
+            border: 1px solid rgba(0, 100, 255, 0.15);
           "
         >
           <UiField
@@ -2203,16 +1547,16 @@
               cursor: pointer;
               font-size: 0.88rem;
               font-weight: 600;
-              color: #7c3aed;
+              color: var(--fr-primary);
               margin: 0;
             "
           >
             <input
               type="checkbox"
               v-model="newSupplierForm.send_invite"
-              style="width: 18px; height: 18px; accent-color: #7c3aed"
+              style="width: 18px; height: 18px; accent-color: var(--fr-primary)"
             />
-            <span>📧 Tedarikçiye şifre oluşturma davetiye e-postası gönderilsin</span>
+            <span>Tedarikçiye şifre oluşturma davetiye e-postası gönderilsin</span>
           </UiField>
         </div>
 
@@ -2253,13 +1597,9 @@
           <UiButton
             type="submit"
             class="btn btn-primary"
-            style="
-              background: linear-gradient(135deg, #7c3aed, #3b82f6);
-              border: none;
-              box-shadow: 0 4px 15px rgba(124, 58, 237, 0.2);
-            "
+            style="background: var(--fr-primary); border: none"
           >
-            ✅ Tedarikçiyi Kaydet
+            Tedarikçiyi Kaydet
           </UiButton>
         </div>
       </form>
@@ -2268,7 +1608,7 @@
 
   <!-- Add Customer Modal -->
   <UiModal v-if="showAddCustomerModal" class="modal-overlay" @close="showAddCustomerModal = false">
-    <div class="glass-panel modal-content fade-in-up" style="max-width: 620px; padding: 30px">
+    <div class="glass-panel modal-content adm-modal" style="max-width: 620px; padding: 30px">
       <div
         style="
           display: flex;
@@ -2277,9 +1617,7 @@
           margin-bottom: 22px;
         "
       >
-        <h2 style="color: #047857; margin: 0; display: flex; align-items: center; gap: 10px">
-          🏢 Yeni Müşteri Kaydı Ekle
-        </h2>
+        <h2 class="adm-modal-title">Yeni Müşteri Kaydı Ekle</h2>
         <UiButton
           @click="showAddCustomerModal = false"
           style="
@@ -2405,8 +1743,7 @@
               style="width: 18px; height: 18px; accent-color: #10b981; cursor: pointer"
             />
             <span
-              >📧 Müşteriye Kurumsal Giriş Daveti Gönder (E-posta ile Şifre Belirleme
-              Bağlantısı)</span
+              >Müşteriye Kurumsal Giriş Daveti Gönder (E-posta ile Şifre Belirleme Bağlantısı)</span
             >
           </UiField>
         </div>
@@ -2418,9 +1755,9 @@
           <UiButton
             type="submit"
             class="btn btn-primary"
-            style="background: linear-gradient(135deg, #059669, #047857); border: none"
+            style="background: var(--fr-primary); border: none"
           >
-            Müşteriyi Kaydet ➔
+            Müşteriyi Kaydet
           </UiButton>
         </div>
       </form>
@@ -2430,7 +1767,7 @@
   <!-- Supplier Invite Link Result Modal -->
   <UiModal v-if="showInviteModal" class="modal-overlay" @close="showInviteModal = false">
     <div
-      class="glass-panel modal-content fade-in-up"
+      class="glass-panel modal-content adm-modal"
       style="max-width: 560px; padding: 30px; border-radius: 20px"
     >
       <div
@@ -2441,18 +1778,7 @@
           margin-bottom: 20px;
         "
       >
-        <h2
-          style="
-            color: #7c3aed;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 1.3rem;
-          "
-        >
-          <span>📧</span> Tedarikçi Davet Bağlantısı
-        </h2>
+        <h2 class="adm-modal-title">Tedarikçi Davet Bağlantısı</h2>
         <UiButton
           @click="showInviteModal = false"
           style="
@@ -2481,7 +1807,7 @@
           gap: 12px;
         "
       >
-        <span style="font-size: 1.6rem">✅</span>
+        <NavIcon name="check" size="22" style="color: var(--fr-success)" />
         <div>
           <strong style="color: #047857; font-size: 0.92rem"
             >E-Posta Adresine Başarıyla Gönderildi!</strong
@@ -2505,7 +1831,7 @@
           gap: 12px;
         "
       >
-        <span style="font-size: 1.6rem; line-height: 1">💡</span>
+        <NavIcon name="alert" size="22" style="color: var(--fr-warning)" />
         <div>
           <strong style="color: #b45309; font-size: 0.92rem"
             >Davet Bağlantısı Hazırlandı (Manuel İletilebilir)</strong
@@ -2522,8 +1848,8 @@
       <!-- Tedarikçi Detay Kartı -->
       <div
         style="
-          background: rgba(124, 58, 237, 0.04);
-          border: 1px solid rgba(124, 58, 237, 0.12);
+          background: rgba(0, 100, 255, 0.04);
+          border: 1px solid rgba(0, 100, 255, 0.12);
           border-radius: 12px;
           padding: 14px 16px;
           margin-bottom: 20px;
@@ -2555,14 +1881,14 @@
             class="btn"
             style="
               white-space: nowrap;
-              border-color: #7c3aed;
+              border-color: var(--fr-primary);
               color: #ffffff;
-              background: linear-gradient(135deg, #7c3aed, #db2777);
+              background: var(--fr-primary);
               font-weight: 600;
               padding: 0 16px;
             "
           >
-            {{ copied ? '✓ Kopyalandı!' : '📋 Linki Kopyala' }}
+            {{ copied ? 'Kopyalandı!' : 'Linki Kopyala' }}
           </UiButton>
         </div>
       </div>
@@ -2595,7 +1921,7 @@
             box-shadow: 0 4px 12px rgba(37, 211, 102, 0.25);
           "
         >
-          💬 WhatsApp İle Gönder
+          WhatsApp İle Gönder
         </a>
         <UiButton @click="showInviteModal = false" class="btn btn-secondary"
           >Tamam / Kapat</UiButton
@@ -2607,25 +1933,74 @@
 
 <script setup>
 import { askText, confirmAction, notify } from '../utils/feedback.js'
-import { UiButton, UiField, UiModal } from '../components/ui/index.js'
+import {
+  EmptyState,
+  KpiCard,
+  PageHeader,
+  UiButton,
+  UiField,
+  UiModal,
+} from '../components/ui/index.js'
+import Sidebar from '../components/Sidebar.vue'
 
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import ManualSignatureInbox from '../components/ManualSignatureInbox.vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { startImpersonation } from '../api/impersonation.js'
 import { apiRequest } from '../api/http.js'
 import NavIcon from '../components/NavIcon.vue'
 
 const router = useRouter()
+const route = useRoute()
 
-const activeTab = ref('quotes') // 'quotes', 'customers', 'vehicles', 'suppliers', 'support'
-const adminTabs = [
-  { id: 'quotes', label: 'Gelen Teklifler', icon: 'document' },
-  { id: 'customers', label: 'Aktif Müşteriler', icon: 'users' },
-  { id: 'vehicles', label: 'Araçlar', icon: 'car' },
-  { id: 'suppliers', label: 'Tedarikçiler', icon: 'store' },
-  { id: 'support', label: 'Destek Kayıtları', icon: 'shield' },
+// The section lives in the address (?tab=), so the shared sidebar, the back button and
+// reloads all land on the same tab.
+const ADMIN_TABS = ['quotes', 'customers', 'vehicles', 'suppliers', 'support']
+const activeTab = computed(() =>
+  ADMIN_TABS.includes(route.query.tab) ? route.query.tab : 'quotes',
+)
+const QUOTE_STATUSES = [
+  'Teklif Bekleniyor',
+  'Teklif Verildi',
+  'Değerlendirmede',
+  'Kabul Edildi',
+  'Sözleşme İmzalandı',
+  'Reddedildi',
+  'İstek Silindi',
 ]
+const money = (value) =>
+  value === null || value === undefined || value === ''
+    ? '—'
+    : `₺${Number(value).toLocaleString('tr-TR')}`
+const isDeletedQuote = (quote) => ['İstek Silindi', 'Silindi'].includes(quote.status)
+// One colour vocabulary for every badge on the page (matches KpiCard tones).
+const quoteTone = (status) =>
+  ({
+    'Teklif Bekleniyor': 'amber',
+    'Teklif Verildi': 'blue',
+    Değerlendirmede: 'violet',
+    'Kabul Edildi': 'green',
+    'Sözleşme İmzalandı': 'green',
+    Reddedildi: 'red',
+    'İstek Silindi': 'gray',
+    Silindi: 'gray',
+  })[status] || 'gray'
+const vehicleTone = (status) =>
+  ({ Aktif: 'green', Serviste: 'amber', 'Lastik Değişiminde': 'blue', 'Yol Yardımında': 'red' })[
+    status
+  ] || 'gray'
+const serviceTone = (status) =>
+  status === 'Tamamlandı' ? 'green' : status === 'Beklemede' ? 'amber' : 'blue'
+const categoryTone = (type) =>
+  ({ servis: 'blue', lastik: 'teal', yol_yardim: 'red', ikame_arac: 'violet' })[type] || 'gray'
+const inviteTone = (status) =>
+  status === 'Aktif' ? 'green' : status === 'Davet Gönderildi' ? 'amber' : 'gray'
+const inviteLabel = (status) =>
+  status === 'Aktif'
+    ? 'Aktif'
+    : status === 'Davet Gönderildi'
+      ? 'Davet gönderildi'
+      : 'Davet edilmedi'
 const supportLog = ref([]),
   supportLoading = ref(false),
   supportError = ref('')
@@ -2641,9 +2016,16 @@ async function loadSupportLog() {
   }
 }
 function openTab(id) {
-  activeTab.value = id
-  if (id === 'support') loadSupportLog()
+  if (activeTab.value !== id)
+    router.push({ path: '/admin-portal', query: id === 'quotes' ? {} : { tab: id } })
 }
+watch(
+  activeTab,
+  (tab) => {
+    if (tab === 'support') loadSupportLog()
+  },
+  { immediate: true },
+)
 const formatDateTime = (value) =>
   value
     ? new Date(value).toLocaleString('tr-TR', {
@@ -3334,7 +2716,7 @@ const openCustomerDetails = async (customer) => {
   customerVehicles.value = []
   customerServices.value = []
   // Ensure customers tab is active
-  activeTab.value = 'customers'
+  openTab('customers')
   showCustomerDetailsModal.value = true
   // Fetch data in background
   await fetchCustomerVehicles(customer.id)
@@ -3558,119 +2940,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.admin-sidebar {
-  background: #ffffff !important; /* Premium light sidebar to match main app theme */
-  color: var(--text-main) !important;
-  border-right: 1px solid var(--border-color);
-}
-
-.admin-sidebar .nav-logo span {
-  color: var(--text-main);
-  font-weight: 800;
-}
-
-.admin-sidebar .sidebar-link {
-  color: var(--text-muted);
-}
-
-.admin-sidebar .sidebar-link:hover {
-  background: rgba(79, 70, 229, 0.04);
-  color: var(--primary);
-}
-
-.active-admin {
-  background: linear-gradient(135deg, var(--primary) 0%, #4338ca 100%) !important;
-  color: #ffffff !important;
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
-}
-
-.admin-profile {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background: rgba(124, 58, 237, 0.04);
-  border: 1px solid rgba(124, 58, 237, 0.1);
-  border-radius: 12px;
-  margin-bottom: 25px;
-}
-
-.admin-profile .avatar {
-  background: rgba(124, 58, 237, 0.1);
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* New Stat Cards Styling */
-.stat-card-new {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  padding: 22px 24px;
-  border-radius: 16px;
-  background: #ffffff;
-}
-
-.stat-icon-wrapper {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.35rem;
-  flex-shrink: 0;
-}
-
-.quote-purple {
-  background: rgba(124, 58, 237, 0.1);
-  color: #7c3aed;
-}
-
-.quote-blue {
-  background: rgba(59, 130, 246, 0.1);
-  color: #2563eb;
-}
-
-.quote-green {
-  background: rgba(16, 185, 129, 0.1);
-  color: #047857;
-}
-
-.stat-info {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.stat-label {
-  font-size: 0.76rem;
-  font-weight: 600;
-  color: var(--text-dark);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.stat-val-new {
-  font-size: 1.45rem;
-  font-weight: 800;
-  color: var(--text-main);
-  line-height: 1.2;
-}
-
-.status-select {
-  padding: 6px 12px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  border-radius: 6px;
-  cursor: pointer;
-  outline: none;
-}
-
 .status-pending {
   background: #faf5ff;
   color: #7e22ce;
@@ -3713,30 +2982,6 @@ onMounted(async () => {
   border-color: #cbd5e1;
 }
 
-.service-tag {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border-color);
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-weight: 500;
-  display: inline-block;
-  margin: 2px;
-}
-
-.badge-auth {
-  background: rgba(16, 185, 129, 0.1);
-  color: #047857;
-  border: 1px solid rgba(16, 185, 129, 0.2);
-}
-
-.badge-contracted {
-  background: rgba(59, 130, 246, 0.1);
-  color: #2563eb;
-  border: 1px solid rgba(59, 130, 246, 0.2);
-}
-
 /* Modal overlays and contents */
 .modal-overlay {
   position: fixed;
@@ -3756,158 +3001,6 @@ onMounted(async () => {
 .modal-content {
   width: 100%;
 }
-
-/* ───────── CUSTOMER DETAIL DASHBOARD ───────── */
-.customer-detail-dashboard {
-  padding: 0 0 40px;
-}
-
-.cd-topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24px;
-  padding: 0 2px;
-}
-
-.cd-back-btn {
-  background: transparent;
-  border: 1px solid var(--border-color);
-  color: var(--text-muted);
-  padding: 8px 18px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: all 0.2s;
-}
-.cd-back-btn:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-/* Hero card */
-.cd-hero {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  padding: 28px 32px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(124, 58, 237, 0.05) 100%);
-}
-
-.cd-hero-avatar {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #059669, #047857);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  font-weight: 800;
-  color: #fff;
-  flex-shrink: 0;
-  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
-}
-
-.cd-hero-info {
-  flex: 1;
-  min-width: 200px;
-}
-
-.cd-company-name {
-  font-size: 1.6rem;
-  font-weight: 800;
-  color: var(--text-primary);
-  margin: 0 0 4px;
-}
-
-.cd-legal-title {
-  font-size: 0.88rem;
-  color: var(--text-muted);
-  margin: 0 0 12px;
-}
-
-.cd-contact-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  font-size: 0.83rem;
-  color: var(--text-dark);
-}
-
-.cd-hero-badges {
-  display: flex;
-  gap: 14px;
-  flex-wrap: wrap;
-}
-
-.cd-hero-badge {
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: 12px;
-  padding: 14px 20px;
-  text-align: center;
-  min-width: 110px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-.cd-badge-label {
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 6px;
-}
-.cd-badge-value {
-  font-size: 1.1rem;
-  font-weight: 800;
-}
-.cd-badge-green .cd-badge-value {
-  color: #047857;
-}
-.cd-badge-purple .cd-badge-value {
-  color: #7c3aed;
-}
-.cd-badge-blue .cd-badge-value {
-  color: #2563eb;
-}
-.cd-badge-amber .cd-badge-value {
-  color: #b45309;
-}
-
-/* Tabs */
-.cd-tabs {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 20px;
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 0;
-}
-.cd-tab {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  padding: 10px 22px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  transition: all 0.2s;
-}
-.cd-tab:hover {
-  color: var(--text-primary);
-}
-.cd-tab-active {
-  color: #047857 !important;
-  border-bottom-color: #10b981;
-}
-
-.cd-tab-content {
-  animation: fadeSlide 0.25s ease;
-}
 @keyframes fadeSlide {
   from {
     opacity: 0;
@@ -3917,77 +3010,6 @@ onMounted(async () => {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-/* Vehicle grid */
-.cd-vehicle-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 18px;
-}
-
-.cd-vehicle-card {
-  padding: 20px;
-  border-radius: 14px;
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s;
-}
-.cd-vehicle-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
-
-.cd-vehicle-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.cd-plate {
-  background: #0f172a;
-  border: 2px solid #334155;
-  color: #f8fafc;
-  font-family: monospace;
-  font-size: 1rem;
-  font-weight: 800;
-  padding: 4px 12px;
-  border-radius: 6px;
-  letter-spacing: 0.06em;
-}
-
-.cd-vehicle-title {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 14px;
-}
-
-.cd-vehicle-details {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.cd-vehicle-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.82rem;
-  padding: 4px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-}
-.cd-vd-label {
-  color: var(--text-muted);
-}
-.cd-vd-val {
-  color: var(--text-primary);
-  font-weight: 500;
-}
-
-/* Hover highlight for customer rows */
-.customer-row:hover td {
-  background: rgba(16, 185, 129, 0.05);
 }
 
 /* Supplier tag input */
@@ -4046,105 +3068,602 @@ onMounted(async () => {
 .tag-bare-input::placeholder {
   color: var(--text-muted);
 }
-/* ── Filter Bar ─────────────────────────────────────────── */
-.filter-bar {
-  padding: 14px 18px;
-  border-radius: 14px;
-}
-.filter-bar-inner {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14px;
-  align-items: center;
-}
-.filter-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.filter-label {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  white-space: nowrap;
-}
-.filter-pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-}
-.filter-pill {
-  padding: 4px 12px;
-  border-radius: 20px;
-  border: 1px solid var(--border-color);
-  background: transparent;
-  color: var(--text-muted);
-  font-size: 0.78rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.18s ease;
-  white-space: nowrap;
-}
-.filter-pill:hover {
-  border-color: #7c3aed;
-  color: #9333ea;
-  background: rgba(124, 58, 237, 0.08);
-}
-.filter-pill-active {
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(59, 130, 246, 0.15)) !important;
-  border-color: #7c3aed !important;
-  color: #9333ea !important;
-  font-weight: 700;
-}
-.filter-input {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 5px 12px;
-  color: var(--text-primary);
-  font-size: 0.83rem;
-  width: 230px;
-  outline: none;
-  transition: border-color 0.2s;
-}
-.filter-input:focus {
-  border-color: #7c3aed;
-  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
-}
-.filter-input::placeholder {
-  color: var(--text-muted);
-}
-.filter-result-count {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-color);
-  border-radius: 20px;
-  padding: 3px 10px;
-  white-space: nowrap;
-}
-
-.admin-support-table th,
-.admin-support-table td {
-  padding: 12px 16px;
-  text-align: left;
-  font-size: 0.85rem;
-}
-.admin-support-state {
-  display: inline-block;
-  padding: 2px 10px;
-  border-radius: 12px;
-  background: #f1f5f9;
-  color: #475569;
-  font-size: 0.78rem;
-  font-weight: 600;
-}
-.admin-support-state.active {
-  background: #fff7ed;
-  color: #c2410c;
-}
 .admin-support-error {
   color: #b91c1c;
   margin: 0 0 12px;
+}
+</style>
+
+<!-- Admin portal on the shared design tokens (design-tokens.css), same look as the other portals. -->
+<style scoped>
+.adm {
+  background: var(--fr-bg);
+  color: var(--fr-text);
+}
+.adm-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--fr-space-3);
+  margin-bottom: var(--fr-space-4);
+}
+.adm-panel {
+  margin-bottom: var(--fr-space-4);
+  padding: var(--fr-space-4);
+  background: var(--fr-surface);
+  border: 1px solid var(--fr-border);
+  border-radius: var(--fr-radius-lg);
+  box-shadow: var(--fr-shadow-sm);
+}
+.adm-panel-title {
+  margin: 0 0 var(--fr-space-3);
+  font-size: var(--fr-text-md);
+  font-weight: 700;
+  color: var(--fr-ink);
+}
+.adm-two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--fr-space-4);
+}
+.adm-two .adm-panel {
+  margin-bottom: var(--fr-space-4);
+}
+.adm-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--fr-space-3) var(--fr-space-4);
+  padding-bottom: var(--fr-space-4);
+  margin-bottom: var(--fr-space-2);
+  border-bottom: 1px solid var(--fr-border);
+}
+.adm-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 240px;
+  max-width: 340px;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--fr-border-strong);
+  border-radius: var(--fr-radius);
+  background: var(--fr-surface);
+  color: var(--fr-muted);
+}
+.adm-search:focus-within {
+  border-color: var(--fr-primary);
+  box-shadow: 0 0 0 3px var(--fr-primary-soft);
+}
+.adm-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--fr-ink);
+  font: inherit;
+  font-size: var(--fr-text-md);
+}
+.adm-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.adm-chips-label {
+  margin-right: 2px;
+  font-size: var(--fr-text-xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fr-muted);
+}
+.adm-chip {
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--fr-border-strong);
+  border-radius: 999px;
+  background: var(--fr-surface);
+  color: var(--fr-text);
+  font: inherit;
+  font-size: var(--fr-text-sm);
+  cursor: pointer;
+}
+.adm-chip:hover {
+  border-color: var(--fr-primary);
+  color: var(--fr-primary);
+}
+.adm-chip[aria-pressed='true'] {
+  border-color: var(--fr-primary);
+  background: var(--fr-primary);
+  color: #fff;
+  font-weight: 600;
+}
+.adm-count {
+  margin-left: auto;
+  font-size: var(--fr-text-sm);
+  color: var(--fr-muted);
+  white-space: nowrap;
+}
+.adm-loading,
+.adm-muted {
+  margin: 0;
+  padding: var(--fr-space-4) 0;
+  color: var(--fr-muted);
+}
+.adm-loading {
+  text-align: center;
+}
+.adm-table-wrap {
+  overflow-x: auto;
+}
+.adm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fr-text-md);
+}
+.adm-table th {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--fr-border);
+  background: transparent;
+  font-size: var(--fr-text-xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: left;
+  text-transform: uppercase;
+  color: var(--fr-muted);
+  white-space: nowrap;
+}
+.adm-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--fr-border);
+  vertical-align: middle;
+  color: var(--fr-text);
+}
+.adm-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.adm-table tbody tr:hover td {
+  background: #f7faff;
+}
+.adm-table tr.is-clickable {
+  cursor: pointer;
+}
+.adm-table tr.is-muted td {
+  opacity: 0.6;
+}
+.adm-actions-col {
+  text-align: right;
+  width: 1%;
+  white-space: nowrap;
+}
+.adm-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+.adm-cell-title {
+  font-weight: 600;
+  color: var(--fr-ink);
+}
+.adm-cell-sub {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--fr-text-sm);
+  color: var(--fr-muted);
+}
+.adm-money {
+  font-weight: 700;
+  color: var(--fr-ink);
+  font-variant-numeric: tabular-nums;
+}
+.adm-wrap {
+  max-width: 280px;
+  white-space: normal;
+  line-height: 1.45;
+}
+.adm-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.92em;
+}
+.adm-entity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.adm-avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--fr-primary-soft);
+  color: #0052d4;
+  font-weight: 700;
+}
+.adm-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--fr-ink);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.adm-link:hover {
+  color: var(--fr-primary);
+  text-decoration: underline;
+}
+/* Badges and status: one colour vocabulary (tone-*) for the whole page. */
+.adm-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-size: var(--fr-text-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.tone-blue {
+  background: var(--fr-info-soft);
+  color: var(--fr-info);
+}
+.tone-green {
+  background: var(--fr-success-soft);
+  color: var(--fr-success);
+}
+.tone-amber {
+  background: var(--fr-warning-soft);
+  color: var(--fr-warning);
+}
+.tone-red {
+  background: var(--fr-danger-soft);
+  color: var(--fr-danger);
+}
+.tone-violet {
+  background: var(--fr-violet-soft);
+  color: var(--fr-violet);
+}
+.tone-teal {
+  background: var(--fr-teal-soft);
+  color: var(--fr-teal);
+}
+.tone-gray {
+  background: #eef2f7;
+  color: var(--fr-muted);
+}
+.adm-status {
+  min-width: 178px;
+  min-height: 34px;
+  padding: 0 30px 0 12px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font: inherit;
+  font-size: var(--fr-text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position:
+    calc(100% - 15px) 50%,
+    calc(100% - 10px) 50%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+}
+.adm-status.tone-blue {
+  background-color: var(--fr-info-soft);
+}
+.adm-status.tone-green {
+  background-color: var(--fr-success-soft);
+}
+.adm-status.tone-amber {
+  background-color: var(--fr-warning-soft);
+}
+.adm-status.tone-red {
+  background-color: var(--fr-danger-soft);
+}
+.adm-status.tone-violet {
+  background-color: var(--fr-violet-soft);
+}
+.adm-status.tone-gray {
+  background-color: #eef2f7;
+}
+.adm-status:focus-visible {
+  outline: 2px solid var(--fr-focus);
+  outline-offset: 2px;
+}
+.adm-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-width: 240px;
+}
+.adm-tag {
+  padding: 2px 8px;
+  border: 1px solid var(--fr-border);
+  border-radius: 6px;
+  font-size: var(--fr-text-xs);
+  color: var(--fr-text);
+}
+/* Buttons */
+.adm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--fr-border-strong);
+  border-radius: var(--fr-radius);
+  background: var(--fr-surface);
+  color: var(--fr-ink);
+  font: inherit;
+  font-size: var(--fr-text-md);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+.adm-btn:hover {
+  border-color: var(--fr-primary);
+  color: var(--fr-primary);
+}
+.adm-btn.primary {
+  border-color: var(--fr-primary);
+  background: var(--fr-primary);
+  color: #fff;
+}
+.adm-btn.primary:hover {
+  background: #0052d4;
+  color: #fff;
+}
+.adm-btn.teal {
+  border-color: var(--fr-teal);
+  background: var(--fr-teal);
+  color: #fff;
+}
+.adm-btn.teal:hover {
+  filter: brightness(0.92);
+  color: #fff;
+}
+.adm-btn.ghost {
+  background: transparent;
+}
+.adm-btn.danger {
+  color: var(--fr-danger);
+}
+.adm-btn.danger:hover {
+  border-color: var(--fr-danger);
+  background: var(--fr-danger-soft);
+  color: var(--fr-danger);
+}
+.adm-btn.sm {
+  min-height: 32px;
+  padding: 0 10px;
+  font-size: var(--fr-text-sm);
+}
+.adm-btn.icon {
+  width: 32px;
+  padding: 0;
+}
+.adm-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+/* Detail views */
+.adm-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: var(--fr-space-3);
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: var(--fr-primary);
+  font: inherit;
+  font-size: var(--fr-text-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+.adm-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: calc(-1 * var(--fr-space-3)) 0 var(--fr-space-4);
+  padding: 0;
+  list-style: none;
+  font-size: var(--fr-text-sm);
+  color: var(--fr-text);
+}
+.adm-contact li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.adm-contact :deep(svg) {
+  color: var(--fr-muted);
+}
+.adm-tabs {
+  display: flex;
+  gap: 4px;
+  margin: calc(-1 * var(--fr-space-2)) 0 var(--fr-space-4);
+  border-bottom: 1px solid var(--fr-border);
+}
+.adm-tab {
+  padding: 10px 14px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--fr-muted);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.adm-tab span {
+  margin-left: 4px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #eef2f7;
+  font-size: var(--fr-text-xs);
+}
+.adm-tab[aria-selected='true'] {
+  border-bottom-color: var(--fr-primary);
+  color: var(--fr-primary);
+}
+.adm-vehicle-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--fr-space-3);
+}
+.adm-vehicle {
+  padding: var(--fr-space-4);
+  border: 1px solid var(--fr-border);
+  border-radius: var(--fr-radius);
+}
+.adm-vehicle header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.adm-vehicle h3 {
+  margin: 10px 0 8px;
+  font-size: var(--fr-text-md);
+  color: var(--fr-ink);
+}
+.adm-vehicle h3 small {
+  font-weight: 400;
+  color: var(--fr-muted);
+}
+.adm-vehicle dl,
+.adm-dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 12px;
+  margin: 0;
+  font-size: var(--fr-text-sm);
+}
+.adm-vehicle dt,
+.adm-dl dt {
+  color: var(--fr-muted);
+}
+.adm-vehicle dd,
+.adm-dl dd {
+  margin: 0;
+  text-align: right;
+  color: var(--fr-ink);
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.adm-plate {
+  display: inline-block;
+  padding: 3px 9px;
+  border: 1.5px solid var(--fr-ink);
+  border-radius: 5px;
+  background: #fff;
+  color: var(--fr-ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: var(--fr-text-sm);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.adm-plate.lg {
+  padding: 6px 12px;
+  font-size: var(--fr-text-lg);
+}
+.adm-plate-btn {
+  cursor: pointer;
+}
+.adm-plate-btn:hover {
+  border-color: var(--fr-primary);
+  color: var(--fr-primary);
+}
+.adm-vehicle-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--fr-space-3) var(--fr-space-4);
+  margin-bottom: var(--fr-space-5);
+}
+.adm-vehicle-head h1 {
+  margin: 0;
+  font-size: var(--fr-text-2xl);
+  color: var(--fr-ink);
+}
+.adm-vehicle-head p {
+  margin: 2px 0 0;
+  color: var(--fr-muted);
+}
+@media (max-width: 900px) {
+  .adm-two {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 640px) {
+  .adm-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .adm-panel {
+    padding: var(--fr-space-3);
+  }
+  .adm-search {
+    max-width: none;
+    flex-basis: 100%;
+  }
+  .adm-chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    max-width: 100%;
+    padding-bottom: 2px;
+  }
+  .adm-count {
+    margin-left: 0;
+  }
+  .adm-actions-col {
+    width: auto;
+    white-space: normal;
+    text-align: left;
+  }
+  .adm-actions {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+  .adm-actions .adm-btn:not(.icon) {
+    flex: 1 1 auto;
+  }
+  .adm-status {
+    width: 100%;
+  }
+}
+</style>
+
+<style scoped>
+/* Admin modals: the same surface as the rest of the product, no glass or gradients. */
+.adm-modal {
+  background: var(--fr-surface) !important;
+  border: 1px solid var(--fr-border) !important;
+  border-radius: var(--fr-radius-lg) !important;
+  box-shadow: var(--fr-shadow) !important;
+  color: var(--fr-text);
+  backdrop-filter: none !important;
+}
+.adm-modal-title {
+  margin: 0 0 var(--fr-space-4);
+  font-size: var(--fr-text-xl);
+  font-weight: 700;
+  color: var(--fr-ink);
+}
+.adm-modal :deep(.btn-primary) {
+  background: var(--fr-primary);
+  border-color: var(--fr-primary);
+  color: #fff;
 }
 </style>
